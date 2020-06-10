@@ -20,6 +20,7 @@ namespace MESS.Macros
 
 
         private Dictionary<string, Map> _mapTemplateCache = new Dictionary<string, Map>();
+        private int _nextInstanceID = 1;
 
         private MacroExpander()
         {
@@ -32,8 +33,12 @@ namespace MESS.Macros
         {
             var mapTemplate = GetTemplate(mapPath);
 
+            var instanceID = _nextInstanceID;
+            _nextInstanceID += 1;
+
+            // TODO: Substitutions, instance ID and other things should be combined into a single 'context' object!
             var expandedMap = new Map();
-            CopyProperties(mapTemplate.Properties, expandedMap.Properties, substitutions);
+            CopyProperties(mapTemplate.Properties, expandedMap.Properties, substitutions, instanceID);
 
             // NOTE: Because MESS currently only supports outputting to MAP format, there's no need to copy groups, VIS-groups and cameras.
             //       We'll also expand paths into their actual entities, just in case they generate macro entities.
@@ -44,7 +49,7 @@ namespace MESS.Macros
             // Entities and paths require handling:
             var allEntities = mapTemplate.Entities
                 .Concat(mapTemplate.Paths.SelectMany(path => path.GenerateEntities()))
-                .Select(entity => CopyEntity(entity, substitutions));
+                .Select(entity => CopyEntity(entity, substitutions, instanceID));
 
             var workingDirectory = System.IO.Path.GetDirectoryName(NormalizePath(mapPath));
             foreach (var entity in allEntities)
@@ -85,22 +90,22 @@ namespace MESS.Macros
 
         private static IMacroEntityHandler GetEntityHandler(Entity entity) => _macroEntityHandlers.TryGetValue(entity.ClassName, out var handler) ? handler : _defaultEntityHandler;
 
-        private static void CopyProperties(Dictionary<string, string> source, Dictionary<string, string> destination, Dictionary<string, string> substitutions)
+        private static void CopyProperties(Dictionary<string, string> source, Dictionary<string, string> destination, Dictionary<string, string> substitutions, int instanceID)
         {
             foreach (var property in source)
             {
-                var key = SubstitutePlaceholders(property.Key, substitutions);
-                var value = SubstitutePlaceholders(property.Value, substitutions);
+                var key = SubstitutePlaceholders(property.Key, substitutions, instanceID);
+                var value = SubstitutePlaceholders(property.Value, substitutions, instanceID);
 
                 destination[key] = value;
             }
         }
 
-        private static Entity CopyEntity(Entity entity, Dictionary<string, string> substitutions)
+        private static Entity CopyEntity(Entity entity, Dictionary<string, string> substitutions, int instanceID)
         {
             var copy = new Entity();
 
-            CopyProperties(entity.Properties, copy.Properties, substitutions);
+            CopyProperties(entity.Properties, copy.Properties, substitutions, instanceID);
             copy.Brushes.AddRange(entity.Brushes.Select(CopyBrush));
 
             return copy;
@@ -146,12 +151,22 @@ namespace MESS.Macros
         /// Default values can be specified after an = sign, for example "{placeholder-name=default-value}".
         /// </para>
         /// </summary>
-        private static string SubstitutePlaceholders(string input, Dictionary<string, string> substitutions)
+        private static string SubstitutePlaceholders(string input, Dictionary<string, string> substitutions, int instanceID)
         {
             return Regex.Replace(input, @"{(?<key>[^=}]+)(?:=(?<defaultvalue>[^}]+))?}", match =>
             {
                 var key = match.Groups["key"].Value;
                 var defaultValue = match.Groups["defaultvalue"].Value;
+
+                // TODO: Replace this with a proper expression evaluation system! For now, just checking for 'id()' will do,
+                //       but later it'll need to be a function that returns either the targetname of the inserting entity or the instance ID:
+                var id = substitutions.TryGetValue("targetname", out var targetname) ? targetname : instanceID.ToString();
+                if (key == "id()")
+                    return id;
+
+                if (defaultValue == "id()")
+                    defaultValue = id;
+
                 return substitutions.TryGetValue(key, out var value) ? value : defaultValue;
             });
         }
