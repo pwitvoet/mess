@@ -184,7 +184,12 @@ namespace MESS.Formats
                 entity[stream.ReadNString()] = stream.ReadNString();
 
             stream.ReadBytes(14);   // ?
-            entity.Origin = ReadVector3D(stream);
+
+            if (brushCount == 0)
+                entity.Origin = ReadVector3D(stream);
+            else
+                ReadVector3D(stream);
+
             stream.ReadBytes(4);    // ?
 
             return (entity, visGroupID);
