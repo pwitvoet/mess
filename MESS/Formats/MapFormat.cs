@@ -46,7 +46,7 @@ namespace MESS.Formats
 
         public static void Save(Map map, Stream stream)
         {
-            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var writer = new StreamWriter(stream, new UTF8Encoding(false)))
             {
                 var worldspawn = new Entity();
                 worldspawn.ClassName = "worldspawn";
