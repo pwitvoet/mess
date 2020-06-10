@@ -20,8 +20,8 @@ namespace MESS.Mapping
 
         public int Flags
         {
-            get => int.TryParse(this["flags"], out var flags) ? flags : 0;
-            set => this["flags"] = value.ToString();
+            get => int.TryParse(this["spawnflags"], out var flags) ? flags : 0;
+            set => this["spawnflags"] = value.ToString();
         }
 
         public Vector3D Origin

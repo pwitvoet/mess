@@ -41,7 +41,7 @@ namespace MESS.Formats
 
             var worldspawnClassname = stream.ReadNString();
             stream.ReadBytes(4);    // ?
-            map.Properties["flags"] = stream.ReadInt().ToString();  // 'worldspawn' flags, unused.
+            map.Properties["spawnflags"] = stream.ReadInt().ToString();  // 'worldspawn' flags, unused.
 
             var worldspawnPropertyCount = stream.ReadInt();
             for (int i = 0; i < worldspawnPropertyCount; i++)
