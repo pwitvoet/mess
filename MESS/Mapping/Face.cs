@@ -15,6 +15,7 @@ namespace MESS.Mapping
     {
         public List<Vector3D> Vertices { get; } = new List<Vector3D>();
         public Vector3D[] PlanePoints { get; set; }
+        public Plane Plane { get; set; }
 
         public string TextureName { get; set; }
         public Vector3D TextureRightAxis { get; set; }

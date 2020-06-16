@@ -113,13 +113,10 @@ namespace MESS.Macros
 
         private static Brush CopyBrush(Brush brush)
         {
-            var copy = new Brush();
-
             // NOTE: Group and VIS-group are not copied because we're only outputting to MAP format. Copying them cannot be done in this method anyway, it'll require an extra pass.
-            copy.Color = brush.Color;
-            copy.Faces.AddRange(brush.Faces.Select(CopyFace));
-
-            return copy;
+            return new Brush(brush.Faces.Select(CopyFace)) {
+                Color = brush.Color,
+            };
         }
 
         private static Face CopyFace(Face face)
@@ -128,6 +125,7 @@ namespace MESS.Macros
 
             copy.Vertices.AddRange(face.Vertices);
             copy.PlanePoints = face.PlanePoints.ToArray();
+            copy.Plane = face.Plane;
 
             copy.TextureName = face.TextureName;
             copy.TextureRightAxis = face.TextureRightAxis;

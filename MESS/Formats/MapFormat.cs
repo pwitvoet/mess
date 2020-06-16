@@ -1,5 +1,6 @@
 ﻿using MESS.Mapping;
 using MESS.Spatial;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -96,18 +97,18 @@ namespace MESS.Formats
 
         private static Brush ReadBrush(TextReader reader)
         {
-            var brush = new Brush();
+            var faces = new List<Face>();
             while (true)
             {
                 var line = reader.ReadLine().Trim();
                 if (line.StartsWith("("))
-                    brush.Faces.Add(ReadFace(line));
+                    faces.Add(ReadFace(line));
                 else if (line.StartsWith("}"))
                     break;
                 else
                     throw new InvalidDataException($"Expected face or end of brush, but found '{line}'.");
             }
-            return brush;
+            return new Brush(faces);
         }
 
         private static Face ReadFace(string line)

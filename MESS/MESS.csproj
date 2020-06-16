@@ -66,6 +66,9 @@
     <Compile Include="Mapping\VisGroup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Spatial\BoundingBox.cs" />
+    <Compile Include="Spatial\Line.cs" />
+    <Compile Include="Spatial\Plane.cs" />
     <Compile Include="Spatial\Vector2D.cs" />
     <Compile Include="Spatial\Vector3D.cs" />
   </ItemGroup>

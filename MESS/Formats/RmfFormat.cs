@@ -120,17 +120,15 @@ namespace MESS.Formats
 
         private static (Brush brush, int visGroupID) ReadBrush(Stream stream)
         {
-            var brush = new Brush();
-
             var visGroupID = stream.ReadInt();
-            brush.Color = ReadColor(stream);
+            var color = ReadColor(stream);
             stream.ReadBytes(4);    // ?
 
-            var faceCount = stream.ReadInt();
-            for (int i = 0; i < faceCount; i++)
-                brush.Faces.Add(ReadFace(stream));
+            var faces = new Face[stream.ReadInt()];
+            for (int i = 0; i < faces.Length; i++)
+                faces[i] = ReadFace(stream);
 
-            return (brush, visGroupID);
+            return (new Brush(faces) { Color = color }, visGroupID);
         }
 
         private static Face ReadFace(Stream stream)
