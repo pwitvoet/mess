@@ -46,7 +46,7 @@
     <Compile Include="Formats\MapExtensions.cs" />
     <Compile Include="Macros\IMacroEntityHandler.cs" />
     <Compile Include="Macros\MacroExpander.cs" />
-    <Compile Include="Macros\MapExtensions.cs" />
+    <Compile Include="Macros\MappingExtensions.cs" />
     <Compile Include="Macros\InsertMapHandler.cs" />
     <Compile Include="Formats\MapFormat.cs" />
     <Compile Include="Formats\RmfFormat.cs" />
