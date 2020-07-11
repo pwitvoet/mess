@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MESS.Spatial
 {
@@ -15,16 +16,21 @@ namespace MESS.Spatial
                 min.Y = Math.Min(min.Y, point.Y);
                 min.Z = Math.Min(min.Z, point.Z);
 
-                max.X = Math.Min(max.X, point.X);
-                max.Y = Math.Min(max.Y, point.Y);
-                max.Z = Math.Min(max.Z, point.Z);
+                max.X = Math.Max(max.X, point.X);
+                max.Y = Math.Max(max.Y, point.Y);
+                max.Z = Math.Max(max.Z, point.Z);
             }
             return new BoundingBox(min, max);
         }
 
+        public static BoundingBox FromBoundingBoxes(IEnumerable<BoundingBox> boundingBoxes) => FromPoints(boundingBoxes.Select(bb => bb.Min).Concat(boundingBoxes.Select(bb => bb.Max)));
+
 
         public Vector3D Min;
         public Vector3D Max;
+
+        public Vector3D Center => (Min + Max) / 2;
+
 
         public BoundingBox(Vector3D min, Vector3D max)
         {
