@@ -50,7 +50,7 @@ namespace MESS.Formats
 
             var pathCount = stream.ReadInt();
             for (int i = 0; i < pathCount; i++)
-                map.Paths.Add(ReadPath(stream));
+                map.EntityPaths.Add(ReadPath(stream));
 
             var docInfoMagicString = stream.ReadString(8);
             if (docInfoMagicString != "DOCINFO")
@@ -215,18 +215,18 @@ namespace MESS.Formats
 
         private static Vector3D ReadVector3D(Stream stream) => new Vector3D(stream.ReadFloat(), stream.ReadFloat(), stream.ReadFloat());
 
-        private static Mapping.Path ReadPath(Stream stream)
+        private static EntityPath ReadPath(Stream stream)
         {
-            var path = new Mapping.Path();
-            path.Name = stream.ReadString(128);
-            path.ClassName = stream.ReadString(128);
-            path.Type = (PathType)stream.ReadInt();
+            var entityPath = new EntityPath();
+            entityPath.Name = stream.ReadString(128);
+            entityPath.ClassName = stream.ReadString(128);
+            entityPath.Type = (PathType)stream.ReadInt();
 
             var cornerCount = stream.ReadInt();
             for (int i = 0; i < cornerCount; i++)
-                path.Corners.Add(ReadCorner(stream));
+                entityPath.Corners.Add(ReadCorner(stream));
 
-            return path;
+            return entityPath;
         }
 
         private static Corner ReadCorner(Stream stream)

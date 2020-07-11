@@ -62,8 +62,8 @@ namespace MESS.Formats
                 foreach (var entity in map.Entities)
                     WriteEntity(writer, entity);
 
-                foreach (var path in map.Paths)
-                    WritePath(writer, path);
+                foreach (var path in map.EntityPaths)
+                    WriteEntityPath(writer, path);
             }
         }
 
@@ -168,9 +168,9 @@ namespace MESS.Formats
             writer.WriteLine($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} ");
         }
 
-        private static void WritePath(TextWriter writer, Mapping.Path path)
+        private static void WriteEntityPath(TextWriter writer, EntityPath entityPath)
         {
-            foreach (var entity in path.GenerateEntities())
+            foreach (var entity in entityPath.GenerateEntities())
                 WriteEntity(writer, entity);
         }
     }

@@ -48,7 +48,7 @@ namespace MESS.Macros
 
             // Entities and paths require handling:
             var allEntities = mapTemplate.Entities
-                .Concat(mapTemplate.Paths.SelectMany(path => path.GenerateEntities()))
+                .Concat(mapTemplate.EntityPaths.SelectMany(path => path.GenerateEntities()))
                 .Select(entity => CopyEntity(entity, substitutions, instanceID));
 
             var workingDirectory = System.IO.Path.GetDirectoryName(NormalizePath(mapPath));

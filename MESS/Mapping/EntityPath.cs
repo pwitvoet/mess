@@ -10,9 +10,9 @@ namespace MESS.Mapping
     }
 
     /// <summary>
-    /// Paths can be used to create a trail of connected entities of a certain kind, typically 'path_corner' or 'path_track'.
+    /// Entity paths can be used to create a trail of connected entities of a certain kind, typically 'path_corner' or 'path_track'.
     /// </summary>
-    public class Path
+    public class EntityPath
     {
         public string Name { get; set; }
         public string ClassName { get; set; }

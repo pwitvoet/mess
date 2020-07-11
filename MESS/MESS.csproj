@@ -62,7 +62,7 @@
     <Compile Include="Mapping\Group.cs" />
     <Compile Include="Mapping\Map.cs" />
     <Compile Include="Mapping\MapObject.cs" />
-    <Compile Include="Mapping\Path.cs" />
+    <Compile Include="Mapping\EntityPath.cs" />
     <Compile Include="Mapping\VisGroup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

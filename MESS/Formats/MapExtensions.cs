@@ -6,7 +6,7 @@ namespace MESS.Formats
 {
     static class MapExtensions
     {
-        public static IEnumerable<Entity> GenerateEntities(this Path path)
+        public static IEnumerable<Entity> GenerateEntities(this EntityPath path)
         {
             // NOTE: This always yields the previous entity, because its target may have been updated by the current entity,
             //       and it may be too late to update an entity after it has already been yielded.

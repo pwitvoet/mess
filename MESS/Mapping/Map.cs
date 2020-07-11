@@ -18,7 +18,7 @@ namespace MESS.Mapping
 
 
         // RMF format only:
-        public List<Path> Paths { get; } = new List<Path>();
+        public List<EntityPath> EntityPaths { get; } = new List<EntityPath>();
 
         public List<Group> Groups { get; } = new List<Group>();
 
