@@ -24,34 +24,6 @@ namespace MESS.Mapping
         }
 
 
-        public bool Contains(Vector3D point)
-        {
-            // A point lies inside a brush if it's on the inside of every face plane:
-            foreach (var face in Faces)
-            {
-                var plane = face.Plane;
-                if (plane.Normal.DotProduct(point) < plane.Distance)
-                    return false;
-            }
-
-            return true;
-        }
-
-        public bool Contains(Brush brush)
-        {
-            if (!BoundingBox.Contains(brush.BoundingBox))
-                return false;
-
-            // TODO: This does a lot of duplicate work, because each face contains its own vertex copies!
-            foreach (var face in brush.Faces)
-                foreach (var vertex in face.Vertices)
-                    if (!Contains(vertex))
-                        return false;
-
-            return true;
-        }
-
-
         private void InitializePlanes()
         {
             foreach (var face in Faces)
@@ -61,6 +33,12 @@ namespace MESS.Mapping
         // TODO: ORDER the resulting vertices (CCW or CW)!
         private void InitializeVertices()
         {
+            if (Faces.All(face => face.Vertices.Count > 0))
+                return;
+
+            foreach (var face in Faces)
+                face.Vertices.Clear();
+
             for (int i = 0; i < Faces.Count; i++)
             {
                 for (int j = i + 1; j < Faces.Count; j++)
@@ -70,7 +48,7 @@ namespace MESS.Mapping
                         var face1 = Faces[i];
                         var face2 = Faces[j];
                         var face3 = Faces[k];
-                        if (Plane.IntersectionPoint(face1.Plane, face2.Plane, face3.Plane) is Vector3D point && Contains(point))
+                        if (Plane.IntersectionPoint(face1.Plane, face2.Plane, face3.Plane) is Vector3D point && this.Contains(point))
                         {
                             // TODO: Look into ORDERING these vertices (CCW or CW) -- it matters for some use-cases!
                             face1.Vertices.Add(point);

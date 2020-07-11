@@ -55,6 +55,7 @@
     <Compile Include="MapFile.cs" />
     <Compile Include="Mapping\Brush.cs" />
     <Compile Include="Mapping\Camera.cs" />
+    <Compile Include="Mapping\CollisionExtensions.cs" />
     <Compile Include="Mapping\Color.cs" />
     <Compile Include="Mapping\Corner.cs" />
     <Compile Include="Mapping\Entity.cs" />
