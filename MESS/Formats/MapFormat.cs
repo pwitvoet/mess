@@ -49,14 +49,13 @@ namespace MESS.Formats
         {
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false)))
             {
-                var worldspawn = new Entity();
+                var worldspawn = new Entity(map.WorldGeometry);
                 worldspawn.ClassName = "worldspawn";
                 worldspawn["sounds"] = "1";
                 worldspawn["MaxRange"] = "4096";
                 worldspawn["mapversion"] = "220";
                 foreach (var kv in map.Properties)
                     worldspawn.Properties[kv.Key] = kv.Value;
-                worldspawn.Brushes.AddRange(map.WorldGeometry);
 
                 WriteEntity(writer, worldspawn);
                 foreach (var entity in map.Entities)
@@ -70,18 +69,19 @@ namespace MESS.Formats
 
         private static Entity ReadEntity(TextReader reader)
         {
-            var entity = new Entity();
+            var properties = new Dictionary<string, string>();
+            var brushes = new List<Brush>();
             while (true)
             {
                 var line = reader.ReadLine().Trim();
                 if (line.StartsWith("\""))
                 {
                     var parts = line.Split('"');    // NOTE: There is no support for escaping double quotes!
-                    entity.Properties[parts[1]] = parts[3];
+                    properties[parts[1]] = parts[3];
                 }
                 else if (line.StartsWith("{"))
                 {
-                    entity.Brushes.Add(ReadBrush(reader));
+                    brushes.Add(ReadBrush(reader));
                 }
                 else if (line.StartsWith("}"))
                 {
@@ -92,6 +92,11 @@ namespace MESS.Formats
                     throw new InvalidDataException($"Expected key-value pair, brush or end of entity, but found '{line}'.");
                 }
             }
+
+            var entity = new Entity(brushes);
+            foreach (var property in properties)
+                entity.Properties[property.Key] = property.Value;
+
             return entity;
         }
 

@@ -1,5 +1,7 @@
 ﻿using MESS.Spatial;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MESS.Mapping
 {
@@ -34,11 +36,24 @@ namespace MESS.Mapping
 
                 return new Vector3D(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2]));
             }
-            set => this["origin"] = $"{value.X} {value.Y} {value.Z}";
+            set
+            {
+                this["origin"] = $"{value.X} {value.Y} {value.Z}";
+                if (IsPointBased)
+                    BoundingBox = new BoundingBox(Origin, Origin);
+            }
         }
 
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
-        public List<Brush> Brushes { get; } = new List<Brush>();
+        public IReadOnlyList<Brush> Brushes { get; }
+        public BoundingBox BoundingBox { get; private set; }
+
+
+        public Entity(IEnumerable<Brush> brushes = null)
+        {
+            Brushes = brushes?.ToArray() ?? Array.Empty<Brush>();
+            BoundingBox = IsPointBased ? new BoundingBox(Origin, Origin) : BoundingBox.FromBoundingBoxes(Brushes.Select(brush => brush.BoundingBox));
+        }
 
 
         public string this[string propertyName]

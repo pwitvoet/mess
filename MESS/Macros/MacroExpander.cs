@@ -103,11 +103,8 @@ namespace MESS.Macros
 
         private static Entity CopyEntity(Entity entity, Dictionary<string, string> substitutions, int instanceID)
         {
-            var copy = new Entity();
-
+            var copy = new Entity(entity.Brushes.Select(CopyBrush));
             CopyProperties(entity.Properties, copy.Properties, substitutions, instanceID);
-            copy.Brushes.AddRange(entity.Brushes.Select(CopyBrush));
-
             return copy;
         }
 

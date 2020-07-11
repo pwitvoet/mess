@@ -161,17 +161,19 @@ namespace MESS.Formats
 
         private static (Entity entity, int visGroupID) ReadEntity(Stream stream)
         {
-            var entity = new Entity();
-
             var visGroupID = stream.ReadInt();
-            entity.Color = ReadColor(stream);
+            var color = ReadColor(stream);
 
             var brushCount = stream.ReadInt();
+            var brushes = new Brush[brushCount];
             for (int i = 0; i < brushCount; i++)
             {
                 var cMapSolid = stream.ReadNString();
-                entity.Brushes.Add(ReadBrush(stream).brush);
+                brushes[i] = ReadBrush(stream).brush;
             }
+
+            var entity = new Entity(brushes);
+            entity.Color = color;
 
             entity.ClassName = stream.ReadNString();
             stream.ReadBytes(4);    // ?
