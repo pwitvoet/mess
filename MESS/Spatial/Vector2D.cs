@@ -13,6 +13,16 @@ namespace MESS.Spatial
             Y = y;
         }
 
+        public override bool Equals(object obj) => obj is Vector2D other && this == other;
+
+        public override int GetHashCode()
+        {
+            var hash = 17;
+            hash = hash * 23 + X.GetHashCode();
+            hash = hash * 23 + Y.GetHashCode();
+            return hash;
+        }
+
         public override string ToString() => $"({X}, {Y})";
 
 
@@ -32,5 +42,8 @@ namespace MESS.Spatial
         public static Vector2D operator *(float scalar, Vector2D vector) => vector * scalar;
         public static Vector2D operator /(Vector2D vector, float scalar) => new Vector2D(vector.X / scalar, vector.Y / scalar);
         public static Vector2D operator /(float scalar, Vector2D vector) => vector / scalar;
+
+        public static bool operator ==(Vector2D left, Vector2D right) => left.X == right.X && left.Y == right.Y;
+        public static bool operator !=(Vector2D left, Vector2D right) => left.X != right.X || left.Y != right.Y;
     }
 }

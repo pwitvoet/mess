@@ -15,6 +15,17 @@ namespace MESS.Spatial
             Z = z;
         }
 
+        public override bool Equals(object obj) => obj is Vector3D other && this == other;
+
+        public override int GetHashCode()
+        {
+            var hash = 17;
+            hash = hash * 23 + X.GetHashCode();
+            hash = hash * 23 + Y.GetHashCode();
+            hash = hash * 23 + Z.GetHashCode();
+            return hash;
+        }
+
         public override string ToString() => $"({X}, {Y}, {Z})";
 
 
@@ -42,5 +53,8 @@ namespace MESS.Spatial
         public static Vector3D operator *(float scalar, Vector3D vector) => vector * scalar;
         public static Vector3D operator /(Vector3D vector, float scalar) => new Vector3D(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
         public static Vector3D operator /(float scalar, Vector3D vector) => vector / scalar;
+
+        public static bool operator ==(Vector3D left, Vector3D right) => left.X == right.X && left.Y == right.Y && left.Z == right.Z;
+        public static bool operator !=(Vector3D left, Vector3D right) => left.X != right.X || left.Y != right.Y || left.Z != right.Z;
     }
 }
