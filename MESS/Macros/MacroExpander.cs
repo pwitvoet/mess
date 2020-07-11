@@ -1,169 +1,196 @@
-﻿using MESS.Formats;
-using MESS.Mapping;
+﻿using MESS.Mapping;
+using MESS.Spatial;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace MESS.Macros
 {
     /// <summary>
-    /// Handles macro entity expansion.
+    /// Handles macro entity substitution.
     /// </summary>
     public class MacroExpander
     {
+        // TODO: Convenience entry point. NOTE: 'path' must be an absolute path!
         public static Map ExpandMacros(string path)
         {
             var expander = new MacroExpander();
-            return expander.ExpandMacros(path, new Dictionary<string, string>());
+            var template = expander.GetMapTemplate(path);
+            return expander.CreateInstance(template, new Vector3D(), new ExpansionContext(template));
         }
 
-
-        private Dictionary<string, Map> _mapTemplateCache = new Dictionary<string, Map>();
-        private int _nextInstanceID = 1;
-
-        private MacroExpander()
-        {
-        }
-
-        /// <summary>
-        /// Loads the given map, expands any macros and substitutes placeholders, and returns the result.
-        /// </summary>
-        public Map ExpandMacros(string mapPath, Dictionary<string, string> substitutions)
-        {
-            var mapTemplate = GetTemplate(mapPath);
-
-            var instanceID = _nextInstanceID;
-            _nextInstanceID += 1;
-
-            // TODO: Substitutions, instance ID and other things should be combined into a single 'context' object!
-            var expandedMap = new Map();
-            CopyProperties(mapTemplate.Properties, expandedMap.Properties, substitutions, instanceID);
-
-            // NOTE: Because MESS currently only supports outputting to MAP format, there's no need to copy groups, VIS-groups and cameras.
-            //       We'll also expand paths into their actual entities, just in case they generate macro entities.
-
-            // Brushwork can be copied as-is:
-            expandedMap.WorldGeometry.AddRange(mapTemplate.WorldGeometry.Select(CopyBrush));
-
-            // Entities and paths require handling:
-            var allEntities = mapTemplate.Entities
-                .Concat(mapTemplate.EntityPaths.SelectMany(path => path.GenerateEntities()))
-                .Select(entity => CopyEntity(entity, substitutions, instanceID));
-
-            var workingDirectory = System.IO.Path.GetDirectoryName(NormalizePath(mapPath));
-            foreach (var entity in allEntities)
-                GetEntityHandler(entity).Process(entity, expandedMap, workingDirectory, this);
-
-            return expandedMap;
-        }
-
-
-        /// <summary>
-        /// Returns a template map. Templates are cached, and should not be modified directly.
-        /// </summary>
-        private Map GetTemplate(string path)
-        {
-            var normalizedPath = NormalizePath(path);
-            if (!_mapTemplateCache.TryGetValue(normalizedPath, out var mapTemplate))
-            {
-                mapTemplate = MapFile.Load(normalizedPath);
-                _mapTemplateCache[normalizedPath] = mapTemplate;
-            }
-            return mapTemplate;
-        }
-
-
-        private static Dictionary<string, IMacroEntityHandler> _macroEntityHandlers;
-        private static IMacroEntityHandler _defaultEntityHandler;
 
         static MacroExpander()
         {
-            _macroEntityHandlers = typeof(IMacroEntityHandler).Assembly.GetTypes()
-                .Where(type => !type.IsInterface && !type.IsAbstract && typeof(IMacroEntityHandler).IsAssignableFrom(type))
-                .Select(type => (IMacroEntityHandler)Activator.CreateInstance(type))
-                .Where(handler => !string.IsNullOrEmpty(handler.EntityName))
-                .ToDictionary(handler => handler.EntityName, handler => handler);
+            _entityHandlers = typeof(MacroExpander).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(IsValidEntityHandler)
+                .SelectMany(method => method.GetCustomAttributes<EntityHandlerAttribute>().Select(attribute => new { Method = method, EntityClassName = attribute.EntityClassName }))
+                .ToDictionary(me => me.EntityClassName, me => me.Method);
 
-            _defaultEntityHandler = new DefaultEntityHandler();
-        }
-
-        private static IMacroEntityHandler GetEntityHandler(Entity entity) => _macroEntityHandlers.TryGetValue(entity.ClassName, out var handler) ? handler : _defaultEntityHandler;
-
-        private static void CopyProperties(Dictionary<string, string> source, Dictionary<string, string> destination, Dictionary<string, string> substitutions, int instanceID)
-        {
-            foreach (var property in source)
+            bool IsValidEntityHandler(MethodInfo method)
             {
-                var key = SubstitutePlaceholders(property.Key, substitutions, instanceID);
-                var value = SubstitutePlaceholders(property.Value, substitutions, instanceID);
+                var parameters = method.GetParameters();
+                if (parameters.Length != 3)
+                    return false;
 
-                destination[key] = value;
+                return parameters[0].ParameterType == typeof(Map) && parameters[1].ParameterType == typeof(Entity) && parameters[2].ParameterType == typeof(ExpansionContext);
             }
         }
 
-        private static Entity CopyEntity(Entity entity, Dictionary<string, string> substitutions, int instanceID)
-        {
-            var copy = new Entity(entity.Brushes.Select(CopyBrush));
-            CopyProperties(entity.Properties, copy.Properties, substitutions, instanceID);
-            return copy;
-        }
 
-        private static Brush CopyBrush(Brush brush)
-        {
-            // NOTE: Group and VIS-group are not copied because we're only outputting to MAP format. Copying them cannot be done in this method anyway, it'll require an extra pass.
-            return new Brush(brush.Faces.Select(CopyFace)) {
-                Color = brush.Color,
-            };
-        }
+        private static IDictionary<string, MethodInfo> _entityHandlers;
 
-        private static Face CopyFace(Face face)
-        {
-            var copy = new Face();
+        private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
 
-            copy.Vertices.AddRange(face.Vertices);
-            copy.PlanePoints = face.PlanePoints.ToArray();
-            copy.Plane = face.Plane;
 
-            copy.TextureName = face.TextureName;
-            copy.TextureRightAxis = face.TextureRightAxis;
-            copy.TextureDownAxis = face.TextureDownAxis;
-            copy.TextureShift = face.TextureShift;
-            copy.TextureAngle = face.TextureAngle;
-            copy.TextureScale = face.TextureScale;
-
-            return copy;
-        }
-
-        private static string NormalizePath(string path) => System.IO.Path.GetFullPath(path);
-
-        // TODO: Case-sensitive? (by default, yes -- could be turned into a setting?).
-        // TODO: Whitespace-sensitive? (by default, also yes).
         /// <summary>
-        /// Replaces placeholders in a given property key or value. If the substitutions dictionary does not contain a placeholder's name,
-        /// the placeholder's default value is used, or an empty string if no default value is specified.
-        /// <para>
-        /// Placeholders are deliniated by curly braces. For example, "{placeholder-name}_01" is turned into "substitution-value_01".
-        /// Default values can be specified after an = sign, for example "{placeholder-name=default-value}".
-        /// </para>
+        /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
         /// </summary>
-        private static string SubstitutePlaceholders(string input, Dictionary<string, string> substitutions, int instanceID)
+        private MapTemplate GetMapTemplate(string path)
         {
-            return Regex.Replace(input, @"{(?<key>[^=}]+)(?:=(?<defaultvalue>[^}]+))?}", match =>
+            path = Path.GetFullPath(path);
+            if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
-                var key = match.Groups["key"].Value;
-                var defaultValue = match.Groups["defaultvalue"].Value;
-
-                // TODO: Replace this with a proper expression evaluation system! For now, just checking for 'id()' will do,
-                //       but later it'll need to be a function that returns either the targetname of the inserting entity or the instance ID:
-                var id = substitutions.TryGetValue("targetname", out var targetname) ? targetname : instanceID.ToString();
-                if (key == "id()")
-                    return id;
-
-                if (defaultValue == "id()")
-                    defaultValue = id;
-
-                return substitutions.TryGetValue(key, out var value) ? value : defaultValue;
-            });
+                template = MapTemplate.Load(path);
+                _mapTemplateCache[path] = template;
+            }
+            return template;
         }
+
+        /// <summary>
+        /// Resolves a template by either loading it from a file or by picking a sub-template from the current context.
+        /// </summary>
+        private MapTemplate ResolveTemplate(string mapPath, string templateName, ExpansionContext context)
+        {
+            if (mapPath != null)
+            {
+                // We support both absolute and relative paths. Relative paths are relative to the map that a template is being inserted into.
+                if (!Path.IsPathRooted(mapPath))
+                    mapPath = Path.Combine(context.CurrentWorkingDirectory, mapPath);
+
+                // TODO: Add support for wildcard characters (but in filenames only?)!
+                // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
+                return GetMapTemplate(mapPath);
+            }
+            else if (templateName != null)
+            {
+                // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
+                // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
+                var matchingSubTemplates = context.SubTemplates
+                    .Where(subTemplate => context.Evaluate(subTemplate.Name) == templateName)
+                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = float.TryParse(context.Evaluate(subTemplate.SelectionWeightExpression), out var weight) ? weight : 1 })
+                    .ToArray();
+
+                var selection = context.GetRandomFloat(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
+                foreach (var weightedSubtemplate in matchingSubTemplates)
+                {
+                    selection -= weightedSubtemplate.Weight;
+                    if (selection <= 0f)
+                        return weightedSubtemplate.SubTemplate;
+                }
+            }
+
+            return null;
+        }
+
+        // NOTE: The given context has been created by the entity that is about to insert this template!
+        // TODO: 'offset' should become a 'transform' -- and the related Copy methods should be updated accordingly as well!
+        private Map CreateInstance(MapTemplate template, Vector3D offset, ExpansionContext context)
+        {
+            var instance = new Map();
+
+            // Skip conditional contents whose removal condition is true:
+            var excludedObjects = new HashSet<object>();
+            foreach (var conditionalContent in template.ConditionalContents.Where(conditionalContent => IsTruthy(context.Evaluate(conditionalContent.RemovalCondition))))
+                excludedObjects.UnionWith(conditionalContent.Contents);
+
+            foreach (var entity in template.Map.Entities.Where(entity => !excludedObjects.Contains(entity)))
+            {
+                if (_entityHandlers.TryGetValue(entity.ClassName, out var macroEntityHandler))
+                {
+                    // Macro entities are expanded:
+                    macroEntityHandler.Invoke(this, new object[] { instance, entity.Copy(offset), context });
+                }
+                else
+                {
+                    // Other entities are copied directly, with expressions in their property keys/values being evaluated:
+                    instance.Entities.Add(entity.CopyWithEvaluation(offset, context));
+                }
+            }
+
+            foreach (var brush in template.Map.WorldGeometry.Where(brush => !excludedObjects.Contains(brush)))
+            {
+                instance.WorldGeometry.Add(brush.Copy(offset));
+            }
+
+            return instance;
+        }
+
+
+        [EntityHandler(MacroEntity.Insert)]
+        private void HandleMacroInsertEntity(Map map, Entity insertEntity, ExpansionContext context)
+        {
+            var template = ResolveTemplate(insertEntity["template_map"], insertEntity["template_name"], context);
+            if (template == null)
+                throw new Exception("TODO: Unable to resolve template! LOG THIS AND SKIP???");   // TODO: Fail, or ignore? --> better, LOG THIS!!!
+
+
+            // Then create a child context for this insertion:
+            var insertionContext = new ExpansionContext(template, insertEntity.Properties, context);   // TODO: Can we just pass on all properties here as substitution values, or should we filter out some special ones???
+            var instance = CreateInstance(template, insertEntity.Origin, insertionContext);
+
+            // NOTE: No need to copy entities/brushes, because they're already transformed correctly, and we'll throw away 'instance' afterwards anyway:
+            foreach (var entity in instance.Entities)
+                map.Entities.Add(entity);
+
+            foreach (var brush in instance.WorldGeometry)
+                map.WorldGeometry.Add(brush);
+        }
+
+        [EntityHandler(MacroEntity.Cover)]
+        private void HandleMacroCoverEntity(Map map, Entity coverEntity, ExpansionContext context)
+        {
+            // TODO: Do the same as for macro_insert, but then repeatedly (including the template resolving, because sub-templates may have dynamic names!)
+            //       -- it would be more efficient if we could skip that if we know that there's no dynamicism going on...
+
+            var candidateFaces = coverEntity.Brushes
+                .SelectMany(brush => brush.Faces)
+                .Where(face => face.TextureName.ToUpper() != "NULL")
+                // TODO: Split each face into triangular sections first -- that'll make the rest easier.
+                // TODO: Calculate surface area of each face, so we get a weighted list!
+                .ToArray();
+
+            // Look at entity settings: max number of insertions, min radius around each insertion, random seed, how to orient insertions (face-aligned or world-aligned), how to rotate insertions, etc.
+            // Then run a loop. Each time, resolve the templates again (though we could skip that if there's no dynamicism going on!), create an instance and insert it in the chosen spot,
+            // if we managed to find a fitting spot of course (we'll need to remember previous insertions for the radius check).
+
+            throw new NotImplementedException();
+        }
+
+        [EntityHandler(MacroEntity.Fill)]
+        private void HandleMacroFillEntity(Map map, Entity fillEntity, ExpansionContext context)
+        {
+            // TODO: Very similar to macro_cover, this deals with the volume of brushes. We'll need to split each brush into tetrahedrons first, then determine the volume of each, so we get a weighted list.
+
+            throw new NotImplementedException();
+        }
+
+        [EntityHandler(MacroEntity.Brush)]
+        private void HandleMacroBrushEntity(Map map, Entity brushEntity, ExpansionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        [EntityHandler(MacroEntity.Script)]
+        private void HandleMacroScriptEntity(Map map, Entity scriptEntity, ExpansionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        // TODO: Figure out a good, reliable approach to handle boolean expressions!
+        private static bool IsTruthy(string value) => !string.IsNullOrEmpty(value) && value != "0";
     }
 }

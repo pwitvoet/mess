@@ -44,14 +44,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\MapExtensions.cs" />
-    <Compile Include="Macros\IMacroEntityHandler.cs" />
+    <Compile Include="Macros\EntityHandlerAttribute.cs" />
+    <Compile Include="Macros\ExpansionContext.cs" />
+    <Compile Include="Macros\MacroEntity.cs" />
     <Compile Include="Macros\MacroExpander.cs" />
     <Compile Include="Macros\MappingExtensions.cs" />
-    <Compile Include="Macros\InsertMapHandler.cs" />
     <Compile Include="Formats\MapFormat.cs" />
     <Compile Include="Formats\RmfFormat.cs" />
     <Compile Include="Formats\StreamExtensions.cs" />
-    <Compile Include="Macros\DefaultEntityHandler.cs" />
+    <Compile Include="Macros\MapTemplate.cs" />
+    <Compile Include="Macros\RemovableContent.cs" />
     <Compile Include="MapFile.cs" />
     <Compile Include="Mapping\Brush.cs" />
     <Compile Include="Mapping\Camera.cs" />
