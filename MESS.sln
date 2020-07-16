@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.438
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MESS", "MESS\MESS.csproj", "{0E37B023-13DD-48FE-863D-554351916B16}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MScript", "MScript\MScript.csproj", "{2E0B469A-714B-4D7C-95A6-200D93EC08AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0E37B023-13DD-48FE-863D-554351916B16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E37B023-13DD-48FE-863D-554351916B16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E37B023-13DD-48FE-863D-554351916B16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E0B469A-714B-4D7C-95A6-200D93EC08AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E0B469A-714B-4D7C-95A6-200D93EC08AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E0B469A-714B-4D7C-95A6-200D93EC08AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E0B469A-714B-4D7C-95A6-200D93EC08AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
