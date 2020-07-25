@@ -51,7 +51,7 @@ namespace MScript.Evaluation
             return ToBoolean(false);
         }
 
-        public static object NotEquals(object leftOperand, object rightOperand) => ToBoolean(!IsTruthy(Equals(leftOperand, rightOperand)));
+        public static object NotEquals(object leftOperand, object rightOperand) => ToBoolean(!IsTrue(Equals(leftOperand, rightOperand)));
 
 
         // Comparison:
@@ -67,10 +67,10 @@ namespace MScript.Evaluation
         // Logical:
         public static object And(Expression leftOperand, Expression rightOperand, EvaluationContext context)
         {
-            if (IsTruthy(Evaluator.Evaluate(leftOperand, context)))
+            if (IsTrue(Evaluator.Evaluate(leftOperand, context)))
             {
                 var rightValue = Evaluator.Evaluate(rightOperand, context);
-                if (IsTruthy(rightValue))
+                if (IsTrue(rightValue))
                     return rightValue;
             }
 
@@ -80,11 +80,11 @@ namespace MScript.Evaluation
         public static object Or(Expression leftOperand, Expression rightOperand, EvaluationContext context)
         {
             var leftValue = Evaluator.Evaluate(leftOperand, context);
-            if (IsTruthy(leftValue))
+            if (IsTrue(leftValue))
                 return leftValue;
 
             var rightValue = Evaluator.Evaluate(rightOperand, context);
-            if (IsTruthy(rightValue))
+            if (IsTrue(rightValue))
                 return rightValue;
 
             return ToBoolean(false);
@@ -104,13 +104,13 @@ namespace MScript.Evaluation
             throw new InvalidOperationException($"Cannot negate {operand}.");
         }
 
-        public static object LogicalNegate(object operand) => ToBoolean(!IsTruthy(operand));
+        public static object LogicalNegate(object operand) => ToBoolean(!IsTrue(operand));
 
 
         // Conditional:
         public static object Conditional(Expression condition, Expression trueExpression, Expression falseExpression, EvaluationContext context)
         {
-            if (IsTruthy(Evaluator.Evaluate(condition, context)))
+            if (IsTrue(Evaluator.Evaluate(condition, context)))
                 return Evaluator.Evaluate(trueExpression, context);
             else
                 return Evaluator.Evaluate(falseExpression, context);
@@ -137,6 +137,18 @@ namespace MScript.Evaluation
 
 
         // Others:
+        public static bool IsTrue(object value)
+        {
+            switch (value)
+            {
+                default:
+                case null: return false;
+                case double number: return number != 0.0;
+                case double[] vector: return vector.Length != 0;
+                case string @string: return @string.Length != 0;
+            }
+        }
+
         public static string ToString(object value)
         {
             if (value is double[] vector)
@@ -208,18 +220,6 @@ namespace MScript.Evaluation
         }
 
         private static int GetIndex(int length, int index) => index < 0 ? length + index : index;
-
-        private static bool IsTruthy(object value)
-        {
-            switch (value)
-            {
-                default:
-                case null: return false;
-                case double number: return number != 0.0;
-                case double[] vector: return vector.Length != 0;
-                case string @string: return @string.Length != 0;
-            }
-        }
 
         private static object ToBoolean(bool boolean) => boolean ? 1.0 : 0.0;
     }
