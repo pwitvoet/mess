@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MESS.Spatial
+namespace MESS.Mathematics.Spatial
 {
     public struct BoundingBox
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MESS.Spatial
+namespace MESS.Mathematics.Spatial
 {
     public struct Vector2D
     {

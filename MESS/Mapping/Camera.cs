@@ -1,4 +1,4 @@
-﻿using MESS.Spatial;
+﻿using MESS.Mathematics.Spatial;
 
 namespace MESS.Mapping
 {

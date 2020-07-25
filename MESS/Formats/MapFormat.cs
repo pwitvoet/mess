@@ -1,8 +1,7 @@
 ﻿using MESS.Mapping;
-using MESS.Spatial;
+using MESS.Mathematics.Spatial;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace MESS.Formats

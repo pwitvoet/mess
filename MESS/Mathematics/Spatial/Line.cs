@@ -1,5 +1,5 @@
 ﻿
-namespace MESS.Spatial
+namespace MESS.Mathematics.Spatial
 {
     public struct Line
     {
