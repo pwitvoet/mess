@@ -1,9 +1,10 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MScript.Evaluation
 {
-    interface IFunction
+    public interface IFunction
     {
-        int ParameterCount { get; }
+        IReadOnlyList<Parameter> Parameters { get; }
 
 
         object Apply(object[] arguments, EvaluationContext context);

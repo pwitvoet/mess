@@ -2,7 +2,7 @@
 
 namespace MScript.Evaluation.Types
 {
-    abstract class MemberDescriptor : IEquatable<MemberDescriptor>
+    public abstract class MemberDescriptor : IEquatable<MemberDescriptor>
     {
         public string Name { get; }
         public TypeDescriptor Type { get; }
@@ -26,7 +26,7 @@ namespace MScript.Evaluation.Types
         public abstract bool Equals(MemberDescriptor other);
 
 
-        public static object operator ==(MemberDescriptor left, MemberDescriptor right) => left?.Equals(right) ?? false;
-        public static object operator !=(MemberDescriptor left, MemberDescriptor right) => !(left?.Equals(right) ?? false);
+        public static bool operator ==(MemberDescriptor left, MemberDescriptor right) => left?.Equals(right) ?? false;
+        public static bool operator !=(MemberDescriptor left, MemberDescriptor right) => !(left?.Equals(right) ?? false);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace MScript.Evaluation.Types
 {
-    class MethodDescriptor : MemberDescriptor, IEquatable<MethodDescriptor>
+    public class MethodDescriptor : MemberDescriptor, IEquatable<MethodDescriptor>
     {
         private IFunction _function;
 
@@ -31,7 +31,7 @@ namespace MScript.Evaluation.Types
         }
 
 
-        public static object operator ==(MethodDescriptor left, MethodDescriptor right) => left?.Equals(right) ?? false;
-        public static object operator !=(MethodDescriptor left, MethodDescriptor right) => !(left?.Equals(right) ?? false);
+        public static bool operator ==(MethodDescriptor left, MethodDescriptor right) => left?.Equals(right) ?? false;
+        public static bool operator !=(MethodDescriptor left, MethodDescriptor right) => !(left?.Equals(right) ?? false);
     }
 }

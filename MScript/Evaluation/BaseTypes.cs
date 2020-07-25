@@ -2,7 +2,7 @@
 
 namespace MScript.Evaluation
 {
-    class BaseTypes
+    public class BaseTypes
     {
         /// <summary>
         /// None represents the absence of a value.

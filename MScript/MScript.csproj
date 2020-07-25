@@ -47,6 +47,7 @@
     <Compile Include="Evaluation\IFunction.cs" />
     <Compile Include="Evaluation\NativeFunction.cs" />
     <Compile Include="Evaluation\Operations.cs" />
+    <Compile Include="Evaluation\Parameter.cs" />
     <Compile Include="Evaluation\Types\MemberDescriptor.cs" />
     <Compile Include="Evaluation\Types\MethodDescriptor.cs" />
     <Compile Include="Evaluation\Types\PropertyDescriptor.cs" />

@@ -7,7 +7,7 @@ namespace MScript.Evaluation.Types
     /// <summary>
     /// Describes an MScript type.
     /// </summary>
-    class TypeDescriptor : IEquatable<TypeDescriptor>
+    public class TypeDescriptor : IEquatable<TypeDescriptor>
     {
         public string Name { get; }
 
@@ -41,8 +41,8 @@ namespace MScript.Evaluation.Types
         }
 
 
-        public static object operator ==(TypeDescriptor left, TypeDescriptor right) => left?.Equals(right) ?? false;
-        public static object operator !=(TypeDescriptor left, TypeDescriptor right) => !(left?.Equals(right) ?? false);
+        public static bool operator ==(TypeDescriptor left, TypeDescriptor right) => left?.Equals(right) ?? false;
+        public static bool operator !=(TypeDescriptor left, TypeDescriptor right) => !(left?.Equals(right) ?? false);
 
 
         public static TypeDescriptor GetType(object value)

@@ -1,10 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace MScript.Evaluation
 {
     class BoundMethod : IFunction
     {
-        public int ParameterCount => _function.ParameterCount - 1;
+        public IReadOnlyList<Parameter> Parameters => _function.Parameters.Skip(1).ToArray();
 
 
         private object _object;

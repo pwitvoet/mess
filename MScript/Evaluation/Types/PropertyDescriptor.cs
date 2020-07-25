@@ -2,7 +2,7 @@
 
 namespace MScript.Evaluation.Types
 {
-    class PropertyDescriptor : MemberDescriptor, IEquatable<PropertyDescriptor>
+    public class PropertyDescriptor : MemberDescriptor, IEquatable<PropertyDescriptor>
     {
         private Func<object, object> _getter;
 
@@ -31,7 +31,7 @@ namespace MScript.Evaluation.Types
         }
 
 
-        public static object operator ==(PropertyDescriptor left, PropertyDescriptor right) => left?.Equals(right) ?? false;
-        public static object operator !=(PropertyDescriptor left, PropertyDescriptor right) => !(left?.Equals(right) ?? false);
+        public static bool operator ==(PropertyDescriptor left, PropertyDescriptor right) => left?.Equals(right) ?? false;
+        public static bool operator !=(PropertyDescriptor left, PropertyDescriptor right) => !(left?.Equals(right) ?? false);
     }
 }
