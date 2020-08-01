@@ -206,7 +206,7 @@ namespace MScript.Parsing
             }
             else if (context.Stack(-3) is Expression function &&
                 context.IsToken(-2, TokenType.ParensOpen) &&
-                context.CurrentToken.Type == TokenType.ParensClose)
+                (context.CurrentToken.Type == TokenType.ParensClose || context.CurrentToken.Type == TokenType.Comma))
             {
                 // arguments-list: expression       // For function calls
                 context.ReplaceLast(1, new ArgumentsList(expression));
