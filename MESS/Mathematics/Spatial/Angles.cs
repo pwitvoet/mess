@@ -6,7 +6,7 @@ namespace MESS.Mathematics.Spatial
     /// While these are often written in pitch,yaw,roll order, the actual order in which the rotations are applied
     /// is roll,pitch,yaw, which corresponds to rotations around the x, y and z axis.
     /// </summary>
-    struct Angles
+    public struct Angles
     {
         public float Roll;  // x-axis: Leaning over sidewards
         public float Pitch; // y-axis: Looking up/down

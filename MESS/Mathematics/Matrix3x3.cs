@@ -2,8 +2,11 @@
 
 namespace MESS.Mathematics
 {
-    struct Matrix3x3
+    public struct Matrix3x3
     {
+        public static Matrix3x3 Identity => new Matrix3x3(1, 0, 0,    0, 1, 0,    0, 0, 1);
+
+
         public float r11, r12, r13;
         public float r21, r22, r23;
         public float r31, r32, r33;
