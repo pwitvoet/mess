@@ -7,7 +7,7 @@ namespace MESS.Macros
     /// <para>This marks a method that can process a macro entity. Entity handler methods must take 3 arguments:</para>
     /// The <see cref="Map"/> where the macro expansion contents will be inserted,
     /// the macro <see cref="Entity"/> that is to be processed and
-    /// the current <see cref="ExpansionContext"/> which can be used for evaluating expressions and resolving templates.
+    /// the current <see cref="InstantiationContext"/> which can be used for evaluating expressions and resolving templates.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     class EntityHandlerAttribute : Attribute

@@ -1,5 +1,7 @@
 ﻿using MESS.Mapping;
+using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
+using MScript;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,39 +11,27 @@ using System.Reflection;
 namespace MESS.Macros
 {
     /// <summary>
-    /// Handles macro entity substitution.
+    /// Handles macro entity expansion.
     /// </summary>
     public class MacroExpander
     {
-        // TODO: Convenience entry point. NOTE: 'path' must be an absolute path!
+        /// <summary>
+        /// Loads the specified map file, expands any macro entities within, and returns the resulting map.
+        /// The given path must be absolute.
+        /// </summary>
         public static Map ExpandMacros(string path)
         {
+            // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
+
             var expander = new MacroExpander();
-            var template = expander.GetMapTemplate(path);
-            return expander.CreateInstance(template, new Vector3D(), new ExpansionContext(template));
+            var context = new InstantiationContext(expander.GetMapTemplate(path));
+            expander.CreateInstance(context);
+
+            return context.OutputMap;
         }
 
 
-        static MacroExpander()
-        {
-            _entityHandlers = typeof(MacroExpander).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(IsValidEntityHandler)
-                .SelectMany(method => method.GetCustomAttributes<EntityHandlerAttribute>().Select(attribute => new { Method = method, EntityClassName = attribute.EntityClassName }))
-                .ToDictionary(me => me.EntityClassName, me => me.Method);
-
-            bool IsValidEntityHandler(MethodInfo method)
-            {
-                var parameters = method.GetParameters();
-                if (parameters.Length != 3)
-                    return false;
-
-                return parameters[0].ParameterType == typeof(Map) && parameters[1].ParameterType == typeof(Entity) && parameters[2].ParameterType == typeof(ExpansionContext);
-            }
-        }
-
-
-        private static IDictionary<string, MethodInfo> _entityHandlers;
-
+        private IDictionary<string, Action<InstantiationContext, Entity>> _entityHandlers;
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
 
 
@@ -62,7 +52,7 @@ namespace MESS.Macros
         /// <summary>
         /// Resolves a template by either loading it from a file or by picking a sub-template from the current context.
         /// </summary>
-        private MapTemplate ResolveTemplate(string mapPath, string templateName, ExpansionContext context)
+        private MapTemplate ResolveTemplate(string mapPath, string templateName, InstantiationContext context)
         {
             if (mapPath != null)
             {
@@ -79,11 +69,12 @@ namespace MESS.Macros
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
-                    .Where(subTemplate => context.Evaluate(subTemplate.Name) == templateName)
-                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = float.TryParse(context.Evaluate(subTemplate.SelectionWeightExpression), out var weight) ? weight : 1 })
+                    .Where(subTemplate => context.EvaluateInterpolatedString(subTemplate.Name) == templateName)
+                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), out var weight) ? weight : 1 })
                     .ToArray();
 
-                var selection = context.GetRandomFloat(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
+                // TODO: Check whether this can make randomness too 'unstable' (e.g. a single change in one entity affecting random seeding/behavior of others)!
+                var selection = context.GetRandomDouble(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
                 foreach (var weightedSubtemplate in matchingSubTemplates)
                 {
                     selection -= weightedSubtemplate.Weight;
@@ -95,62 +86,102 @@ namespace MESS.Macros
             return null;
         }
 
-        // NOTE: The given context has been created by the entity that is about to insert this template!
-        // TODO: 'offset' should become a 'transform' -- and the related Copy methods should be updated accordingly as well!
-        private Map CreateInstance(MapTemplate template, Vector3D offset, ExpansionContext context)
+        /// <summary>
+        /// Creates a template instance and inserts it into the output map.
+        /// Template instantiation involves copying and transforming template content,
+        /// evaluating any expressions in entity properties,
+        /// and expanding any macro entities inside the template.
+        /// </summary>
+        private void CreateInstance(InstantiationContext context)
         {
-            var instance = new Map();
-
             // Skip conditional contents whose removal condition is true:
             var excludedObjects = new HashSet<object>();
-            foreach (var conditionalContent in template.ConditionalContents.Where(conditionalContent => IsTruthy(context.Evaluate(conditionalContent.RemovalCondition))))
-                excludedObjects.UnionWith(conditionalContent.Contents);
-
-            foreach (var entity in template.Map.Entities.Where(entity => !excludedObjects.Contains(entity)))
+            foreach (var conditionalContent in context.Template.ConditionalContents)
             {
-                if (_entityHandlers.TryGetValue(entity.ClassName, out var macroEntityHandler))
+                // TODO: Perhaps more consistent to evaluate this as an interpolated string as well?
+                //       We'd then have to parse the result and check whether it's a 'truthy' value...
+                var removal = context.EvaluateExpression(conditionalContent.RemovalCondition);
+                if (Interpreter.IsTrue(removal))
+                    excludedObjects.UnionWith(conditionalContent.Contents);
+            }
+
+            foreach (var entity in context.Template.Map.Entities.Where(entity => !excludedObjects.Contains(entity)))
+            {
+                var entityHandler = GetEntityHandler(entity.ClassName);
+                if (entityHandler != null)
                 {
                     // Macro entities are expanded:
-                    macroEntityHandler.Invoke(this, new object[] { instance, entity.Copy(offset), context });
+                    entityHandler(context, entity.Copy(context));
                 }
                 else
                 {
                     // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                    instance.Entities.Add(entity.CopyWithEvaluation(offset, context));
+                    context.OutputMap.Entities.Add(entity.Copy(context));
                 }
             }
 
-            foreach (var brush in template.Map.WorldGeometry.Where(brush => !excludedObjects.Contains(brush)))
+            foreach (var brush in context.Template.Map.WorldGeometry)
             {
-                instance.WorldGeometry.Add(brush.Copy(offset));
-            }
+                if (excludedObjects.Contains(brush))
+                    continue;
 
-            return instance;
+                context.OutputMap.WorldGeometry.Add(brush.Copy(context.Transform));
+            }
         }
 
 
+        private Action<InstantiationContext, Entity> GetEntityHandler(string className)
+        {
+            if (_entityHandlers == null)
+            {
+                _entityHandlers = GetType()
+                    .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(IsValidEntityHandler)
+                    .SelectMany(method => method.GetCustomAttributes<EntityHandlerAttribute>().Select(attribute => new { Method = method, EntityClassName = attribute.EntityClassName }))
+                    .ToDictionary(me => me.EntityClassName, me => (Action<InstantiationContext, Entity>)me.Method.CreateDelegate(typeof(Action<InstantiationContext, Entity>), this));
+                // TODO: This should throw if it detects marked methods with a wrong signature!
+            }
+
+            return _entityHandlers.TryGetValue(className, out var entityHandler) ? entityHandler : null;
+
+
+            bool IsValidEntityHandler(MethodInfo method)
+            {
+                var parameters = method.GetParameters();
+                if (parameters.Length != 2)
+                    return false;
+
+                return parameters[0].ParameterType == typeof(InstantiationContext) &&
+                    parameters[1].ParameterType == typeof(Entity) &&
+                    method.ReturnType == typeof(void);
+            }
+        }
+
         [EntityHandler(MacroEntity.Insert)]
-        private void HandleMacroInsertEntity(Map map, Entity insertEntity, ExpansionContext context)
+        private void HandleMacroInsertEntity(InstantiationContext context, Entity insertEntity)
         {
             var template = ResolveTemplate(insertEntity["template_map"], insertEntity["template_name"], context);
             if (template == null)
                 throw new Exception("TODO: Unable to resolve template! LOG THIS AND SKIP???");   // TODO: Fail, or ignore? --> better, LOG THIS!!!
 
 
-            // Then create a child context for this insertion:
-            var insertionContext = new ExpansionContext(template, insertEntity.Properties, context);   // TODO: Can we just pass on all properties here as substitution values, or should we filter out some special ones???
-            var instance = CreateInstance(template, insertEntity.Origin, insertionContext);
+            // TODO: Verify that this works correctly even when the macro_insert entity does not originally contain
+            //       'angles' and 'scale' properties!
 
-            // NOTE: No need to copy entities/brushes, because they're already transformed correctly, and we'll throw away 'instance' afterwards anyway:
-            foreach (var entity in instance.Entities)
-                map.Entities.Add(entity);
+            // Create a child context for this insertion, with a properly adjusted transform:
+            var transform = new Transform(
+                (float)(insertEntity.Scale ?? 1),
+                insertEntity.Angles?.ToMatrix() ?? Matrix3x3.Identity,
+                insertEntity.Origin);
 
-            foreach (var brush in instance.WorldGeometry)
-                map.WorldGeometry.Add(brush);
+            // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
+            var insertionContext = new InstantiationContext(template, transform, insertEntity.Properties, context);
+
+            CreateInstance(insertionContext);
         }
 
         [EntityHandler(MacroEntity.Cover)]
-        private void HandleMacroCoverEntity(Map map, Entity coverEntity, ExpansionContext context)
+        private void HandleMacroCoverEntity(InstantiationContext context, Entity coverEntity)
         {
             // TODO: Do the same as for macro_insert, but then repeatedly (including the template resolving, because sub-templates may have dynamic names!)
             //       -- it would be more efficient if we could skip that if we know that there's no dynamicism going on...
@@ -170,7 +201,7 @@ namespace MESS.Macros
         }
 
         [EntityHandler(MacroEntity.Fill)]
-        private void HandleMacroFillEntity(Map map, Entity fillEntity, ExpansionContext context)
+        private void HandleMacroFillEntity(InstantiationContext context, Entity fillEntity)
         {
             // TODO: Very similar to macro_cover, this deals with the volume of brushes. We'll need to split each brush into tetrahedrons first, then determine the volume of each, so we get a weighted list.
 
@@ -178,19 +209,15 @@ namespace MESS.Macros
         }
 
         [EntityHandler(MacroEntity.Brush)]
-        private void HandleMacroBrushEntity(Map map, Entity brushEntity, ExpansionContext context)
+        private void HandleMacroBrushEntity(InstantiationContext context, Entity brushEntity)
         {
             throw new NotImplementedException();
         }
 
         [EntityHandler(MacroEntity.Script)]
-        private void HandleMacroScriptEntity(Map map, Entity scriptEntity, ExpansionContext context)
+        private void HandleMacroScriptEntity(InstantiationContext context, Entity scriptEntity)
         {
             throw new NotImplementedException();
         }
-
-
-        // TODO: Figure out a good, reliable approach to handle boolean expressions!
-        private static bool IsTruthy(string value) => !string.IsNullOrEmpty(value) && value != "0";
     }
 }

@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="Formats\MapExtensions.cs" />
     <Compile Include="Macros\EntityHandlerAttribute.cs" />
-    <Compile Include="Macros\ExpansionContext.cs" />
+    <Compile Include="Macros\InstantiationContext.cs" />
     <Compile Include="Macros\MacroEntity.cs" />
     <Compile Include="Macros\MacroExpander.cs" />
     <Compile Include="Macros\MappingExtensions.cs" />
@@ -70,6 +70,7 @@
     <Compile Include="Mathematics\Extensions.cs" />
     <Compile Include="Mathematics\Matrix3x3.cs" />
     <Compile Include="Mathematics\Spatial\Angles.cs" />
+    <Compile Include="Mathematics\Transform.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mathematics\Spatial\BoundingBox.cs" />
@@ -84,5 +85,12 @@
   <ItemGroup>
     <Content Include="readme.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MScript\MScript.csproj">
+      <Project>{2e0b469a-714b-4d7c-95a6-200d93ec08ae}</Project>
+      <Name>MScript</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
