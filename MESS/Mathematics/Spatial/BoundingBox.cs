@@ -45,5 +45,12 @@ namespace MESS.Mathematics.Spatial
         }
 
         public bool Contains(BoundingBox other) => Contains(other.Min) && Contains(other.Max);
+
+        public bool Touches(BoundingBox other)
+        {
+            return Min.X < other.Max.X && Max.X > other.Min.X &&
+                Min.Y < other.Max.Y && Max.Y > other.Min.Y &&
+                Min.Z < other.Max.Z && Max.Z > other.Min.Z;
+        }
     }
 }

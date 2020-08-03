@@ -7,7 +7,7 @@ namespace MESS.Mapping
     {
         public static bool Touches(this Brush brush, Brush otherBrush)
         {
-            if (!brush.BoundingBox.Contains(otherBrush.BoundingBox))
+            if (!brush.BoundingBox.Touches(otherBrush.BoundingBox))
                 return false;
 
             // Two brushes are touching if no plane exists that separates them (hyperplane separation theorem):
@@ -18,9 +18,8 @@ namespace MESS.Mapping
 
             bool AllPointsOutside(Plane plane, Brush brsh)
             {
-                // TODO: VERIFY THIS! ESPECIALLY THE >= PART!
                 foreach (var bface in brsh.Faces)
-                    if (bface.Vertices.Any(vertex => plane.Normal.DotProduct(vertex) >= plane.Distance))
+                    if (bface.Vertices.Any(vertex => plane.Normal.DotProduct(vertex) < plane.Distance))
                         return false;
 
                 return true;
@@ -80,7 +79,7 @@ namespace MESS.Mapping
             foreach (var face in brush.Faces)
             {
                 var plane = face.Plane;
-                if (plane.Normal.DotProduct(point) < plane.Distance)
+                if (plane.Normal.DotProduct(point) > plane.Distance)
                     return false;
             }
 

@@ -4,12 +4,15 @@ namespace MESS.Mathematics.Spatial
 {
     public struct Plane
     {
+        /// <summary>
+        /// Returns the plane that contains the given 3 points. The points should be in clockwise order.
+        /// </summary>
         public static Plane FromPoints(Vector3D[] points)
         {
             var edge1 = points[1] - points[0];
             var edge2 = points[2] - points[0];
 
-            var normal = edge1.CrossProduct(edge2).Normalized();
+            var normal = edge2.CrossProduct(edge1).Normalized();
             return new Plane(normal, normal.DotProduct(points[0]));
         }
 
