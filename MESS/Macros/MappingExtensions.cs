@@ -107,6 +107,8 @@ namespace MESS.Macros
             {
                 foreach (var kv in entity.Properties)
                     copy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
+
+                UpdateSpawnFlags(copy);
             }
             else
             {
@@ -141,6 +143,31 @@ namespace MESS.Macros
             return new Vector2D(
                 x / textureScale.X,
                 y / textureScale.Y);
+        }
+
+        /// <summary>
+        /// Searches for 'spawnflag{N}' attributes and uses them to update the special 'spawnflags' attribute.
+        /// The 'spawnflag{N}' attributes are removed afterwards.
+        /// This makes it possible to control spawn flags with MScript - which, due to how editors handle the spawnflags attribute,
+        /// would otherwise not be possible.
+        /// </summary>
+        private static void UpdateSpawnFlags(Entity entity)
+        {
+            var spawnFlags = entity.Flags;
+            for (int i = 0; i < 32; i++)
+            {
+                var flagName = $"spawnflag{i + 1}";
+                if (entity.Properties.TryGetValue(flagName, out var value) && int.TryParse(value, out var flagValue))
+                {
+                    if (flagValue != 0)
+                        spawnFlags |= (1 << i);
+                    else
+                        spawnFlags = spawnFlags & ~(1 << i);
+
+                    entity.Properties.Remove(flagName);
+                }
+            }
+            entity.Flags = spawnFlags;
         }
     }
 }

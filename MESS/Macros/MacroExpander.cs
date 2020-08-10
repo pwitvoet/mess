@@ -138,10 +138,12 @@ namespace MESS.Macros
                     break;
 
                 case MacroEntity.Cover:
+                    // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
                     HandleMacroCoverEntity(context, entity.Copy(context, evaluateExpressions: false));
                     break;
 
                 case MacroEntity.Fill:
+                    // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
                     HandleMacroFillEntity(context, entity.Copy(context, evaluateExpressions: false));
                     break;
 
