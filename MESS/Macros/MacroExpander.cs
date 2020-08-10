@@ -23,15 +23,17 @@ namespace MESS.Macros
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
+            // TODO: Map properties are currently not evaluated -- but it may be useful (and consistent!) to do so!
+
             var expander = new MacroExpander();
-            var context = new InstantiationContext(expander.GetMapTemplate(path));
+            var mainTemplate = expander.GetMapTemplate(path);
+            var context = new InstantiationContext(mainTemplate, insertionEntityProperties: mainTemplate.Map.Properties);
             expander.CreateInstance(context);
 
             return context.OutputMap;
         }
 
 
-        private IDictionary<string, Action<InstantiationContext, Entity>> _entityHandlers;
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
 
 
@@ -105,21 +107,16 @@ namespace MESS.Macros
                     excludedObjects.UnionWith(conditionalContent.Contents);
             }
 
-            foreach (var entity in context.Template.Map.Entities.Where(entity => !excludedObjects.Contains(entity)))
+            // Copy entities:
+            foreach (var entity in context.Template.Map.Entities)
             {
-                var entityHandler = GetEntityHandler(entity.ClassName);
-                if (entityHandler != null)
-                {
-                    // Macro entities are expanded:
-                    entityHandler(context, entity.Copy(context));
-                }
-                else
-                {
-                    // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                    context.OutputMap.Entities.Add(entity.Copy(context));
-                }
+                if (excludedObjects.Contains(entity))
+                    continue;
+
+                HandleEntity(context, entity);
             }
 
+            // Copy brushes:
             foreach (var brush in context.Template.Map.WorldGeometry)
             {
                 if (excludedObjects.Contains(brush))
@@ -130,36 +127,37 @@ namespace MESS.Macros
         }
 
 
-        private Action<InstantiationContext, Entity> GetEntityHandler(string className)
+        private void HandleEntity(InstantiationContext context, Entity entity)
         {
-            if (_entityHandlers == null)
+            switch (entity.ClassName)
             {
-                _entityHandlers = GetType()
-                    .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(IsValidEntityHandler)
-                    .SelectMany(method => method.GetCustomAttributes<EntityHandlerAttribute>().Select(attribute => new { Method = method, EntityClassName = attribute.EntityClassName }))
-                    .ToDictionary(me => me.EntityClassName, me => (Action<InstantiationContext, Entity>)me.Method.CreateDelegate(typeof(Action<InstantiationContext, Entity>), this));
-                // TODO: This should throw if it detects marked methods with a wrong signature!
-            }
+                case MacroEntity.Insert:
+                    // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
+                    //       to ensure that transformation always works correctly?
+                    HandleMacroInsertEntity(context, entity.Copy(context));
+                    break;
 
-            return _entityHandlers.TryGetValue(className, out var entityHandler) ? entityHandler : null;
+                case MacroEntity.Cover:
+                    HandleMacroCoverEntity(context, entity.Copy(context, evaluateExpressions: false));
+                    break;
 
+                case MacroEntity.Fill:
+                    HandleMacroFillEntity(context, entity.Copy(context, evaluateExpressions: false));
+                    break;
 
-            bool IsValidEntityHandler(MethodInfo method)
-            {
-                var parameters = method.GetParameters();
-                if (parameters.Length != 2)
-                    return false;
+                //case MacroEntity.Brush:
+                //case MacroEntity.Script:
 
-                return parameters[0].ParameterType == typeof(InstantiationContext) &&
-                    parameters[1].ParameterType == typeof(Entity) &&
-                    method.ReturnType == typeof(void);
+                default:
+                    // Other entities are copied directly, with expressions in their property keys/values being evaluated:
+                    context.OutputMap.Entities.Add(entity.Copy(context));
+                    break;
             }
         }
 
-        [EntityHandler(MacroEntity.Insert)]
         private void HandleMacroInsertEntity(InstantiationContext context, Entity insertEntity)
         {
+            // Resolve the template:
             var template = ResolveTemplate(insertEntity["template_map"], insertEntity["template_name"], context);
             if (template == null)
                 throw new Exception("TODO: Unable to resolve template! LOG THIS AND SKIP???");   // TODO: Fail, or ignore? --> better, LOG THIS!!!
@@ -180,44 +178,140 @@ namespace MESS.Macros
             CreateInstance(insertionContext);
         }
 
-        [EntityHandler(MacroEntity.Cover)]
         private void HandleMacroCoverEntity(InstantiationContext context, Entity coverEntity)
         {
-            // TODO: Do the same as for macro_insert, but then repeatedly (including the template resolving, because sub-templates may have dynamic names!)
-            //       -- it would be more efficient if we could skip that if we know that there's no dynamicism going on...
-
+            // Triangulate all non-NULL faces, creating a list of triangles weighted by surface area:
             var candidateFaces = coverEntity.Brushes
                 .SelectMany(brush => brush.Faces)
                 .Where(face => face.TextureName.ToUpper() != "NULL")
-                // TODO: Split each face into triangular sections first -- that'll make the rest easier.
-                // TODO: Calculate surface area of each face, so we get a weighted list!
+                .SelectMany(face => face.GetTriangleFan().Select(triangle => new { Triangle = triangle, Area = triangle.GetSurfaceArea() }))
                 .ToArray();
+            var totalArea = candidateFaces.Sum(candidate => candidate.Area);
 
-            // Look at entity settings: max number of insertions, min radius around each insertion, random seed, how to orient insertions (face-aligned or world-aligned), how to rotate insertions, etc.
-            // Then run a loop. Each time, resolve the templates again (though we could skip that if there's no dynamicism going on!), create an instance and insert it in the chosen spot,
-            // if we managed to find a fitting spot of course (we'll need to remember previous insertions for the radius check).
 
-            throw new NotImplementedException();
+            // Most properties will be evaluated again for each template instance that this entity creates,
+            // but there are a few that are needed up-front, so these will only be evaluated once:
+            EvaluateProperties(context, coverEntity, "max_instances", "radius", "random_seed");
+
+            var maxInstances = (int)(coverEntity.GetNumericProperty("max_instances") ?? 0);
+            var radius = coverEntity.GetNumericProperty("radius") ?? 0;
+            var randomSeed = (int)(coverEntity.GetNumericProperty("random_seed") ?? 0);
+            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+
+
+            // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
+            // TODO: Also decide what to do if radius is 0 or lower!
+            for (int i = 0; i < maxInstances; i++)
+            {
+                var triangle = TakeFromWeightedList(candidateFaces, random.NextDouble() * totalArea, candidate => candidate.Area).Triangle;
+                var insertionPoint = triangle.GetRandomPoint(random);
+                // TODO: Check whether this point is far away enough from other instances!
+
+                var template = ResolveTemplate(
+                    context.EvaluateInterpolatedString(coverEntity["template_map"]),
+                    context.EvaluateInterpolatedString(coverEntity["template_name"]),
+                    context);
+                if (template == null)
+                    continue;   // TODO: LOG THIS!
+
+                // TODO: Determine angles and scale, based on the macro_cover entity settings!
+                var transform = new Transform(
+                    1,
+                    Matrix3x3.Identity, // TODO: world-aligned, face-aligned or texture-plane-aligned! And then take the angles property into account as well!
+                    insertionPoint);
+
+                // Evaluating properties again for each instance allows for randomization:
+                var evaluatedProperties = coverEntity.Properties.ToDictionary(
+                    kv => context.EvaluateInterpolatedString(kv.Key),
+                    kv => context.EvaluateInterpolatedString(kv.Value));
+
+                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
+                CreateInstance(insertionContext);
+            }
         }
 
-        [EntityHandler(MacroEntity.Fill)]
         private void HandleMacroFillEntity(InstantiationContext context, Entity fillEntity)
         {
-            // TODO: Very similar to macro_cover, this deals with the volume of brushes. We'll need to split each brush into tetrahedrons first, then determine the volume of each, so we get a weighted list.
+            // Split all brushes into tetrahedrons, creating a list of simplexes weighted by volume:
+            var candidateVolumes = fillEntity.Brushes
+                .SelectMany(brush => brush.GetTetrahedrons())
+                .Select(tetrahedron => new { Tetrahedron = tetrahedron, Volume = tetrahedron.GetVolume() })
+                .ToArray();
+            var totalVolume = candidateVolumes.Sum(candidate => candidate.Volume);
 
-            throw new NotImplementedException();
+
+            // Most properties will be evaluated again for each template instance that this entity creates,
+            // but there are a few that are needed up-front, so these will only be evaluated once:
+            EvaluateProperties(context, fillEntity, "max_instances", "radius", "random_seed", "grid_snapping", "grid_offset");
+
+            var maxInstances = (int)(fillEntity.GetNumericProperty("max_instances") ?? 0);
+            var radius = fillEntity.GetNumericProperty("radius") ?? 0;
+            var randomSeed = (int)(fillEntity.GetNumericProperty("random_seed") ?? 0);
+            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+
+            // TODO: Grid snapping! (snap to nearest multiple of specified grid, adjusted by offset)
+            //       Skip the current insert if it's now outside the fill-entity!
+            // TODO: If any component of the grid snapping vector is set to 0, then do not snap along that axis!
+            // TODO: Snap to grid in world-space, or in fill-entity space (which may be rotated when it's part of a template)?
+            var gridSnapping = fillEntity.GetNumericArrayProperty("grid_snapping") ?? new double[] { 1, 1, 1 };
+            var gridOffset = fillEntity.GetNumericArrayProperty("grid_offset") ?? new double[] { 0, 0, 0 };
+            // TODO: Angle settings for instances!
+
+
+            // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
+            // TODO: Also decide what to do if radius is 0 or lower!
+            for (int i = 0; i < maxInstances; i++)
+            {
+                var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
+                var insertionPoint = tetrahedron.GetRandomPoint(random);
+                // TODO: Check whether this point is far away enough from other instances!
+
+                var template = ResolveTemplate(
+                    context.EvaluateInterpolatedString(fillEntity["template_map"]),
+                    context.EvaluateInterpolatedString(fillEntity["template_name"]),
+                    context);
+                if (template == null)
+                    continue;   // TODO: LOG THIS!!!
+
+
+                // TODO: Determine angles and scale, based on the macro_fill entity settings!
+                var transform = new Transform(
+                    1,
+                    Matrix3x3.Identity, // TODO: world-aligned or fill-entity aligned!
+                    insertionPoint);
+
+                // Evaluating properties again for each instance allows for randomization:
+                var evaluatedProperties = fillEntity.Properties.ToDictionary(
+                    kv => context.EvaluateInterpolatedString(kv.Key),
+                    kv => context.EvaluateInterpolatedString(kv.Value));
+
+                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
+                CreateInstance(insertionContext);
+            }
         }
 
-        [EntityHandler(MacroEntity.Brush)]
-        private void HandleMacroBrushEntity(InstantiationContext context, Entity brushEntity)
+
+        private static void EvaluateProperties(InstantiationContext context, Entity entity, params string[] propertyNames)
         {
-            throw new NotImplementedException();
+            foreach (var name in propertyNames)
+            {
+                if (entity.Properties.TryGetValue(name, out var value))
+                    entity.Properties[name] = context.EvaluateInterpolatedString(value);
+            }
         }
 
-        [EntityHandler(MacroEntity.Script)]
-        private void HandleMacroScriptEntity(InstantiationContext context, Entity scriptEntity)
+        private static TElement TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)
         {
-            throw new NotImplementedException();
+            var lastElement = default(TElement);
+            foreach (var element in elements)
+            {
+                selection -= getWeight(element);
+                if (selection <= 0)
+                    return element;
+
+                lastElement = element;
+            }
+            return lastElement;
         }
     }
 }

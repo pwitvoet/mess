@@ -1,6 +1,7 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,6 +35,7 @@ namespace MESS.Macros
                 return entity.Brushes.FirstOrDefault(IsOriginBrush)?.BoundingBox.Center;
             }
         }
+
 
         /// <summary>
         /// Creates a copy of this brush, adjusted by the given offset. Ignores VIS-group and group relationships.
@@ -93,20 +95,28 @@ namespace MESS.Macros
         //       could that also be problematic in different situations?
         /// <summary>
         /// Creates a copy of this entity. The copy is scaled, rotated and translated,
-        /// and any expressions in its properties will be evaluated.
+        /// and by default any expressions in its properties will be evaluated.
         /// If it contains 'angles' and 'scale' properties, then these will be updated according to how the entity has been transformed.
         /// Ignores VIS-group and group relationships.
         /// </summary>
-        public static Entity Copy(this Entity entity,
-            InstantiationContext context)
+        public static Entity Copy(this Entity entity, InstantiationContext context, bool evaluateExpressions = true)
         {
             var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(context.Transform)));
 
-            foreach (var kv in entity.Properties)
-                copy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
+            if (evaluateExpressions)
+            {
+                foreach (var kv in entity.Properties)
+                    copy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
+            }
+            else
+            {
+                foreach (var kv in entity.Properties)
+                    copy.Properties[kv.Key] = kv.Value;
+            }
 
+            // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
             if (copy.Angles is Angles angles)
-                copy.Angles = (angles.ToMatrix() * context.Transform.Rotation).ToAngles();    // TODO: VERIFY ORDER OF ROTATION!!!
+                copy.Angles = (angles.ToMatrix() * context.Transform.Rotation).ToAngles();
 
             if (copy.Scale is double scale)
                 copy.Scale = scale * context.Transform.Scale;

@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formats\MapExtensions.cs" />
-    <Compile Include="Macros\EntityHandlerAttribute.cs" />
     <Compile Include="Macros\InstantiationContext.cs" />
     <Compile Include="Macros\MacroEntity.cs" />
     <Compile Include="Macros\MacroExpander.cs" />
@@ -53,6 +52,7 @@
     <Compile Include="Formats\RmfFormat.cs" />
     <Compile Include="Formats\StreamExtensions.cs" />
     <Compile Include="Macros\MapTemplate.cs" />
+    <Compile Include="Macros\PointDistributionExtensions.cs" />
     <Compile Include="Macros\RemovableContent.cs" />
     <Compile Include="MapFile.cs" />
     <Compile Include="Mapping\Brush.cs" />
@@ -70,6 +70,8 @@
     <Compile Include="Mathematics\Extensions.cs" />
     <Compile Include="Mathematics\Matrix3x3.cs" />
     <Compile Include="Mathematics\Spatial\Angles.cs" />
+    <Compile Include="Mathematics\Spatial\Tetrahedron.cs" />
+    <Compile Include="Mathematics\Spatial\Triangle.cs" />
     <Compile Include="Mathematics\Transform.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
