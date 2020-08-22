@@ -22,6 +22,11 @@ namespace MESS.Macros
         public int ID { get; }
 
         /// <summary>
+        /// The recursion depth of this context. The root context is at depth 0.
+        /// </summary>
+        public int RecursionDepth { get; }
+
+        /// <summary>
         /// The template that is being instantiated.
         /// </summary>
         public MapTemplate Template { get; }
@@ -73,6 +78,7 @@ namespace MESS.Macros
             RegisterContextFunctions();
 
             ID = GetRootContext()._nextID++;
+            RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
             CurrentWorkingDirectory = Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
             SubTemplates = GetNearestMapFileContext().Template.SubTemplates;

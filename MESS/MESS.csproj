@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandLine.cs" />
     <Compile Include="Formats\MapExtensions.cs" />
+    <Compile Include="Macros\ExpansionSettings.cs" />
     <Compile Include="Macros\InstantiationContext.cs" />
     <Compile Include="Macros\MacroEntity.cs" />
     <Compile Include="Macros\MacroExpander.cs" />

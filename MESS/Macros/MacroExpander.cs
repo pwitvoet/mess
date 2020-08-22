@@ -19,13 +19,13 @@ namespace MESS.Macros
         /// Loads the specified map file, expands any macro entities within, and returns the resulting map.
         /// The given path must be absolute.
         /// </summary>
-        public static Map ExpandMacros(string path)
+        public static Map ExpandMacros(string path, ExpansionSettings settings)
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
             // TODO: Map properties are currently not evaluated -- but it may be useful (and consistent!) to do so!
 
-            var expander = new MacroExpander();
+            var expander = new MacroExpander(settings);
             var mainTemplate = expander.GetMapTemplate(path);
             var context = new InstantiationContext(mainTemplate, insertionEntityProperties: mainTemplate.Map.Properties);
             expander.CreateInstance(context);
@@ -34,7 +34,16 @@ namespace MESS.Macros
         }
 
 
+        private ExpansionSettings Settings { get; }
+
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
+        private int _instanceCount = 0;
+
+
+        private MacroExpander(ExpansionSettings settings)
+        {
+            Settings = settings;
+        }
 
 
         /// <summary>
@@ -96,6 +105,14 @@ namespace MESS.Macros
         /// </summary>
         private void CreateInstance(InstantiationContext context)
         {
+            _instanceCount += 1;
+            if (_instanceCount > Settings.InstanceLimit)
+                throw new InvalidOperationException("Instance limit exceeded.");
+
+            if (context.RecursionDepth > Settings.RecursionLimit)
+                throw new InvalidOperationException("Recursion limit exceeded.");
+
+
             // Skip conditional contents whose removal condition is true:
             var excludedObjects = new HashSet<object>();
             foreach (var conditionalContent in context.Template.ConditionalContents)
