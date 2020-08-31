@@ -28,7 +28,22 @@ namespace MESS.Mathematics
             this.r33 = r33;
         }
 
-        public override string ToString() => $"{r11}, {r12}, {r13}\n{r21}, {r22}, {r23}\n{r31}, {r32}, {r33}";
+        public Matrix3x3(Vector3D forward, Vector3D left, Vector3D up)
+        {
+            r11 = forward.X;
+            r21 = forward.Y;
+            r31 = forward.Z;
+
+            r12 = left.X;
+            r22 = left.Y;
+            r32 = left.Z;
+
+            r13 = up.X;
+            r23 = up.Y;
+            r33 = up.Z;
+        }
+
+        public override string ToString() => $"(({r11}, {r12}, {r13}), ({r21}, {r22}, {r23}), ({r31}, {r32}, {r33}))";
 
 
         public static Matrix3x3 operator *(Matrix3x3 a, Matrix3x3 b)

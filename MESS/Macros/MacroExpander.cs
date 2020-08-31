@@ -84,7 +84,6 @@ namespace MESS.Macros
 
                 try
                 {
-                    // TODO: Add support for wildcard characters (but in filenames only?)!
                     // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
                     return GetMapTemplate(mapPath);
                 }
@@ -246,49 +245,86 @@ namespace MESS.Macros
             var candidateFaces = coverEntity.Brushes
                 .SelectMany(brush => brush.Faces)
                 .Where(face => face.TextureName.ToUpper() != "NULL")
-                .SelectMany(face => face.GetTriangleFan().Select(triangle => new { Triangle = triangle, Area = triangle.GetSurfaceArea() }))
+                .SelectMany(face => face.GetTriangleFan().Select(triangle => new {
+                    Triangle = triangle,
+                    Area = triangle.GetSurfaceArea(),
+                    Face = face }))
                 .ToArray();
             var totalArea = candidateFaces.Sum(candidate => candidate.Area);
 
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, coverEntity, "max_instances", "radius", "random_seed");
+            EvaluateProperties(context, coverEntity, "max_instances", "radius", "orientation", "random_seed");
 
-            var maxInstances = (int)(coverEntity.GetNumericProperty("max_instances") ?? 0);
-            var radius = coverEntity.GetNumericProperty("radius") ?? 0;
-            var randomSeed = (int)(coverEntity.GetNumericProperty("random_seed") ?? 0);
+            var maxInstances = coverEntity.GetIntegerProperty("max_instances") ?? 0;
+            var radius = (float)(coverEntity.GetNumericProperty("radius") ?? 0);
+            var orientation = (Orientation)(coverEntity.GetIntegerProperty("orientation") ?? 0);
+            var randomSeed = coverEntity.GetIntegerProperty("random_seed") ?? 0;
             var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
-
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
             // TODO: Also decide what to do if radius is 0 or lower!
+            var availableArea = new SphereCollection();
             for (int i = 0; i < maxInstances; i++)
             {
-                var triangle = TakeFromWeightedList(candidateFaces, random.NextDouble() * totalArea, candidate => candidate.Area).Triangle;
-                var insertionPoint = triangle.GetRandomPoint(random);
-                // TODO: Check whether this point is far away enough from other instances!
+                var selection = TakeFromWeightedList(candidateFaces, random.NextDouble() * totalArea, candidate => candidate.Area);
+                var insertionPoint = selection.Triangle.GetRandomPoint(random);
+                if (!availableArea.TryInsert(insertionPoint, radius))
+                    continue;
 
                 var template = ResolveTemplate(
                     context.EvaluateInterpolatedString(coverEntity["template_map"]),
                     context.EvaluateInterpolatedString(coverEntity["template_name"]),
                     context);
                 if (template == null)
-                    continue;   // TODO: LOG THIS!
-
-                // TODO: Determine angles and scale, based on the macro_cover entity settings!
-                var transform = new Transform(
-                    1,
-                    Matrix3x3.Identity, // TODO: world-aligned, face-aligned or texture-plane-aligned! And then take the angles property into account as well!
-                    insertionPoint);
+                    continue;
 
                 // Evaluating properties again for each instance allows for randomization:
                 var evaluatedProperties = coverEntity.Properties.ToDictionary(
                     kv => context.EvaluateInterpolatedString(kv.Key),
                     kv => context.EvaluateInterpolatedString(kv.Value));
 
+                var transform = GetTransform(insertionPoint, selection.Face, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
                 CreateInstance(insertionContext);
+            }
+
+
+            Transform GetTransform(Vector3D insertionPoint, Face face, Dictionary<string, string> evaluatedProperties)
+            {
+                var rotation = Matrix3x3.Identity;  // Global
+                switch (orientation)
+                {
+                    case Orientation.Local:
+                    {
+                        rotation = context.Transform.Rotation;
+                        break;
+                    }
+
+                    case Orientation.Face:
+                    {
+                        // TODO: Need current face -- and also a way to resolve what's 'forward'!
+                        // TODO: This is relative to the current (local) orientation!
+                        break;
+                    }
+
+                    case Orientation.Texture:
+                    {
+                        var up = face.TextureDownAxis.CrossProduct(face.TextureRightAxis).Normalized();
+                        var forward = face.TextureRightAxis.Normalized();
+                        var left = up.CrossProduct(forward);
+
+                        // TODO: Test whether this relative-to-local works correctly!
+                        rotation = new Matrix3x3(forward, left, up) * context.Transform.Rotation;
+                        break;
+                    }
+                }
+
+                var scale = evaluatedProperties.GetNumericProperty("scale") ?? 1;
+                var angles = (evaluatedProperties.GetAnglesProperty("angles") ?? new Angles()).ToMatrix();
+
+                return new Transform((float)scale, rotation * angles, insertionPoint);
             }
         }
 
@@ -306,11 +342,12 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, fillEntity, "max_instances", "radius", "random_seed", "grid_snapping", "grid_offset");
+            EvaluateProperties(context, fillEntity, "max_instances", "radius", "orientation", "random_seed", "grid_snapping", "grid_offset");
 
-            var maxInstances = (int)(fillEntity.GetNumericProperty("max_instances") ?? 0);
-            var radius = fillEntity.GetNumericProperty("radius") ?? 0;
-            var randomSeed = (int)(fillEntity.GetNumericProperty("random_seed") ?? 0);
+            var maxInstances = fillEntity.GetIntegerProperty("max_instances") ?? 0;
+            var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
+            var orientation = (Orientation)(fillEntity.GetIntegerProperty("orientation") ?? 0); // TODO: Only the first 2 orientations are valid!
+            var randomSeed = fillEntity.GetIntegerProperty("random_seed") ?? 0;
             var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
 
             // TODO: Grid snapping! (snap to nearest multiple of specified grid, adjusted by offset)
@@ -324,18 +361,21 @@ namespace MESS.Macros
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
             // TODO: Also decide what to do if radius is 0 or lower!
+            var availableArea = new SphereCollection();
             for (int i = 0; i < maxInstances; i++)
             {
                 var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
                 var insertionPoint = tetrahedron.GetRandomPoint(random);
-                // TODO: Check whether this point is far away enough from other instances!
+                // TODO: Snap to nearest grid point (take grid orientation into account!)
+                if (!availableArea.TryInsert(insertionPoint, radius))
+                    continue;
 
                 var template = ResolveTemplate(
                     context.EvaluateInterpolatedString(fillEntity["template_map"]),
                     context.EvaluateInterpolatedString(fillEntity["template_name"]),
                     context);
                 if (template == null)
-                    continue;   // TODO: LOG THIS!!!
+                    continue;
 
 
                 // TODO: Determine angles and scale, based on the macro_fill entity settings!

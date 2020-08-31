@@ -47,6 +47,7 @@
     <Compile Include="Formats\MapExtensions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LogLevel.cs" />
+    <Compile Include="Macros\Orientation.cs" />
     <Compile Include="Macros\ExpansionSettings.cs" />
     <Compile Include="Macros\InstantiationContext.cs" />
     <Compile Include="Macros\MacroEntity.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Macros\MapTemplate.cs" />
     <Compile Include="Macros\PointDistributionExtensions.cs" />
     <Compile Include="Macros\RemovableContent.cs" />
+    <Compile Include="Macros\SphereCollection.cs" />
     <Compile Include="MapFile.cs" />
     <Compile Include="Mapping\Brush.cs" />
     <Compile Include="Mapping\Camera.cs" />
