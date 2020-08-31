@@ -1,5 +1,4 @@
-﻿using MESS.Macros;
-using MESS.Mathematics.Spatial;
+﻿using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,25 +16,19 @@ namespace MESS.Mapping
 
         public string ClassName
         {
-            get => this["classname"];
-            set => this["classname"] = value;
+            get => Properties.GetStringProperty("classname");
+            set => Properties["classname"] = value;
         }
 
         public int Flags
         {
-            get => int.TryParse(this["spawnflags"], out var flags) ? flags : 0;
-            set => this["spawnflags"] = value.ToString();
+            get => Properties.GetIntegerProperty("spawnflags") ?? 0;
+            set => Properties["spawnflags"] = value.ToString();
         }
 
         public Vector3D Origin
         {
-            get
-            {
-                if (GetNumericArrayProperty("origin") is double[] array && array.Length == 3)
-                    return new Vector3D((float)array[0], (float)array[1], (float)array[2]);
-
-                return new Vector3D();
-            }
+            get => Properties.GetVector3DProperty("origin") ?? new Vector3D();
             set
             {
                 Properties["origin"] = $"{value.X} {value.Y} {value.Z}";
@@ -46,14 +39,7 @@ namespace MESS.Mapping
 
         public Angles? Angles
         {
-            get
-            {
-                // NOTE: Angles uses the order in which rotations are applied:
-                if (GetNumericArrayProperty("angles") is double[] array && array.Length == 3)
-                    return new Angles((float)array[2], (float)array[0], (float)array[1]);
-
-                return null;
-            }
+            get => Properties.GetAnglesProperty("angles");
             set
             {
                 if (value is Angles angles)
@@ -65,7 +51,7 @@ namespace MESS.Mapping
 
         public double? Scale
         {
-            get => GetNumericProperty("scale") is double scale ? scale : (double?)null;
+            get => Properties.GetNumericProperty("scale");
             set => Properties["scale"] = value.ToString();
         }
 
@@ -82,73 +68,12 @@ namespace MESS.Mapping
         }
 
 
-        // TODO: Use these instead of the indexer!
-        public double? GetNumericProperty(string propertyName)
-        {
-            if (Properties.TryGetValue(propertyName, out var stringValue) &&
-                double.TryParse(stringValue, out var value))
-                return value;
-
-            return null;
-        }
-
-        public double[] GetNumericArrayProperty(string propertyName)
-        {
-            if (Properties.TryGetValue(propertyName, out var stringValue) &&
-                TryParseVector(stringValue, out var array))
-                return array;
-
-            return null;
-        }
-
-        public string GetStringProperty(string propertyName)
-            => Properties.TryGetValue(propertyName, out var value) ? value : null;
-
-
         // TODO: Not sure about having both this and Properties, each with slightly different characteristics...
-        // TODO: Remove this (obsolete) in favor of the above methods?? TBD...
+        // TODO: Remove this (obsolete) in favor of the PropertyExtension methods?? TBD...
         public string this[string propertyName]
         {
             get => Properties.TryGetValue(propertyName, out var value) ? value : null;
             set => Properties[propertyName] = value;
-        }
-
-
-        public static object ParseProperty(string value)
-        {
-            if (value == null)
-                return null;
-
-            if (double.TryParse(value, out var number))
-                return number;
-
-            if (TryParseVector(value, out var vector))
-                return vector;
-
-            return value;
-        }
-
-        private static bool TryParseVector(string value, out double[] vector)
-        {
-            if (value == null)
-            {
-                vector = null;
-                return false;
-            }
-
-            var parts = value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            vector = new double[parts.Length];
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (!double.TryParse(parts[i], out var number))
-                {
-                    vector = null;
-                    return false;
-                }
-
-                vector[i] = number;
-            }
-            return true;
         }
     }
 }

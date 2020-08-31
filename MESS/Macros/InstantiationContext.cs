@@ -74,7 +74,7 @@ namespace MESS.Macros
             _parentContext = parentContext;
             _evaluationContext = new EvaluationContext(insertionEntityProperties?.ToDictionary(
                 kv => kv.Key,
-                kv => Entity.ParseProperty(kv.Value)));
+                kv => PropertyExtensions.ParseProperty(kv.Value)));
             RegisterContextFunctions();
 
             ID = GetRootContext()._nextID++;
