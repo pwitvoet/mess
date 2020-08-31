@@ -19,14 +19,15 @@ namespace MESS.Macros
         /// Loads the specified map file, expands any macro entities within, and returns the resulting map.
         /// The given path must be absolute.
         /// </summary>
-        public static Map ExpandMacros(string path, ExpansionSettings settings)
+        public static Map ExpandMacros(string path, ExpansionSettings settings, Logger logger)
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
             // TODO: Map properties are currently not evaluated -- but it may be useful (and consistent!) to do so!
 
-            var expander = new MacroExpander(settings);
+            var expander = new MacroExpander(settings, logger);
             var mainTemplate = expander.GetMapTemplate(path);
+
             var context = new InstantiationContext(mainTemplate, insertionEntityProperties: mainTemplate.Map.Properties);
             expander.CreateInstance(context);
 
@@ -35,14 +36,16 @@ namespace MESS.Macros
 
 
         private ExpansionSettings Settings { get; }
+        private Logger Logger { get; }
 
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
 
 
-        private MacroExpander(ExpansionSettings settings)
+        private MacroExpander(ExpansionSettings settings, Logger logger)
         {
             Settings = settings;
+            Logger = logger;
         }
 
 
@@ -54,35 +57,61 @@ namespace MESS.Macros
             path = Path.GetFullPath(path);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
+                Logger.Info($"Loading map template '{path}' from file.");
                 template = MapTemplate.Load(path);
                 _mapTemplateCache[path] = template;
+            }
+            else
+            {
+                Logger.Verbose($"Loading map template '{path}' from cache.");
             }
             return template;
         }
 
         /// <summary>
         /// Resolves a template by either loading it from a file or by picking a sub-template from the current context.
+        /// Logs a warning and returns null if the specified template could not be resolved.
         /// </summary>
         private MapTemplate ResolveTemplate(string mapPath, string templateName, InstantiationContext context)
         {
             if (mapPath != null)
             {
+                Logger.Verbose($"Resolving map template '{mapPath}'.");
+
                 // We support both absolute and relative paths. Relative paths are relative to the map that a template is being inserted into.
                 if (!Path.IsPathRooted(mapPath))
                     mapPath = Path.Combine(context.CurrentWorkingDirectory, mapPath);
 
-                // TODO: Add support for wildcard characters (but in filenames only?)!
-                // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
-                return GetMapTemplate(mapPath);
+                try
+                {
+                    // TODO: Add support for wildcard characters (but in filenames only?)!
+                    // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
+                    return GetMapTemplate(mapPath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"Failed to load map template '{mapPath}'.");
+                    return null;
+                }
             }
             else if (templateName != null)
             {
+                Logger.Verbose($"Resolving sub-template '{templateName}'.");
+
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
                     .Where(subTemplate => context.EvaluateInterpolatedString(subTemplate.Name) == templateName)
                     .Select(subTemplate => new { SubTemplate = subTemplate, Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), out var weight) ? weight : 1 })
                     .ToArray();
+
+                if (matchingSubTemplates.Length == 0)
+                {
+                    Logger.Warning($"No sub-templates found with the name '{templateName}'.");
+                    return null;
+                }
+
+                Logger.Verbose($"{matchingSubTemplates.Length} sub-templates found with the name '{templateName}'.");
 
                 // TODO: Check whether this can make randomness too 'unstable' (e.g. a single change in one entity affecting random seeding/behavior of others)!
                 var selection = context.GetRandomDouble(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
@@ -105,6 +134,8 @@ namespace MESS.Macros
         /// </summary>
         private void CreateInstance(InstantiationContext context)
         {
+            Logger.Verbose($"Creating instance #{context.ID} at {context.Transform}.");
+
             _instanceCount += 1;
             if (_instanceCount > Settings.InstanceLimit)
                 throw new InvalidOperationException("Instance limit exceeded.");
@@ -121,8 +152,16 @@ namespace MESS.Macros
                 //       We'd then have to parse the result and check whether it's a 'truthy' value...
                 var removal = context.EvaluateExpression(conditionalContent.RemovalCondition);
                 if (Interpreter.IsTrue(removal))
+                {
+                    Logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true, excluding {conditionalContent.Contents.Count} objects.");
                     excludedObjects.UnionWith(conditionalContent.Contents);
+                }
+                else
+                {
+                    Logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is not true, keeping {conditionalContent.Contents.Count} objects.");
+                }
             }
+            Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
             // Copy entities:
             foreach (var entity in context.Template.Map.Entities)
@@ -176,11 +215,12 @@ namespace MESS.Macros
 
         private void HandleMacroInsertEntity(InstantiationContext context, Entity insertEntity)
         {
+            Logger.Verbose($"Processing a {insertEntity.ClassName} entity for instance #{context.ID}.");
+
             // Resolve the template:
             var template = ResolveTemplate(insertEntity["template_map"], insertEntity["template_name"], context);
             if (template == null)
-                throw new Exception("TODO: Unable to resolve template! LOG THIS AND SKIP???");   // TODO: Fail, or ignore? --> better, LOG THIS!!!
-
+                return;
 
             // TODO: Verify that this works correctly even when the macro_insert entity does not originally contain
             //       'angles' and 'scale' properties!
@@ -199,6 +239,9 @@ namespace MESS.Macros
 
         private void HandleMacroCoverEntity(InstantiationContext context, Entity coverEntity)
         {
+            Logger.Verbose($"Processing a {coverEntity.ClassName} entity for instance #{context.ID}.");
+
+            // TODO: Also ignore other 'special' textures?
             // Triangulate all non-NULL faces, creating a list of triangles weighted by surface area:
             var candidateFaces = coverEntity.Brushes
                 .SelectMany(brush => brush.Faces)
@@ -251,6 +294,8 @@ namespace MESS.Macros
 
         private void HandleMacroFillEntity(InstantiationContext context, Entity fillEntity)
         {
+            Logger.Verbose($"Processing a {fillEntity.ClassName} entity for instance #{context.ID}.");
+
             // Split all brushes into tetrahedrons, creating a list of simplexes weighted by volume:
             var candidateVolumes = fillEntity.Brushes
                 .SelectMany(brush => brush.GetTetrahedrons())

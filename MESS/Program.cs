@@ -16,35 +16,43 @@ namespace MESS
     /// </summary>
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             var settings = new ExpansionSettings();
             var commandLineParser = GetCommandLineParser(settings);
 
             try
             {
-                ShowToolInfo();
-
                 commandLineParser.Parse(args);
 
-                Console.WriteLine("----- BEGIN MESS -----");
-                Console.WriteLine($"Command line: {Environment.CommandLine}");
-                Console.WriteLine($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                using (var logger = new Logger(new StreamWriter(Console.OpenStandardOutput()), settings.LogLevel))
+                {
+                    if (settings.LogLevel != LogLevel.Off)
+                    {
+                        ShowToolInfo();
+                        Console.WriteLine("----- BEGIN MESS -----");
+                        Console.WriteLine($"Command line: {Environment.CommandLine}");
+                        Console.WriteLine($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                    }
 
-                try
-                {
-                    ProcessMacroEntities(settings);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error: {ex.GetType().Name}: {ex.Message}.");
-                    // TODO: Show more error details here?
+                    try
+                    {
+                        ProcessMacroEntities(settings, logger);
+                        return 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error("Failed to process macro entities", ex);
+                        // TODO: Show more error details here?
+                        return -1;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}.");
+                Console.WriteLine($"Failed to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
                 ShowHelp(commandLineParser);
+                return -1;
             }
         }
 
@@ -65,10 +73,10 @@ namespace MESS
                    s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                    $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
                .Argument(
-                   s => { settings.InputPath = s; },
+                   s => { settings.InputPath = Path.GetFullPath(s); },
                    "Input map file.")
                .OptionalArgument(
-                   s => { settings.OutputPath = s; },
+                   s => { settings.OutputPath = Path.GetFullPath(s); },
                    "Output map file.");
         }
 
@@ -83,7 +91,7 @@ namespace MESS
                 commandLine.ShowDescriptions(output);
         }
 
-        private static void ProcessMacroEntities(ExpansionSettings settings)
+        private static void ProcessMacroEntities(ExpansionSettings settings, Logger logger)
         {
             // Default to .map, if no extension was specified (unless there's an extensionless file that matches):
             var inputPath = settings.InputPath;
@@ -91,13 +99,18 @@ namespace MESS
                 inputPath = Path.ChangeExtension(settings.InputPath, ".map");
 
             if (settings.OutputPath == null)
-                settings.OutputPath = settings.InputPath;
+                settings.OutputPath = inputPath;
 
-            var expandedMap = MacroExpander.ExpandMacros(inputPath, settings);
+            logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
+
+            var expandedMap = MacroExpander.ExpandMacros(inputPath, settings, logger);
 
             // TODO: Create a backup if the target file already exists! -- how many backups to make? -- make a setting for this behavior?
-            using (var file = File.Create(settings.OutputPath ?? settings.InputPath))
+            using (var file = File.Create(settings.OutputPath))
+            {
+                logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
                 MapFormat.Save(expandedMap, file);
+            }
         }
     }
 }

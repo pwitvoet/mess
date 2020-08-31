@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
     <Compile Include="Formats\MapExtensions.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="LogLevel.cs" />
     <Compile Include="Macros\ExpansionSettings.cs" />
     <Compile Include="Macros\InstantiationContext.cs" />
     <Compile Include="Macros\MacroEntity.cs" />
