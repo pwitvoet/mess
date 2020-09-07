@@ -262,10 +262,11 @@ namespace MESS.Macros
             var orientation = (Orientation)(coverEntity.GetIntegerProperty("instance_orientation") ?? 0);
             var randomSeed = coverEntity.GetIntegerProperty("random_seed") ?? 0;
             var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty("brush_behavior") ?? 0);
-            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
             // TODO: Also decide what to do if radius is 0 or lower!
+            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
             var availableArea = new SphereCollection();
             for (int i = 0; i < maxInstances; i++)
             {
@@ -373,7 +374,7 @@ namespace MESS.Macros
             var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
             var orientation = (Orientation)(fillEntity.GetIntegerProperty("instance_orientation") ?? 0); // TODO: Only global & local!
             var randomSeed = fillEntity.GetIntegerProperty("random_seed") ?? 0;
-            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+            var fillMode = (FillMode)(fillEntity.GetIntegerProperty("fill_mode") ?? 0);
 
             // Grid snapping settings:
             var gridOrientation = (Orientation)(fillEntity.GetIntegerProperty("grid_orientation") ?? 0);    // TODO: Only global & local!
@@ -396,28 +397,69 @@ namespace MESS.Macros
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
             // TODO: Also decide what to do if radius is 0 or lower!
-            var availableArea = new SphereCollection();
-            for (int i = 0; i < maxInstances; i++)
+            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+            switch (fillMode)
             {
-                var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
-                var insertionPoint = tetrahedron.GetRandomPoint(random);
-                if (hasGridSnapping)
+                default:
+                case FillMode.Random:
+                case FillMode.RandomSnappedToGrid:
                 {
-                    // NOTE: Grid snapping can produce a point that's outside the fill area. Those points will be discarded:
-                    insertionPoint = SnapToGrid(insertionPoint);
-                    if (!fillEntity.Brushes.Any(brush => brush.Contains(insertionPoint)))
-                        continue;
+                    // Create instances at random (grid) points:
+                    var availableArea = new SphereCollection();
+                    for (int i = 0; i < maxInstances; i++)
+                    {
+                        var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
+                        var insertionPoint = tetrahedron.GetRandomPoint(random);
+                        if (fillMode == FillMode.RandomSnappedToGrid && hasGridSnapping)
+                        {
+                            // NOTE: Grid snapping can produce a point that's outside the fill area. Those points will be discarded:
+                            insertionPoint = SnapToGrid(insertionPoint, gridGranularity);
+                            if (!fillEntity.Brushes.Any(brush => brush.Contains(insertionPoint)))
+                                continue;
+                        }
+
+                        if (!availableArea.TryInsert(insertionPoint, radius))
+                            continue;
+
+                        CreateInstanceAtPoint(insertionPoint);
+                    }
+                    break;
                 }
 
-                if (!availableArea.TryInsert(insertionPoint, radius))
-                    continue;
+                case FillMode.AllGridPoints:
+                {
+                    // Create an instance at every grid point:
+                    var cellSize = new Vector3D(Math.Max(1, gridGranularity.X), Math.Max(1, gridGranularity.Y), Math.Max(1, gridGranularity.Z));
+                    var min = SnapToGrid(fillEntity.BoundingBox.Min, cellSize);
+                    var max = SnapToGrid(fillEntity.BoundingBox.Max, cellSize);
 
+                    for (float x = min.X; x <= max.X; x += cellSize.X)
+                    {
+                        for (float y = min.Y; y <= max.Y; y += cellSize.Y)
+                        {
+                            for (float z = min.Z; z <= max.Z; z += cellSize.Z)
+                            {
+                                var insertionPoint = new Vector3D(x, y, z);
+                                if (!fillEntity.Brushes.Any(brush => brush.Contains(insertionPoint)))
+                                    continue;
+
+                                CreateInstanceAtPoint(insertionPoint);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+
+            void CreateInstanceAtPoint(Vector3D insertionPoint)
+            {
                 var template = ResolveTemplate(
                     context.EvaluateInterpolatedString(fillEntity["template_map"]),
                     context.EvaluateInterpolatedString(fillEntity["template_name"]),
                     context);
                 if (template == null)
-                    continue;
+                    return;
 
                 // Evaluating properties again for each instance allows for randomization:
                 var evaluatedProperties = fillEntity.Properties.ToDictionary(
@@ -428,7 +470,6 @@ namespace MESS.Macros
                 var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
                 CreateInstance(insertionContext);
             }
-
 
             Transform GetTransform(Vector3D insertionPoint, Dictionary<string, string> evaluatedProperties)
             {
@@ -442,11 +483,17 @@ namespace MESS.Macros
                 return new Transform((float)scale, rotation * angles, insertionPoint);
             }
 
-            Vector3D SnapToGrid(Vector3D point)
+            Vector3D SnapToGrid(Vector3D point, Vector3D cellSize)
             {
-                if (gridGranularity.X > 0) point.X = gridOrigin.X + SnapToNearest(point.X - gridOrigin.X, gridGranularity.X);
-                if (gridGranularity.Y > 0) point.Y = gridOrigin.Y + SnapToNearest(point.Y - gridOrigin.Y, gridGranularity.Y);
-                if (gridGranularity.Z > 0) point.Z = gridOrigin.Z + SnapToNearest(point.Z - gridOrigin.Z, gridGranularity.Z);
+                if (cellSize.X > 0)
+                    point.X = gridOrigin.X + SnapToNearest(point.X - gridOrigin.X, cellSize.X);
+
+                if (cellSize.Y > 0)
+                    point.Y = gridOrigin.Y + SnapToNearest(point.Y - gridOrigin.Y, cellSize.Y);
+
+                if (cellSize.Z > 0)
+                    point.Z = gridOrigin.Z + SnapToNearest(point.Z - gridOrigin.Z, cellSize.Z);
+
                 return point;
 
 

@@ -48,6 +48,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="Macros\CoverBrushBehavior.cs" />
+    <Compile Include="Macros\FillMode.cs" />
     <Compile Include="Macros\Orientation.cs" />
     <Compile Include="Macros\ExpansionSettings.cs" />
     <Compile Include="Macros\InstantiationContext.cs" />
