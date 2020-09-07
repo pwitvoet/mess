@@ -351,6 +351,8 @@ namespace MESS.Macros
             }
         }
 
+        // TODO: Check for invalid settings values (invalid enums, missing or wrong data type, negative numbers, etc.)!
+        //       And log those as warnings!
         private void HandleMacroFillEntity(InstantiationContext context, Entity fillEntity)
         {
             Logger.Verbose($"Processing a {fillEntity.ClassName} entity for instance #{context.ID}.");
@@ -365,21 +367,31 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, fillEntity, "max_instances", "radius", "orientation", "random_seed", "grid_snapping", "grid_offset");
+            EvaluateProperties(context, fillEntity, "max_instances", "radius", "instance_orientation", "random_seed", "grid_orientation", "grid_granularity");
 
             var maxInstances = fillEntity.GetIntegerProperty("max_instances") ?? 0;
             var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
-            var orientation = (Orientation)(fillEntity.GetIntegerProperty("orientation") ?? 0); // TODO: Only the first 2 orientations are valid!
+            var orientation = (Orientation)(fillEntity.GetIntegerProperty("instance_orientation") ?? 0); // TODO: Only global & local!
             var randomSeed = fillEntity.GetIntegerProperty("random_seed") ?? 0;
             var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
 
-            // TODO: Grid snapping! (snap to nearest multiple of specified grid, adjusted by offset)
-            //       Skip the current insert if it's now outside the fill-entity!
-            // TODO: If any component of the grid snapping vector is set to 0, then do not snap along that axis!
-            // TODO: Snap to grid in world-space, or in fill-entity space (which may be rotated when it's part of a template)?
-            var gridSnapping = fillEntity.GetNumericArrayProperty("grid_snapping") ?? new double[] { 1, 1, 1 };
-            var gridOffset = fillEntity.GetNumericArrayProperty("grid_offset") ?? new double[] { 0, 0, 0 };
-            // TODO: Angle settings for instances!
+            // Grid snapping settings:
+            var gridOrientation = (Orientation)(fillEntity.GetIntegerProperty("grid_orientation") ?? 0);    // TODO: Only global & local!
+            var gridOrigin = fillEntity.GetOrigin() ?? new Vector3D();  // TODO: For local grid orientation, pick the insertion point of the current context as fallback!!!
+
+            // NOTE: A granularity of 0 (or lower) will disable snapping along that axis.
+            var gridGranularity = new Vector3D();
+            if (fillEntity.GetNumericArrayProperty("grid_granularity") is double[] granularityArray)
+            {
+                if (granularityArray.Length == 1)
+                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[0], (float)granularityArray[0]);
+                else if (granularityArray.Length == 2)
+                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], 0);
+                else
+                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], (float)granularityArray[2]);
+            }
+
+            var hasGridSnapping = gridGranularity.X > 0 || gridGranularity.Y > 0 || gridGranularity.Z > 0;
 
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
@@ -389,7 +401,14 @@ namespace MESS.Macros
             {
                 var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
                 var insertionPoint = tetrahedron.GetRandomPoint(random);
-                // TODO: Snap to nearest grid point (take grid orientation into account!)
+                if (hasGridSnapping)
+                {
+                    // NOTE: Grid snapping can produce a point that's outside the fill area. Those points will be discarded:
+                    insertionPoint = SnapToGrid(insertionPoint);
+                    if (!fillEntity.Brushes.Any(brush => brush.Contains(insertionPoint)))
+                        continue;
+                }
+
                 if (!availableArea.TryInsert(insertionPoint, radius))
                     continue;
 
@@ -400,20 +419,45 @@ namespace MESS.Macros
                 if (template == null)
                     continue;
 
-
-                // TODO: Determine angles and scale, based on the macro_fill entity settings!
-                var transform = new Transform(
-                    1,
-                    Matrix3x3.Identity, // TODO: world-aligned or fill-entity aligned!
-                    insertionPoint);
-
                 // Evaluating properties again for each instance allows for randomization:
                 var evaluatedProperties = fillEntity.Properties.ToDictionary(
                     kv => context.EvaluateInterpolatedString(kv.Key),
                     kv => context.EvaluateInterpolatedString(kv.Value));
 
+                var transform = GetTransform(insertionPoint, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
                 CreateInstance(insertionContext);
+            }
+
+
+            Transform GetTransform(Vector3D insertionPoint, Dictionary<string, string> evaluatedProperties)
+            {
+                var rotation = Matrix3x3.Identity;  // Global (macro_fill only supports global and local orientations)
+                if (orientation == Orientation.Local)
+                    rotation = context.Transform.Rotation;
+
+                var scale = evaluatedProperties.GetNumericProperty("instance_scale") ?? 1;
+                var angles = (evaluatedProperties.GetAnglesProperty("instance_angles") ?? new Angles()).ToMatrix();
+
+                return new Transform((float)scale, rotation * angles, insertionPoint);
+            }
+
+            Vector3D SnapToGrid(Vector3D point)
+            {
+                if (gridGranularity.X > 0) point.X = gridOrigin.X + SnapToNearest(point.X - gridOrigin.X, gridGranularity.X);
+                if (gridGranularity.Y > 0) point.Y = gridOrigin.Y + SnapToNearest(point.Y - gridOrigin.Y, gridGranularity.Y);
+                if (gridGranularity.Z > 0) point.Z = gridOrigin.Z + SnapToNearest(point.Z - gridOrigin.Z, gridGranularity.Z);
+                return point;
+
+
+                float SnapToNearest(float value, float spacing)
+                {
+                    var f = value / spacing;
+                    if (f - Math.Floor(f) < 0.5f)
+                        return (float)(Math.Floor(f) * spacing);
+                    else
+                        return (float)(Math.Ceiling(f) * spacing);
+                }
             }
         }
 
