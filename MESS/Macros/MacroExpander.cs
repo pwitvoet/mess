@@ -255,12 +255,13 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, coverEntity, "max_instances", "radius", "orientation", "random_seed");
+            EvaluateProperties(context, coverEntity, "max_instances", "radius", "instance_orientation", "random_seed", "brush_behavior");
 
             var maxInstances = coverEntity.GetIntegerProperty("max_instances") ?? 0;
             var radius = (float)(coverEntity.GetNumericProperty("radius") ?? 0);
-            var orientation = (Orientation)(coverEntity.GetIntegerProperty("orientation") ?? 0);
+            var orientation = (Orientation)(coverEntity.GetIntegerProperty("instance_orientation") ?? 0);
             var randomSeed = coverEntity.GetIntegerProperty("random_seed") ?? 0;
+            var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty("brush_behavior") ?? 0);
             var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
 
             // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
@@ -290,6 +291,24 @@ namespace MESS.Macros
                 CreateInstance(insertionContext);
             }
 
+            switch (brushBehavior)
+            {
+                default:
+                case CoverBrushBehavior.Remove:
+                    break;
+
+                case CoverBrushBehavior.WorldGeometry:
+                    foreach (var brush in coverEntity.Brushes)
+                        context.OutputMap.WorldGeometry.Add(brush.Copy(new Vector3D()));
+                    break;
+
+                case CoverBrushBehavior.FuncDetail:
+                    var funcDetail = new Entity(coverEntity.Brushes.Select(brush => brush.Copy(new Vector3D())));
+                    funcDetail.ClassName = "func_detail";
+                    context.OutputMap.Entities.Add(funcDetail);
+                    break;
+            }
+
 
             Transform GetTransform(Vector3D insertionPoint, Face face, Dictionary<string, string> evaluatedProperties)
             {
@@ -304,25 +323,29 @@ namespace MESS.Macros
 
                     case Orientation.Face:
                     {
-                        // TODO: Need current face -- and also a way to resolve what's 'forward'!
-                        // TODO: This is relative to the current (local) orientation!
+                        // NOTE: This fails if the texture plane is perpendicular to the current surface:
+                        // This uses the face's normal to determine what's up, but because a face does not have a direction,
+                        // we'll use the texture alignment to determine what's forwards and left:
+                        var up = face.Plane.Normal;
+                        var left = up.CrossProduct(face.TextureRightAxis).Normalized();
+                        var forward = left.CrossProduct(up);
+                        rotation = new Matrix3x3(forward, left, up);
                         break;
                     }
 
                     case Orientation.Texture:
                     {
+                        // This uses the texture plane to determine up, forwards and left:
                         var up = face.TextureDownAxis.CrossProduct(face.TextureRightAxis).Normalized();
                         var forward = face.TextureRightAxis.Normalized();
                         var left = up.CrossProduct(forward);
-
-                        // TODO: Test whether this relative-to-local works correctly!
-                        rotation = new Matrix3x3(forward, left, up) * context.Transform.Rotation;
+                        rotation = new Matrix3x3(forward, left, up);
                         break;
                     }
                 }
 
-                var scale = evaluatedProperties.GetNumericProperty("scale") ?? 1;
-                var angles = (evaluatedProperties.GetAnglesProperty("angles") ?? new Angles()).ToMatrix();
+                var scale = evaluatedProperties.GetNumericProperty("instance_scale") ?? 1;
+                var angles = (evaluatedProperties.GetAnglesProperty("instance_angles") ?? new Angles()).ToMatrix();
 
                 return new Transform((float)scale, rotation * angles, insertionPoint);
             }
