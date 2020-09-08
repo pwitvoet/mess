@@ -202,7 +202,11 @@ namespace MESS.Macros
                     HandleMacroFillEntity(context, entity.Copy(context, evaluateExpressions: false));
                     break;
 
-                //case MacroEntity.Brush:
+                case MacroEntity.Brush:
+                    // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
+                    HandleMacroBrushEntity(context, entity.Copy(context));
+                    break;
+
                 //case MacroEntity.Script:
 
                 default:
@@ -504,6 +508,70 @@ namespace MESS.Macros
                         return (float)(Math.Floor(f) * spacing);
                     else
                         return (float)(Math.Ceiling(f) * spacing);
+                }
+            }
+        }
+
+        private void HandleMacroBrushEntity(InstantiationContext context, Entity brushEntity)
+        {
+            Logger.Verbose($"Processing a {brushEntity.ClassName} entity for instance #{context.ID}.");
+
+            var template = ResolveTemplate(brushEntity["template_map"], brushEntity["template_name"], context);
+            if (template == null)
+                return;
+
+            // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
+            // based on the world brushes and brush entities in the template. Another way of looking at it is
+            // that the brushes and entities in the template take on the 'shape' of this macro_brush.
+
+            foreach (var templateBrush in template.Map.WorldGeometry)
+            {
+                // Discard world brushes with multiple textures:
+                if (templateBrush.Faces.Select(face => face.TextureName).Distinct().Count() != 1)
+                {
+                    Logger.Warning($"{brushEntity.ClassName} encountered a template brush with multiple textures. No copy will be made for this brush.");
+                    continue;
+                }
+
+                var textureName = templateBrush.Faces[0].TextureName;
+                foreach (var copy in CopyBrushes(textureName))
+                    context.OutputMap.WorldGeometry.Add(copy);
+            }
+
+            foreach (var templateEntity in template.Map.Entities)
+            {
+                if (templateEntity.IsPointBased)
+                    continue;
+
+                if (templateEntity.Brushes.SelectMany(brush => brush.Faces).Select(face => face.TextureName).Distinct().Count() != 1)
+                {
+                    Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
+                    continue;
+                }
+
+                var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
+                var entityCopy = new Entity(CopyBrushes(textureName));
+                foreach (var kv in templateEntity.Properties)
+                    entityCopy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
+
+                context.OutputMap.Entities.Add(entityCopy);
+            }
+
+
+            IEnumerable<Brush> CopyBrushes(string textureName)
+            {
+                // Keep the original textures if the template brush is covered with 'NULL':
+                var applyTexture = textureName.ToUpperInvariant() != "NULL";
+
+                foreach (var brush in brushEntity.Brushes)
+                {
+                    var copy = brush.Copy(new Vector3D());
+                    if (applyTexture)
+                    {
+                        foreach (var face in copy.Faces)
+                            face.TextureName = textureName;
+                    }
+                    yield return copy;
                 }
             }
         }
