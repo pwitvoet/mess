@@ -44,8 +44,9 @@ namespace MESS.Macros
 
         /// <summary>
         /// <para>"macro_brush"</para>
-        /// <para>This brush entity is used to replace a brush with one or more brushes or brush entities.</para>
-        /// <para>TODO: THIS ENTITY IS STILL IN THE PLANNING PHASE!</para>
+        /// <para>This brush entity is used to replace a brush with one or more retextured brushes or brush entities.</para>
+        /// <para>Only template brushes that are covered with a single texture are taken into account.
+        /// The 'NULL' texture can be used to prevent retexturing.</para>
         /// </summary>
         public const string Brush = "macro_brush";
 

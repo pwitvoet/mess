@@ -520,6 +520,7 @@ namespace MESS.Macros
             if (template == null)
                 return;
 
+
             // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
             // based on the world brushes and brush entities in the template. Another way of looking at it is
             // that the brushes and entities in the template take on the 'shape' of this macro_brush.
@@ -534,7 +535,7 @@ namespace MESS.Macros
                 }
 
                 var textureName = templateBrush.Faces[0].TextureName;
-                foreach (var copy in CopyBrushes(textureName))
+                foreach (var copy in CopyBrushes(textureName, excludeOriginBrushes: true))
                     context.OutputMap.WorldGeometry.Add(copy);
             }
 
@@ -543,14 +544,21 @@ namespace MESS.Macros
                 if (templateEntity.IsPointBased)
                     continue;
 
-                if (templateEntity.Brushes.SelectMany(brush => brush.Faces).Select(face => face.TextureName).Distinct().Count() != 1)
+                // Origin brushes are only copied if the template entity also contains an origin brush.
+                var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
+                var templateTextureNames = templateEntity.Brushes
+                    .Where(brush => !brush.IsOriginBrush())
+                    .SelectMany(brush => brush.Faces)
+                    .Select(face => face.TextureName)
+                    .Distinct();
+                if (templateTextureNames.Count() != 1)
                 {
                     Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
                     continue;
                 }
 
                 var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
-                var entityCopy = new Entity(CopyBrushes(textureName));
+                var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
                 foreach (var kv in templateEntity.Properties)
                     entityCopy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
 
@@ -558,15 +566,18 @@ namespace MESS.Macros
             }
 
 
-            IEnumerable<Brush> CopyBrushes(string textureName)
+            IEnumerable<Brush> CopyBrushes(string textureName, bool excludeOriginBrushes = false)
             {
                 // Keep the original textures if the template brush is covered with 'NULL':
-                var applyTexture = textureName.ToUpperInvariant() != "NULL";
+                var applyTexture = textureName.ToUpper() != "NULL";
 
                 foreach (var brush in brushEntity.Brushes)
                 {
+                    if (excludeOriginBrushes && brush.IsOriginBrush())
+                        continue;
+
                     var copy = brush.Copy(new Vector3D());
-                    if (applyTexture)
+                    if (applyTexture && !brush.IsOriginBrush())
                     {
                         foreach (var face in copy.Faces)
                             face.TextureName = textureName;
