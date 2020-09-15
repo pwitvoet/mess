@@ -185,36 +185,36 @@ namespace MESS.Macros
         }
 
 
-        private void HandleEntity(InstantiationContext context, Entity entity)
+        private void HandleEntity(InstantiationContext context, Entity entity, bool applyTransform = true)
         {
             switch (entity.ClassName)
             {
                 case MacroEntity.Insert:
                     // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
                     //       to ensure that transformation always works correctly?
-                    HandleMacroInsertEntity(context, entity.Copy(context));
+                    HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform));
                     break;
 
                 case MacroEntity.Cover:
                     // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
-                    HandleMacroCoverEntity(context, entity.Copy(context, evaluateExpressions: false));
+                    HandleMacroCoverEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
                     break;
 
                 case MacroEntity.Fill:
                     // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
-                    HandleMacroFillEntity(context, entity.Copy(context, evaluateExpressions: false));
+                    HandleMacroFillEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
                     break;
 
                 case MacroEntity.Brush:
                     // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
-                    HandleMacroBrushEntity(context, entity.Copy(context));
+                    HandleMacroBrushEntity(context, entity.Copy(context, applyTransform: applyTransform));
                     break;
 
                 //case MacroEntity.Script:
 
                 default:
                     // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                    context.OutputMap.Entities.Add(entity.Copy(context));
+                    context.OutputMap.Entities.Add(entity.Copy(context, applyTransform: applyTransform));
                     break;
             }
         }
@@ -562,10 +562,15 @@ namespace MESS.Macros
 
                 var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
                 var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
-                foreach (var kv in templateEntity.Properties)
-                    entityCopy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
 
-                context.OutputMap.Entities.Add(entityCopy);
+                // Use the current transform - macro_brushes do not support angles/scale:
+                var insertionContext = new InstantiationContext(template, context.Transform, brushEntity.Properties, context);
+                foreach (var kv in templateEntity.Properties)
+                    entityCopy.Properties[insertionContext.EvaluateInterpolatedString(kv.Key)] = insertionContext.EvaluateInterpolatedString(kv.Value);
+
+
+                // The copy already has its final orientation, so we don't want it to be transformed again:
+                HandleEntity(insertionContext, entityCopy, applyTransform: false);
             }
 
 

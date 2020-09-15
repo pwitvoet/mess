@@ -99,9 +99,10 @@ namespace MESS.Macros
         /// If it contains 'angles' and 'scale' properties, then these will be updated according to how the entity has been transformed.
         /// Ignores VIS-group and group relationships.
         /// </summary>
-        public static Entity Copy(this Entity entity, InstantiationContext context, bool evaluateExpressions = true)
+        public static Entity Copy(this Entity entity, InstantiationContext context, bool applyTransform = true, bool evaluateExpressions = true)
         {
-            var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(context.Transform)));
+            var transform = applyTransform ? context.Transform : Transform.Identity;
+            var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(transform)));
 
             if (evaluateExpressions)
             {
@@ -116,15 +117,18 @@ namespace MESS.Macros
                     copy.Properties[kv.Key] = kv.Value;
             }
 
-            // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
-            if (copy.Angles is Angles angles)
-                copy.Angles = (angles.ToMatrix() * context.Transform.Rotation).ToAngles();
+            if (applyTransform)
+            {
+                // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
+                if (copy.Angles is Angles angles)
+                    copy.Angles = (angles.ToMatrix() * context.Transform.Rotation).ToAngles();
 
-            if (copy.Scale is double scale)
-                copy.Scale = scale * context.Transform.Scale;
+                if (copy.Scale is double scale)
+                    copy.Scale = scale * context.Transform.Scale;
 
-            if (copy.IsPointBased)
-                copy.Origin = ApplyTransform(copy.Origin, context.Transform);
+                if (copy.IsPointBased)
+                    copy.Origin = ApplyTransform(copy.Origin, context.Transform);
+            }
 
             return copy;
         }
