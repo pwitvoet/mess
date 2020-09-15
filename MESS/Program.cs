@@ -57,27 +57,34 @@ namespace MESS
         }
 
 
+        /// <summary>
+        /// Returns a command-line parser that will fill the given settings object when it parses command-line arguments.
+        /// </summary>
         private static CommandLine GetCommandLineParser(ExpansionSettings settings)
         {
             return new CommandLine()
-               .Option(
-                   "-maxrecursion",
-                   s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
-                   $"Limits recursion depth (templates that insert other templates). This protects against accidentally triggering infinite recursion. Default value is {settings.RecursionLimit}.")
-               .Option(
-                   "-maxinstances",
-                   s => { settings.InstanceLimit = Math.Max(1, int.Parse(s)); },
-                   $"Limits the total number of instantiations. This protects against acidentally triggering an excessive amount of instantiation. Default value is {settings.InstanceLimit}.")
-               .Option(
-                   "-log",
-                   s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
-                   $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
-               .Argument(
-                   s => { settings.InputPath = Path.GetFullPath(s); },
-                   "Input map file.")
-               .OptionalArgument(
-                   s => { settings.OutputPath = Path.GetFullPath(s); },
-                   "Output map file.");
+                .Option(
+                    "-dir",
+                    s => { settings.Directory = Path.GetFullPath(s); },
+                    $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
+                .Option(
+                    "-maxrecursion",
+                    s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
+                    $"Limits recursion depth (templates that insert other templates). This protects against accidentally triggering infinite recursion. Default value is {settings.RecursionLimit}.")
+                .Option(
+                    "-maxinstances",
+                    s => { settings.InstanceLimit = Math.Max(1, int.Parse(s)); },
+                    $"Limits the total number of instantiations. This protects against acidentally triggering an excessive amount of instantiation. Default value is {settings.InstanceLimit}.")
+                .Option(
+                    "-log",
+                    s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
+                    $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
+                .Argument(
+                    s => { settings.InputPath = Path.GetFullPath(s); },
+                    "Input map file.")
+                .OptionalArgument(
+                    s => { settings.OutputPath = Path.GetFullPath(s); },
+                    "Output map file. If not specified, the input map file will be overwritten.");
         }
 
         private static void ShowToolInfo()
@@ -100,6 +107,10 @@ namespace MESS
 
             if (settings.OutputPath == null)
                 settings.OutputPath = inputPath;
+
+            if (settings.Directory == null)
+                settings.Directory = Path.GetDirectoryName(settings.InputPath);
+
 
             logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
 

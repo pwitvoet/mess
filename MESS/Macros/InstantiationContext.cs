@@ -69,7 +69,8 @@ namespace MESS.Macros
             MapTemplate template,
             Transform transform = null,
             IDictionary<string, string> insertionEntityProperties = null,
-            InstantiationContext parentContext = null)
+            InstantiationContext parentContext = null,
+            string workingDirectory = null)
         {
             _parentContext = parentContext;
             _evaluationContext = new EvaluationContext(insertionEntityProperties?.ToDictionary(
@@ -80,7 +81,7 @@ namespace MESS.Macros
             ID = GetRootContext()._nextID++;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
-            CurrentWorkingDirectory = Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
+            CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
             SubTemplates = GetNearestMapFileContext().Template.SubTemplates;
 
             // Every instantiation is written to the same map, but with a different transform:

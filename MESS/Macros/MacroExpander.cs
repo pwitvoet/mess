@@ -28,7 +28,10 @@ namespace MESS.Macros
             var expander = new MacroExpander(settings, logger);
             var mainTemplate = expander.GetMapTemplate(path);
 
-            var context = new InstantiationContext(mainTemplate, insertionEntityProperties: mainTemplate.Map.Properties);
+            var context = new InstantiationContext(
+                mainTemplate,
+                insertionEntityProperties: mainTemplate.Map.Properties,
+                workingDirectory: settings.Directory);
             expander.CreateInstance(context);
 
             return context.OutputMap;
