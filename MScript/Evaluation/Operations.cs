@@ -117,7 +117,7 @@ namespace MScript.Evaluation
         }
 
         // Indexing:
-        public static object Index(double[] vector, int index)
+        public static double? Index(double[] vector, int index)
         {
             index = GetIndex(vector.Length, index);
             if (index < 0 || index >= vector.Length)
@@ -126,13 +126,13 @@ namespace MScript.Evaluation
             return vector[index];
         }
 
-        public static object Index(string @string, int index)
+        public static string Index(string @string, int index)
         {
             index = GetIndex(@string.Length, index);
             if (index < 0 || index >= @string.Length)
                 return null;
 
-            return @string[index];
+            return @string[index].ToString();
         }
 
 

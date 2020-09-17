@@ -28,6 +28,9 @@ namespace MScript.Evaluation.Types
         public MemberDescriptor GetMember(string name) => _members.TryGetValue(name, out var member) ? member : null;
 
 
+        internal void AddMember(MemberDescriptor member) => _members[member.Name] = member;
+
+
         public override bool Equals(object obj) => obj is TypeDescriptor other && Equals(other);
 
         public override int GetHashCode() => Name.GetHashCode();

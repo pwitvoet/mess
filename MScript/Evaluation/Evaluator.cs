@@ -47,7 +47,21 @@ namespace MScript.Evaluation
             if (!(Evaluate(functionCall.Function, context) is IFunction function))
                 throw new InvalidOperationException($"Function call requires a function.");
 
-            var arguments = functionCall.Arguments.Select(argument => Evaluate(argument, context)).ToArray();
+            var arguments = functionCall.Arguments
+                .Select(argument => Evaluate(argument, context))
+                .ToArray();
+            if (arguments.Length < function.Parameters.Count)
+            {
+                if (!function.Parameters[arguments.Length].IsOptional)
+                    throw new InvalidOperationException($"{function.Name} requires at least {function.Parameters.TakeWhile(parameter => !parameter.IsOptional).Count()} arguments, but only {arguments.Length} were provided.");
+
+                arguments = arguments
+                    .Concat(function.Parameters
+                        .Skip(arguments.Length)
+                        .Select(parameter => parameter.DefaultValue))
+                    .ToArray();
+            }
+
             return function.Apply(arguments, context);
         }
 

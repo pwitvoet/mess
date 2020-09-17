@@ -1,4 +1,7 @@
 ﻿using MScript.Evaluation.Types;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace MScript.Evaluation
 {
@@ -32,62 +35,146 @@ namespace MScript.Evaluation
 
         static BaseTypes()
         {
-            // TODO: Depending on how complex this will become, we may need to allow mutations during this initialization phase!
+            None = new TypeDescriptor(nameof(None));
+            Number = new TypeDescriptor(nameof(Number));
+            Vector = new TypeDescriptor(nameof(Vector));
+            String = new TypeDescriptor(nameof(String));
+            Function = new TypeDescriptor(nameof(Function));
 
-            // NOTE: Initialization order is important here (earlier types can be referenced by later types):
-            None = CreateNoneTypeDescriptor();
-            Number = CreateNumberTypeDescriptor();
-            Function = CreateFunctionTypeDescriptor();
-            Vector = CreateVectorTypeDescriptor();
-            String = CreateStringTypeDescriptor();
+            RegisterMembers(typeof(VectorMembers));
+            RegisterMembers(typeof(StringMembers));
         }
 
 
-        private static TypeDescriptor CreateNoneTypeDescriptor()
+        /// <summary>
+        /// Creates MethodDescriptors for all public static methods in the given type,
+        /// and registers them with the TypeDescriptor that matches the first parameter.
+        /// </summary>
+        private static void RegisterMembers(Type methodsContainer)
         {
-            return new TypeDescriptor(nameof(None));
+            // NOTE: Indexing is special-cased in Evaluator.
+            foreach (var method in methodsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                var thisParameter = method.GetParameters()[0];
+                var thisTypeDescriptor = GetTypeDescriptor(thisParameter.ParameterType);
+
+                if (method.Name.StartsWith("GET_"))
+                {
+                    thisTypeDescriptor.AddMember(new PropertyDescriptor(
+                        method.Name.Substring(4),
+                        GetTypeDescriptor(method.ReturnType),
+                        CreateGetter(method)));
+                }
+                else
+                {
+                    thisTypeDescriptor.AddMember(new MethodDescriptor(
+                        method.Name,
+                        GetTypeDescriptor(method.ReturnType),
+                        CreateFunction(method)));
+                }
+            }
         }
 
-        private static TypeDescriptor CreateNumberTypeDescriptor()
+        private static Func<object, object> CreateGetter(MethodInfo method) => obj => method.Invoke(null, new object[] { obj });
+
+        private static IFunction CreateFunction(MethodInfo method)
         {
-            return new TypeDescriptor(nameof(Number));
+            // TODO: param.DefaultValue may not be an 'MScript-compatible' type!
+            var parameters = method.GetParameters()
+                .Select(param => new Parameter(param.Name, GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
+                .ToArray();
+
+            return new NativeFunction(method.Name, parameters, (arguments, context) =>
+            {
+                var result = method.Invoke(null, arguments);
+                switch (result)
+                {
+                    case true: return 1.0;
+                    case false: return null;
+                    default: return result;
+                }
+            });
         }
 
-        private static TypeDescriptor CreateFunctionTypeDescriptor()
+        private static TypeDescriptor GetTypeDescriptor(Type type)
         {
-            return new TypeDescriptor(nameof(Function));
+            if (type == typeof(double) || type == typeof(double?))
+                return Number;
+            else if (type == typeof(double[]))
+                return Vector;
+            else if (type == typeof(string))
+                return String;
+
+            throw new NotSupportedException($"No type descriptor for {type.FullName}.");
         }
 
-        private static TypeDescriptor CreateVectorTypeDescriptor()
+
+        static class VectorMembers
         {
-            return new TypeDescriptor(nameof(Vector),
-                new PropertyDescriptor("length", Number, obj => (obj as double[]).Length),
+            // Properties:
+            public static double GET_length(double[] self) => self.Length;
+            // Position:
+            public static double? GET_x(double[] self) => Operations.Index(self, 0);
+            public static double? GET_y(double[] self) => Operations.Index(self, 1);
+            public static double? GET_z(double[] self) => Operations.Index(self, 2);
+            // Angles:
+            public static double? GET_pitch(double[] self) => Operations.Index(self, 0);
+            public static double? GET_yaw(double[] self) => Operations.Index(self, 1);
+            public static double? GET_roll(double[] self) => Operations.Index(self, 2);
+            // Color:
+            public static double? GET_r(double[] self) => Operations.Index(self, 0);
+            public static double? GET_g(double[] self) => Operations.Index(self, 1);
+            public static double? GET_b(double[] self) => Operations.Index(self, 2);
+            public static double? GET_brightness(double[] self) => Operations.Index(self, 3);
 
-                // Position properties:
-                new PropertyDescriptor("x", Number, obj => Operations.Index(obj as double[], 0)),
-                new PropertyDescriptor("y", Number, obj => Operations.Index(obj as double[], 1)),
-                new PropertyDescriptor("z", Number, obj => Operations.Index(obj as double[], 2)),
 
-                // Angles properties:
-                new PropertyDescriptor("pitch", Number, obj => Operations.Index(obj as double[], 0)),
-                new PropertyDescriptor("yaw", Number, obj => Operations.Index(obj as double[], 1)),
-                new PropertyDescriptor("roll", Number, obj => Operations.Index(obj as double[], 2)),
-
-                // Color + brightness properties:
-                new PropertyDescriptor("r", Number, obj => Operations.Index(obj as double[], 0)),
-                new PropertyDescriptor("g", Number, obj => Operations.Index(obj as double[], 1)),
-                new PropertyDescriptor("b", Number, obj => Operations.Index(obj as double[], 2)),
-                new PropertyDescriptor("brightness", Number, obj => Operations.Index(obj as double[], 3))
-            );
+            // Methods:
+            // TODO: Take a slice ('substring')!
+            // TODO: Append/prepend/concat?
         }
 
-        private static TypeDescriptor CreateStringTypeDescriptor()
+        static class StringMembers
         {
-            return new TypeDescriptor(nameof(String),
-                new PropertyDescriptor("length", Number, obj => (obj as string).Length)
+            // Properties:
+            public static double GET_length(string self) => self.Length;
 
-                // TODO: Add useful string methods here!
-            );
+
+            // Methods:
+            /// <summary>
+            /// Returns a substring.
+            /// Supports negative indexing.
+            /// If length is omitted then the rest of the string, starting at offset, is returned.
+            /// The returned substring will be shorter than the requested length if there are less characters available.
+            /// </summary>
+            public static string substr(string self, double offset, double? length = null)
+            {
+                offset = (int)offset;
+
+                // Take the rest of the string if no length is specified:
+                if (length is null)
+                    length = (offset < 0) ? -offset : self.Length - offset;
+                else
+                    length = (int)length;
+
+                if (offset >= self.Length || length <= 0)
+                    return "";
+
+                // Negative indexing:
+                if (offset < 0)
+                {
+                    offset = self.Length + offset;
+                    if (offset < 0)
+                    {
+                        length = Math.Max(0, length.Value + offset);
+                        offset = 0;
+                    }
+                }
+
+                if (offset + length > self.Length)
+                    length = self.Length - offset;
+
+                return self.Substring((int)offset, (int)length);
+            }
         }
     }
 }

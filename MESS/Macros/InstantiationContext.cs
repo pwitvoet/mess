@@ -157,28 +157,45 @@ namespace MESS.Macros
 
         private void RegisterContextFunctions()
         {
-            _evaluationContext.Bind("id", new NativeFunction(Array.Empty<Parameter>(), GetInstanceID));
+            RegisterFunction(new NativeFunction("id", Array.Empty<Parameter>(), GetInstanceID));
 
-            // TODO: Make these arguments optional? rand() --> 0-1, rand(max) -> 0-max, rand(min,max) -> min-max
-            _evaluationContext.Bind("rand", new NativeFunction(new[] {
-                new Parameter("min", BaseTypes.Number),
-                new Parameter("max", BaseTypes.Number),
+            RegisterFunction(new NativeFunction("rand", new[] {
+                new Parameter("min", BaseTypes.Number, isOptional: true),
+                new Parameter("max", BaseTypes.Number, isOptional: true),
             }, GetRandomDouble));
 
-            // TODO: Same here -- optional args!
-            _evaluationContext.Bind("randi", new NativeFunction(new[] {
-                new Parameter("min", BaseTypes.Number),
-                new Parameter("max", BaseTypes.Number),
+            RegisterFunction(new NativeFunction("randi", new[] {
+                new Parameter("min", BaseTypes.Number, isOptional: true),
+                new Parameter("max", BaseTypes.Number, isOptional: true),
             }, GetRandomInteger));
         }
+
+        private void RegisterFunction(IFunction function) => _evaluationContext.Bind(function.Name, function);
 
         private object GetInstanceID(object[] arguments, EvaluationContext context)
             => context.Resolve("targetname") ?? ID;
 
         private object GetRandomDouble(object[] arguments, EvaluationContext context)
-            => GetRandomDouble((double)arguments[0], (double)arguments[1]);
+        {
+            if (!(arguments[0] is double min))
+                return GetRandomDouble(0.0, 1.0);
+
+            if (!(arguments[1] is double max))
+                max = 0.0;
+
+            return GetRandomDouble(Math.Min(min, max), Math.Max(min, max));
+        }
 
         private object GetRandomInteger(object[] arguments, EvaluationContext context)
-            => (double)GetRandomInteger((int)((double)arguments[0]), (int)((double)arguments[1]));  // NOTE: MScript only uses doubles, not ints.
+        {
+            // NOTE: MScript only uses doubles, not ints.
+            if (!(arguments[0] is double min))
+                return (double)GetRandomInteger(0, 2);
+
+            if (!(arguments[1] is double max))
+                max = 0.0;
+
+            return (double)GetRandomInteger((int)Math.Min(min, max), (int)Math.Max(min, max));
+        }
     }
 }

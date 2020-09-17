@@ -5,6 +5,7 @@ namespace MScript.Evaluation
 {
     class BoundMethod : IFunction
     {
+        public string Name => _function.Name;
         public IReadOnlyList<Parameter> Parameters => _function.Parameters.Skip(1).ToArray();
 
 

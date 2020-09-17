@@ -7,14 +7,16 @@ namespace MScript.Evaluation
 {
     public class NativeFunction : IFunction
     {
+        public string Name { get; }
         public IReadOnlyList<Parameter> Parameters { get; }
 
 
         private Func<object[], EvaluationContext, object> _func;
 
 
-        public NativeFunction(IEnumerable<Parameter> parameters, Func<object[], EvaluationContext, object> func)
+        public NativeFunction(string name, IEnumerable<Parameter> parameters, Func<object[], EvaluationContext, object> func)
         {
+            Name = name;
             Parameters = parameters?.ToArray() ?? Array.Empty<Parameter>();
             _func = func;
         }
@@ -27,7 +29,7 @@ namespace MScript.Evaluation
             for (int i = 0; i < arguments.Length; i++)
             {
                 var argumentType = TypeDescriptor.GetType(arguments[i]);
-                if (argumentType != Parameters[i].Type)
+                if (argumentType != Parameters[i].Type && !(Parameters[i].IsOptional && argumentType == BaseTypes.None))
                     throw new InvalidOperationException($"Parameter '{Parameters[i].Name}' is of type {Parameters[i].Type.Name}, but a {argumentType.Name} was given.");
             }
 
