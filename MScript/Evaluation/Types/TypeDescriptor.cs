@@ -53,9 +53,10 @@ namespace MScript.Evaluation.Types
             switch (value)
             {
                 case null: return BaseTypes.None;
-                case double d: return BaseTypes.Number;
-                case double[] v: return BaseTypes.Vector;
-                case string s: return BaseTypes.String;
+                case double _: return BaseTypes.Number;
+                case double[] _: return BaseTypes.Vector;
+                case string _: return BaseTypes.String;
+                case IFunction _: return BaseTypes.Function;
                 default: throw new InvalidOperationException($"Unknown value type: {value.GetType().FullName}.");
             }
         }

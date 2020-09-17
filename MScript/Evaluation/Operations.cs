@@ -137,17 +137,7 @@ namespace MScript.Evaluation
 
 
         // Others:
-        public static bool IsTrue(object value)
-        {
-            switch (value)
-            {
-                default:
-                case null: return false;
-                case double number: return number != 0.0;
-                case double[] vector: return vector.Length != 0;
-                case string @string: return @string.Length != 0;
-            }
-        }
+        public static bool IsTrue(object value) => value != null;
 
         public static string ToString(object value)
         {
@@ -221,6 +211,6 @@ namespace MScript.Evaluation
 
         private static int GetIndex(int length, int index) => index < 0 ? length + index : index;
 
-        private static object ToBoolean(bool boolean) => boolean ? 1.0 : 0.0;
+        private static object ToBoolean(bool boolean) => boolean ? (object)1.0 : null;
     }
 }

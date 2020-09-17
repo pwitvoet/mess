@@ -69,7 +69,7 @@ namespace MESS.Mapping
 
         public static object ParseProperty(string value)
         {
-            if (value == null)
+            if (string.IsNullOrEmpty(value))
                 return null;
 
             if (double.TryParse(value, out var number))
