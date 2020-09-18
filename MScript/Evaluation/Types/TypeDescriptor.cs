@@ -35,7 +35,7 @@ namespace MScript.Evaluation.Types
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public override string ToString() => $"<TYPE: {Name}>";
+        public override string ToString() => $"<{Name}>";
 
         public bool Equals(TypeDescriptor other)
         {

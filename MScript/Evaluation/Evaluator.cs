@@ -35,7 +35,7 @@ namespace MScript.Evaluation
             for (int i = 0; i < vectorLiteral.Elements.Count; i++)
             {
                 if (!((Evaluate(vectorLiteral.Elements[i], context) ?? 0.0) is double number))
-                    throw new InvalidOperationException("Vectors can only contain numbers.");
+                    throw new InvalidOperationException($"A {BaseTypes.Vector} can only contain numbers.");
 
                 vector[i] = number;
             }
@@ -44,8 +44,9 @@ namespace MScript.Evaluation
 
         private static object EvaluateFunctionCall(FunctionCall functionCall, EvaluationContext context)
         {
-            if (!(Evaluate(functionCall.Function, context) is IFunction function))
-                throw new InvalidOperationException($"Function call requires a function.");
+            var functionResult = Evaluate(functionCall.Function, context);
+            if (!(functionResult is IFunction function))
+                throw new InvalidOperationException($"A function call requires a {BaseTypes.Function}, not a {TypeDescriptor.GetType(functionResult)}.");
 
             var arguments = functionCall.Arguments
                 .Select(argument => Evaluate(argument, context))
@@ -53,7 +54,7 @@ namespace MScript.Evaluation
             if (arguments.Length < function.Parameters.Count)
             {
                 if (!function.Parameters[arguments.Length].IsOptional)
-                    throw new InvalidOperationException($"{function.Name} requires at least {function.Parameters.TakeWhile(parameter => !parameter.IsOptional).Count()} arguments, but only {arguments.Length} were provided.");
+                    throw new InvalidOperationException($"The function '{function.Name}' requires at least {function.Parameters.TakeWhile(parameter => !parameter.IsOptional).Count()} arguments, but only {arguments.Length} were provided.");
 
                 arguments = arguments
                     .Concat(function.Parameters
@@ -70,8 +71,9 @@ namespace MScript.Evaluation
             var indexable = Evaluate(indexing.Indexable, context);
             if (indexable is double[] || indexable is string)
             {
-                if (!((Evaluate(indexing.Index, context) ?? 0.0) is double index))
-                    throw new InvalidOperationException($"Indexing requires a numeric index.");
+                var indexResult = Evaluate(indexing.Index, context) ?? 0.0;
+                if (!(indexResult is double index))
+                    throw new InvalidOperationException($"An index must be a {BaseTypes.Number}, not a {TypeDescriptor.GetType(indexResult)}.");
 
                 if (indexable is double[] vector)
                     return Operations.Index(vector, (int)index);
@@ -79,7 +81,7 @@ namespace MScript.Evaluation
                     return Operations.Index(@string, (int)index);
             }
 
-            throw new InvalidOperationException($"{indexable} cannot be indexed.");
+            throw new InvalidOperationException($"A {TypeDescriptor.GetType(indexable)} cannot be indexed.");
         }
 
         private static object EvaluateMemberAccess(MemberAccess memberAccess, EvaluationContext context)
@@ -88,7 +90,7 @@ namespace MScript.Evaluation
             var type = TypeDescriptor.GetType(@object);
             var member = type.GetMember(memberAccess.MemberName);
             if (member is null)
-                throw new InvalidOperationException($"{@object} does not have a member named '{memberAccess.MemberName}'.");
+                throw new InvalidOperationException($"{type} does not have a member named '{memberAccess.MemberName}'.");
 
             return member.GetValue(@object);
         }
