@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace MESS.Macros
 {
@@ -257,6 +256,12 @@ namespace MESS.Macros
                     Area = triangle.GetSurfaceArea(),
                     Face = face }))
                 .ToArray();
+            if (!candidateFaces.Any())
+            {
+                Logger.Warning($"{coverEntity.ClassName} has no non-NULL surfaces and will be skipped.");
+                return;
+            }
+
             var totalArea = candidateFaces.Sum(candidate => candidate.Area);
 
 
@@ -370,6 +375,12 @@ namespace MESS.Macros
                 .SelectMany(brush => brush.GetTetrahedrons())
                 .Select(tetrahedron => new { Tetrahedron = tetrahedron, Volume = tetrahedron.GetVolume() })
                 .ToArray();
+            if (!candidateVolumes.Any())
+            {
+                Logger.Warning($"{fillEntity.ClassName} is empty and will be skipped.");
+                return;
+            }
+
             var totalVolume = candidateVolumes.Sum(candidate => candidate.Volume);
 
 
