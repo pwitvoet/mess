@@ -85,7 +85,14 @@ namespace MESS.Macros
             SubTemplates = GetNearestMapFileContext().Template.SubTemplates;
 
             // Every instantiation is written to the same map, but with a different transform:
-            OutputMap = parentContext?.OutputMap ?? new Map();
+            OutputMap = parentContext?.OutputMap;
+            if (OutputMap == null)
+            {
+                // Copy original map properties:
+                OutputMap = new Map();
+                foreach (var kv in template.Map.Properties)
+                    OutputMap.Properties[kv.Key] = kv.Value;
+            }
             Transform = transform ?? Transform.Identity;
 
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
@@ -157,7 +164,8 @@ namespace MESS.Macros
 
         private void RegisterContextFunctions()
         {
-            RegisterFunction(new NativeFunction("id", Array.Empty<Parameter>(), GetInstanceID));
+            RegisterFunction(new NativeFunction("id", Array.Empty<Parameter>(), GetID));
+            RegisterFunction(new NativeFunction("iid", Array.Empty<Parameter>(), GetInstanceID));
 
             RegisterFunction(new NativeFunction("rand", new[] {
                 new Parameter("min", BaseTypes.Number, isOptional: true),
@@ -172,8 +180,9 @@ namespace MESS.Macros
 
         private void RegisterFunction(IFunction function) => _evaluationContext.Bind(function.Name, function);
 
-        private object GetInstanceID(object[] arguments, EvaluationContext context)
-            => context.Resolve("targetname") ?? ID;
+        private object GetID(object[] arguments, EvaluationContext context) => context.Resolve("targetname") ?? ID;
+
+        private object GetInstanceID(object[] arguments, EvaluationContext context) => ID;
 
         private object GetRandomDouble(object[] arguments, EvaluationContext context)
         {
