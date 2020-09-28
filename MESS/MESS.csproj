@@ -94,9 +94,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\MScript\MScript.csproj">
       <Project>{2e0b469a-714b-4d7c-95a6-200d93ec08ae}</Project>
       <Name>MScript</Name>
