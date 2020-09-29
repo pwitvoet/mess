@@ -38,6 +38,9 @@ namespace MESS.Mathematics.Spatial
             Max = max;
         }
 
+        public BoundingBox ExpandBy(float thickness)
+            => new BoundingBox(Min - new Vector3D(thickness, thickness, thickness), Max + new Vector3D(thickness, thickness, thickness));
+
         public bool Contains(Vector3D point)
         {
             return point.X >= Min.X && point.Y >= Min.Y && point.Z >= Min.Z &&

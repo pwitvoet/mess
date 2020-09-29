@@ -79,7 +79,7 @@ namespace MESS.Macros
             var subTemplates = new List<MapTemplate>();
             foreach (var templateEntity in templateEntities)
             {
-                var templateArea = templateEntity.BoundingBox;
+                var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
                 var templateName = templateEntity["targetname"] ?? "";
                 var selectionWeight = templateEntity["selection_weight"] ?? "";
                 var offset = GetTemplateEntityOrigin(templateEntity) * -1;
@@ -154,7 +154,7 @@ namespace MESS.Macros
             var conditionalContents = new List<RemovableContent>();
             foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf))
             {
-                var removeIfArea = removeIfEntity.BoundingBox;
+                var removeIfArea = removeIfEntity.BoundingBox.ExpandBy(0.5f);
                 var condition = removeIfEntity["condition"] ?? "";  // TODO: Validate the expression somehow?
                 var removableContent = new HashSet<object>();
 
