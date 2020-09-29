@@ -19,15 +19,15 @@ The following instructions assume that you're using the Hammer or J.A.C.K. level
 
 1. Download MESS and extract the contents to a folder (this folder is referred to below as `<MESS FOLDER>`).
 2. Add the **game data file (mess.fgd)** to your editor.
-  1. Go to the `Tools` menu and select `Options`.
-  2. In the configuration window that opens, go to the `Game Configurations` or `Game Profiles` tab.
-  3. Look for the `Game Data Files` section, click the `Add` button and select `<MESS FOLDER>\mess.fgd`.
+    1. Go to the `Tools` menu and select `Options`.
+    2. In the configuration window that opens, go to the `Game Configurations` or `Game Profiles` tab.
+    3. Look for the `Game Data Files` section, click the `Add` button and select `<MESS FOLDER>\mess.fgd`.
 3. Add a **compile step (mess.exe)** to your editors `Compile/run commands`:
-  1. Click the `Run map! [F9]` or `Run the map in the game [F9]` button and switch to `Expert mode`.
-  2. In the `Compile/run commands` list, click `New` to create a new build step and press `Move Up` or `Up` until it's at the top.
-  3. In the `Command:` field, enter `<MESS FOLDER>\MESS.exe`.
-  4. In the `Parameters:` field, enter `"$path/$file.$ext"`.
-  5. For J.A.C.K. users: tick the `Wait for Termination` and `Use Process Window` checkboxes.
+    1. Click the `Run map! [F9]` or `Run the map in the game [F9]` button and switch to `Expert mode`.
+    2. In the `Compile/run commands` list, click `New` to create a new build step and press `Move Up` or `Up` until it's at the top.
+    3. In the `Command:` field, enter `<MESS FOLDER>\MESS.exe`.
+    4. In the `Parameters:` field, enter `"$path/$file.$ext"`.
+    5. For J.A.C.K. users: tick the `Wait for Termination` and `Use Process Window` checkboxes.
 
 ### Command-line arguments
 By default, MESS will overwrite the given .map file. If you want to save the result to a different file, just add another path: `"$path/$file.$ext" "<OUTPUT PATH + FILENAME>"`. Additionally, MESS takes the following options (which must be added before the input and output parameters):
@@ -36,11 +36,11 @@ By default, MESS will overwrite the given .map file. If you want to save the res
 - **-maxrecursion *number*** - The maximum recursion depth for templates that insert themselves or other templates. This is a safety mechanism that guards against accidental infinite recursion. The default is 100. 
 - **-maxinstances *number*** - The maximum number of template instances. This is a safety mechanism that guards against accidentally inserting a massive number of instances. The default is 10000.
 - **-log *level*** - Determines how much information MESS will write to the output:
-  - **off** - Disables almost all logging.
-  - **error** - Only critical errors are shown (problems that cause MESS to abort). This is the default.
-  - **warning** - In addition to critical errors, warnings are also shown (problems that MESS can safely ignore).
-  - **info** - Additional information is shown.
-  - **verbose** - The maximum amount of information is shown. 
+    - **off** - Disables almost all logging.
+    - **error** - Only critical errors are shown (problems that cause MESS to abort). This is the default.
+    - **warning** - In addition to critical errors, warnings are also shown (problems that MESS can safely ignore).
+    - **info** - Additional information is shown.
+    - **verbose** - The maximum amount of information is shown. 
 
 
 ## How to use MESS
