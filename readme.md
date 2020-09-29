@@ -13,6 +13,21 @@ Here are some of the things that MESS can do:
 
 *Fun fact: inspiration for this tool came from the game `Baba is you` and the programming language `Lisp`.*
 
+## Quick examples
+
+This is what a MESS template looks like, and how it can be used:
+
+![Landmine template](/documentation/images/landmine%20template.png "Landmine template")
+![Minefield](/documentation/images/landmine%20insertion.png "Minefield")
+
+Anything between the `macro_template` brushes is part of the `landmine` template. When MESS processes the map, the contents of this `landmine` template are copied to each of the `macro_insert` positions. Because the `env_explosion`'s magnitude uses an expression: `{damage or 100}`, the explosion radius can be customized for each `macro_insert`. In this case, only the mine in the center uses a custom magnitude.
+
+Here's another MESS entity in action, `macro_cover`:
+
+![Covering terrain](/documentation/images/macro_cover%20landscape.png "Covering terrain")
+
+This entity randomly places template instances across its surface. The 6 templates here were all given the same name, so each time a random one is selected. The orientation and scale of each instance has also been randomized with expressions.
+
 
 ## How to install MESS
 The following instructions assume that you're using the Hammer or J.A.C.K. level editor, but the overall process should be fairly similar for other editors.
