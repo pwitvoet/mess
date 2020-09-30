@@ -22,7 +22,9 @@ This is what a MESS template looks like, and how it can be used:
 
 Anything between the `macro_template` brushes is part of the `landmine` template. When MESS processes the map, the contents of this `landmine` template are copied to each of the `macro_insert` positions. Because the `env_explosion`'s magnitude uses an expression: `{damage or 100}`, the explosion radius can be customized for each `macro_insert`. In this case, only the mine in the center uses a custom magnitude.
 
-Here's another MESS entity in action, `macro_cover`:
+Also note the use of the `{id()}` expression: this results in distinct names for each landmine. Without that, any trigger would activate all explosions, instead of only the explosion that belongs to it.
+
+Here is another MESS entity in action, `macro_cover`:
 
 ![Covering terrain](/documentation/images/macro_cover%20landscape.png "Covering terrain")
 
