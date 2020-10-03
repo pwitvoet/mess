@@ -103,12 +103,20 @@ namespace MESS.Macros
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
                     .Where(subTemplate => context.EvaluateInterpolatedString(subTemplate.Name) == templateName)
-                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), out var weight) ? weight : 1 })
+                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), out var weight) ? weight : 0 })
                     .ToArray();
-
                 if (matchingSubTemplates.Length == 0)
                 {
                     Logger.Warning($"No sub-templates found with the name '{templateName}'.");
+                    return null;
+                }
+
+                matchingSubTemplates = matchingSubTemplates
+                    .Where(weightedSubtemplate => weightedSubtemplate.Weight > 0)
+                    .ToArray();
+                if (matchingSubTemplates.Length == 0)
+                {
+                    Logger.Warning($"No sub-templates with the name '{templateName}' have a positive selection weight.");
                     return null;
                 }
 
