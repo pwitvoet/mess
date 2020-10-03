@@ -154,20 +154,7 @@ namespace MESS.Macros
 
 
             // Skip conditional contents whose removal condition is true:
-            var excludedObjects = new HashSet<object>();
-            foreach (var conditionalContent in context.Template.ConditionalContents)
-            {
-                var removal = PropertyExtensions.ParseProperty(context.EvaluateInterpolatedString(conditionalContent.RemovalCondition));
-                if (Interpreter.IsTrue(removal) || (removal is double d && d == 0))
-                {
-                    Logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true, excluding {conditionalContent.Contents.Count} objects.");
-                    excludedObjects.UnionWith(conditionalContent.Contents);
-                }
-                else
-                {
-                    Logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is not true, keeping {conditionalContent.Contents.Count} objects.");
-                }
-            }
+            var excludedObjects = GetExcludedObjects(context, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
             // Copy entities:
@@ -555,8 +542,15 @@ namespace MESS.Macros
             // based on the world brushes and brush entities in the template. Another way of looking at it is
             // that the brushes and entities in the template take on the 'shape' of this macro_brush.
 
+            var brushContext = new InstantiationContext(template, insertionEntityProperties: brushEntity.Properties, parentContext: context);
+            var excludedObjects = GetExcludedObjects(brushContext, Logger);
+            Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
+
             foreach (var templateBrush in template.Map.WorldGeometry)
             {
+                if (excludedObjects.Contains(templateBrush))
+                    continue;
+
                 // Discard world brushes with multiple textures:
                 if (templateBrush.Faces.Select(face => face.TextureName).Distinct().Count() != 1)
                 {
@@ -571,7 +565,7 @@ namespace MESS.Macros
 
             foreach (var templateEntity in template.Map.Entities)
             {
-                if (templateEntity.IsPointBased)
+                if (templateEntity.IsPointBased || excludedObjects.Contains(templateEntity))
                     continue;
 
                 // Origin brushes are only copied if the template entity also contains an origin brush.
@@ -591,7 +585,7 @@ namespace MESS.Macros
                 var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
 
                 // Use the current transform - macro_brushes do not support angles/scale:
-                var insertionContext = new InstantiationContext(template, context.Transform, brushEntity.Properties, context);
+                var insertionContext = new InstantiationContext(template, brushContext.Transform, brushEntity.Properties, brushContext);
                 foreach (var kv in templateEntity.Properties)
                     entityCopy.Properties[insertionContext.EvaluateInterpolatedString(kv.Key)] = insertionContext.EvaluateInterpolatedString(kv.Value);
 
@@ -622,6 +616,25 @@ namespace MESS.Macros
             }
         }
 
+
+        private static HashSet<object> GetExcludedObjects(InstantiationContext context, Logger logger)
+        {
+            var excludedObjects = new HashSet<object>();
+            foreach (var conditionalContent in context.Template.ConditionalContents)
+            {
+                var removal = PropertyExtensions.ParseProperty(context.EvaluateInterpolatedString(conditionalContent.RemovalCondition));
+                if (Interpreter.IsTrue(removal) || (removal is double d && d == 0))
+                {
+                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true, excluding {conditionalContent.Contents.Count} objects.");
+                    excludedObjects.UnionWith(conditionalContent.Contents);
+                }
+                else
+                {
+                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is not true, keeping {conditionalContent.Contents.Count} objects.");
+                }
+            }
+            return excludedObjects;
+        }
 
         private static void EvaluateProperties(InstantiationContext context, Entity entity, params string[] propertyNames)
         {
