@@ -157,10 +157,8 @@ namespace MESS.Macros
             var excludedObjects = new HashSet<object>();
             foreach (var conditionalContent in context.Template.ConditionalContents)
             {
-                // TODO: Perhaps more consistent to evaluate this as an interpolated string as well?
-                //       We'd then have to parse the result and check whether it's a 'truthy' value...
-                var removal = context.EvaluateExpression(conditionalContent.RemovalCondition);
-                if (Interpreter.IsTrue(removal))
+                var removal = PropertyExtensions.ParseProperty(context.EvaluateInterpolatedString(conditionalContent.RemovalCondition));
+                if (Interpreter.IsTrue(removal) || (removal is double d && d == 0))
                 {
                     Logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true, excluding {conditionalContent.Contents.Count} objects.");
                     excludedObjects.UnionWith(conditionalContent.Contents);

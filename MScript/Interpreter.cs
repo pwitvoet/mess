@@ -26,7 +26,7 @@ namespace MScript
 
         /// <summary>
         /// Returns whether the given value is true in a boolean context.
-        /// Only none, 0, [] and '' are considered to be false.
+        /// Only `none` (null) is considered to be false.
         /// </summary>
         public static bool IsTrue(object value) => Operations.IsTrue(value);
     }
