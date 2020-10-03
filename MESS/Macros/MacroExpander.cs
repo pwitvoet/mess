@@ -269,22 +269,27 @@ namespace MESS.Macros
             // but there are a few that are needed up-front, so these will only be evaluated once:
             EvaluateProperties(context, coverEntity, "max_instances", "radius", "instance_orientation", "random_seed", "brush_behavior");
 
-            var maxInstances = coverEntity.GetIntegerProperty("max_instances") ?? 0;
+            var maxInstances = coverEntity.GetNumericProperty("max_instances") ?? 0.0;
             var radius = (float)(coverEntity.GetNumericProperty("radius") ?? 0);
             var orientation = (Orientation)(coverEntity.GetIntegerProperty("instance_orientation") ?? 0);
             var randomSeed = coverEntity.GetIntegerProperty("random_seed") ?? 0;
             var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty("brush_behavior") ?? 0);
 
 
-            // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
-            // TODO: Also decide what to do if radius is 0 or lower!
-            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+            // Between 0 and 1, maxInstances acts as a 'coverage factor':
+            if (maxInstances > 0 && maxInstances < 1)
+            {
+                var instanceArea = Math.PI * Math.Pow(Math.Max(1.0, radius), 2);;
+                maxInstances = Math.Ceiling(maxInstances * (totalArea / instanceArea));
+            }
+
+            var random = new Random(randomSeed);
             var availableArea = new SphereCollection();
-            for (int i = 0; i < maxInstances; i++)
+            for (int i = 0; i < (int)maxInstances; i++)
             {
                 var selection = TakeFromWeightedList(candidateFaces, random.NextDouble() * totalArea, candidate => candidate.Area);
                 var insertionPoint = selection.Triangle.GetRandomPoint(random);
-                if (!availableArea.TryInsert(insertionPoint, radius))
+                if (radius > 0.0 && !availableArea.TryInsert(insertionPoint, radius))
                     continue;
 
                 var template = ResolveTemplate(
@@ -388,7 +393,7 @@ namespace MESS.Macros
             // but there are a few that are needed up-front, so these will only be evaluated once:
             EvaluateProperties(context, fillEntity, "max_instances", "radius", "instance_orientation", "random_seed", "grid_orientation", "grid_granularity");
 
-            var maxInstances = fillEntity.GetIntegerProperty("max_instances") ?? 0;
+            var maxInstances = fillEntity.GetNumericProperty("max_instances") ?? 0.0;
             var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
             var orientation = (Orientation)(fillEntity.GetIntegerProperty("instance_orientation") ?? 0); // TODO: Only global & local!
             var randomSeed = fillEntity.GetIntegerProperty("random_seed") ?? 0;
@@ -413,18 +418,23 @@ namespace MESS.Macros
             var hasGridSnapping = gridGranularity.X > 0 || gridGranularity.Y > 0 || gridGranularity.Z > 0;
 
 
-            // TODO: If maxInstances is 0 (or lower!), then pick a reasonably number based on fill entity volume and the specified radius!
-            // TODO: Also decide what to do if radius is 0 or lower!
-            var random = new Random(randomSeed);    // TODO: Alternately, pick a random seed from our context!!! (and always pick that!)
+            var random = new Random(randomSeed);
             switch (fillMode)
             {
                 default:
                 case FillMode.Random:
                 case FillMode.RandomSnappedToGrid:
                 {
+                    // Between 0 and 1, maxInstances acts as a 'coverage factor':
+                    if (maxInstances > 0 && maxInstances < 1)
+                    {
+                        var instanceVolume = (4.0 / 3.0) * Math.PI * Math.Pow(Math.Max(1.0, radius), 3);
+                        maxInstances = Math.Ceiling(maxInstances * (totalVolume / instanceVolume));
+                    }
+
                     // Create instances at random (grid) points:
                     var availableArea = new SphereCollection();
-                    for (int i = 0; i < maxInstances; i++)
+                    for (int i = 0; i < (int)maxInstances; i++)
                     {
                         var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
                         var insertionPoint = tetrahedron.GetRandomPoint(random);
@@ -436,7 +446,7 @@ namespace MESS.Macros
                                 continue;
                         }
 
-                        if (!availableArea.TryInsert(insertionPoint, radius))
+                        if (radius > 0.0 && !availableArea.TryInsert(insertionPoint, radius))
                             continue;
 
                         CreateInstanceAtPoint(insertionPoint);
