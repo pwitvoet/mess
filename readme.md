@@ -15,20 +15,20 @@ Here are some of the things that MESS can do:
 
 ## Quick examples
 
-This is what a MESS template looks like, and how it can be used:
+This is what a MESS template looks like and how it can be used:
 
 ![Landmine template](/documentation/images/landmine%20template.png "Landmine template")
 ![Minefield](/documentation/images/landmine%20insertion.png "Minefield")
 
-Anything between the `macro_template` brushes is part of the `landmine` template. When MESS processes the map, the contents of this `landmine` template are copied to each of the `macro_insert` positions. Because the `env_explosion`'s magnitude uses an expression: `{damage or 100}`, the explosion radius can be customized for each `macro_insert`. In this case, only the mine in the center uses a custom magnitude.
+Anything between the `macro_template` brushes is part of the `landmine` template. When MESS processes the map, a copy of the `landmine` template is created for each `macro_insert`. Because the `env_explosion` magnitude uses the expression `{damage or 100}`, landmines have a default magnitude of 100, but each `macro_insert` can override that with the custom `damage` attribute.
 
-Also note the use of the `{id()}` expression: this results in distinct names for each landmine. Without that, any trigger would activate all explosions, instead of only the explosion that belongs to it.
+Also note the use of the `{id()}` expression: this gives the entities of each landmine distinct names. Otherwise, each trigger would active all explosions, instead of only the explosion it belongs to.
 
 Here is another MESS entity in action, `macro_cover`:
 
 ![Covering terrain](/documentation/images/macro_cover%20landscape.png "Covering terrain")
 
-This entity randomly places template instances across its surface. The 6 templates here were all given the same name, so each time a random one is selected. The orientation and scale of each instance has also been randomized with expressions.
+This entity randomly places template instances across its non-NULL surfaces. The 6 templates here all have the same name, so each time a random one is selected. The orientation and scale of each instance has also been randomized with expressions.
 
 
 ## How to install MESS
@@ -82,14 +82,16 @@ There is also one more entity that uses templates in a slightly different way:
 Any entity attribute can be customized with embedded expressions. These expressions are surrounded by curly braces. For example, the value `corner{4 + 5}` contains the expression `4 + 5`, which evaluates to `9`, so the final value becomes `corner9`.
 
 #### Referencing attributes of instance-creating entities 
-When a macro entity creates a template instance, its attributes are made visible to expressions in the selected template. For example, imagine a template that contains an `env_sprite` entity with its `renderamt` (FX Amount) attribute set to `{brightness or 128}`. The `brightness` part means that this will use the value of the `brightness` attribute of the instance-creating entity. The `or 128` part means that, if the `brightness` attribute is empty or missing, `128` will be used instead.
+When a macro entity creates a template instance, its attributes are made visible to expressions in the selected template. This means that expressions inside a template can produce different results depending on the attributes of the macro entity that uses that template.
 
-So a `macro_insert` entity that contains a `brightness` attribute with value `0` will produce an `env_sprite` with a `renderamt` of `0`, while a `macro_insert` without a `brightness` attribute will produce an `env_sprite` whose `renderamt` is `128`.
+This is why, in the above landmine example, each `macro_insert` can specify its own landmine damage: the `damage` in `{damage or 100}` refers to the `damage` attribute of the current `macro_insert` entity.
 
 #### SmartEdit mode
-MESS only recognizes internal attribute names, which are only visible in `SmartEdit` mode. But `SmartEdit` mode also allows new attributes to be added, which is very useful for customizing templates.
+Enabling `SmartEdit` mode allows new attributes to be added, which is very useful for customizing templates. That's how, in the landmine example, the custom `damage` attribute was added.
 
-#### Functions
+But there's another reason why `SmartEdit` mode is useful: just as Half-Life itself, MESS only recognizes internal attribute names, and these are only shown when `SmartEdit` mode is enabled.
+
+#### Commonly used functions
 Finally, here are some of the most commonly used functions that can be used in MESS expressions:
 
 - `iid()` - Returns the unique numeric ID of the current instance.
@@ -97,4 +99,4 @@ Finally, here are some of the most commonly used functions that can be used in M
 - `rand(min, max)` - Returns a random number between `min` and `max`.
 - `randi(min, max)` - Returns a random integer number between `min` (inclusive) and `max` (exclusive).
 
-`rand` and `randi` can be called with no arguments (`rand` will then return a number between 0 and 1, and `randi` will return either 0 or 1). They can also be called with only one argument, which will then be used as `max` value (`min` will be set to 0).
+`rand` and `randi` can be called with no arguments: `rand` will then return a number between 0 and 1, and `randi` will return either 0 or 1. They can also be called with only one argument, which will then be used as `max` value (`min` will be set to 0).
