@@ -276,6 +276,8 @@ namespace MESS.Macros
                 maxInstances = Math.Ceiling(maxInstances * (totalArea / instanceArea));
             }
 
+            Logger.Verbose($"Maximum number of instances: {maxInstances}, total surface area: {totalArea}.");
+
             var random = new Random(randomSeed);
             var availableArea = new SphereCollection();
             for (int i = 0; i < (int)maxInstances; i++)
@@ -424,6 +426,8 @@ namespace MESS.Macros
                         var instanceVolume = (4.0 / 3.0) * Math.PI * Math.Pow(Math.Max(1.0, radius), 3);
                         maxInstances = Math.Ceiling(maxInstances * (totalVolume / instanceVolume));
                     }
+
+                    Logger.Verbose($"Maximum number of instances: {maxInstances}, total volume: {totalVolume}.");
 
                     // Create instances at random (grid) points:
                     var availableArea = new SphereCollection();
