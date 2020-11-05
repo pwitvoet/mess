@@ -10,5 +10,6 @@ namespace MESS.Macros
         public string InputPath { get; set; }
         public string OutputPath { get; set; }
         public string Directory { get; set; }
+        public string[] GameDataPaths { get; set; }
     }
 }

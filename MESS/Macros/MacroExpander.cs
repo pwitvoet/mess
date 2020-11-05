@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.EntityRewriting;
+using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
@@ -43,11 +44,86 @@ namespace MESS.Macros
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
 
+        private RewriteDirective[] _rewriteDirectives = Array.Empty<RewriteDirective>();
+
 
         private MacroExpander(ExpansionSettings settings, Logger logger)
         {
             Settings = settings;
             Logger = logger;
+
+            _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
+        }
+
+
+        private IEnumerable<RewriteDirective> LoadRewriteDirectives(string fgdPath)
+        {
+            try
+            {
+                var path = Path.GetFullPath(fgdPath);
+                Logger.Info($"Loading rewrite directives from '{path}'.");
+
+                var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(path).ToArray();
+                Logger.Info($"{rewriteDirectives.Length} rewrite directives loaded.");
+
+                return rewriteDirectives;
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"Failed to load rewrite directives from '{fgdPath}':", ex);
+                return Array.Empty<RewriteDirective>();
+            }
+        }
+
+        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives)
+        {
+            Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
+
+            var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
+            foreach (var entity in map.Entities)
+            {
+                var matchingDirectives = directiveLookup[entity.ClassName];
+                foreach (var rewriteDirective in matchingDirectives)
+                    ApplyRewriteDirective(entity, rewriteDirective);
+            }
+        }
+
+        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective)
+        {
+            // TODO: Include function bindings! (including rand and randi, but not id and iid)
+            var context = Evaluation.ContextFromProperties(entity.Properties);
+
+            foreach (var ruleGroup in rewriteDirective.RuleGroups)
+            {
+                // TODO: We need to use InstantiationContext.EvaluateInterpolatedString here -- but with our own context!
+                //       -- so that method needs to be extracted somehow.
+                if (!ruleGroup.HasCondition || Interpreter.IsTrue(PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(ruleGroup.Condition, context))))
+                {
+                    foreach (var rule in ruleGroup.Rules)
+                        ApplyRewriteRule(entity, rule, context);
+                }
+                else if (ruleGroup.HasCondition)
+                {
+                    foreach (var rule in ruleGroup.AlternateRules)
+                        ApplyRewriteRule(entity, rule, context);
+                }
+            }
+        }
+
+        private void ApplyRewriteRule(Entity entity, RewriteDirective.Rule rule, EvaluationContext context)
+        {
+            var attributeName = Evaluation.EvaluateInterpolatedString(rule.Attribute, context);
+            if (rule.DeleteAttribute)
+            {
+                entity.Properties.Remove(attributeName);
+                context.Bind(attributeName, null);
+            }
+            else
+            {
+                var value = Evaluation.EvaluateInterpolatedString(rule.NewValue, context);
+                entity.Properties[attributeName] = value;
+                context.Bind(attributeName, value);
+            }
         }
 
 
@@ -60,7 +136,15 @@ namespace MESS.Macros
             if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
                 Logger.Info($"Loading map template '{path}' from file.");
-                template = MapTemplate.Load(path);
+
+                // NOTE: Entity rewrite directives are applied after entity path expansion, so rewriting will also affect these entities.
+                //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
+                var map = MapFile.Load(path);
+                map.ExpandPaths();
+                ApplyRewriteDirectives(map, _rewriteDirectives);
+
+                template = MapTemplate.FromMap(map, path);
+
                 _mapTemplateCache[path] = template;
             }
             else
@@ -91,7 +175,7 @@ namespace MESS.Macros
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning($"Failed to load map template '{mapPath}'.");
+                    Logger.Warning($"Failed to load map template '{mapPath}':", ex);
                     return null;
                 }
             }

@@ -25,13 +25,15 @@ namespace MESS.Macros
         public static MapTemplate Load(string path)
         {
             path = NormalizePath(path);
+
             var map = MapFile.Load(path);
+            map.ExpandPaths();
 
-            // Expand paths, so they don't need to be handled separately later on:
-            foreach (var entityPath in map.EntityPaths)
-                map.Entities.AddRange(entityPath.GenerateEntities());
-            map.EntityPaths.Clear();
+            return FromMap(map, path);
+        }
 
+        public static MapTemplate FromMap(Map map, string path)
+        {
             var subTemplates = ExtractSubTemplates(map);
             var conditionalContent = ExtractConditionalContent(map);
             return new MapTemplate(map, path, false, "1", subTemplates, conditionalContent);

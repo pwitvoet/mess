@@ -68,6 +68,10 @@ namespace MESS
                     s => { settings.Directory = Path.GetFullPath(s); },
                     $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
                 .Option(
+                    "-fgd",
+                    s => { settings.GameDataPaths = s.Split(';').Select(Path.GetFullPath).ToArray(); },
+                    $"The .fgd file(s) that contains entity rewrite directives. Multiple paths must be separated by semicolons.")
+                .Option(
                     "-maxrecursion",
                     s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
                     $"Limits recursion depth (templates that insert other templates). This protects against accidentally triggering infinite recursion. Default value is {settings.RecursionLimit}.")

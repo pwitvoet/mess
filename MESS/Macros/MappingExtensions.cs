@@ -1,7 +1,7 @@
-﻿using MESS.Mapping;
+﻿using MESS.Formats;
+using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +13,17 @@ namespace MESS.Macros
         /// Selects all entities with the specified class name.
         /// </summary>
         public static IEnumerable<Entity> GetEntitiesWithClassName(this Map map, string className) => map.Entities.Where(entity => entity.ClassName == className);
+
+        /// <summary>
+        /// Expands all entity paths in the given map into actual entities, then clears the list of entity paths.
+        /// This method modifies the given map.
+        /// </summary>
+        public static void ExpandPaths(this Map map)
+        {
+            foreach (var entityPath in map.EntityPaths)
+                map.Entities.AddRange(entityPath.GenerateEntities());
+            map.EntityPaths.Clear();
+        }
 
 
         /// <summary>
