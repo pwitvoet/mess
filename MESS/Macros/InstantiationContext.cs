@@ -61,10 +61,6 @@ namespace MESS.Macros
         private int _nextID = 1;
 
 
-        // NOTE: This regex takes into account that strings inside expressions can contain curly braces:
-        private static Regex _expressionRegex = new Regex(@"{(?<expression>(('[^']*')|[^}'])*)}");
-
-
         public InstantiationContext(
             MapTemplate template,
             Transform transform = null,
@@ -73,9 +69,7 @@ namespace MESS.Macros
             string workingDirectory = null)
         {
             _parentContext = parentContext;
-            _evaluationContext = new EvaluationContext(insertionEntityProperties?.ToDictionary(
-                kv => kv.Key,
-                kv => PropertyExtensions.ParseProperty(kv.Value)));
+            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties);
             RegisterContextFunctions();
 
             ID = GetRootContext()._nextID++;
@@ -110,40 +104,16 @@ namespace MESS.Macros
             _random = new Random(randomSeed);
         }
 
-        /// <summary>
-        /// Evaluates the given interpolated string. Expression parts are delimited by curly braces.
-        /// For example: "name{1 + 2}" evaluates to "name3".
-        /// Note that identifiers are case-sensitive: 'name' and 'NAME' do not refer to the same variable.
-        /// </summary>
-        public string EvaluateInterpolatedString(string interpolatedString)
-        {
-            if (interpolatedString == null)
-                return null;
-
-            return _expressionRegex.Replace(interpolatedString, match =>
-            {
-                var expression = match.Groups["expression"].Value;
-                var result = EvaluateExpression(expression);
-                return Interpreter.Print(result);
-            });
-        }
 
         /// <summary>
-        /// Evaluates the given expression and returns the resulting value.
+        /// Calls <see cref="Evaluation.EvaluateInterpolatedString(string, EvaluationContext)"/>, using this instance's evaluation context.
         /// </summary>
-        public object EvaluateExpression(string expression)
-        {
-            if (string.IsNullOrEmpty(expression?.Trim()))
-                return null;
-
-            return Interpreter.Evaluate(expression, _evaluationContext);
-        }
+        public string EvaluateInterpolatedString(string interpolatedString) => Evaluation.EvaluateInterpolatedString(interpolatedString, _evaluationContext);
 
         /// <summary>
-        /// Returns true if the given string contains one or more expressions (delimited by curly braces).
+        /// Calls <see cref="Evaluation.EvaluateExpression(string, EvaluationContext)"/>, using this instance's evaluation context.
         /// </summary>
-        public static bool ContainsExpressions(string interpolatedString)
-            => _expressionRegex.IsMatch(interpolatedString);
+        public object EvaluateExpression(string expression) => Evaluation.EvaluateExpression(expression, _evaluationContext);
 
 
         /// <summary>
