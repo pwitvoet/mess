@@ -56,57 +56,26 @@ namespace MScript.Evaluation
             foreach (var method in methodsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static))
             {
                 var thisParameter = method.GetParameters()[0];
-                var thisTypeDescriptor = GetTypeDescriptor(thisParameter.ParameterType);
+                var thisTypeDescriptor = NativeUtils.GetTypeDescriptor(thisParameter.ParameterType);
 
                 if (method.Name.StartsWith("GET_"))
                 {
                     thisTypeDescriptor.AddMember(new PropertyDescriptor(
                         method.Name.Substring(4),
-                        GetTypeDescriptor(method.ReturnType),
+                        NativeUtils.GetTypeDescriptor(method.ReturnType),
                         CreateGetter(method)));
                 }
                 else
                 {
                     thisTypeDescriptor.AddMember(new MethodDescriptor(
                         method.Name,
-                        GetTypeDescriptor(method.ReturnType),
-                        CreateFunction(method)));
+                        NativeUtils.GetTypeDescriptor(method.ReturnType),
+                        NativeUtils.CreateFunction(method)));
                 }
             }
         }
 
         private static Func<object, object> CreateGetter(MethodInfo method) => obj => method.Invoke(null, new object[] { obj });
-
-        private static IFunction CreateFunction(MethodInfo method)
-        {
-            // TODO: param.DefaultValue may not be an 'MScript-compatible' type!
-            var parameters = method.GetParameters()
-                .Select(param => new Parameter(param.Name, GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
-                .ToArray();
-
-            return new NativeFunction(method.Name, parameters, (arguments, context) =>
-            {
-                var result = method.Invoke(null, arguments);
-                switch (result)
-                {
-                    case true: return 1.0;
-                    case false: return null;
-                    default: return result;
-                }
-            });
-        }
-
-        private static TypeDescriptor GetTypeDescriptor(Type type)
-        {
-            if (type == typeof(double) || type == typeof(double?))
-                return Number;
-            else if (type == typeof(double[]))
-                return Vector;
-            else if (type == typeof(string))
-                return String;
-
-            throw new NotSupportedException($"No type descriptor for {type.FullName}.");
-        }
 
 
         static class VectorMembers
