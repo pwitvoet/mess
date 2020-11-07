@@ -1,13 +1,10 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics;
-using MESS.Mathematics.Spatial;
 using MScript;
 using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace MESS.Macros
 {
@@ -54,9 +51,9 @@ namespace MESS.Macros
         public Transform Transform { get; }
 
 
+        private Random _random;
         private InstantiationContext _parentContext;
         private EvaluationContext _evaluationContext;
-        private Random _random;
 
         private int _nextID = 1;
 
@@ -68,9 +65,22 @@ namespace MESS.Macros
             InstantiationContext parentContext = null,
             string workingDirectory = null)
         {
+            // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
+            // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
+            // NOTE: even with explicit seeding, a random value is always obtained from the parent context.
+            //       This ensures that switching between explicit and implicit seeding does not result in 'sibling' contexts
+            //       getting different seed values.
+            var randomSeed = parentContext?._random.Next() ?? 0;
+            if (insertionEntityProperties != null &&
+                insertionEntityProperties.TryGetValue("random_seed", out var value) &&
+                double.TryParse(value, out var doubleValue))
+            {
+                randomSeed = (int)doubleValue;
+            }
+            _random = new Random(randomSeed);
+
             _parentContext = parentContext;
-            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties);
-            RegisterContextFunctions();
+            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random);
 
             ID = GetRootContext()._nextID++;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
@@ -88,20 +98,6 @@ namespace MESS.Macros
                     OutputMap.Properties[kv.Key] = kv.Value;
             }
             Transform = transform ?? Transform.Identity;
-
-            // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
-            // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
-            // NOTE: even with explicit seeding, a random value is always obtained from the parent context.
-            //       This ensures that switching between explicit and implicit seeding does not result in 'sibling' contexts
-            //       getting different seed values.
-            var randomSeed = parentContext?._random.Next() ?? 0;
-            if (insertionEntityProperties != null &&
-                insertionEntityProperties.TryGetValue("random_seed", out var value) &&
-                double.TryParse(value, out var doubleValue))
-            {
-                randomSeed = (int)doubleValue;
-            }
-            _random = new Random(randomSeed);
         }
 
 
@@ -115,12 +111,6 @@ namespace MESS.Macros
         /// </summary>
         public object EvaluateExpression(string expression) => Evaluation.EvaluateExpression(expression, _evaluationContext);
 
-
-        /// <summary>
-        /// Returns a random integer. Min is inclusive, max is exclusive.
-        /// </summary>
-        public int GetRandomInteger(int min, int max) => _random.Next(min, max);
-
         /// <summary>
         /// Returns a random double. Min is inclusive, max is exclusive.
         /// </summary>
@@ -131,50 +121,5 @@ namespace MESS.Macros
 
         // NOTE: Returns the first parent context who'se template is not a sub-template but a template loaded from a file:
         private InstantiationContext GetNearestMapFileContext() => !Template.IsSubTemplate ? this : _parentContext?.GetNearestMapFileContext();
-
-        private void RegisterContextFunctions()
-        {
-            RegisterFunction(new NativeFunction("id", Array.Empty<Parameter>(), GetID));
-            RegisterFunction(new NativeFunction("iid", Array.Empty<Parameter>(), GetInstanceID));
-
-            RegisterFunction(new NativeFunction("rand", new[] {
-                new Parameter("min", BaseTypes.Number, isOptional: true),
-                new Parameter("max", BaseTypes.Number, isOptional: true),
-            }, GetRandomDouble));
-
-            RegisterFunction(new NativeFunction("randi", new[] {
-                new Parameter("min", BaseTypes.Number, isOptional: true),
-                new Parameter("max", BaseTypes.Number, isOptional: true),
-            }, GetRandomInteger));
-        }
-
-        private void RegisterFunction(IFunction function) => _evaluationContext.Bind(function.Name, function);
-
-        private object GetID(object[] arguments, EvaluationContext context) => context.Resolve("targetname") ?? ID;
-
-        private object GetInstanceID(object[] arguments, EvaluationContext context) => ID;
-
-        private object GetRandomDouble(object[] arguments, EvaluationContext context)
-        {
-            if (!(arguments[0] is double min))
-                return GetRandomDouble(0.0, 1.0);
-
-            if (!(arguments[1] is double max))
-                max = 0.0;
-
-            return GetRandomDouble(Math.Min(min, max), Math.Max(min, max));
-        }
-
-        private object GetRandomInteger(object[] arguments, EvaluationContext context)
-        {
-            // NOTE: MScript only uses doubles, not ints.
-            if (!(arguments[0] is double min))
-                return (double)GetRandomInteger(0, 2);
-
-            if (!(arguments[1] is double max))
-                max = 0.0;
-
-            return (double)GetRandomInteger((int)Math.Min(min, max), (int)Math.Max(min, max));
-        }
     }
 }

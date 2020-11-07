@@ -79,24 +79,30 @@ namespace MESS.Macros
         {
             Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
 
-            var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
-            foreach (var entity in map.Entities)
+            var randomSeed = 0;
+            if (map.Properties.TryGetValue("random_seed", out var value) && double.TryParse(value, out var doubleValue))
             {
+                randomSeed = (int)doubleValue;
+            }
+            var random = new Random(randomSeed);
+
+            var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
+            for (int entityID = 0; entityID < map.Entities.Count; entityID++)
+            {
+                var entity = map.Entities[entityID];
+
                 var matchingDirectives = directiveLookup[entity.ClassName];
                 foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity, rewriteDirective);
+                    ApplyRewriteDirective(entity, rewriteDirective, entityID, random);
             }
         }
 
-        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective)
+        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective, int entityID, Random random)
         {
-            // TODO: Include function bindings! (including rand and randi, but not id and iid)
-            var context = Evaluation.ContextFromProperties(entity.Properties);
+            var context = Evaluation.ContextFromProperties(entity.Properties, entityID, random);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
-                // TODO: We need to use InstantiationContext.EvaluateInterpolatedString here -- but with our own context!
-                //       -- so that method needs to be extracted somehow.
                 if (!ruleGroup.HasCondition || Interpreter.IsTrue(PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(ruleGroup.Condition, context))))
                 {
                     foreach (var rule in ruleGroup.Rules)

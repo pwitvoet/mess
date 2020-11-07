@@ -16,13 +16,22 @@ namespace MESS.Macros
         private static EvaluationContext _globalsContext;
 
 
-        public static EvaluationContext ContextFromProperties(IDictionary<string, string> properties)
+        /// <summary>
+        /// Returns an evaluation context that contains bindings for 'standard library' functions, for instance ID and randomness functions,
+        /// and bindings for the given properties (which have been parsed into properly typed values).
+        /// </summary>
+        public static EvaluationContext ContextFromProperties(IDictionary<string, string> properties, double id, Random random)
         {
-            return new EvaluationContext(
+            var evaluationContext = new EvaluationContext(
                 properties?.ToDictionary(
                     kv => kv.Key,
                     kv => PropertyExtensions.ParseProperty(kv.Value)),
                 _globalsContext);
+
+            var instanceFunctions = new InstanceFunctions(id, random);
+            RegisterInstanceMethods(evaluationContext, instanceFunctions);
+
+            return evaluationContext;
         }
 
 
@@ -66,17 +75,26 @@ namespace MESS.Macros
         {
             // The globals context gives access to various global functions:
             _globalsContext = new EvaluationContext();
-            RegisterMembers(_globalsContext, typeof(GlobalFunctions));
+            RegisterStaticMethods(_globalsContext, typeof(GlobalFunctions));
 
             // as well as some constants:
             _globalsContext.Bind("PI", Math.PI);
         }
 
-        private static void RegisterMembers(EvaluationContext context, Type functionsContainer)
+        private static void RegisterStaticMethods(EvaluationContext context, Type functionsContainer)
         {
-            foreach (var method in functionsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            foreach (var method in functionsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
             {
                 var function = NativeUtils.CreateFunction(method);
+                context.Bind(function.Name, function);
+            }
+        }
+
+        private static void RegisterInstanceMethods(EvaluationContext context, object instance)
+        {
+            foreach (var method in instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                var function = NativeUtils.CreateFunction(method, instance);
                 context.Bind(function.Name, function);
             }
         }
@@ -124,6 +142,48 @@ namespace MESS.Macros
                     color[i] = clamp(color[i], 0, 255);
                 return color;
             }
+        }
+
+
+        class InstanceFunctions
+        {
+            private double _id;
+            private Random _random;
+
+
+            public InstanceFunctions(double id, Random random)
+            {
+                _id = id;
+                _random = random;
+            }
+
+
+            public string id(EvaluationContext context) => context.Resolve("targetname")?.ToString() ?? _id.ToString();
+            public double iid() => _id;
+
+            public double rand(double? min, double? max)
+            {
+                if (min == null)        // rand():
+                    return GetRandomDouble(0, 1);
+                else if (max == null)   // rand(max):
+                    max = 0;
+
+                return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
+            }
+
+            public double randi(double? min, double? max)
+            {
+                if (min == null)
+                    return GetRandomInteger(0, 2);
+                else if (max == null)
+                    max = 0;
+
+                return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
+            }
+
+
+            private double GetRandomDouble(double min, double max) => min + _random.NextDouble() * (max - min);
+            private int GetRandomInteger(int min, int max) => _random.Next(min, max);
         }
     }
 }
