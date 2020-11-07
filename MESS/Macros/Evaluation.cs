@@ -104,8 +104,18 @@ namespace MESS.Macros
         {
             public static double min(double value1, double value2) => Math.Min(value1, value2);
             public static double max(double value1, double value2) => Math.Max(value1, value2);
-            public static double clamp(double value, double min, double max) => Math.Max(min, Math.Min(value, max));
+            public static double clamp(double value, double min, double max)
+            {
+                if (min > max)
+                {
+                    var temp = min;
+                    min = max;
+                    max = temp;
+                }
+                return Math.Max(min, Math.Min(value, max));
+            }
             public static double abs(double value) => Math.Abs(value);
+            public static double round(double value) => Math.Round(value);
             public static double floor(double value) => Math.Floor(value);
             public static double ceil(double value) => Math.Ceiling(value);
 
@@ -139,7 +149,11 @@ namespace MESS.Macros
                     color = color.Take(4).ToArray();
 
                 for (int i = 0; i < 3; i++)
-                    color[i] = clamp(color[i], 0, 255);
+                    color[i] = clamp(Math.Round(color[i]), 0, 255);
+
+                if (color.Length > 3)
+                    color[3] = Math.Round(color[3]);
+
                 return color;
             }
         }
