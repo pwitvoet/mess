@@ -102,6 +102,7 @@ namespace MESS.Macros
 
         static class GlobalFunctions
         {
+            // Mathematics:
             public static double min(double value1, double value2) => Math.Min(value1, value2);
             public static double max(double value1, double value2) => Math.Max(value1, value2);
             public static double clamp(double value, double min, double max)
@@ -118,10 +119,10 @@ namespace MESS.Macros
             public static double round(double value) => Math.Round(value);
             public static double floor(double value) => Math.Floor(value);
             public static double ceil(double value) => Math.Ceiling(value);
-
             public static double pow(double value, double power) => Math.Pow(value, power);
             public static double sqrt(double value) => Math.Sqrt(value);
 
+            // Trigonometry:
             public static double sin(double radians) => Math.Sin(radians);
             public static double cos(double radians) => Math.Cos(radians);
             public static double tan(double radians) => Math.Tan(radians);
@@ -129,11 +130,10 @@ namespace MESS.Macros
             public static double acos(double cosine) => Math.Acos(cosine);
             public static double atan(double tangent) => Math.Atan(tangent);
             public static double atan2(double y, double x) => Math.Atan2(y, x);
-
             public static double deg2rad(double degrees) => (degrees / 180.0) * Math.PI;
             public static double rad2deg(double radians) => (radians / Math.PI) * 180.0;
 
-
+            // Colors:
             /// <summary>
             /// Returns a vector with either 3 or 4 values, where the first 3 values are between 0 and 255.
             /// Useful to 'sanitize' colors.
@@ -172,9 +172,11 @@ namespace MESS.Macros
             }
 
 
+            // Entity ID:
             public string id(EvaluationContext context) => context.Resolve("targetname")?.ToString() ?? _id.ToString();
             public double iid() => _id;
 
+            // Randomness:
             public double rand(double? min, double? max)
             {
                 if (min == null)        // rand():
@@ -184,7 +186,6 @@ namespace MESS.Macros
 
                 return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
             }
-
             public double randi(double? min, double? max)
             {
                 if (min == null)

@@ -69,7 +69,7 @@ Unlike many other languages, where working with `null` or `None` often results i
 In logical contexts, `none` acts as false, while anything that is not `none` acts as true.
 
 
-## Operations
+## Operators
 ### Arithmetic
 The arithmetic operators are:
 
@@ -115,8 +115,8 @@ The comparison operators are:
 ### Logical
 The logical operators are:
 
-- `a and b` - logical 'and'
-- `a or b` - logical 'or'
+- `a && b` - logical 'and' (can also be written as `a and b`)
+- `a || b` - logical 'or' (can also be written as `a or b`)
 
 #### Notes
 
@@ -129,7 +129,7 @@ The logical operators are:
 The negation operators are:
 
 - `-a` - numeric negation
-- `!a` - logical negation
+- `!a` - logical negation (can also be written as `not a`)
 
 #### Notes
 
@@ -149,11 +149,80 @@ The conditional operator is:
 - If `condition` is true (again, anything but `none` is true) then this produces the `a` operand, otherwise it produces the `b` operand.
 - Only the chosen operand is evaluated.
 
+### Parentheses
+Parentheses can be used to control the order in which operations are evaluated, overruling their default associativity and precedence. For example, `2 + 4 * 5` evaluates to `22`, because `*` has a higher precedence than `+`, so `4 * 5` is evaluated first. But `(2 + 4) * 5` evaluates to `30`, because the parentheses force the `2 + 4` part to be evaluated first.
+
+- `(expression)` - same as `expression`
+
 
 ## Functions
-Mess also provides the following functions:
+MESS provides a small number of 'standard library' functions.
 
-- `iid()` - Returns the numeric ID of the current instance.
-- `id()` - Returns either the `targetname` of the macro entity that is creating the current instance, or the numeric ID of the current instance. Shorthand for `targetname or iid()`.
-- `rand(min?, max?)` - Returns a random number between `min` and `max`. If only one argument is specified, then `min` is set to `0.0` and the argument is used as `max`. If no arguments are specified, then the function returns a random number between `0.0` and `1.0`.
-- `randi(min?, max?)` - Returns a random integer number between `min` (inclusive) and `max` (exclusive). If only one argument is specified, then `min` is set to 0 and the argument is used as `max`. If no arguments are specified, then the function returns either `0` or `1`.
+### Entity ID:
+
+- `number iid()`
+    - Returns the numeric ID of the current instance. When used inside an entity rewrite rule, returns the ID of the current entity.
+- `string id()`
+    - Returns either the `targetname` of the macro entity that is creating the current instance, or the numeric ID (as a string) of the current instance. Shorthand for `targetname or (iid() + '')`.
+
+### Randomness:
+To ensure the exact same result each time a map is compiled, randomness in MESS is not actually random but pseudo-random. To get different results, it's possible to provide a different 'seed' value.
+
+The default seed value is 0. To provide a different seed, add a `random_seed` attribute to the map properties (this affects expressions in rewrite rules and expressions in entities that are not part of a template) or to a `macro_insert`, `macro_cover`, `macro_fill` or `macro_brush` entity (this affects expressions in entities that are part of the chosen template).
+
+- `number rand(number? min, number? max)`
+    - Returns a random number between `min` and `max`.
+    - If only one argument is specified, then `min` is set to `0.0` and the argument is used as `max`.
+    - If no arguments are specified, then the function returns a random number between `0.0` and `1.0`.
+- `number randi(number? min, number? max)`
+    - Returns a random integer number between `min` (inclusive) and `max` (exclusive).
+    - If only one argument is specified, then `min` is set to 0 and the argument is used as `max`.
+    - If no arguments are specified, then the function returns either `0` or `1`.
+
+### Mathematics:
+Basic math functions:
+
+- `number min(number value1, number value2)`
+    - Returns the smallest of the two given values.
+- `number max(number value1, number value2)`
+    - Returns the biggest of the two given values.  
+- `number clamp(number value, number min, number max)`
+    - Returns the given value if it is inside the min-max range. Otherwise, returns min (if the given value is too small) or max (if the given value is too large). 
+- `number abs(number value)`
+    - Returns the absolute value of the given value.
+- `number round(number value)`
+    - Returns the given value rounded to the nearest integer value.
+- `number floor(number value)`
+    - Returns the given value rounded down to the nearest integer value.
+- `number ceil(number value)`
+    - Returns the given value rounded up to the nearest integer value.
+- `number pow(number value, number power)`
+    - Raises the given value to the given power. 
+- `number sqrt(number value)`
+    - Takes the square root of the given value.
+
+### Trigonometry:
+Functions related to rotations and angles:
+
+- `number sin(number radians)`
+    - Returns the sine of the given angle.
+- `number cos(number radians)`
+    - Returns the cosine of the given angle.
+- `number tan(number radians)`
+    - Returns the tangent of the given angle.
+- `number asin(number sine)`
+    - Returns the angle (in radians) whose sine is the given value.
+- `number acos(number cosine)`
+    - Returns the angle (in radians) whose cosine is the given value.
+- `number atan(number tangent)`
+    - Returns the angle (in radians) whose tangent is the given value.
+- `number atan2(number y, number x)`
+    - Returns the angle (in radians) whose tangent is the quotient of the given values. 
+- `number deg2rad(number degrees)`
+    - Converts degrees (0 - 360°) to radians (0 - 2π). 
+- `number rad2deg(number radians)`
+    - Converts radians (0 - 2π) to degrees (0 - 360°).
+
+### Colors:
+- `vector color(vector color)`
+    - Returns a valid color vector, where each value is rounded and the first 3 values are clamped to the 0-255 range. If the given vector is too short, it will be padded with 0's until it contains 3 values. If the given vector is too long, only the first 4 values will be used.
