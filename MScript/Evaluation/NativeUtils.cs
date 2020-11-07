@@ -12,23 +12,42 @@ namespace MScript.Evaluation
         /// The method parameters must all be MScript-compatible types.
         /// </summary>
         /// <exception cref="NotSupportedException"/>
-        public static NativeFunction CreateFunction(MethodInfo method)
+        /// <exception cref="InvalidOperationException"/>
+        public static NativeFunction CreateFunction(MethodInfo method, object instance = null)
         {
+            if (!method.IsStatic && instance == null)
+                throw new InvalidOperationException($"A member function requires an instance.");
+
+            if (method.IsStatic)
+                instance = null;
+
             // TODO: param.DefaultValue may not be an 'MScript-compatible' type!
+            var nativeParameters = method.GetParameters();
+            var contextParametersCount = nativeParameters.Count(parameter => parameter.ParameterType == typeof(EvaluationContext));
+            if (contextParametersCount > 0 && nativeParameters[0].ParameterType != typeof(EvaluationContext))
+                throw new InvalidOperationException($"Methods that accept an {typeof(EvaluationContext)} must have that as their first parameter.");
+            else if (contextParametersCount > 1)
+                throw new InvalidOperationException($"Only one {typeof(EvaluationContext)} parameter is allowed.");
+
             var parameters = method.GetParameters()
+                .Where(parameter => parameter.ParameterType != typeof(EvaluationContext))
                 .Select(param => new Parameter(param.Name, GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
                 .ToArray();
 
-            return new NativeFunction(method.Name, parameters, (arguments, context) =>
+            if (contextParametersCount > 0)
             {
-                var result = method.Invoke(null, arguments);
-                switch (result)
-                {
-                    case true: return 1.0;
-                    case false: return null;
-                    default: return result;
-                }
-            });
+                return new NativeFunction(
+                    method.Name,
+                    parameters,
+                    (arguments, context) => ConvertResult(method.Invoke(instance, arguments.Prepend(context).ToArray())));
+            }
+            else
+            {
+                return new NativeFunction(
+                    method.Name,
+                    parameters,
+                    (arguments, context) => ConvertResult(method.Invoke(instance, arguments)));
+            }
         }
 
         /// <summary>
@@ -47,6 +66,21 @@ namespace MScript.Evaluation
                 return BaseTypes.Function;
 
             throw new NotSupportedException($"No type descriptor for {type.FullName}.");
+        }
+
+
+        /// <summary>
+        /// Helper method that converts 'native' boolean results to an MScript-compatible result.
+        /// Any other result is returned as-is.
+        /// </summary>
+        private static object ConvertResult(object result)
+        {
+            switch (result)
+            {
+                case true: return 1.0;
+                case false: return null;
+                default: return result;
+            }
         }
     }
 }
