@@ -144,6 +144,11 @@ namespace MScript.Evaluation
 
                 return self.Substring((int)offset, (int)length);
             }
+
+            public static bool contains(string self, string str) => self.Contains(str);
+            public static bool startswith(string self, string str) => self.StartsWith(str);
+            public static bool endswith(string self, string str) => self.EndsWith(str);
+            public static string replace(string self, string str, string replacement) => self.Replace(str, replacement);
         }
     }
 }

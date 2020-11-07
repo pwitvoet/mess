@@ -37,17 +37,17 @@ Vectors can be indexed, with the first number being at position 0: `[1, 2, 3][0]
 #### Properties
 Vectors are mostly used for rotation angles, colors and positions, which is reflected by their properties:
 
-- `pitch` - same as `vector[0]`
-- `yaw` - same as `vector[1]`
-- `roll` - same as `vector[2]`
-- `r` - same as `vector[0]`
-- `g` - same as `vector[1]`
-- `b` - same as `vector[2]`
-- `brightness` - same as `vector[3]`
-- `x` - same as `vector[0]`
-- `y` - same as `vector[1]`
-- `z` - same as `vector[2]`
-- `length` - how many numbers a vector contains: `[0, 0, 0].length` produces `3`.
+- `number pitch` - same as `vector[0]`
+- `number yaw` - same as `vector[1]`
+- `number roll` - same as `vector[2]`
+- `number r` - same as `vector[0]`
+- `number g` - same as `vector[1]`
+- `number b` - same as `vector[2]`
+- `number brightness` - same as `vector[3]`
+- `number x` - same as `vector[0]`
+- `number y` - same as `vector[1]`
+- `number z` - same as `vector[2]`
+- `number length` - how many numbers a vector contains: `[0, 0, 0].length` produces `3`.
 
 
 ### `string`
@@ -55,10 +55,22 @@ A piece of text. Any attribute value that does not look like a number or a seque
 
 Strings can be indexed in much the same way as vectors can, except that indexing returns a 1-character string instead of a number. Negative indexing is also supported, and indexes that do not exist produce the special value `none`.
 
-#### Properties and member functions
+#### Properties
 
-- `length` - how many characters a string contains: `'hello'.length` produces `5`.
-- `substr(offset, length?)` - this function returns a specific part of a string. Offset can be negative, just as with indexing. Length is optional - if omitted, the rest of the string is returned, starting at offset. Unlike indexing, this returns an empty string if offset and length do not fall within the string boundaries.
+- `number length`
+    - Returns the length of a string: `'hello'.length` produces `5`.
+
+#### Member functions
+- `string substr(number offset, number length?)`
+    - This function returns a specific part of a string. Offset can be negative, just as with indexing. Length is optional - if omitted, the rest of the string is returned, starting at offset. Unlike indexing, this returns an empty string if offset and length do not fall within the string boundaries.
+- `bool contains(string str)`
+    - Returns `1` (true) if the current string contains the given string, or `none` (false) if it does not.
+- `bool startswith(string str)`
+    - Returns `1` (true) if the current string starts with the given string, or `none` (false) if it does not. 
+- `bool endswith(string str)`
+    - Returns `1` (true) if the current string ends with the given string, or `none` (false) if it does not.
+- `string replace(string str, string replacement)`
+    - Returns a string where all occurrences of `str` have been replaced with `replacement`. 
 
 
 ### `none`
