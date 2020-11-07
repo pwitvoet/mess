@@ -261,8 +261,14 @@ namespace MScript.Parsing
                 case TokenType.GreaterThanOrEqual: return BinaryOperator.GreaterThanOrEqual;
                 case TokenType.LessThan: return BinaryOperator.LessThan;
                 case TokenType.LessThanOrEqual: return BinaryOperator.LessThanOrEqual;
-                case TokenType.And: return BinaryOperator.And;
-                case TokenType.Or: return BinaryOperator.Or;
+
+                case TokenType.DoubleAmpersand:
+                case TokenType.And:
+                    return BinaryOperator.And;
+
+                case TokenType.DoubleBar:
+                case TokenType.Or:
+                    return BinaryOperator.Or;
 
                 default: return null;
             }
@@ -275,8 +281,12 @@ namespace MScript.Parsing
 
             switch (token.Type)
             {
-                case TokenType.Minus: return UnaryOperator.Negate;
-                case TokenType.ExclamationMark: return UnaryOperator.LogicalNegate;
+                case TokenType.Minus:
+                    return UnaryOperator.Negate;
+
+                case TokenType.ExclamationMark:
+                case TokenType.Not:
+                    return UnaryOperator.LogicalNegate;
 
                 default: return null;
             }

@@ -72,13 +72,13 @@ namespace MScript.Tokenizing
                     if (!context.MoveNext() || context.Current != '&')
                         throw ParseError(context, $"Expected '&&' but found '&{context.Current}'.");
                     context.MoveNext();
-                    return new Token(TokenType.And);
+                    return new Token(TokenType.DoubleAmpersand);
 
                 case '|':
                     if (!context.MoveNext() || context.Current != '|')
                         throw ParseError(context, $"Expected '||' but found '|{context.Current}'.");
                     context.MoveNext();
-                    return new Token(TokenType.Or);
+                    return new Token(TokenType.DoubleBar);
 
                 case '\'':
                     return ReadString(context);
@@ -168,6 +168,7 @@ namespace MScript.Tokenizing
                 case "NONE": return TokenType.None;
                 case "AND": return TokenType.And;
                 case "OR": return TokenType.Or;
+                case "NOT": return TokenType.Not;
                 case "IF": return TokenType.If;
                 case "ELSE": return TokenType.Else;
                 default: return null;

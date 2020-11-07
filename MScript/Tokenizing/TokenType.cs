@@ -17,6 +17,8 @@ namespace MScript.Tokenizing
         Comma,              // ,
         QuestionMark,       // ?
         Colon,              // :
+        DoubleAmpersand,    // &&
+        DoubleBar,          // ||
 
         Plus,               // +
         Minus,              // -
@@ -34,6 +36,7 @@ namespace MScript.Tokenizing
         None,               // none
         And,                // and
         Or,                 // or
+        Not,                // not
         If,                 // if
         Else,               // else
     }
