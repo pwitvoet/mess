@@ -156,6 +156,16 @@ namespace MESS.Macros
 
                 return color;
             }
+
+            // Flags:
+            public static bool hasflag(double flags, double flag) => (((int)flags >> (int)flag) & 1) == 1;
+            public static double setflag(double flags, double flag, double? set = 1)
+            {
+                if (set != null && set != 0)
+                    return (int)flags | (1 << (int)flag);
+                else
+                    return (int)flags & ~(1 << (int)flag);
+            }
         }
 
 
