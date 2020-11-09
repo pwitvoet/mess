@@ -8,8 +8,34 @@ namespace MScript.Evaluation
     public static class NativeUtils
     {
         /// <summary>
+        /// Creates functions for all public static methods in the given type, and creates bindings for them in the given context.
+        /// </summary>
+        public static void RegisterStaticMethods(EvaluationContext context, Type functionsContainer)
+        {
+            foreach (var method in functionsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                var function = CreateFunction(method);
+                context.Bind(function.Name, function);
+            }
+        }
+
+        /// <summary>
+        /// Creates functions for all public instance methods in the given instance, and creates bindings for them in the given context.
+        /// </summary>
+        public static void RegisterInstanceMethods(EvaluationContext context, object instance)
+        {
+            foreach (var method in instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                var function = CreateFunction(method, instance);
+                context.Bind(function.Name, function);
+            }
+        }
+
+        /// <summary>
         /// Creates an MScript function that calls a 'native' method.
-        /// The method parameters must all be MScript-compatible types.
+        /// The method parameters and return type must all be MScript-compatible types
+        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="IFunction"/>, <see cref="bool"/> or <see cref="object"/>).
+        /// Note that <see cref="bool"/> can only be used for return types, and that no type-checking is performed for parameters of type <see cref="object"/>.
         /// </summary>
         /// <exception cref="NotSupportedException"/>
         /// <exception cref="InvalidOperationException"/>

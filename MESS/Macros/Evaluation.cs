@@ -4,7 +4,6 @@ using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace MESS.Macros
@@ -29,7 +28,7 @@ namespace MESS.Macros
                 _globalsContext);
 
             var instanceFunctions = new InstanceFunctions(id, random);
-            RegisterInstanceMethods(evaluationContext, instanceFunctions);
+            NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
         }
@@ -75,28 +74,10 @@ namespace MESS.Macros
         {
             // The globals context gives access to various global functions:
             _globalsContext = new EvaluationContext();
-            RegisterStaticMethods(_globalsContext, typeof(GlobalFunctions));
+            NativeUtils.RegisterStaticMethods(_globalsContext, typeof(GlobalFunctions));
 
             // as well as some constants:
             _globalsContext.Bind("PI", Math.PI);
-        }
-
-        private static void RegisterStaticMethods(EvaluationContext context, Type functionsContainer)
-        {
-            foreach (var method in functionsContainer.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
-            {
-                var function = NativeUtils.CreateFunction(method);
-                context.Bind(function.Name, function);
-            }
-        }
-
-        private static void RegisterInstanceMethods(EvaluationContext context, object instance)
-        {
-            foreach (var method in instance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            {
-                var function = NativeUtils.CreateFunction(method, instance);
-                context.Bind(function.Name, function);
-            }
         }
 
 
