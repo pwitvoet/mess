@@ -64,6 +64,8 @@ namespace MScript.Evaluation
                 return BaseTypes.String;
             else if (typeof(IFunction).IsAssignableFrom(type))
                 return BaseTypes.Function;
+            else if (type == typeof(bool) || type == typeof(object))
+                return BaseTypes.Any;
 
             throw new NotSupportedException($"No type descriptor for {type.FullName}.");
         }

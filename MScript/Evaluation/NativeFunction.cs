@@ -29,6 +29,9 @@ namespace MScript.Evaluation
             for (int i = 0; i < arguments.Length; i++)
             {
                 var argumentType = TypeDescriptor.GetType(arguments[i]);
+                if (argumentType == BaseTypes.Any)
+                    continue;
+
                 if (argumentType != Parameters[i].Type && !(Parameters[i].IsOptional && argumentType == BaseTypes.None))
                     throw new InvalidOperationException($"Parameter '{Parameters[i].Name}' is of type {Parameters[i].Type.Name}, but a {argumentType.Name} was given.");
             }

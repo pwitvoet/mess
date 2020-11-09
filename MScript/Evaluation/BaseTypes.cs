@@ -32,6 +32,11 @@ namespace MScript.Evaluation
         /// </summary>
         public static TypeDescriptor Function { get; }
 
+        /// <summary>
+        /// Any is only used in function signatures, and indicates that any of the other types can be used.
+        /// </summary>
+        public static TypeDescriptor Any { get; }
+
 
         static BaseTypes()
         {
@@ -40,6 +45,7 @@ namespace MScript.Evaluation
             Vector = new TypeDescriptor(nameof(Vector));
             String = new TypeDescriptor(nameof(String));
             Function = new TypeDescriptor(nameof(Function));
+            Any = new TypeDescriptor(nameof(Any));
 
             RegisterMembers(typeof(VectorMembers));
             RegisterMembers(typeof(StringMembers));
