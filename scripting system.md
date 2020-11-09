@@ -246,3 +246,13 @@ Some entities use flags - various options that can be enabled or disabled. All o
     - Checks whether the specified flag is enabled in the given flags value. Returns either `none` (false) or `1` (true).
 - `number setflag(number flags, number flag, number? set)`
     - Returns the given flags value, but with the specified flag enabled or disabled. If `set` is `0`, the flag will be disabled. Any other value for `set`, or not providing the `set` argument at all, will enable the flag.
+
+### Directories:
+The following functions are only available in entity rewrite rules. They are useful for locating template maps when rewriting custom entities to macro entities that must reference specific templates.
+
+It is recommended to store all template maps relative to a specific directory, and to pass that directory to MESS with the `-dir` command-line argument. Template maps can then be referenced like `{dir()}\my_template_map.rmf`.
+
+- `string dir()`
+    - Returns the directory that was specified with the `-dir` command-line argument. If MESS was started without a `-dir` argument, then this function returns the directory that the main map is located in.
+- `string messdir()`
+    - Returns the directory that MESS.exe is located in. 

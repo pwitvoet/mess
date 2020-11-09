@@ -3,10 +3,12 @@ using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
+using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace MESS.Macros
 {
@@ -45,6 +47,7 @@ namespace MESS.Macros
         private int _instanceCount = 0;
 
         private RewriteDirective[] _rewriteDirectives = Array.Empty<RewriteDirective>();
+        private DirectoryFunctions _directoryFunctions;
 
 
         private MacroExpander(ExpansionSettings settings, Logger logger)
@@ -53,6 +56,7 @@ namespace MESS.Macros
             Logger = logger;
 
             _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
+            _directoryFunctions = new DirectoryFunctions(settings.Directory, Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
         }
 
 
@@ -100,6 +104,7 @@ namespace MESS.Macros
         private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective, int entityID, Random random)
         {
             var context = Evaluation.ContextFromProperties(entity.Properties, entityID, random);
+            NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -751,6 +756,24 @@ namespace MESS.Macros
                 lastElement = element;
             }
             return lastElement;
+        }
+
+
+        class DirectoryFunctions
+        {
+            private string _directory;
+            private string _messDirectory;
+
+
+            public DirectoryFunctions(string directory, string messDirectory)
+            {
+                _directory = directory;
+                _messDirectory = messDirectory;
+            }
+
+
+            public string dir() => _directory;
+            public string messdir() => _messDirectory;
         }
     }
 }
