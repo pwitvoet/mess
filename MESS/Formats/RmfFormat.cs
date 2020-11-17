@@ -57,7 +57,7 @@ namespace MESS.Formats
             if (stream.Read(docInfoBuffer, 0, docInfoBuffer.Length) == docInfoBuffer.Length)
             {
                 var docInfoMagicString = Encoding.ASCII.GetString(docInfoBuffer);
-                if (docInfoMagicString != "DOCINFO")
+                if (docInfoMagicString != "DOCINFO\0")
                     throw new InvalidDataException($"Expected 'DOCINFO' magic string, but found '{docInfoMagicString}'.");
 
                 var cameraVersion = stream.ReadFloat();
