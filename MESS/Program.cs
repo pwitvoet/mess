@@ -4,6 +4,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace MESS
 {
@@ -23,6 +25,14 @@ namespace MESS
 
             try
             {
+                // NOTE: The -repl argument enables a different mode, so required arguments are no longer required,
+                //       but the cmd-line parser doesn't support that, so here's a quick hacky workaround:
+                if (args.Any(arg => arg == "-repl"))
+                {
+                    RunMScriptREPL();
+                    return 0;
+                }
+
                 commandLineParser.Parse(args);
 
                 using (var logger = new Logger(new StreamWriter(Console.OpenStandardOutput()), settings.LogLevel))
@@ -63,6 +73,10 @@ namespace MESS
         private static CommandLine GetCommandLineParser(ExpansionSettings settings)
         {
             return new CommandLine()
+                .Option(
+                    "-repl",
+                    () => { },  // This argument is taken care of in Main.
+                    $"Enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop). All other arguments will be ignored.")
                 .Option(
                     "-dir",
                     s => { settings.Directory = Path.GetFullPath(s); },
@@ -125,6 +139,49 @@ namespace MESS
             {
                 logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
                 MapFormat.Save(expandedMap, file);
+            }
+        }
+
+
+        /// <summary>
+        /// Runs an MScript read-evaluate-print loop (REPL). Mainly useful for testing.
+        /// </summary>
+        private static void RunMScriptREPL()
+        {
+            Console.WriteLine($"MScript interpreter v{Assembly.GetExecutingAssembly().GetName().Version}.");
+            Console.WriteLine("Enter 'quit' to quit the interpreter.");
+            Console.WriteLine("Bindings can be created with 'name = expression'.");
+            Console.WriteLine("============================================================");
+            Console.WriteLine();
+
+            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, new Random());
+            while (true)
+            {
+                try
+                {
+                    Console.Write("> ");
+                    var input = Console.ReadLine();
+                    if (input == "quit")
+                        break;
+
+                    // TODO: Quick hacky way to support assignment, for testing purposes:
+                    var match = Regex.Match(input, @"(?<variable>\w+)\s*=\s*(?<value>[^=].*)");
+                    if (match?.Success == true)
+                    {
+                        var variable = match.Groups["variable"].Value;
+                        var value = MScript.Interpreter.Evaluate(match.Groups["value"].Value, context);
+                        context.Bind(variable, value);
+
+                        continue;
+                    }
+
+                    var result = MScript.Interpreter.Evaluate(input, context);
+                    Console.WriteLine($"< {(result != null ? MScript.Interpreter.Print(result) : "NONE")}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
+                }
             }
         }
     }
