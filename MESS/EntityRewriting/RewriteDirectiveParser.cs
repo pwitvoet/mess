@@ -93,9 +93,12 @@ namespace MESS.EntityRewriting
                 Expect(context, FgdTokenizer.TokenType.Name);
                 Expect(context, FgdTokenizer.TokenType.ParensClose);
 
-                // Description:
-                Expect(context, FgdTokenizer.TokenType.Colon);
-                Expect(context, FgdTokenizer.TokenType.String);
+                // Description (optional):
+                if (context.Current.Type == FgdTokenizer.TokenType.Colon)
+                {
+                    Expect(context, FgdTokenizer.TokenType.Colon);
+                    Expect(context, FgdTokenizer.TokenType.String);
+                }
 
                 // Default value (optional):
                 if (context.Current.Type == FgdTokenizer.TokenType.Colon)
