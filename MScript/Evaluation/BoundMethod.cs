@@ -19,6 +19,8 @@ namespace MScript.Evaluation
             _function = function;
         }
 
+        public override string ToString() => $"<FUNCTION {Name}>";
+
 
         public object Apply(object[] arguments, EvaluationContext context)
         {

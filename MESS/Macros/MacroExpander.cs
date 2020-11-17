@@ -724,12 +724,12 @@ namespace MESS.Macros
                 var removal = PropertyExtensions.ParseProperty(context.EvaluateInterpolatedString(conditionalContent.RemovalCondition));
                 if (Interpreter.IsTrue(removal) || (removal is double d && d == 0))
                 {
-                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true, excluding {conditionalContent.Contents.Count} objects.");
+                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true ({removal?.ToString()}), excluding {conditionalContent.Contents.Count} objects.");
                     excludedObjects.UnionWith(conditionalContent.Contents);
                 }
                 else
                 {
-                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is not true, keeping {conditionalContent.Contents.Count} objects.");
+                    logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is not true ({removal?.ToString()}), keeping {conditionalContent.Contents.Count} objects.");
                 }
             }
             return excludedObjects;

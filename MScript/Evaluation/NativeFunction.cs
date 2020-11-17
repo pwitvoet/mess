@@ -21,6 +21,9 @@ namespace MScript.Evaluation
             _func = func;
         }
 
+        public override string ToString() => $"<FUNCTION {Name}>";
+
+
         public object Apply(object[] arguments, EvaluationContext context)
         {
             if (arguments == null || arguments.Length != Parameters.Count)
