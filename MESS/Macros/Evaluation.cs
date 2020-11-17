@@ -168,7 +168,7 @@ namespace MESS.Macros
             public double iid() => _id;
 
             // Randomness:
-            public double rand(double? min, double? max)
+            public double rand(double? min = null, double? max = null)
             {
                 if (min == null)        // rand():
                     return GetRandomDouble(0, 1);
@@ -177,7 +177,7 @@ namespace MESS.Macros
 
                 return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
             }
-            public double randi(double? min, double? max)
+            public double randi(double? min = null, double? max = null)
             {
                 if (min == null)
                     return GetRandomInteger(0, 2);
