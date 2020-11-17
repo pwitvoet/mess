@@ -3,6 +3,7 @@ using MESS.Mathematics.Spatial;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace MESS.Formats
 {
@@ -52,15 +53,19 @@ namespace MESS.Formats
             for (int i = 0; i < pathCount; i++)
                 map.EntityPaths.Add(ReadPath(stream));
 
-            var docInfoMagicString = stream.ReadString(8);
-            if (docInfoMagicString != "DOCINFO")
-                throw new InvalidDataException($"Expected 'DOCINFO' magic string, but found '{docInfoMagicString}'.");
+            var docInfoBuffer = new byte[8];
+            if (stream.Read(docInfoBuffer, 0, docInfoBuffer.Length) == docInfoBuffer.Length)
+            {
+                var docInfoMagicString = Encoding.ASCII.GetString(docInfoBuffer);
+                if (docInfoMagicString != "DOCINFO")
+                    throw new InvalidDataException($"Expected 'DOCINFO' magic string, but found '{docInfoMagicString}'.");
 
-            var cameraVersion = stream.ReadFloat();
-            map.ActiveCameraIndex = stream.ReadInt();
-            var cameraCount = stream.ReadInt();
-            for (int i = 0; i < cameraCount; i++)
-                map.Cameras.Add(ReadCamera(stream));
+                var cameraVersion = stream.ReadFloat();
+                map.ActiveCameraIndex = stream.ReadInt();
+                var cameraCount = stream.ReadInt();
+                for (int i = 0; i < cameraCount; i++)
+                    map.Cameras.Add(ReadCamera(stream));
+            }
 
             return map;
 
