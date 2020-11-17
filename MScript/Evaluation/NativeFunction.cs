@@ -28,12 +28,27 @@ namespace MScript.Evaluation
 
             for (int i = 0; i < arguments.Length; i++)
             {
+                var parameter = Parameters[i];
                 var argumentType = TypeDescriptor.GetType(arguments[i]);
-                if (argumentType == BaseTypes.Any)
+                if (parameter.Type == BaseTypes.Any || argumentType == parameter.Type)
                     continue;
 
-                if (argumentType != Parameters[i].Type && !(Parameters[i].IsOptional && argumentType == BaseTypes.None))
-                    throw new InvalidOperationException($"Parameter '{Parameters[i].Name}' is of type {Parameters[i].Type.Name}, but a {argumentType.Name} was given.");
+                if (argumentType != BaseTypes.None)
+                    throw new InvalidOperationException($"Parameter '{parameter.Name}' is of type {parameter.Type.Name}, but a {argumentType.Name} was given.");
+
+                // 'None' is valid for optional parameters. For non-optional parameters,
+                // we'll convert it to a default value instead (if possible):
+                if (!parameter.IsOptional)
+                {
+                    if (parameter.Type == BaseTypes.Number)
+                        arguments[i] = 0.0;
+                    else if (parameter.Type == BaseTypes.Vector)
+                        arguments[i] = new double[] { };
+                    else if (parameter.Type == BaseTypes.String)
+                        arguments[i] = "";
+                    else
+                        throw new InvalidOperationException($"Parameter '{parameter.Name}' is of type {parameter.Type.Name}. {argumentType.Name} cannot be converted to this type.");
+                }
             }
 
             return _func(arguments, context);
