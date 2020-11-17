@@ -78,9 +78,7 @@ namespace MESS.Macros
                 randomSeed = (int)doubleValue;
             }
             _random = new Random(randomSeed);
-
             _parentContext = parentContext;
-            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random);
 
             ID = GetRootContext()._nextID++;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
@@ -98,6 +96,8 @@ namespace MESS.Macros
                     OutputMap.Properties[kv.Key] = kv.Value;
             }
             Transform = transform ?? Transform.Identity;
+
+            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random);
         }
 
 
