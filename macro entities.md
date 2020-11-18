@@ -2,6 +2,19 @@
 
 The entities provided by MESS are called macro entities. They're not part of the final map file, but are expanded by MESS into multiple brushes and entities.
 
+
+## Table of contents
+
+- [Template entities](#template-entities)
+    - [macro\_template](#macro\_template)
+    - [macro\_remove\_if](#macro\_remove\_if)
+- [Instance entities](#instance-entities)
+    - [macro\_insert](#macro\_insert)
+    - [macro\_cover](#macro\_cover)
+    - [macro\_fill](#macro\_fill)
+- [Other entities](#other-entities)
+    - [macro\_brush](#macro\_brush)
+
 ## Template entities
 
 ### macro\_template

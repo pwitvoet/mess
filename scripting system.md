@@ -3,6 +3,34 @@
 MESS contains a small scripting language named MScript. Its syntax is similar to that of Python and Javascript.
 
 
+## Table of contents
+
+- [Usage](#usage)
+    - [Embedded expressions](#embedded-expressions)
+    - [Parent entities](#parent-entities)
+- [Common expressions](#common-expressions)
+- [Data types](#data-types)
+    - [number](#number)
+    - [vector](#vector)
+    - [string](#string)
+    - [none](#none)
+- [Operators](#operators)
+    - [Arithmetic](#arithmetic)
+    - [Equality](#equality)
+    - [Comparisons](#comparisons)
+    - [Logical](#logical)
+    - [Negation](#negation)
+    - [Conditional](#conditional)
+    - [Parentheses](#parentheses)
+- [Functions](#functions)
+    - [Entity ID](#entity-id)
+    - [Randomness](#randomness)
+    - [Mathematics](#mathematics)
+    - [Trigonometry](#trigonometry)
+    - [Colors](#colors)
+    - [Flags](#flags)
+    - [Directories](#directories)
+
 ## Usage
 ### Embedded expressions
 MScript expressions can be embedded in entity attribute names or values by surrounding them with curly braces. For example, `fire_{4 + 5}` contains the expression `4 + 5`, which evaluates to `9`, so the resulting value will be `fire_9`.

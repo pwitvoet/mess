@@ -2,8 +2,19 @@
 *Ah, Freeman, I see you are in this mess too!*
 
 
+## Table of contents
+
+- [Introduction](#introduction)
+- [Quick examples](#quick-examples)
+- [How to install MESS](#how-to-install-mess)
+    - [Command-line arguments](#command-line-arguments) 
+- [How to use MESS](#how-to-use-mess)
+    - [Macro entities](#macro-entities)
+    - [Entity rewrite rules](#entity-rewrite-rules)
+    - [Scripting](#scripting)
+
 ## Introduction
-MESS is a Half-Life level compile tool that helps automating various tasks. It provides a **templating system** and several **macro entities** for creating template instances, which can be customized with a basic **scripting system**.
+MESS is a Half-Life level compile tool that helps automating various tasks. It provides a **templating system** and several **macro entities** for creating template instances, which can be customized with a basic **scripting system**. And with **entity rewrite rules**, templates can be used as if they were actual entities.
 
 Here are some of the things that MESS can do:
 
@@ -50,6 +61,7 @@ The following instructions assume that you're using the Hammer or J.A.C.K. level
 By default, MESS will overwrite the given .map file. If you want to save the result to a different file, just add another path: `"$path/$file.$ext" "<OUTPUT PATH + FILENAME>"`. Additionally, MESS takes the following options (which must be added before the input and output parameters):
 
 - **-dir *directory*** - Specifies which directory to use when resolving relative template map paths. By default, the directory where the input map file is located is used. This only applies to relative template paths in the input map file.
+- **-fgd *paths*** - The .fgd file(s) that contain MESS entity rewrite rules. To provide multiple paths, separate them with a semicolon (`path1;path2`). 
 - **-maxrecursion *number*** - The maximum recursion depth for templates that insert themselves or other templates. This is a safety mechanism that guards against accidental infinite recursion. The default is 100. 
 - **-maxinstances *number*** - The maximum number of template instances. This is a safety mechanism that guards against accidentally inserting a massive number of instances. The default is 10000.
 - **-log *level*** - Determines how much information MESS will write to the output:
@@ -57,12 +69,13 @@ By default, MESS will overwrite the given .map file. If you want to save the res
     - **error** - Only critical errors are shown (problems that cause MESS to abort). This is the default.
     - **warning** - In addition to critical errors, warnings are also shown (problems that MESS can safely ignore).
     - **info** - Additional information is shown.
-    - **verbose** - The maximum amount of information is shown. 
+    - **verbose** - The maximum amount of information is shown.
+- **-repl** - Enables the interactive MScript interpreter mode. This starts a read-evaluate-print loop (REPL), which can be used to test MScript expressions.
 
 
 ## How to use MESS
 ### Macro entities
-Almost everything in MESS involves templates. They can be created with the following entities:
+Almost everything in MESS involves templates. They can be created with the following entities (for more detailed information, see [macro entities.md](macro%20entities.md)):
 
 - **macro\_template** - Anything inside the bounding box of this entity becomes part of a template. Templates are removed from the map, but instances can then be created in various other places by other macro entities.
 - **macro\_remove\_if** - Used inside templates. When an instance of a template is created, anything inside the bounding box of this entity is excluded from that instance if the removal condition is true.
@@ -77,7 +90,27 @@ There is also one more entity that uses templates in a slightly different way:
   
 - **macro\_brush** - A brush entity that creates copies of its own brushwork, with each copy taking on the textures and entity attributes of a brush or entity in the selected template. Useful for creating fences, or for adding visual effects to triggers.
 
+### Entity rewrite rules
+Rewrite rules can be used to modify entity attributes before macro processing occurs. This makes it possible to create custom entities for template maps. For more detailed information, see [entity rewrite rules.md](entity%20rewrite%20rules.md).
+
+For example, the landmines above were created with a `macro_insert` entity that referenced the `landmine` template. To modify the landmine's damage, a specific attribute had to be added with SmartEdit mode. With entity rewrite rules, it's possible to create a `monster_landmine` entity with a proper `damage` attribute.
+
+Entity rewrite rules are created by adding specially formatted comments to an .fgd file, right before the entity type that they apply to:
+
+    // @MESS REWRITE:
+    // "classname": "macro_insert"
+    // "template_map": "{dir()}\mytemplates\landmine.rmf"
+    // @MESS;
+    @PointClass = monster_landmine
+    [
+        damage(integer) : "Damage" = 100
+    ]
+
+The above rules will turn any `monster_landmine` entity into a `macro_insert` entity, with its `template_map` attribute set to reference the landmine template map. The resulting macro entity is then processed by MESS as usual.
+
 ### Scripting
+Below is a quick overview of MESS' scripting capabilities. For more detailed information, see [scripting system.md](scripting%20system.md).
+
 #### Embedding expressions in attribute values
 Any entity attribute can be customized with embedded expressions. These expressions are surrounded by curly braces. For example, the value `corner{4 + 5}` contains the expression `4 + 5`, which evaluates to `9`, so the final value becomes `corner9`.
 
