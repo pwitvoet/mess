@@ -9,9 +9,9 @@
 - [How to install MESS](#how-to-install-mess)
     - [Command-line arguments](#command-line-arguments) 
 - [How to use MESS](#how-to-use-mess)
-    - [Macro entities](#macro-entities)
-    - [Entity rewrite rules](#entity-rewrite-rules)
-    - [Scripting](#scripting)
+    - [Macro entities](#macro-entities) - (see also: [macro entities.md](macro%20entities.md))
+    - [Entity rewrite rules](#entity-rewrite-rules) - (see also: [entity rewrite rules.md](entity%20rewrite%20rules.md))
+    - [Scripting](#scripting) - (see also: [scripting system.md](scripting%20system.md))
 
 ## Introduction
 MESS is a Half-Life level compile tool that helps automating various tasks. It provides a **templating system** and several **macro entities** for creating template instances, which can be customized with a basic **scripting system**. And with **entity rewrite rules**, templates can be used as if they were actual entities.
