@@ -95,11 +95,11 @@ Rewrite rules can be used to modify entity attributes before macro processing oc
 
 For example, the landmines above were created with a `macro_insert` entity that referenced the `landmine` template. To modify the landmine's damage, a specific attribute had to be added with SmartEdit mode. With entity rewrite rules, it's possible to create a `monster_landmine` entity with a proper `damage` attribute.
 
-Entity rewrite rules are created by adding specially formatted comments to an .fgd file, right before the entity type that they apply to:
+Entity rewrite rules are created by adding specially formatted comments to an `.fgd` file, right before the entity type that they apply to:
 
     // @MESS REWRITE:
     // "classname": "macro_insert"
-    // "template_map": "{dir()}\mytemplates\landmine.rmf"
+    // "template_map": "{dir()}\landmine.rmf"
     // @MESS;
     @PointClass = monster_landmine
     [
