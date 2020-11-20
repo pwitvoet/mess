@@ -10,7 +10,11 @@ Entity rewrite rules are used to modify entity attributes before any macro entit
     - [Conditional rule blocks](#conditional-rule-blocks)
     - [Notes](#notes)
 - [Example](#example)
-- [Use-cases](#use-cases)  
+- [Use-cases](#use-cases)
+    - [Custom entities for template maps](#custom-entities-for-template-maps)
+    - [Aliasing other entities](#aliasing-other-entities)
+    - [Decorating other entities](#decorating-other-entities) 
+    - [Upgrading to real entities](#upgrading-to-real-entities)   
 
 
 ## Rewrite rules
@@ -63,8 +67,17 @@ Note the `dir()` function call in the `template_map` rewrite rules: this returns
 It's a good idea to create a single root template maps folder, and to always pass that directory to MESS with `-dir`. This ensures that MESS can always find the right template map.
 
 ## Use-cases
+
+### Custom entities for template maps
 Rewrite rules were created to make it possible to create custom entities for commonly used templates. For example, manually adding a `macro_insert` entity, pointing it at the `templates\monster_warp.rmf` template map, and using SmartEdit mode for further configuration can be error-prone. A custom `monster_warp` entity with properly defined attributes is easier to use.
 
-Another use-case is to create aliases for existing entities. For example, one of the best entities for adding decorative models to a Half-Life level is  actually `env_sprite` - but because it's a sprite entity, it's somewhat cumbersome to use and can cause certain editors to crash. An `env_model` alias with a `model(studio)` attribute and a rewrite rule that turns it into an `env_sprite` 
+### Aliasing other entities
+Another use-case is to create aliases for existing entities. For example, one of the best entities for adding decorative models to a Half-Life level is  actually `env_sprite` - but because it's a sprite entity, it's somewhat cumbersome to use and can cause certain editors to crash. An `env_model` alias with a `model(studio)` attribute and a rewrite rule that turns it into an `env_sprite` makes this workaround much easier to use.
 
+### Decorating other entities
+Sometimes it's desirable to add small accentuating lights to items, such as a subtle blue glow for batteries or a white light for healthkits. This can be automated by rewriting `item_battery` and `item_healthkit` to a template-inserting entity, with templates that contain both an item and a light.
+
+An important detail here is that items in template maps should not be rewritten - otherwise the template maps will insert themselves, causing an infinite loop (until MESS hits the `-maxrecursion` or `-maxinstances` limit). This can be achieved by putting the rewrite rules in an `@IF "{not norewrite}":` block, and adding a `norewrite` attribute to the items in the template maps.
+
+### Upgrading to real entities
 Rewrite rules also make it easier to 'upgrade' template entities to real entities. For example, a mod developer decides to add an `env_model` or `monster_warp` entity to their mod's game code. Instead of having to replace several `macro_insert` entities, all they need to do is to remove the rewrite rules for the upgraded entities. Maps will then use the 'upgraded' entity the next time they are compiled.
