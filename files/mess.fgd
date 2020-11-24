@@ -30,6 +30,9 @@
 
     // Specifies which macro_template to use. This setting is ignored if template_map is not empty.
     template_name(string) : "Template entity"
+
+    // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
+    random_seed(integer) : "Random seed"
 ]
 
 @BaseClass base(TemplateInserter) = MultiTemplateInserter
@@ -40,9 +43,6 @@
     // How much space to leave empty around each instance. This can be used to prevent instances from overlapping each other.
     // Setting this to 0 disables overlap prevention.
     radius(integer) : "Instance radius" : 32
-
-    // Random seed value, used for deterministic semi-randomness. Defaults to 0.
-    random_seed(integer) : "Random seed"
 ]
 
 

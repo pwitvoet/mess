@@ -33,9 +33,13 @@ namespace MScript.Evaluation
 
         /// <summary>
         /// Creates an MScript function that calls a 'native' method.
-        /// The method parameters and return type must all be MScript-compatible types
-        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="IFunction"/>, <see cref="bool"/> or <see cref="object"/>).
-        /// Note that <see cref="bool"/> can only be used for return types, and that no type-checking is performed for parameters of type <see cref="object"/>.
+        /// <para>
+        /// All parameters must be MScript-compatible types
+        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="IFunction"/> or <see cref="object"/>).
+        /// Additionally, methods can have a first parameter of type <see cref="EvaluationContext"/>.
+        /// The return type can also be <see cref="bool"/>. Parameters of type <see cref="object"/> are not type-checked by MScript.
+        /// Optional parameters are also optional in MScript.
+        /// </para>
         /// </summary>
         /// <exception cref="NotSupportedException"/>
         /// <exception cref="InvalidOperationException"/>
