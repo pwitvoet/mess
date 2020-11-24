@@ -45,7 +45,7 @@ This entity randomly places template instances across its non-NULL surfaces. The
 ## How to install MESS
 The following instructions assume that you're using the Hammer or J.A.C.K. level editor, but the overall process should be fairly similar for other editors.
 
-1. Download MESS and extract the contents to a folder (this folder is referred to below as `<MESS FOLDER>`).
+1. Download MESS and extract the contents to a folder (this folder is referred to below as `<MESS FOLDER>`). Optionally, download the example maps and extract them to your maps folder (referred to below as `<MAPS FOLDER>`).
 2. Add the **game data file (mess.fgd)** to your editor.
     1. Go to the `Tools` menu and select `Options`.
     2. In the configuration window that opens, go to the `Game Configurations` or `Game Profiles` tab.
@@ -56,6 +56,9 @@ The following instructions assume that you're using the Hammer or J.A.C.K. level
     3. In the `Command:` field, enter `<MESS FOLDER>\MESS.exe`.
     4. In the `Parameters:` field, enter `"$path/$file.$ext"`.
     5. For J.A.C.K. users: tick the `Wait for Termination` and `Use Process Window` checkboxes.
+4. For [**rewrite rules**](entity%20rewrite%20rules.md):
+    1. Add `MESS_rewrite_rule_examples.fgd` to your game configuration or game profile (see step 2).
+    2. Add the `-dir "<MAPS FOLDER>\templates"` and `-fgd "<MAPS FOLDER>\MESS_rewrite_rule_examples.fgd"` parameters to the MESS compile step (see step 3). These parameters must come before `"$path/$file.$ext"`.
 
 ### Command-line arguments
 By default, MESS will overwrite the given .map file. If you want to save the result to a different file, just add another path: `"$path/$file.$ext" "<OUTPUT PATH + FILENAME>"`. Additionally, MESS takes the following options (which must be added before the input and output parameters):

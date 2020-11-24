@@ -272,7 +272,7 @@ Functions related to rotations and angles:
     - Returns a valid color vector, where each value is rounded and the first 3 values are clamped to the 0-255 range. If the given vector is too short, it will be padded with 0's until it contains 3 values. If the given vector is too long, only the first 4 values will be used.
 
 ### Flags:
-Some entities use flags - various options that can be enabled or disabled. All of these options are stored together in a single number. Note that flag numbers start at 0, so `hasflag(flags, 0)` checks whether the first flag is enabled.
+Some entities use flags - various options that can be enabled or disabled. All of these options are stored together in a single number. Note that flag numbers start at 0, so `hasflag(0, flags)` checks whether the first flag is enabled.
 
 - `none|number hasflag(number flag, number? flags)`
     - Checks whether the specified flag is enabled in the given flags value. Returns either `none` (false) or `1` (true).
