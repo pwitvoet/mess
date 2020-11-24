@@ -2,6 +2,7 @@
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
+using MScript;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -171,16 +172,18 @@ namespace MESS.Macros
             var spawnFlags = entity.Flags;
             for (int i = 0; i < 32; i++)
             {
-                var flagName = $"spawnflag{i + 1}";
-                if (entity.Properties.TryGetValue(flagName, out var value) && int.TryParse(value, out var flagValue))
-                {
-                    if (flagValue != 0)
-                        spawnFlags |= (1 << i);
-                    else
-                        spawnFlags = spawnFlags & ~(1 << i);
+                var flagName = $"spawnflag{i}";
+                if (!entity.Properties.TryGetValue(flagName, out var stringValue))
+                    continue;
 
-                    entity.Properties.Remove(flagName);
-                }
+                var value = PropertyExtensions.ParseProperty(stringValue);
+                var isChecked = Interpreter.IsTrue(value) && !(value is double d && d == 0);
+                if (isChecked)
+                    spawnFlags |= (1 << i);
+                else
+                    spawnFlags = spawnFlags & ~(1 << i);
+
+                entity.Properties.Remove(flagName);
             }
             entity.Flags = spawnFlags;
         }

@@ -8,6 +8,7 @@ MESS contains a small scripting language named MScript. Its syntax is similar to
 - [Usage](#usage)
     - [Embedded expressions](#embedded-expressions)
     - [Parent entities](#parent-entities)
+    - [Flags](#flags)
 - [Common expressions](#common-expressions)
 - [Data types](#data-types)
     - [number](#number)
@@ -39,6 +40,9 @@ MScript expressions can be embedded in entity attribute names or values by surro
 When a macro entity is instantiating a template, it is seen as the 'parent entity'. Entities within the template are given access to the attributes of this parent entity, so an attribute with the value `fire_{targetname}` is turned into `fire_box1` if the parent entity's `targetname` is `box1`. This works for any attribute, including custom ones. Because MESS only knows about 'internal' attribute names, it's a good idea to turn on `SmartEdit` mode.
 
 The `worldspawn` entity acts as parent entity for anything that is not part of a template. This means that map properties can be used in expressions.
+
+### Flags
+Flags can be set by adding special `spawnflag<N>` attributes to an entity, where `<N>` is a number between 0 (the first flag) and 31 (the last flag). If the value is `none` (empty) or `0` then the associated flag will be disabled, else it will be enabled. For example, a `spawnflag2` attribute with value `{5 > 4}` will enable the 3rd flag, whereas a `spawnflag3` attribute with value `{2 > 4}` will disable the 4th flag.
 
 
 ## Common expressions
