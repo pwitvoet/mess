@@ -1,0 +1,217 @@
+// ================================================================================
+// Macro Entity Substitution System (MESS) - entity rewrite rule example .fgd
+//
+// All entities here are preceded by rewrite rules, which are used by mess.exe
+// to modify their attributes before any macro entities are processed.
+//
+// Rewrite rules can be used to make macro templates as easy to use as any other
+// entity, but also to simply create aliases for existing entities. This can be
+// useful for providing different default settings, for example.
+// ================================================================================
+
+
+// --------------------------------------------------------------------------------
+// Standard example entities:
+// --------------------------------------------------------------------------------
+
+
+// An env_model can be used to add decorative models to a level.
+// 
+// HL comes with a few model-related entities, such as monster_generic and monster_furniture, but those come with several drawbacks,
+// such as not being able to place them closely to walls, the model being dropped to the floor, the model being seen as an auto-aim target,
+// bleeding when shot, and so on.
+// 
+// That's why sprite entities are often used instead, such as cycler_sprite and env_sprite. However, cycler_sprites don't show up after
+// loading a savegame, so env_model uses env_sprite instead. The only drawback is that it doesn't support skin and body selection, unlike
+// the other entities. It also sometimes suffers from a rotation bug, if one or more angles are set to 0, but env_model avoids that
+// by automatically adjusting the angles slightly.
+// 
+// Of course, if you're making a mod, you can add a real env_model to your game-code and remove these MESS rewrite rules entirely.
+// 
+// @MESS REWRITE:
+// "classname": "env_sprite"
+// @IF "{angles}":
+//   "angles": "{[angles.pitch if angles.pitch != 0 else 0.01, angles.yaw if angles.yaw != 0 else 0.01, angles.roll if angles.roll != 0 else 0.01]}"
+// @ENDIF;
+// @MESS;
+@PointClass size(-16 -16 0, 16 16 32) color(255 127 0) studio() = env_model : "Decorative model"
+[
+    // Targetname:
+    targetname(target_source) : "Name"
+
+    // RenderFields:
+    rendermode(choices) : "Render Mode" : 0 =
+    [
+        0 : "Normal"
+        1 : "Color"
+        2 : "Texture"
+        3 : "Glow"
+        4 : "Solid"
+        5 : "Additive"
+    ]
+    renderamt(integer) : "FX Amount (1 - 255)"
+    rendercolor(color255) : "FX Color (R G B)" : "0 0 0"
+
+    // Angles:
+    angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
+
+    // env_sprite:
+    framerate(string) : "Framerate" : "1.0"
+    model(studio) : "Model name"
+    scale(string) : "Scale" : "1.0"
+    spawnflags(flags) =
+    [
+        1 : "Start on" : 0
+        2 : "Play once" : 0
+    ]
+
+    // Model-specific:
+    sequence(integer) : "Animation sequence"        // Only sequence numbers are supported, not names
+
+    //body(integer) : "Body"                        // Only supported by cycler, cycler_sprite, monster_furniture and monster_generic
+    //skin(integer) : "Skin"                        // Same restrictions as with 'body'.
+]
+
+// Spawns a monster, while displaying a teleport effect.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{dir()}\monster_warp.rmf"
+// @MESS;
+@PointClass size(-16 -16 0, 16 16 72) color(255 127 0) = monster_warp : "Warps in a monster"
+[
+    // Targetname:
+    targetname(target_source) : "Name"
+    
+    // Angles:
+    angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
+    
+    monstertype(choices) : "Monster type" =
+    [
+        "monster_alien_controller" : "Controller"
+        "monster_alien_grunt" : "Alien Grunt"
+        "monster_alien_slave" : "Vortigaunt"
+        //"monster_apache" : "Apache"
+        "monster_babycrab" : "Baby Headcrab"
+        "monster_barnacle" : "Barnacle Monster"
+        "monster_barney" : "Barney"
+        //"monster_barney_dead" : "Dead Barney"
+        "monster_bigmomma" : "Big Mamma"
+        "monster_bloater" : "Bloater"
+        "monster_bullchicken" : "BullChicken"
+        "monster_cockroach" : "Cockroach"
+        //"monster_flyer_flock" : "Flock of Flyers"
+        //"monster_furniture" : "Monster Furniture"
+        "monster_gargantua" : "Gargantua"
+        //"monster_generic" : "Generic Script Monster"
+        "monster_gman" : "G-Man"
+        //"monster_grunt_repel" : "Human Grunt (Repel)"
+        //"monster_handgrenade" : "Live Handgrenade"
+        "monster_headcrab" : "Head Crab"
+        "monster_hevsuit_dead" : "Dead HEV Suit"
+        "monster_hgrunt_dead" : "Dead Human Grunt"
+        "monster_houndeye" : "Houndeye"
+        "monster_human_assassin" : "Human Assassin"
+        "monster_human_grunt" : "Human Grunt (camo)"
+        "monster_ichthyosaur" : "Ichthyosaur"
+        "monster_leech" : "Leech"
+        //"monster_miniturret" : "Mini Auto Turret"
+        "monster_nihilanth" : "Nihilanth"
+        //"monster_osprey" : "Osprey"
+        "monster_rat" : "Rat (no ai?)"
+        //"monster_satchelcharge" : "Live Satchel Charge"
+        "monster_scientist" : "Scared Scientist"
+        //"monster_scientist_dead" : "Dead Scientist"
+        //"monster_sitting_scientist" : "Sitting Scientist"
+        "monster_sentry" : "Sentry Turret Gun"
+        "monster_snark" : "Armed Snark"
+        "monster_tentacle" : "Tentacle Arm"
+        "monster_tripmine" : "Active Tripmine"
+        //"monster_turret" : "Auto Turret"
+        "monster_zombie" : "Scientist Zombie"
+    ]
+    monstername(string) : "Spawned monster's name"
+    spawnflags(flags) =
+    [
+        1 : "MonsterClip" : 0
+    ]
+    
+    // How long to wait before spawning the monster, after the warp effect has started:
+    delay(string) : "Monster spawn delay" : "0.5"
+]
+
+
+// --------------------------------------------------------------------------------
+// Rathunt map entities:
+// --------------------------------------------------------------------------------
+
+
+// Creates a rathunt-style rat. Triggers a counter entity when killed
+// (which will update the rat count message, if the map contains an rh_message_system entity).
+// Keep in mind that each rat consists of multiple entities.
+// 
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{dir()}\rathunt\rat.rmf"
+// @MESS;
+@PointClass color(255 127 0) studio("models/bigrat.mdl") = rh_rat
+[
+    // The name of the rat. Optional. Triggering this will kill the rat:
+    targetname(target_source) : "Name"
+    
+    // The (kill counter) entity that is triggered when this rat is killed.
+    // This can be used to create multiple 'clusters' of rats.
+    // Leave empty to use the default 'ratkillcount' name:
+    target(target_destination) : "Target (when killed)"
+    
+    angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
+    sequence(choices) =
+    [
+        0 : "Smell, briefly stand upright (idle4)"
+        1 : "Smell while crouching (idle5)"
+        2 : "Scratch the ground (idle6)"
+        3 : "Idle (idle7)"
+        4 : "Walk (walk2)"
+        5 : "Jump (jump)"
+        6 : "Eat (eat)"
+        7 : "Die (die1)"
+    ]
+]
+
+// Creates a kill-message system for a rathunt map. The number of messages can be specified.
+// Keep in mind that this uses multiple entities per rat, so don't set total_rat_count too high.
+// 
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{dir()}\rathunt\message_system.rmf"
+// @MESS;
+@PointClass size(-32 -32 0, 32 32 64) color(255 127 0) = rh_message_system
+[
+    // Custom names can be used to create multiple 'clusters' of rats, each with their own kill messages.
+    // Leave empty to use the default 'ratkillcount' name:
+    targetname(target_source) : "Kill counter name"
+    total_rat_count(integer) : "Number of rats"
+    target(target_destination) : "Target (when all rats are killed)"
+    
+    // Leave empty to get the default 'ALL RATS DESTROYED' message:
+    sound(sound) : "Kill sound"
+    soundpitch(integer) : "Kill sound pitch"
+    
+    textx(string) : "X (0 - 1.0 = left to right) (-1 centers)"
+    texty(string) : "Y (0 - 1.0 = top to bottom) (-1 centers)"
+    textcolor1(color255) : "Color1"
+    textcolor2(color255) : "Color2"
+    textchannel(choices) : "Text Channel" : 1 =
+    [
+        1 : "Channel 1"
+        2 : "Channel 2"
+        3 : "Channel 3"
+        4 : "Channel 4"
+    ]
+    final_message(string) : "Final message"
+    
+    spawnflags(flags) =
+    [
+        1 : "Show message on startup" : 1
+    ]
+]
