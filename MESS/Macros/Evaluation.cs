@@ -139,10 +139,23 @@ namespace MESS.Macros
             }
 
             // Flags:
-            public static bool hasflag(double flags, double flag) => (((int)flags >> (int)flag) & 1) == 1;
-            public static double setflag(double flags, double flag, double? set = 1)
+            public static bool hasflag(EvaluationContext context, double flag, double? flags = null)
             {
-                if (set != null && set != 0)
+                if (flags == null)
+                    flags = (context.Resolve("spawnflags") is double d) ? d : 0;
+
+                var bit = (int)flag;
+                if (bit < 0 || bit > 31)
+                    return false;
+
+                return (((int)flags >> bit) & 1) == 1;
+            }
+            public static double setflag(EvaluationContext context, double flag, double? set = 1, double? flags = null)
+            {
+                if (flags == null)
+                    flags = (context.Resolve("spawnflags") is double d) ? d : 0;
+
+                if (set != 0)
                     return (int)flags | (1 << (int)flag);
                 else
                     return (int)flags & ~(1 << (int)flag);

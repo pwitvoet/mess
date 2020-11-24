@@ -274,10 +274,13 @@ Functions related to rotations and angles:
 ### Flags:
 Some entities use flags - various options that can be enabled or disabled. All of these options are stored together in a single number. Note that flag numbers start at 0, so `hasflag(flags, 0)` checks whether the first flag is enabled.
 
-- `none|number hasflag(number flags, number flag)`
+- `none|number hasflag(number flag, number? flags)`
     - Checks whether the specified flag is enabled in the given flags value. Returns either `none` (false) or `1` (true).
-- `number setflag(number flags, number flag, number? set)`
-    - Returns the given flags value, but with the specified flag enabled or disabled. If `set` is `0`, the flag will be disabled. Any other value for `set`, or not providing the `set` argument at all, will enable the flag.
+    - If the `flags` argument is omitted, then the value of the `spawnflags` attribute of the parent entity is used as `flags`.
+- `number setflag(number flag, number? set, number? flags)`
+    - Returns the given flags value, but with the specified flag enabled or disabled. If `set` is `0`, the flag will be disabled.
+    - If the `flags` argument is omitted, then the value of the `spawnflags` attribute of the parent entity is used as `flags`.
+    - If the `set` argument is omitted, then it is set to 1 (which will enable the flag).
 
 ### Directories:
 The following functions are only available in entity rewrite rules. They are useful for locating template maps when rewriting custom entities to macro entities that must reference specific templates.
