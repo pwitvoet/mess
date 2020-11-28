@@ -58,7 +58,7 @@ The following instructions assume that you're using the Hammer or J.A.C.K. level
     5. For J.A.C.K. users: tick the `Wait for Termination` and `Use Process Window` checkboxes.
 4. For [**rewrite rules**](entity%20rewrite%20rules.md):
     1. Add `MESS_rewrite_rule_examples.fgd` to your game configuration or game profile (see step 2).
-    2. Add the `-dir "<MAPS FOLDER>\templates"` and `-fgd "<MAPS FOLDER>\MESS_rewrite_rule_examples.fgd"` parameters to the MESS compile step (see step 3). These parameters must come before `"$path/$file.$ext"`.
+    2. Add the `-dir "<MAPS FOLDER>\templates"` and `-fgd "<MAPS FOLDER>\MESS_rewrite_rule_examples.fgd"` parameters to the MESS compile step (see step 3). These parameters must come before `"$path/$file.$ext"`. The parameters field should now look like this: `-dir "<MAPS FOLDER>\templates" -fgd "<MAPS FOLDER>\MESS_rewrite_rule_examples.fgd" "$path/$file.$ext"`.
 
 ### Command-line arguments
 By default, MESS will overwrite the given .map file. If you want to save the result to a different file, just add another path: `"$path/$file.$ext" "<OUTPUT PATH + FILENAME>"`. Additionally, MESS takes the following options (which must be added before the input and output parameters):
@@ -73,7 +73,7 @@ By default, MESS will overwrite the given .map file. If you want to save the res
     - **warning** - In addition to critical errors, warnings are also shown (problems that MESS can safely ignore).
     - **info** - Additional information is shown.
     - **verbose** - The maximum amount of information is shown.
-- **-repl** - Enables the interactive MScript interpreter mode. This starts a read-evaluate-print loop (REPL), which can be used to test MScript expressions.
+- **-repl** - Enables the interactive MScript interpreter mode. This starts a read-evaluate-print loop (REPL), which can be used to test MScript expressions. *Do not use this when compiling maps!*
 
 
 ## How to use MESS
