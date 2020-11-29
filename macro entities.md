@@ -18,7 +18,7 @@ The entities provided by MESS are called macro entities. They're not part of the
 ## Template entities
 
 ### macro\_template
-Anything inside the bounding box of this entity becomes part of a template. Templates are removed from the map, but instances can then be created in various other places by other macro entities. For templates that are useful across a wide variety of maps it's better to create a separate template map.
+Anything inside the bounding box of this entity becomes part of a template. Templates are removed from the map, but instances can then be created in various other places by other macro entities. For templates that are useful across a wide variety of maps it's better to create a separate template map (MESS supports `.map`, `.rmf` and `.jmf` files).
 
 #### Attributes
 - **Name** *(targetname)* - The name of this template. If multiple templates have the same name, one of them is chosen randomly.

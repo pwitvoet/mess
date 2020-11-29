@@ -78,7 +78,7 @@ By default, MESS will overwrite the given .map file. If you want to save the res
 
 ## How to use MESS
 ### Macro entities
-Almost everything in MESS involves templates. They can be created with the following entities (for more detailed information, see [macro entities.md](macro%20entities.md)):
+Almost everything in MESS involves templates. A template can be a separate map, or it can be created with the following entities (for more detailed information, see [macro entities.md](macro%20entities.md)):
 
 - **macro\_template** - Anything inside the bounding box of this entity becomes part of a template. Templates are removed from the map, but instances can then be created in various other places by other macro entities.
 - **macro\_remove\_if** - Used inside templates. When an instance of a template is created, anything inside the bounding box of this entity is excluded from that instance if the removal condition is true.
