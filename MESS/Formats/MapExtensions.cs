@@ -13,9 +13,9 @@ namespace MESS.Formats
 
             var index = 0;
             Entity previousEntity = null;
-            foreach (var corner in path.Corners)
+            foreach (var node in path.Nodes)
             {
-                var entity = CreateEntityForCorner(corner);
+                var entity = CreateEntityForNode(node);
 
                 if (previousEntity != null)
                     yield return previousEntity;
@@ -26,15 +26,15 @@ namespace MESS.Formats
 
             if (path.Type == PathType.Circular)
             {
-                // Point the last corner back at the first:
+                // Point the last node back at the first:
                 previousEntity["target"] = path.Name;
             }
             else if (path.Type == PathType.PingPong)
             {
-                // Generate additional corners for the way back (in reverse order, excluding the first and last corner):
-                foreach (var corner in path.Corners.Skip(1).Take(path.Corners.Count - 2).Reverse())
+                // Generate additional nodes for the way back (in reverse order, excluding the first and last corner):
+                foreach (var node in path.Nodes.Skip(1).Take(path.Nodes.Count - 2).Reverse())
                 {
-                    var entity = CreateEntityForCorner(corner);
+                    var entity = CreateEntityForNode(node);
 
                     if (previousEntity != null)
                         yield return previousEntity;
@@ -48,16 +48,16 @@ namespace MESS.Formats
             if (previousEntity != null)
                 yield return previousEntity;
 
-            Entity CreateEntityForCorner(Corner corner)
+            Entity CreateEntityForNode(EntityPathNode node)
             {
                 var entity = new Entity();
-                foreach (var property in corner.Properties)
+                foreach (var property in node.Properties)
                     entity[property.Key] = property.Value;
 
                 entity.ClassName = path.ClassName;
-                entity.Origin = corner.Position;
+                entity.Origin = node.Position;
 
-                var targetname = corner.NameOverride;
+                var targetname = node.NameOverride;
                 if (string.IsNullOrEmpty(targetname))
                     targetname = (index == 0) ? path.Name : $"{path.Name}{index:00}";
                 entity["targetname"] = targetname;

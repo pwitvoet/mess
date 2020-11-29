@@ -7,6 +7,7 @@ namespace MESS.Mapping
     /// </summary>
     public class Group : MapObject
     {
+        public int ID { get; set; }
         public List<MapObject> Objects { get; } = new List<MapObject>();
     }
 }

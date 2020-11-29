@@ -17,6 +17,6 @@ namespace MESS.Mapping
         public string Name { get; set; }
         public string ClassName { get; set; }
         public PathType Type { get; set; }
-        public List<Corner> Corners { get; } = new List<Corner>();
+        public List<EntityPathNode> Nodes { get; } = new List<EntityPathNode>();
     }
 }

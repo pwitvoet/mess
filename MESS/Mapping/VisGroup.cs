@@ -7,9 +7,9 @@ namespace MESS.Mapping
     /// </summary>
     public class VisGroup
     {
+        public int ID { get; set; }
         public string Name { get; set; }
         public Color Color { get; set; }
-        public int ID { get; set; }
         public bool IsVisible { get; set; }
 
         public List<MapObject> Objects { get; } = new List<MapObject>();

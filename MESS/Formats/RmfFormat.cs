@@ -16,6 +16,7 @@ namespace MESS.Formats
         public static Map Load(Stream stream)
         {
             var map = new Map();
+            var nextGroupID = 1;
 
             var version = stream.ReadFloat();
             var rmfMagicString = stream.ReadString(3);
@@ -82,6 +83,7 @@ namespace MESS.Formats
                         break;
 
                     case Group group:
+                        group.ID = nextGroupID++;
                         map.Groups.Add(group);
                         foreach (var childObject in group.Objects)
                             AddObject(childObject);
@@ -229,25 +231,25 @@ namespace MESS.Formats
             entityPath.ClassName = stream.ReadString(128);
             entityPath.Type = (PathType)stream.ReadInt();
 
-            var cornerCount = stream.ReadInt();
-            for (int i = 0; i < cornerCount; i++)
-                entityPath.Corners.Add(ReadCorner(stream));
+            var nodeCount = stream.ReadInt();
+            for (int i = 0; i < nodeCount; i++)
+                entityPath.Nodes.Add(ReadPathNode(stream));
 
             return entityPath;
         }
 
-        private static Corner ReadCorner(Stream stream)
+        private static EntityPathNode ReadPathNode(Stream stream)
         {
-            var corner = new Corner();
-            corner.Position = ReadVector3D(stream);
-            corner.Index = stream.ReadInt();
-            corner.NameOverride = stream.ReadString(128);
+            var pathNode = new EntityPathNode();
+            pathNode.Position = ReadVector3D(stream);
+            pathNode.Index = stream.ReadInt();
+            pathNode.NameOverride = stream.ReadString(128);
 
             var propertyCount = stream.ReadInt();
             for (int i = 0; i < propertyCount; i++)
-                corner.Properties[stream.ReadNString()] = stream.ReadNString();
+                pathNode.Properties[stream.ReadNString()] = stream.ReadNString();
 
-            return corner;
+            return pathNode;
         }
 
         private static Camera ReadCamera(Stream stream)
