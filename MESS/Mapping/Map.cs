@@ -5,7 +5,8 @@ namespace MESS.Mapping
     /// <summary>
     /// A map consists of entities (in-game 'things') and brushes (3-dimensional textured shapes).
     /// <para>
-    /// The MAP file format only stores entities and brushes, the RMF format also stores additional editor-related data: groups, visibility groups, camera's and paths.
+    /// The MAP file format only stores entities and brushes, the RMF and JMF formats also store
+    /// additional editor-related data: groups, visibility groups, camera's and paths.
     /// </para>
     /// </summary>
     public class Map
@@ -17,7 +18,7 @@ namespace MESS.Mapping
         public List<Entity> Entities { get; } = new List<Entity>();
 
 
-        // RMF format only:
+        // RMF/JMF formats only:
         public List<EntityPath> EntityPaths { get; } = new List<EntityPath>();
 
         public List<Group> Groups { get; } = new List<Group>();

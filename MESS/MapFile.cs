@@ -24,6 +24,8 @@ namespace MESS
 
                 if (header[0] == (byte)'{')
                     return MapFormat.Load(file);
+                else if (bytesRead >= 4 && Encoding.ASCII.GetString(header, 0, 4) == "JHMF")
+                    return JmfFormat.Load(file);
                 else if (bytesRead == header.Length && Encoding.ASCII.GetString(header, 4, 3) == "RMF")
                     return RmfFormat.Load(file);
                 else
@@ -40,6 +42,11 @@ namespace MESS
             {
                 using (var file = File.Create(path))
                     MapFormat.Save(map, file);
+            }
+            else if (path.EndsWith(".jmf"))
+            {
+                using (var file = File.Create(path))
+                    JmfFormat.Save(map, file);
             }
             else if (path.EndsWith(".rmf"))
             {
