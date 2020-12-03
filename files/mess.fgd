@@ -29,7 +29,7 @@
     template_map(string) : "Template map path"
 
     // Specifies which macro_template to use. This setting is ignored if template_map is not empty.
-    template_name(string) : "Template entity"
+    template_name(target_destination) : "Template entity"
 
     // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
     random_seed(integer) : "Random seed"
