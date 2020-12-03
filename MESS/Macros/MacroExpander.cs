@@ -356,6 +356,7 @@ namespace MESS.Macros
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
             EvaluateProperties(context, coverEntity, "max_instances", "radius", "instance_orientation", "random_seed", "brush_behavior");
+            SetBrushEntityOriginProperty(coverEntity);
 
             var maxInstances = coverEntity.GetNumericProperty("max_instances") ?? 0.0;
             var radius = (float)(coverEntity.GetNumericProperty("radius") ?? 0);
@@ -482,6 +483,7 @@ namespace MESS.Macros
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
             EvaluateProperties(context, fillEntity, "max_instances", "radius", "instance_orientation", "random_seed", "grid_orientation", "grid_granularity");
+            SetBrushEntityOriginProperty(fillEntity);
 
             var maxInstances = fillEntity.GetNumericProperty("max_instances") ?? 0.0;
             var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
@@ -637,6 +639,8 @@ namespace MESS.Macros
                 return;
 
 
+            SetBrushEntityOriginProperty(brushEntity);
+
             // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
             // based on the world brushes and brush entities in the template. Another way of looking at it is
             // that the brushes and entities in the template take on the 'shape' of this macro_brush.
@@ -645,6 +649,7 @@ namespace MESS.Macros
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
+            // World brushes:
             foreach (var templateBrush in template.Map.WorldGeometry)
             {
                 if (excludedObjects.Contains(templateBrush))
@@ -662,6 +667,7 @@ namespace MESS.Macros
                     context.OutputMap.WorldGeometry.Add(copy);
             }
 
+            // Entities:
             foreach (var templateEntity in template.Map.Entities)
             {
                 if (templateEntity.IsPointBased || excludedObjects.Contains(templateEntity))
@@ -756,6 +762,12 @@ namespace MESS.Macros
                 lastElement = element;
             }
             return lastElement;
+        }
+
+        private static void SetBrushEntityOriginProperty(Entity entity)
+        {
+            if (!entity.IsPointBased && !entity.Properties.ContainsKey("origin") && entity.GetOrigin() is Vector3D origin)
+                entity.Properties["origin"] = $"{origin.X} {origin.Y} {origin.Z}";
         }
 
 
