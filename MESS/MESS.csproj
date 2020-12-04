@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
+    <Compile Include="Common\Textures.cs" />
     <Compile Include="EntityRewriting\FgdTokenizer.cs" />
     <Compile Include="EntityRewriting\RewriteDirective.cs" />
     <Compile Include="Formats\JmfFormat.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="EntityRewriting\RewriteDirectiveParser.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LogLevel.cs" />
+    <Compile Include="Common\Attributes.cs" />
     <Compile Include="Macros\CoverBrushBehavior.cs" />
     <Compile Include="Macros\Evaluation.cs" />
     <Compile Include="Macros\FillMode.cs" />
