@@ -25,7 +25,7 @@
 
 @BaseClass base(NamedEntity) = TemplateInserter
 [
-    // Map paths can be absolute or relative. Both .rmf and .map formats are supported. The extension must be provided.
+    // Map paths can be absolute or relative. .map, .rmf and .jmf formats are supported. The extension must be provided.
     template_map(string) : "Template map path"
 
     // Specifies which macro_template to use. This setting is ignored if template_map is not empty.
