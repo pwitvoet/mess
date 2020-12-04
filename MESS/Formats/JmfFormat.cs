@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
@@ -132,13 +133,13 @@ namespace MESS.Formats
 
             var fireOnTarget = stream.ReadLengthPrefixedString();
             if (!string.IsNullOrEmpty(fireOnTarget))
-                node.Properties["message"] = fireOnTarget;
+                node.Properties[Attributes.Message] = fireOnTarget;
 
             node.Position = ReadVector3D(stream);
 
             var angles = ReadAngles(stream);
             if (angles.Pitch != 0 || angles.Yaw != 0 || angles.Roll != 0)
-                node.Properties["angles"] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
+                node.Properties[Attributes.Angles] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
 
             var flags = (Flags)stream.ReadInt();
             var color = ReadColor(stream);

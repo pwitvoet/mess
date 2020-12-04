@@ -1,7 +1,7 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using MESS.Mathematics;
 using MScript;
-using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,7 +72,7 @@ namespace MESS.Macros
             //       getting different seed values.
             var randomSeed = parentContext?._random.Next() ?? 0;
             if (insertionEntityProperties != null &&
-                insertionEntityProperties.TryGetValue("random_seed", out var value) &&
+                insertionEntityProperties.TryGetValue(Attributes.RandomSeed, out var value) &&
                 double.TryParse(value, out var doubleValue))
             {
                 randomSeed = (int)doubleValue;

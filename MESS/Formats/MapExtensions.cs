@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +28,7 @@ namespace MESS.Formats
             if (path.Type == PathType.Circular)
             {
                 // Point the last node back at the first:
-                previousEntity["target"] = path.Name;
+                previousEntity[Attributes.Target] = path.Name;
             }
             else if (path.Type == PathType.PingPong)
             {
@@ -42,7 +43,7 @@ namespace MESS.Formats
                     previousEntity = entity;
                     index += 1;
                 }
-                previousEntity["target"] = path.Name;
+                previousEntity[Attributes.Target] = path.Name;
             }
 
             if (previousEntity != null)
@@ -60,10 +61,10 @@ namespace MESS.Formats
                 var targetname = node.NameOverride;
                 if (string.IsNullOrEmpty(targetname))
                     targetname = (index == 0) ? path.Name : $"{path.Name}{index:00}";
-                entity["targetname"] = targetname;
+                entity[Attributes.Targetname] = targetname;
 
                 if (previousEntity != null)
-                    previousEntity["target"] = targetname;
+                    previousEntity[Attributes.Target] = targetname;
 
                 return entity;
             }

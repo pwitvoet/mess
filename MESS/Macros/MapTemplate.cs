@@ -1,4 +1,4 @@
-﻿using MESS.Formats;
+﻿using MESS.Common;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using System;
@@ -70,20 +70,20 @@ namespace MESS.Macros
 
         /// <summary>
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
-        /// Template area names do not need to be unique, so 
+        /// Template area names do not need to be unique.
         /// </summary>
         private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map)
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
 
-            // Create a MapTemplate for each macro_template entity. These 'sub-templates' can be only used within the current map:
+            // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();
             foreach (var templateEntity in templateEntities)
             {
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
-                var templateName = templateEntity["targetname"] ?? "";
-                var selectionWeight = templateEntity["selection_weight"] ?? "";
+                var templateName = templateEntity[Attributes.Targetname] ?? "";
+                var selectionWeight = templateEntity[Attributes.SelectionWeight] ?? "";
                 var offset = GetTemplateEntityOrigin(templateEntity) * -1;
                 var templateMap = new Map();
 
@@ -128,7 +128,7 @@ namespace MESS.Macros
 
         private static Vector3D GetTemplateEntityOrigin(Entity templateEntity)
         {
-            if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity["anchor"], out var anchor))
+            if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity[Attributes.Anchor], out var anchor))
                 anchor = TemplateAreaAnchor.OriginBrush;
 
             if (anchor == TemplateAreaAnchor.OriginBrush)
@@ -157,7 +157,7 @@ namespace MESS.Macros
             foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf))
             {
                 var removeIfArea = removeIfEntity.BoundingBox.ExpandBy(0.5f);
-                var condition = removeIfEntity["condition"] ?? "";  // TODO: Validate the expression somehow?
+                var condition = removeIfEntity[Attributes.Condition] ?? "";  // TODO: Validate the expression somehow?
                 var removableContent = new HashSet<object>();
 
                 // Reference all entities that are fully inside this remove-if area (except for other macro_remove_if entities):

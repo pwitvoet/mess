@@ -1,4 +1,5 @@
-﻿using MESS.Formats;
+﻿using MESS.Common;
+using MESS.Formats;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
@@ -30,7 +31,7 @@ namespace MESS.Macros
         /// <summary>
         /// Returns true if this brush is fully covered with the 'ORIGIN' texture. Origin brushes are used to specify the origin of certain brush entities.
         /// </summary>
-        public static bool IsOriginBrush(this Brush brush) => brush?.Faces.All(face => face.TextureName?.ToUpper() == "ORIGIN") == true;
+        public static bool IsOriginBrush(this Brush brush) => brush?.Faces.All(face => face.TextureName?.ToUpper() == Textures.Origin) == true;
 
         /// <summary>
         /// For point entities, this returns the 'origin' attribute, or null if that attribute is missing.
@@ -40,7 +41,7 @@ namespace MESS.Macros
         {
             if (entity.IsPointBased)
             {
-                return entity.Properties.ContainsKey("origin") ? (Vector3D?)entity.Origin : null;
+                return entity.Properties.ContainsKey(Attributes.Origin) ? (Vector3D?)entity.Origin : null;
             }
             else
             {

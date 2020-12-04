@@ -1,4 +1,5 @@
-﻿using MESS.Mathematics.Spatial;
+﻿using MESS.Common;
+using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,22 +17,22 @@ namespace MESS.Mapping
 
         public string ClassName
         {
-            get => Properties.GetStringProperty("classname");
-            set => Properties["classname"] = value;
+            get => Properties.GetStringProperty(Attributes.Classname);
+            set => Properties[Attributes.Classname] = value;
         }
 
         public int Flags
         {
-            get => Properties.GetIntegerProperty("spawnflags") ?? 0;
-            set => Properties["spawnflags"] = value.ToString();
+            get => Properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
+            set => Properties[Attributes.Spawnflags] = value.ToString();
         }
 
         public Vector3D Origin
         {
-            get => Properties.GetVector3DProperty("origin") ?? new Vector3D();
+            get => Properties.GetVector3DProperty(Attributes.Origin) ?? new Vector3D();
             set
             {
-                Properties["origin"] = $"{value.X} {value.Y} {value.Z}";
+                Properties[Attributes.Origin] = $"{value.X} {value.Y} {value.Z}";
                 if (IsPointBased)
                     BoundingBox = new BoundingBox(Origin, Origin);
             }
@@ -39,20 +40,20 @@ namespace MESS.Mapping
 
         public Angles? Angles
         {
-            get => Properties.GetAnglesProperty("angles");
+            get => Properties.GetAnglesProperty(Attributes.Angles);
             set
             {
                 if (value is Angles angles)
-                    Properties["angles"] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
+                    Properties[Attributes.Angles] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
                 else
-                    Properties.Remove("angles");
+                    Properties.Remove(Attributes.Angles);
             }
         }
 
         public double? Scale
         {
-            get => Properties.GetNumericProperty("scale");
-            set => Properties["scale"] = value.ToString();
+            get => Properties.GetNumericProperty(Attributes.Scale);
+            set => Properties[Attributes.Scale] = value.ToString();
         }
 
 

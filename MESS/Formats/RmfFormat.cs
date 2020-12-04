@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using System;
 using System.IO;
@@ -43,7 +44,7 @@ namespace MESS.Formats
 
             var worldspawnClassname = stream.ReadNString();
             stream.ReadBytes(4);    // ?
-            map.Properties["spawnflags"] = stream.ReadInt().ToString();  // 'worldspawn' flags, unused.
+            map.Properties[Attributes.Spawnflags] = stream.ReadInt().ToString();  // 'worldspawn' flags, unused.
 
             var worldspawnPropertyCount = stream.ReadInt();
             for (int i = 0; i < worldspawnPropertyCount; i++)

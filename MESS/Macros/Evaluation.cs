@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using MScript;
 using MScript.Evaluation;
 using System;
@@ -142,7 +143,7 @@ namespace MESS.Macros
             public static bool hasflag(EvaluationContext context, double flag, double? flags = null)
             {
                 if (flags == null)
-                    flags = (context.Resolve("spawnflags") is double d) ? d : 0;
+                    flags = (context.Resolve(Attributes.Spawnflags) is double d) ? d : 0;
 
                 var bit = (int)flag;
                 if (bit < 0 || bit > 31)
@@ -153,7 +154,7 @@ namespace MESS.Macros
             public static double setflag(EvaluationContext context, double flag, double? set = 1, double? flags = null)
             {
                 if (flags == null)
-                    flags = (context.Resolve("spawnflags") is double d) ? d : 0;
+                    flags = (context.Resolve(Attributes.Spawnflags) is double d) ? d : 0;
 
                 if (set != 0)
                     return (int)flags | (1 << (int)flag);
@@ -177,7 +178,7 @@ namespace MESS.Macros
 
 
             // Entity ID:
-            public string id(EvaluationContext context) => context.Resolve("targetname")?.ToString() ?? _id.ToString();
+            public string id(EvaluationContext context) => context.Resolve(Attributes.Targetname)?.ToString() ?? _id.ToString();
             public double iid() => _id;
 
             // Randomness:

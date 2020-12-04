@@ -1,4 +1,5 @@
-﻿using MESS.EntityRewriting;
+﻿using MESS.Common;
+using MESS.EntityRewriting;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
@@ -84,7 +85,7 @@ namespace MESS.Macros
             Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
 
             var randomSeed = 0;
-            if (map.Properties.TryGetValue("random_seed", out var value) && double.TryParse(value, out var doubleValue))
+            if (map.Properties.TryGetValue(Attributes.RandomSeed, out var value) && double.TryParse(value, out var doubleValue))
             {
                 randomSeed = (int)doubleValue;
             }
@@ -311,7 +312,7 @@ namespace MESS.Macros
             Logger.Verbose($"Processing a {insertEntity.ClassName} entity for instance #{context.ID}.");
 
             // Resolve the template:
-            var template = ResolveTemplate(insertEntity["template_map"], insertEntity["template_name"], context);
+            var template = ResolveTemplate(insertEntity[Attributes.TemplateMap], insertEntity[Attributes.TemplateName], context);
             if (template == null)
                 return;
 
@@ -338,7 +339,7 @@ namespace MESS.Macros
             // Triangulate all non-NULL faces, creating a list of triangles weighted by surface area:
             var candidateFaces = coverEntity.Brushes
                 .SelectMany(brush => brush.Faces)
-                .Where(face => face.TextureName.ToUpper() != "NULL")
+                .Where(face => face.TextureName.ToUpper() != Textures.Null)
                 .SelectMany(face => face.GetTriangleFan().Select(triangle => new {
                     Triangle = triangle,
                     Area = triangle.GetSurfaceArea(),
@@ -355,14 +356,14 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, coverEntity, "max_instances", "radius", "instance_orientation", "random_seed", "brush_behavior");
+            EvaluateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.InstanceOrientation, Attributes.RandomSeed, Attributes.BrushBehavior);
             SetBrushEntityOriginProperty(coverEntity);
 
-            var maxInstances = coverEntity.GetNumericProperty("max_instances") ?? 0.0;
-            var radius = (float)(coverEntity.GetNumericProperty("radius") ?? 0);
-            var orientation = (Orientation)(coverEntity.GetIntegerProperty("instance_orientation") ?? 0);
-            var randomSeed = coverEntity.GetIntegerProperty("random_seed") ?? 0;
-            var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty("brush_behavior") ?? 0);
+            var maxInstances = coverEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
+            var radius = (float)(coverEntity.GetNumericProperty(Attributes.Radius) ?? 0);
+            var orientation = (Orientation)(coverEntity.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
+            var randomSeed = coverEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
+            var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty(Attributes.BrushBehavior) ?? 0);
 
 
             // Between 0 and 1, maxInstances acts as a 'coverage factor':
@@ -384,8 +385,8 @@ namespace MESS.Macros
                     continue;
 
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(coverEntity["template_map"]),
-                    context.EvaluateInterpolatedString(coverEntity["template_name"]),
+                    context.EvaluateInterpolatedString(coverEntity[Attributes.TemplateMap]),
+                    context.EvaluateInterpolatedString(coverEntity[Attributes.TemplateName]),
                     context);
                 if (template == null)
                     continue;
@@ -453,8 +454,8 @@ namespace MESS.Macros
                     }
                 }
 
-                var scale = evaluatedProperties.GetNumericProperty("instance_scale") ?? 1;
-                var angles = (evaluatedProperties.GetAnglesProperty("instance_angles") ?? new Angles()).ToMatrix();
+                var scale = evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1;
+                var angles = (evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles) ?? new Angles()).ToMatrix();
 
                 return new Transform((float)scale, rotation * angles, insertionPoint);
             }
@@ -482,22 +483,22 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, fillEntity, "max_instances", "radius", "instance_orientation", "random_seed", "grid_orientation", "grid_granularity");
+            EvaluateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.InstanceOrientation, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
             SetBrushEntityOriginProperty(fillEntity);
 
-            var maxInstances = fillEntity.GetNumericProperty("max_instances") ?? 0.0;
-            var radius = (float)(fillEntity.GetNumericProperty("radius") ?? 0);
-            var orientation = (Orientation)(fillEntity.GetIntegerProperty("instance_orientation") ?? 0); // TODO: Only global & local!
-            var randomSeed = fillEntity.GetIntegerProperty("random_seed") ?? 0;
-            var fillMode = (FillMode)(fillEntity.GetIntegerProperty("fill_mode") ?? 0);
+            var maxInstances = fillEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
+            var radius = (float)(fillEntity.GetNumericProperty(Attributes.Radius) ?? 0);
+            var orientation = (Orientation)(fillEntity.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0); // TODO: Only global & local!
+            var randomSeed = fillEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
+            var fillMode = (FillMode)(fillEntity.GetIntegerProperty(Attributes.FillMode) ?? 0);
 
             // Grid snapping settings:
-            var gridOrientation = (Orientation)(fillEntity.GetIntegerProperty("grid_orientation") ?? 0);    // TODO: Only global & local!
+            var gridOrientation = (Orientation)(fillEntity.GetIntegerProperty(Attributes.GridOrientation) ?? 0);    // TODO: Only global & local!
             var gridOrigin = fillEntity.GetOrigin() ?? new Vector3D();  // TODO: For local grid orientation, pick the insertion point of the current context as fallback!!!
 
             // NOTE: A granularity of 0 (or lower) will disable snapping along that axis.
             var gridGranularity = new Vector3D();
-            if (fillEntity.GetNumericArrayProperty("grid_granularity") is double[] granularityArray)
+            if (fillEntity.GetNumericArrayProperty(Attributes.GridGranularity) is double[] granularityArray)
             {
                 if (granularityArray.Length == 1)
                     gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[0], (float)granularityArray[0]);
@@ -577,8 +578,8 @@ namespace MESS.Macros
             void CreateInstanceAtPoint(Vector3D insertionPoint)
             {
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(fillEntity["template_map"]),
-                    context.EvaluateInterpolatedString(fillEntity["template_name"]),
+                    context.EvaluateInterpolatedString(fillEntity[Attributes.TemplateMap]),
+                    context.EvaluateInterpolatedString(fillEntity[Attributes.TemplateName]),
                     context);
                 if (template == null)
                     return;
@@ -599,8 +600,8 @@ namespace MESS.Macros
                 if (orientation == Orientation.Local)
                     rotation = context.Transform.Rotation;
 
-                var scale = evaluatedProperties.GetNumericProperty("instance_scale") ?? 1;
-                var angles = (evaluatedProperties.GetAnglesProperty("instance_angles") ?? new Angles()).ToMatrix();
+                var scale = evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1;
+                var angles = (evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles) ?? new Angles()).ToMatrix();
 
                 return new Transform((float)scale, rotation * angles, insertionPoint);
             }
@@ -634,7 +635,7 @@ namespace MESS.Macros
         {
             Logger.Verbose($"Processing a {brushEntity.ClassName} entity for instance #{context.ID}.");
 
-            var template = ResolveTemplate(brushEntity["template_map"], brushEntity["template_name"], context);
+            var template = ResolveTemplate(brushEntity[Attributes.TemplateMap], brushEntity[Attributes.TemplateName], context);
             if (template == null)
                 return;
 
@@ -703,7 +704,7 @@ namespace MESS.Macros
             IEnumerable<Brush> CopyBrushes(string textureName, bool excludeOriginBrushes = false)
             {
                 // Keep the original textures if the template brush is covered with 'NULL':
-                var applyTexture = textureName.ToUpper() != "NULL";
+                var applyTexture = textureName.ToUpper() != Textures.Null;
 
                 foreach (var brush in brushEntity.Brushes)
                 {
@@ -766,8 +767,8 @@ namespace MESS.Macros
 
         private static void SetBrushEntityOriginProperty(Entity entity)
         {
-            if (!entity.IsPointBased && !entity.Properties.ContainsKey("origin") && entity.GetOrigin() is Vector3D origin)
-                entity.Properties["origin"] = $"{origin.X} {origin.Y} {origin.Z}";
+            if (!entity.IsPointBased && !entity.Properties.ContainsKey(Attributes.Origin) && entity.GetOrigin() is Vector3D origin)
+                entity.Properties[Attributes.Origin] = $"{origin.X} {origin.Y} {origin.Z}";
         }
 
 
