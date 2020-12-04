@@ -1,6 +1,7 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
+using MScript;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,9 @@ namespace MESS.Macros
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
 
+            var randomSeed = map.Properties.TryGetValue(Attributes.RandomSeed, out var randomSeedValue) && double.TryParse(randomSeedValue, out var doubleValue) ? (int)doubleValue : 0;
+            var context = Evaluation.ContextFromProperties(map.Properties, 0, new Random(randomSeed));
+
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();
             foreach (var templateEntity in templateEntities)
@@ -84,7 +88,7 @@ namespace MESS.Macros
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
                 var templateName = templateEntity[Attributes.Targetname] ?? "";
                 var selectionWeight = templateEntity[Attributes.SelectionWeight] ?? "";
-                var offset = GetTemplateEntityOrigin(templateEntity) * -1;
+                var offset = GetTemplateEntityOrigin(templateEntity, context) * -1;
                 var templateMap = new Map();
 
                 // Include all entities that are fully inside this template area (except for other macro_template entities - nesting is not supported):
@@ -126,9 +130,9 @@ namespace MESS.Macros
             return subTemplates;
         }
 
-        private static Vector3D GetTemplateEntityOrigin(Entity templateEntity)
+        private static Vector3D GetTemplateEntityOrigin(Entity templateEntity, EvaluationContext context)
         {
-            if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity[Attributes.Anchor], out var anchor))
+            if (!Enum.TryParse<TemplateAreaAnchor>(Evaluation.EvaluateInterpolatedString(templateEntity[Attributes.Anchor], context), out var anchor))
                 anchor = TemplateAreaAnchor.OriginBrush;
 
             if (anchor == TemplateAreaAnchor.OriginBrush)
