@@ -20,7 +20,7 @@ namespace MESS.Macros
         /// Returns an evaluation context that contains bindings for 'standard library' functions, for instance ID and randomness functions,
         /// and bindings for the given properties (which have been parsed into properly typed values).
         /// </summary>
-        public static EvaluationContext ContextFromProperties(IDictionary<string, string> properties, double id, Random random)
+        public static EvaluationContext ContextFromProperties(IDictionary<string, string> properties, double id, Random random, IDictionary<string, object> globals)
         {
             var evaluationContext = new EvaluationContext(
                 properties?.ToDictionary(
@@ -28,7 +28,7 @@ namespace MESS.Macros
                     kv => PropertyExtensions.ParseProperty(kv.Value)),
                 _globalsContext);
 
-            var instanceFunctions = new InstanceFunctions(id, random);
+            var instanceFunctions = new InstanceFunctions(id, random, globals);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -168,12 +168,14 @@ namespace MESS.Macros
         {
             private double _id;
             private Random _random;
+            private IDictionary<string, object> _globals;
 
 
-            public InstanceFunctions(double id, Random random)
+            public InstanceFunctions(double id, Random random, IDictionary<string, object> globals)
             {
                 _id = id;
                 _random = random;
+                _globals = globals;
             }
 
 
@@ -199,6 +201,22 @@ namespace MESS.Macros
                     max = 0;
 
                 return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
+            }
+
+            // Globals:
+            public object getglobal(string name) => _globals.TryGetValue(name, out var value) ? value : null;
+            public object setglobal(string name, object value)
+            {
+                _globals[name] = value;
+                return value;
+            }
+            public bool useglobal(string name)
+            {
+                if (_globals.TryGetValue(name, out var value) && value != null)
+                    return true;
+
+                _globals[name] = 1.0;
+                return false;
             }
 
 

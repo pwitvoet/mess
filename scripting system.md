@@ -30,6 +30,7 @@ MESS contains a small scripting language named MScript. Its syntax is similar to
     - [Trigonometry](#trigonometry)
     - [Colors](#colors)
     - [Flags](#flags)
+    - [Globals](#globals)
     - [Directories](#directories)
 
 ## Usage
@@ -50,6 +51,7 @@ Flags can be set by adding special `spawnflag<N>` attributes to an entity, where
 - If you want to make an attribute customizable, but also provide a default value, use `or`: `{parent_entity_attribute_name or default_value}`.
 - If you want to prevent multiple template instances from triggering each other's entities, use the `iid()` function (short for 'instance ID') to ensure instance-specific entity names: `my_entity_{iid()}`.
 - Same as the above, but if you want instance-creating entities to be able to set a specific entity name, use the `id()` function instead (`{id()}` is the same as `{targetname or iid()}`).
+- If you want part of a template to only be included by the first instance of that template, then surround it with a `macro_remove_if` and use `{useglobal('UNIQUE_NAME')}` as removal condition (where `UNIQUE_NAME` should be a unique name).
 
 
 ## Data types
@@ -58,7 +60,7 @@ MScript supports the following data types. The type of a value determines what s
 ### `number`
 Used for attributes that describe amounts, distances and volumes, but also for attributes where a value can be selected from a list, because these are stored as numbers internally. Spawn flags are also stored as a number, in the special `spawnflags` attribute. They are written the same both inside and outside expressions.
 
-Numbers can be used in arithmetic operations and can be compared against each other. 
+Numbers can be used in arithmetic operations and can be compared against each other.
 
 
 ### `vector`
@@ -98,11 +100,11 @@ Strings can be indexed in much the same way as vectors can, except that indexing
 - `bool contains(string str)`
     - Returns `1` (true) if the current string contains the given string, or `none` (false) if it does not.
 - `bool startswith(string str)`
-    - Returns `1` (true) if the current string starts with the given string, or `none` (false) if it does not. 
+    - Returns `1` (true) if the current string starts with the given string, or `none` (false) if it does not.
 - `bool endswith(string str)`
     - Returns `1` (true) if the current string ends with the given string, or `none` (false) if it does not.
 - `string replace(string str, string replacement)`
-    - Returns a string where all occurrences of `str` have been replaced with `replacement`. 
+    - Returns a string where all occurrences of `str` have been replaced with `replacement`.
 
 
 ### `none`
@@ -229,7 +231,7 @@ Basic math functions:
 - `number min(number value1, number value2)`
     - Returns the smallest of the two given values.
 - `number max(number value1, number value2)`
-    - Returns the biggest of the two given values.  
+    - Returns the biggest of the two given values.
 - `number clamp(number value, number min, number max)`
     - Returns the given value if it is inside the min-max range. Otherwise, returns min (if the given value is too small) or max (if the given value is too large). 
 - `number abs(number value)`
@@ -241,7 +243,7 @@ Basic math functions:
 - `number ceil(number value)`
     - Returns the given value rounded up to the nearest integer value.
 - `number pow(number value, number power)`
-    - Raises the given value to the given power. 
+    - Raises the given value to the given power.
 - `number sqrt(number value)`
     - Takes the square root of the given value.
 
@@ -261,9 +263,9 @@ Functions related to rotations and angles:
 - `number atan(number tangent)`
     - Returns the angle (in radians) whose tangent is the given value.
 - `number atan2(number y, number x)`
-    - Returns the angle (in radians) whose tangent is the quotient of the given values. 
+    - Returns the angle (in radians) whose tangent is the quotient of the given values.
 - `number deg2rad(number degrees)`
-    - Converts degrees (0 - 360°) to radians (0 - 2π). 
+    - Converts degrees (0 - 360°) to radians (0 - 2π).
 - `number rad2deg(number radians)`
     - Converts radians (0 - 2π) to degrees (0 - 360°).
 
@@ -282,6 +284,16 @@ Some entities use flags - various options that can be enabled or disabled. All o
     - If the `flags` argument is omitted, then the value of the `spawnflags` attribute of the parent entity is used as `flags`.
     - If the `set` argument is omitted, then it is set to 1 (which will enable the flag).
 
+### Globals:
+Global variables can be used to 'communicate' between instances. This is useful when templates contain parts that should be shared across instances - think of multiple buttons that target the same `game_counter` or `multisource`. Global state can make things more difficult to manage however, so try not to overuse these functions.
+
+- `any getglobal(string name)`
+    - Returns the value of the specified global variable. Returns `none` if the variable doesn't exist.
+- `any setglobal(string name, any value)`
+    - Sets the value of the specified global variable, creating it if it doesn't exist yet. Returns the given value.
+- `none|number useglobal(string name)`
+    - A convenience function that returns `none` the first time it is called, and `1` on any subsequent call (when given the same name). Shorthand for `getglobal(name) or not setglobal(name, 1)`.
+
 ### Directories:
 The following functions are only available in entity rewrite rules. They are useful for locating template maps when rewriting custom entities to macro entities that must reference specific templates.
 
@@ -290,4 +302,4 @@ It is recommended to store all template maps relative to a specific directory, a
 - `string dir()`
     - Returns the directory that was specified with the `-dir` command-line argument. If MESS was started without a `-dir` argument, then this function returns the directory that the main map is located in.
 - `string messdir()`
-    - Returns the directory that MESS.exe is located in. 
+    - Returns the directory that MESS.exe is located in.

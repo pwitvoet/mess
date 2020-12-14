@@ -23,19 +23,19 @@ namespace MESS.Macros
     /// </summary>
     public class MapTemplate
     {
-        public static MapTemplate Load(string path)
+        public static MapTemplate Load(string path, IDictionary<string, object> globals)
         {
             path = NormalizePath(path);
 
             var map = MapFile.Load(path);
             map.ExpandPaths();
 
-            return FromMap(map, path);
+            return FromMap(map, path, globals);
         }
 
-        public static MapTemplate FromMap(Map map, string path)
+        public static MapTemplate FromMap(Map map, string path, IDictionary<string, object> globals)
         {
-            var subTemplates = ExtractSubTemplates(map);
+            var subTemplates = ExtractSubTemplates(map, globals);
             var conditionalContent = ExtractConditionalContent(map);
             return new MapTemplate(map, path, false, "1", subTemplates, conditionalContent);
         }
@@ -73,13 +73,13 @@ namespace MESS.Macros
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
         /// Template area names do not need to be unique.
         /// </summary>
-        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map)
+        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, IDictionary<string, object> globals)
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
 
             var randomSeed = map.Properties.TryGetValue(Attributes.RandomSeed, out var randomSeedValue) && double.TryParse(randomSeedValue, out var doubleValue) ? (int)doubleValue : 0;
-            var context = Evaluation.ContextFromProperties(map.Properties, 0, new Random(randomSeed));
+            var context = Evaluation.ContextFromProperties(map.Properties, 0, new Random(randomSeed), globals);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();

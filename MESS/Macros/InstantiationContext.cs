@@ -50,6 +50,11 @@ namespace MESS.Macros
         /// </summary>
         public Transform Transform { get; }
 
+        /// <summary>
+        /// Storage for global MScript variables, used by the 'getglobal' and 'setglobal' functions.
+        /// </summary>
+        public IDictionary<string, object> Globals { get; }
+
 
         private Random _random;
         private InstantiationContext _parentContext;
@@ -63,7 +68,8 @@ namespace MESS.Macros
             Transform transform = null,
             IDictionary<string, string> insertionEntityProperties = null,
             InstantiationContext parentContext = null,
-            string workingDirectory = null)
+            string workingDirectory = null,
+            IDictionary<string, object> globals = null)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
             // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
@@ -96,8 +102,9 @@ namespace MESS.Macros
                     OutputMap.Properties[kv.Key] = kv.Value;
             }
             Transform = transform ?? Transform.Identity;
+            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
 
-            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random);
+            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random, Globals);
         }
 
 

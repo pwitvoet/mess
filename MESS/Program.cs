@@ -154,7 +154,8 @@ namespace MESS
             Console.WriteLine("============================================================");
             Console.WriteLine();
 
-            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, new Random());
+            var globals = new Dictionary<string, object>();
+            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, new Random(), globals);
             while (true)
             {
                 try

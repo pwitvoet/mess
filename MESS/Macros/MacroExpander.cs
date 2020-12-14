@@ -28,13 +28,15 @@ namespace MESS.Macros
 
             // TODO: Map properties are currently not evaluated -- but it may be useful (and consistent!) to do so!
 
+            var globals = new Dictionary<string, object>();
             var expander = new MacroExpander(settings, logger);
-            var mainTemplate = expander.GetMapTemplate(path);
+            var mainTemplate = expander.GetMapTemplate(path, globals);
 
             var context = new InstantiationContext(
                 mainTemplate,
                 insertionEntityProperties: mainTemplate.Map.Properties,
-                workingDirectory: settings.Directory);
+                workingDirectory: settings.Directory,
+                globals: globals);
             expander.CreateInstance(context);
 
             return context.OutputMap;
@@ -90,6 +92,7 @@ namespace MESS.Macros
                 randomSeed = (int)doubleValue;
             }
             var random = new Random(randomSeed);
+            var globals = new Dictionary<string, object>();
 
             var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
             for (int entityID = 0; entityID < map.Entities.Count; entityID++)
@@ -98,13 +101,13 @@ namespace MESS.Macros
 
                 var matchingDirectives = directiveLookup[entity.ClassName];
                 foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity, rewriteDirective, entityID, random);
+                    ApplyRewriteDirective(entity, rewriteDirective, entityID, random, globals);
             }
         }
 
-        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective, int entityID, Random random)
+        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
         {
-            var context = Evaluation.ContextFromProperties(entity.Properties, entityID, random);
+            var context = Evaluation.ContextFromProperties(entity.Properties, entityID, random, globals);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
@@ -142,7 +145,7 @@ namespace MESS.Macros
         /// <summary>
         /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
         /// </summary>
-        private MapTemplate GetMapTemplate(string path)
+        private MapTemplate GetMapTemplate(string path, IDictionary<string, object> globals)
         {
             path = Path.GetFullPath(path);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
@@ -155,7 +158,7 @@ namespace MESS.Macros
                 map.ExpandPaths();
                 ApplyRewriteDirectives(map, _rewriteDirectives);
 
-                template = MapTemplate.FromMap(map, path);
+                template = MapTemplate.FromMap(map, path, globals);
 
                 _mapTemplateCache[path] = template;
             }
@@ -183,7 +186,7 @@ namespace MESS.Macros
                 try
                 {
                     // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
-                    return GetMapTemplate(mapPath);
+                    return GetMapTemplate(mapPath, context.Globals);
                 }
                 catch (Exception ex)
                 {
