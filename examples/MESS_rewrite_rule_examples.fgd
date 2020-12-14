@@ -141,6 +141,52 @@
 ]
 
 
+// A multisource that can be enabled/disabled explicitly by triggering <TARGETNAME>_on and <TARGETNAME>_off respectively.
+// NOTE: This template contains an invisible button_target. While it doesn't block the players movement, it can be triggered by explosions,
+//       so it's best to put this entity in a separate 'entity-only' area.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{dir()}\mess_multisource.rmf"
+// @MESS;
+@PointClass color(255 127 0) = mess_multisource : "Multisource that can be enabled/disabled explicitly"
+[
+    targetname(target_source) : "Multisource name"
+    target(target_destination) : "Multisource target"
+    globalstate(string) : "Global state master"
+
+    spawnflags(flags) =
+    [
+        1 : "Starts on" : 0
+    ]
+]
+
+// A multisource (or pair of multisources) that relies on a game_counter.
+// Can produce both a multisource that is enabled when the counter is above zero, and a multisource that is enabled when the counter is at or below zero.
+// Trigger <TARGETNAME>_inc and <TARGETNAME>_dec to adjust the counter value.
+// NOTE: This template contains an invisible button_target. While it doesn't block the players movement, it can be triggered by explosions,
+//       so it's best to put this entity in a separate 'entity-only' area.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{dir()}\mess_counter_multisource.rmf"
+// @MESS;
+@PointClass color(255 127 0) = mess_counter_multisource : "Pair of multisources that depend on a counter"
+[
+    targetname(target_source) : "1st multisource name (counter > 0)"
+    target(target_destination) : "1st multisource target"
+    globalstate(string) : "1st global state master"
+
+    // Use this to 
+    neg_targetname(target_source) : "2nd multisource name (counter <= 0)"
+    neg_target(target_destination) : "2nd multisource target"
+    neg_globalstate(string) : "2nd global state master"
+
+    // The multisource will initially be enabled if this is more than 0:
+    initial_value(integer) : "Initial counter value" : 0
+]
+
+
 // --------------------------------------------------------------------------------
 // Rathunt map entities:
 // --------------------------------------------------------------------------------
