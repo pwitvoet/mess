@@ -1,6 +1,7 @@
 ﻿using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MESS.Mapping
 {
@@ -21,7 +22,7 @@ namespace MESS.Mapping
 
 
         // Raw dictionary variants:
-        public static int? GetIntegerProperty(this Dictionary<string, string> properties, string propertyName)
+        public static int? GetIntegerProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.TryGetValue(propertyName, out var stringValue) &&
                 int.TryParse(stringValue, out var value))
@@ -30,16 +31,16 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static double? GetNumericProperty(this Dictionary<string, string> properties, string propertyName)
+        public static double? GetNumericProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.TryGetValue(propertyName, out var stringValue) &&
-                double.TryParse(stringValue, out var value))
+                TryParseDouble(stringValue, out var value))
                 return value;
 
             return null;
         }
 
-        public static double[] GetNumericArrayProperty(this Dictionary<string, string> properties, string propertyName)
+        public static double[] GetNumericArrayProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.TryGetValue(propertyName, out var stringValue) &&
                 TryParseVector(stringValue, out var array))
@@ -48,7 +49,7 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static Angles? GetAnglesProperty(this Dictionary<string, string> properties, string propertyName)
+        public static Angles? GetAnglesProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.GetNumericArrayProperty(propertyName) is double[] array && array.Length == 3)
                 return new Angles((float)array[2], (float)array[0], (float)array[1]);
@@ -56,7 +57,7 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static Vector3D? GetVector3DProperty(this Dictionary<string, string> properties, string propertyName)
+        public static Vector3D? GetVector3DProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.GetNumericArrayProperty(propertyName) is double[] array && array.Length == 3)
                 return new Vector3D((float)array[0], (float)array[1], (float)array[2]);
@@ -64,7 +65,7 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static string GetStringProperty(this Dictionary<string, string> properties, string propertyName)
+        public static string GetStringProperty(this IDictionary<string, string> properties, string propertyName)
             => properties.TryGetValue(propertyName, out var value) ? value : null;
 
         public static object ParseProperty(string value)
@@ -72,7 +73,7 @@ namespace MESS.Mapping
             if (string.IsNullOrEmpty(value))
                 return null;
 
-            if (double.TryParse(value, out var number))
+            if (TryParseDouble(value, out var number))
                 return number;
 
             if (TryParseVector(value, out var vector))
@@ -94,7 +95,7 @@ namespace MESS.Mapping
             vector = new double[parts.Length];
             for (int i = 0; i < parts.Length; i++)
             {
-                if (!double.TryParse(parts[i], out var number))
+                if (!TryParseDouble(parts[i], out var number))
                 {
                     vector = null;
                     return false;
@@ -104,5 +105,7 @@ namespace MESS.Mapping
             }
             return true;
         }
+
+        private static bool TryParseDouble(string s, out double result) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 }

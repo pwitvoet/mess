@@ -1,6 +1,8 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics.Spatial;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -123,16 +125,16 @@ namespace MESS.Formats
 
             return new Face {
                 PlanePoints = new[] {
-                    new Vector3D(float.Parse(parts[1]), float.Parse(parts[2]), float.Parse(parts[3])),
-                    new Vector3D(float.Parse(parts[6]), float.Parse(parts[7]), float.Parse(parts[8])),
-                    new Vector3D(float.Parse(parts[11]), float.Parse(parts[12]), float.Parse(parts[13])),
+                    new Vector3D(ParseFloat(parts[1]), ParseFloat(parts[2]), ParseFloat(parts[3])),
+                    new Vector3D(ParseFloat(parts[6]), ParseFloat(parts[7]), ParseFloat(parts[8])),
+                    new Vector3D(ParseFloat(parts[11]), ParseFloat(parts[12]), ParseFloat(parts[13])),
                 },
                 TextureName = parts[15],
-                TextureRightAxis = new Vector3D(float.Parse(parts[17]), float.Parse(parts[18]), float.Parse(parts[19])),
-                TextureDownAxis = new Vector3D(float.Parse(parts[23]), float.Parse(parts[24]), float.Parse(parts[25])),
-                TextureShift = new Vector2D(float.Parse(parts[20]), float.Parse(parts[26])),
-                TextureAngle = float.Parse(parts[28]),
-                TextureScale = new Vector2D(float.Parse(parts[29]), float.Parse(parts[30])),
+                TextureRightAxis = new Vector3D(ParseFloat(parts[17]), ParseFloat(parts[18]), ParseFloat(parts[19])),
+                TextureDownAxis = new Vector3D(ParseFloat(parts[23]), ParseFloat(parts[24]), ParseFloat(parts[25])),
+                TextureShift = new Vector2D(ParseFloat(parts[20]), ParseFloat(parts[26])),
+                TextureAngle = ParseFloat(parts[28]),
+                TextureScale = new Vector2D(ParseFloat(parts[29]), ParseFloat(parts[30])),
             };
         }
 
@@ -142,7 +144,7 @@ namespace MESS.Formats
             writer.WriteLine("{");
 
             foreach (var property in entity.Properties)
-                writer.WriteLine($"\"{property.Key}\" \"{property.Value}\"");
+                writer.WriteLine(WithInvariantFormatting($"\"{property.Key}\" \"{property.Value}\""));
 
             foreach (var brush in entity.Brushes)
                 WriteBrush(writer, brush);
@@ -163,13 +165,13 @@ namespace MESS.Formats
         private static void WriteFace(TextWriter writer, Face face)
         {
             foreach (var point in face.PlanePoints)
-                writer.Write($"( {point.X} {point.Y} {point.Z} ) ");
+                writer.Write(WithInvariantFormatting($"( {point.X} {point.Y} {point.Z} ) "));
 
             writer.Write(face.TextureName);
-            writer.Write(' ');
-            writer.Write($"[ {face.TextureRightAxis.X} {face.TextureRightAxis.Y} {face.TextureRightAxis.Z} {face.TextureShift.X} ] ");
-            writer.Write($"[ {face.TextureDownAxis.X} {face.TextureDownAxis.Y} {face.TextureDownAxis.Z} {face.TextureShift.Y} ] ");
-            writer.WriteLine($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} ");
+            writer.Write(" ");
+            writer.Write(WithInvariantFormatting($"[ {face.TextureRightAxis.X} {face.TextureRightAxis.Y} {face.TextureRightAxis.Z} {face.TextureShift.X} ] "));
+            writer.Write(WithInvariantFormatting($"[ {face.TextureDownAxis.X} {face.TextureDownAxis.Y} {face.TextureDownAxis.Z} {face.TextureShift.Y} ] "));
+            writer.WriteLine(WithInvariantFormatting($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} "));
         }
 
         private static void WriteEntityPath(TextWriter writer, EntityPath entityPath)
@@ -177,5 +179,10 @@ namespace MESS.Formats
             foreach (var entity in entityPath.GenerateEntities())
                 WriteEntity(writer, entity);
         }
+
+
+        private static float ParseFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        private static string WithInvariantFormatting(FormattableString fstring) => fstring.ToString(CultureInfo.InvariantCulture);
     }
 }

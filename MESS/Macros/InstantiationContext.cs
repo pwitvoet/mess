@@ -77,12 +77,8 @@ namespace MESS.Macros
             //       This ensures that switching between explicit and implicit seeding does not result in 'sibling' contexts
             //       getting different seed values.
             var randomSeed = parentContext?._random.Next() ?? 0;
-            if (insertionEntityProperties != null &&
-                insertionEntityProperties.TryGetValue(Attributes.RandomSeed, out var value) &&
-                double.TryParse(value, out var doubleValue))
-            {
-                randomSeed = (int)doubleValue;
-            }
+            if (insertionEntityProperties?.GetNumericProperty(Attributes.RandomSeed) is double seed)
+                randomSeed = (int)seed;
             _random = new Random(randomSeed);
             _parentContext = parentContext;
 

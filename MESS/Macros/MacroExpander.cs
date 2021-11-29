@@ -86,11 +86,7 @@ namespace MESS.Macros
         {
             Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
 
-            var randomSeed = 0;
-            if (map.Properties.TryGetValue(Attributes.RandomSeed, out var value) && double.TryParse(value, out var doubleValue))
-            {
-                randomSeed = (int)doubleValue;
-            }
+            var randomSeed = (int)(map.Properties.GetNumericProperty(Attributes.RandomSeed) ?? 0);
             var random = new Random(randomSeed);
             var globals = new Dictionary<string, object>();
 
