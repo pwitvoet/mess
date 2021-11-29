@@ -1,5 +1,6 @@
 ﻿using MScript.Parsing;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace MScript.Evaluation
@@ -141,10 +142,17 @@ namespace MScript.Evaluation
 
         public static string ToString(object value)
         {
-            if (value is double[] vector)
-                return string.Join(" ", vector);
+            switch (value)
+            {
+                case double number:
+                    return number.ToString(CultureInfo.InvariantCulture);
 
-            return value?.ToString() ?? "";
+                case double[] vector:
+                    return string.Join(" ", vector.Select(num => num.ToString(CultureInfo.InvariantCulture)));
+
+                default:
+                    return value?.ToString() ?? "";
+            }
         }
 
 

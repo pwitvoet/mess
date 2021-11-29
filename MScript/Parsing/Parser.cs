@@ -2,6 +2,7 @@
 using MScript.Tokenizing;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MScript.Parsing
@@ -65,7 +66,7 @@ namespace MScript.Parsing
             Assert(token.Type == TokenType.Number);
 
             // literal: <number>
-            context.ReplaceLast(1, new NumberLiteral(double.Parse(token.Value)));
+            context.ReplaceLast(1, new NumberLiteral(double.Parse(token.Value, CultureInfo.InvariantCulture)));
             return true;
         }
 
