@@ -7,6 +7,7 @@ using MScript;
 using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -198,7 +199,10 @@ namespace MESS.Macros
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
                     .Where(subTemplate => context.EvaluateInterpolatedString(subTemplate.Name) == templateName)
-                    .Select(subTemplate => new { SubTemplate = subTemplate, Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), out var weight) ? weight : 0 })
+                    .Select(subTemplate => new {
+                        SubTemplate = subTemplate,
+                        Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), NumberStyles.Float, CultureInfo.InvariantCulture, out var weight) ? weight : 0
+                    })
                     .ToArray();
                 if (matchingSubTemplates.Length == 0)
                 {
