@@ -1,5 +1,6 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,7 +61,7 @@ namespace MESS.Formats
 
                 var targetname = node.NameOverride;
                 if (string.IsNullOrEmpty(targetname))
-                    targetname = (index == 0) ? path.Name : $"{path.Name}{index:00}";
+                    targetname = (index == 0) ? path.Name : FormattableString.Invariant($"{path.Name}{index:00}");
                 entity[Attributes.Targetname] = targetname;
 
                 if (previousEntity != null)

@@ -771,7 +771,7 @@ namespace MESS.Macros
         private static void SetBrushEntityOriginProperty(Entity entity)
         {
             if (!entity.IsPointBased && !entity.Properties.ContainsKey(Attributes.Origin) && entity.GetOrigin() is Vector3D origin)
-                entity.Properties[Attributes.Origin] = $"{origin.X} {origin.Y} {origin.Z}";
+                entity.Properties[Attributes.Origin] = FormattableString.Invariant($"{origin.X} {origin.Y} {origin.Z}");
         }
 
 

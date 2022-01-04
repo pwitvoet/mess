@@ -32,7 +32,7 @@ namespace MESS.Mapping
             get => Properties.GetVector3DProperty(Attributes.Origin) ?? new Vector3D();
             set
             {
-                Properties[Attributes.Origin] = $"{value.X} {value.Y} {value.Z}";
+                Properties[Attributes.Origin] = FormattableString.Invariant($"{value.X} {value.Y} {value.Z}");
                 if (IsPointBased)
                     BoundingBox = new BoundingBox(Origin, Origin);
             }
@@ -44,7 +44,7 @@ namespace MESS.Mapping
             set
             {
                 if (value is Angles angles)
-                    Properties[Attributes.Angles] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
+                    Properties[Attributes.Angles] = FormattableString.Invariant($"{angles.Pitch} {angles.Yaw} {angles.Roll}");
                 else
                     Properties.Remove(Attributes.Angles);
             }

@@ -139,7 +139,7 @@ namespace MESS.Formats
 
             var angles = ReadAngles(stream);
             if (angles.Pitch != 0 || angles.Yaw != 0 || angles.Roll != 0)
-                node.Properties[Attributes.Angles] = $"{angles.Pitch} {angles.Yaw} {angles.Roll}";
+                node.Properties[Attributes.Angles] = FormattableString.Invariant($"{angles.Pitch} {angles.Yaw} {angles.Roll}");
 
             var flags = (Flags)stream.ReadInt();
             var color = ReadColor(stream);

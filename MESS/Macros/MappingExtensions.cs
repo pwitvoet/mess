@@ -4,6 +4,7 @@ using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -173,7 +174,7 @@ namespace MESS.Macros
             var spawnFlags = entity.Flags;
             for (int i = 0; i < 32; i++)
             {
-                var flagName = $"spawnflag{i}";
+                var flagName = FormattableString.Invariant($"spawnflag{i}");
                 if (!entity.Properties.TryGetValue(flagName, out var stringValue))
                     continue;
 

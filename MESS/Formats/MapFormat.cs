@@ -144,7 +144,7 @@ namespace MESS.Formats
             writer.WriteLine("{");
 
             foreach (var property in entity.Properties)
-                writer.WriteLine(WithInvariantFormatting($"\"{property.Key}\" \"{property.Value}\""));
+                writer.WriteLine(FormattableString.Invariant($"\"{property.Key}\" \"{property.Value}\""));
 
             foreach (var brush in entity.Brushes)
                 WriteBrush(writer, brush);
@@ -165,13 +165,13 @@ namespace MESS.Formats
         private static void WriteFace(TextWriter writer, Face face)
         {
             foreach (var point in face.PlanePoints)
-                writer.Write(WithInvariantFormatting($"( {point.X} {point.Y} {point.Z} ) "));
+                writer.Write(FormattableString.Invariant($"( {point.X} {point.Y} {point.Z} ) "));
 
             writer.Write(face.TextureName);
             writer.Write(" ");
-            writer.Write(WithInvariantFormatting($"[ {face.TextureRightAxis.X} {face.TextureRightAxis.Y} {face.TextureRightAxis.Z} {face.TextureShift.X} ] "));
-            writer.Write(WithInvariantFormatting($"[ {face.TextureDownAxis.X} {face.TextureDownAxis.Y} {face.TextureDownAxis.Z} {face.TextureShift.Y} ] "));
-            writer.WriteLine(WithInvariantFormatting($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} "));
+            writer.Write(FormattableString.Invariant($"[ {face.TextureRightAxis.X} {face.TextureRightAxis.Y} {face.TextureRightAxis.Z} {face.TextureShift.X} ] "));
+            writer.Write(FormattableString.Invariant($"[ {face.TextureDownAxis.X} {face.TextureDownAxis.Y} {face.TextureDownAxis.Z} {face.TextureShift.Y} ] "));
+            writer.WriteLine(FormattableString.Invariant($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} "));
         }
 
         private static void WriteEntityPath(TextWriter writer, EntityPath entityPath)
@@ -182,7 +182,5 @@ namespace MESS.Formats
 
 
         private static float ParseFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
-
-        private static string WithInvariantFormatting(FormattableString fstring) => fstring.ToString(CultureInfo.InvariantCulture);
     }
 }
