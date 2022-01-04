@@ -44,10 +44,10 @@ namespace MScript.Evaluation
                 return ToBoolean(Enumerable.SequenceEqual(leftVector, rightVector));
 
             if (leftOperand is string leftString)
-                return ToBoolean(leftString == rightOperand?.ToString());
+                return ToBoolean(leftString == ToString(rightOperand));
 
             if (rightOperand is string rightString)
-                return ToBoolean(leftOperand?.ToString() == rightString);
+                return ToBoolean(ToString(leftOperand) == rightString);
 
             return ToBoolean(false);
         }
@@ -144,6 +144,9 @@ namespace MScript.Evaluation
         {
             switch (value)
             {
+                case null:
+                    return "";
+
                 case double number:
                     return number.ToString(CultureInfo.InvariantCulture);
 
@@ -151,7 +154,7 @@ namespace MScript.Evaluation
                     return string.Join(" ", vector.Select(num => num.ToString(CultureInfo.InvariantCulture)));
 
                 default:
-                    return value?.ToString() ?? "";
+                    return value.ToString();
             }
         }
 

@@ -4,6 +4,7 @@ using MScript;
 using MScript.Evaluation;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -180,7 +181,11 @@ namespace MESS.Macros
 
 
             // Entity ID:
-            public string id(EvaluationContext context) => context.Resolve(Attributes.Targetname)?.ToString() ?? _id.ToString();
+            public string id(EvaluationContext context)
+            {
+                var targetname = context.Resolve(Attributes.Targetname);
+                return (targetname != null) ? Interpreter.Print(targetname) : _id.ToString(CultureInfo.InvariantCulture);
+            }
             public double iid() => _id;
 
             // Randomness:

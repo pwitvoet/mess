@@ -2,6 +2,7 @@
 using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MESS.Mapping
@@ -24,7 +25,7 @@ namespace MESS.Mapping
         public int Flags
         {
             get => Properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
-            set => Properties[Attributes.Spawnflags] = value.ToString();
+            set => Properties[Attributes.Spawnflags] = value.ToString(CultureInfo.InvariantCulture);
         }
 
         public Vector3D Origin
@@ -53,7 +54,7 @@ namespace MESS.Mapping
         public double? Scale
         {
             get => Properties.GetNumericProperty(Attributes.Scale);
-            set => Properties[Attributes.Scale] = value.ToString();
+            set => Properties[Attributes.Scale] = value?.ToString(CultureInfo.InvariantCulture);
         }
 
 
