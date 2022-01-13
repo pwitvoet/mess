@@ -5,7 +5,7 @@ namespace MESS.Macros
     {
         public int? RecursionLimit { get; set; } = 100;
         public int? InstanceLimit { get; set; } = 10000;
-        public LogLevel LogLevel { get; set; } = LogLevel.Error;
+        public LogLevel LogLevel { get; set; } = LogLevel.Warning;
 
         public string InputPath { get; set; }
         public string OutputPath { get; set; }
