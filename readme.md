@@ -96,7 +96,7 @@ There is also one more entity that uses templates in a slightly different way:
 ### Entity rewrite rules
 Rewrite rules can be used to modify entity attributes before macro processing occurs. This makes it possible to create custom entities for template maps. For more detailed information, see [entity rewrite rules.md](entity%20rewrite%20rules.md).
 
-For example, the landmines above were created with a `macro_insert` entity that referenced the `landmine` template. To modify the landmine's damage, a specific attribute had to be added with SmartEdit mode. With entity rewrite rules, it's possible to create a `monster_landmine` entity with a proper `damage` attribute.
+For example, the landmines above were created with a `macro_insert` entity that referenced the `landmine` template. To modify the landmine's damage, SmartEdit mode had to be disabled so a custom attribute could be added. With entity rewrite rules, it's possible to create a `monster_landmine` entity with a proper `damage` attribute.
 
 Entity rewrite rules are created by adding specially formatted comments to an `.fgd` file, right before the entity type that they apply to:
 
@@ -123,9 +123,9 @@ When a macro entity creates a template instance, its attributes are made visible
 This is why, in the above landmine example, each `macro_insert` can specify its own landmine damage: the `damage` in `{damage or 100}` refers to the `damage` attribute of the current `macro_insert` entity.
 
 #### SmartEdit mode
-Enabling `SmartEdit` mode allows new attributes to be added, which is very useful for customizing templates. That's how, in the landmine example, the custom `damage` attribute was added.
+Disabling `SmartEdit` mode allows new attributes to be added, which is very useful for customizing templates. That's how, in the landmine example, the custom `damage` attribute was added.
 
-But there's another reason why `SmartEdit` mode is useful: just as Half-Life itself, MESS only recognizes internal attribute names, and these are only shown when `SmartEdit` mode is enabled.
+But there's another reason why disabling `SmartEdit` mode is useful: just as Half-Life itself, MESS only recognizes internal attribute names, and these are only shown when `SmartEdit` mode is disabled.
 
 #### Commonly used functions
 Finally, here are some of the most commonly used functions that can be used in MESS expressions:

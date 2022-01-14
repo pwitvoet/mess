@@ -38,7 +38,7 @@ MESS contains a small scripting language named MScript. Its syntax is similar to
 MScript expressions can be embedded in entity attribute names or values by surrounding them with curly braces. For example, `fire_{4 + 5}` contains the expression `4 + 5`, which evaluates to `9`, so the resulting value will be `fire_9`.
 
 ### Parent entities
-When a macro entity is instantiating a template, it is seen as the 'parent entity'. Entities within the template are given access to the attributes of this parent entity, so an attribute with the value `fire_{targetname}` is turned into `fire_box1` if the parent entity's `targetname` is `box1`. This works for any attribute, including custom ones. Because MESS only knows about 'internal' attribute names, it's a good idea to turn on `SmartEdit` mode.
+When a macro entity is instantiating a template, it is seen as the 'parent entity'. Entities within the template are given access to the attributes of this parent entity, so an attribute with the value `fire_{targetname}` is turned into `fire_box1` if the parent entity's `targetname` is `box1`. This works for any attribute, including custom ones. Because MESS only knows about 'internal' attribute names, it's a good idea to disable `SmartEdit` mode.
 
 The `worldspawn` entity acts as parent entity for anything that is not part of a template. This means that map properties can be used in expressions.
 

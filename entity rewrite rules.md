@@ -69,7 +69,7 @@ It's a good idea to create a single root template maps folder, and to always pas
 ## Use-cases
 
 ### Custom entities for template maps
-Rewrite rules were created to make it possible to create custom entities for commonly used templates. For example, manually adding a `macro_insert` entity, pointing it at the `templates\monster_warp.rmf` template map, and using SmartEdit mode for further configuration can be error-prone. A custom `monster_warp` entity with properly defined attributes is easier to use.
+Rewrite rules were created to make it possible to create custom entities for commonly used templates. For example, manually adding a `macro_insert` entity, pointing it at the `templates\monster_warp.rmf` template map, and disabling SmartEdit mode for further configuration can be error-prone. A custom `monster_warp` entity with properly defined attributes is easier to use.
 
 ### Aliasing other entities
 Another use-case is to create aliases for existing entities. For example, one of the best entities for adding decorative models to a Half-Life level is  actually `env_sprite` - but because it's a sprite entity, it's somewhat cumbersome to use and can cause certain editors to crash. An `env_model` alias with a `model(studio)` attribute and a rewrite rule that turns it into an `env_sprite` makes this workaround much easier to use.
