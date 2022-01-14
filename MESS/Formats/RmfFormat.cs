@@ -190,7 +190,7 @@ namespace MESS.Formats
 
             var propertyCount = stream.ReadInt();
             for (int i = 0; i < propertyCount; i++)
-                entity[stream.ReadNString()] = stream.ReadNString();
+                entity.Properties[stream.ReadNString()] = stream.ReadNString();
 
             stream.ReadBytes(14);   // ?
 

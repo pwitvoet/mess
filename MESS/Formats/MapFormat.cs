@@ -53,9 +53,9 @@ namespace MESS.Formats
             {
                 var worldspawn = new Entity(map.WorldGeometry);
                 worldspawn.ClassName = Entities.Worldspawn;
-                worldspawn["sounds"] = "1";
-                worldspawn["MaxRange"] = "4096";
-                worldspawn["mapversion"] = "220";
+                worldspawn.Properties["sounds"] = "1";
+                worldspawn.Properties["MaxRange"] = "4096";
+                worldspawn.Properties["mapversion"] = "220";
                 foreach (var kv in map.Properties)
                     worldspawn.Properties[kv.Key] = kv.Value;
 

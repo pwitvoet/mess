@@ -86,8 +86,8 @@ namespace MESS.Macros
             foreach (var templateEntity in templateEntities)
             {
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
-                var templateName = templateEntity[Attributes.Targetname] ?? "";
-                var selectionWeight = templateEntity[Attributes.SelectionWeight] ?? "";
+                var templateName = templateEntity.GetStringProperty(Attributes.Targetname) ?? "";
+                var selectionWeight = templateEntity.GetStringProperty(Attributes.SelectionWeight) ?? "";
                 var offset = GetTemplateEntityOrigin(templateEntity, context) * -1;
                 var templateMap = new Map();
 
@@ -132,7 +132,7 @@ namespace MESS.Macros
 
         private static Vector3D GetTemplateEntityOrigin(Entity templateEntity, EvaluationContext context)
         {
-            if (!Enum.TryParse<TemplateAreaAnchor>(Evaluation.EvaluateInterpolatedString(templateEntity[Attributes.Anchor], context), out var anchor))
+            if (!Enum.TryParse<TemplateAreaAnchor>(Evaluation.EvaluateInterpolatedString(templateEntity.GetStringProperty(Attributes.Anchor), context), out var anchor))
                 anchor = TemplateAreaAnchor.OriginBrush;
 
             if (anchor == TemplateAreaAnchor.OriginBrush)
@@ -161,7 +161,7 @@ namespace MESS.Macros
             foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf))
             {
                 var removeIfArea = removeIfEntity.BoundingBox.ExpandBy(0.5f);
-                var condition = removeIfEntity[Attributes.Condition] ?? "";  // TODO: Validate the expression somehow?
+                var condition = removeIfEntity.GetStringProperty(Attributes.Condition) ?? "";  // TODO: Validate the expression somehow?
                 var removableContent = new HashSet<object>();
 
                 // Reference all entities that are fully inside this remove-if area (except for other macro_remove_if entities):

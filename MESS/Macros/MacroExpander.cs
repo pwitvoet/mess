@@ -320,7 +320,7 @@ namespace MESS.Macros
             Logger.Verbose($"Processing a {insertEntity.ClassName} entity for instance #{context.ID}.");
 
             // Resolve the template:
-            var template = ResolveTemplate(insertEntity[Attributes.TemplateMap], insertEntity[Attributes.TemplateName], context);
+            var template = ResolveTemplate(insertEntity.GetStringProperty(Attributes.TemplateMap), insertEntity.GetStringProperty(Attributes.TemplateName), context);
             if (template == null)
                 return;
 
@@ -393,8 +393,8 @@ namespace MESS.Macros
                     continue;
 
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(coverEntity[Attributes.TemplateMap]),
-                    context.EvaluateInterpolatedString(coverEntity[Attributes.TemplateName]),
+                    context.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateMap)),
+                    context.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateName)),
                     context);
                 if (template == null)
                     continue;
@@ -586,8 +586,8 @@ namespace MESS.Macros
             void CreateInstanceAtPoint(Vector3D insertionPoint)
             {
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(fillEntity[Attributes.TemplateMap]),
-                    context.EvaluateInterpolatedString(fillEntity[Attributes.TemplateName]),
+                    context.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateMap)),
+                    context.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateName)),
                     context);
                 if (template == null)
                     return;
@@ -643,7 +643,7 @@ namespace MESS.Macros
         {
             Logger.Verbose($"Processing a {brushEntity.ClassName} entity for instance #{context.ID}.");
 
-            var template = ResolveTemplate(brushEntity[Attributes.TemplateMap], brushEntity[Attributes.TemplateName], context);
+            var template = ResolveTemplate(brushEntity.GetStringProperty(Attributes.TemplateMap), brushEntity.GetStringProperty(Attributes.TemplateName), context);
             if (template == null)
                 return;
 

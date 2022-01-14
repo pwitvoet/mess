@@ -96,14 +96,5 @@ namespace MESS.Mapping
                     BoundingBox = BoundingBox.FromBoundingBoxes(Brushes.Select(b => b.BoundingBox));
             }
         }
-
-
-        // TODO: Not sure about having both this and Properties, each with slightly different characteristics...
-        // TODO: Remove this (obsolete) in favor of the PropertyExtension methods?? TBD...
-        public string this[string propertyName]
-        {
-            get => Properties.TryGetValue(propertyName, out var value) ? value : null;
-            set => Properties[propertyName] = value;
-        }
     }
 }

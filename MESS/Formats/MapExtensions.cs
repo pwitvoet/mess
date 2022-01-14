@@ -29,7 +29,7 @@ namespace MESS.Formats
             if (path.Type == PathType.Circular)
             {
                 // Point the last node back at the first:
-                previousEntity[Attributes.Target] = path.Name;
+                previousEntity.Properties[Attributes.Target] = path.Name;
             }
             else if (path.Type == PathType.PingPong)
             {
@@ -44,7 +44,7 @@ namespace MESS.Formats
                     previousEntity = entity;
                     index += 1;
                 }
-                previousEntity[Attributes.Target] = path.Name;
+                previousEntity.Properties[Attributes.Target] = path.Name;
             }
 
             if (previousEntity != null)
@@ -54,7 +54,7 @@ namespace MESS.Formats
             {
                 var entity = new Entity();
                 foreach (var property in node.Properties)
-                    entity[property.Key] = property.Value;
+                    entity.Properties[property.Key] = property.Value;
 
                 entity.ClassName = path.ClassName;
                 entity.Origin = node.Position;
@@ -62,10 +62,10 @@ namespace MESS.Formats
                 var targetname = node.NameOverride;
                 if (string.IsNullOrEmpty(targetname))
                     targetname = (index == 0) ? path.Name : FormattableString.Invariant($"{path.Name}{index:00}");
-                entity[Attributes.Targetname] = targetname;
+                entity.Properties[Attributes.Targetname] = targetname;
 
                 if (previousEntity != null)
-                    previousEntity[Attributes.Target] = targetname;
+                    previousEntity.Properties[Attributes.Target] = targetname;
 
                 return entity;
             }
