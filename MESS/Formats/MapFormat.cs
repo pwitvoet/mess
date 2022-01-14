@@ -1,4 +1,5 @@
-﻿using MESS.Mapping;
+﻿using MESS.Common;
+using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using System;
 using System.Collections.Generic;
@@ -30,12 +31,12 @@ namespace MESS.Formats
                     if (entity == null)
                         break;
 
-                    if (entity.ClassName == "worldspawn")
+                    if (entity.ClassName == Entities.Worldspawn)
                     {
                         foreach (var kv in entity.Properties)
                             map.Properties[kv.Key] = kv.Value;
 
-                        map.WorldGeometry.AddRange(entity.Brushes);
+                        map.AddBrushes(entity.Brushes);
                     }
                     else
                     {
@@ -51,7 +52,7 @@ namespace MESS.Formats
             using (var writer = new StreamWriter(stream, new UTF8Encoding(false)))
             {
                 var worldspawn = new Entity(map.WorldGeometry);
-                worldspawn.ClassName = "worldspawn";
+                worldspawn.ClassName = Entities.Worldspawn;
                 worldspawn["sounds"] = "1";
                 worldspawn["MaxRange"] = "4096";
                 worldspawn["mapversion"] = "220";

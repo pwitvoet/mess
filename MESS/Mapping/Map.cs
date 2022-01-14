@@ -11,10 +11,19 @@ namespace MESS.Mapping
     /// </summary>
     public class Map
     {
-        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+        /// <summary>
+        /// Map properties. These can also be accessed via the special <see cref="Worldspawn"/> entity.
+        /// </summary>
+        public Dictionary<string, string> Properties => _worldspawn.Properties;
 
-        public List<Brush> WorldGeometry { get; } = new List<Brush>();
+        /// <summary>
+        /// Map world brushes. These can also be accessed via the special <see cref="Worldspawn"/> entity.
+        /// </summary>
+        public IReadOnlyList<Brush> WorldGeometry => _worldspawn.Brushes;
 
+        /// <summary>
+        /// A list of all entities in this map (excluding the special <see cref="Worldspawn"/> entity).
+        /// </summary>
         public List<Entity> Entities { get; } = new List<Entity>();
 
 
@@ -27,5 +36,15 @@ namespace MESS.Mapping
         public List<Camera> Cameras { get; } = new List<Camera>();
 
         public List<VisGroup> VisGroups { get; } = new List<VisGroup>();
+
+
+        private Entity _worldspawn = new Entity { ClassName = Common.Entities.Worldspawn };
+
+
+        public void AddBrush(Brush brush) => _worldspawn.AddBrush(brush);
+
+        public void AddBrushes(IEnumerable<Brush> brushes) => _worldspawn.AddBrushes(brushes);
+
+        public void RemoveBrush(Brush brush) => _worldspawn.RemoveBrush(brush);
     }
 }

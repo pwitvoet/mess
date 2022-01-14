@@ -81,7 +81,7 @@ namespace MESS.Formats
                         break;
 
                     case Brush brush:
-                        map.WorldGeometry.Add(brush);
+                        map.AddBrush(brush);
                         break;
 
                     case Group group:

@@ -59,14 +59,42 @@ namespace MESS.Mapping
 
 
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
-        public IReadOnlyList<Brush> Brushes { get; }
+
+        private List<Brush> _brushes = new List<Brush>();
+        public IReadOnlyList<Brush> Brushes => _brushes;
+
         public BoundingBox BoundingBox { get; private set; }
 
 
         public Entity(IEnumerable<Brush> brushes = null)
         {
-            Brushes = brushes?.ToArray() ?? Array.Empty<Brush>();
-            BoundingBox = IsPointBased ? new BoundingBox(Origin, Origin) : BoundingBox.FromBoundingBoxes(Brushes.Select(brush => brush.BoundingBox));
+            if (brushes != null)
+                AddBrushes(brushes);
+            else
+                BoundingBox = new BoundingBox(Origin, Origin);
+        }
+
+        public void AddBrush(Brush brush)
+        {
+            _brushes.Add(brush);
+            BoundingBox = BoundingBox.CombineWith(brush.BoundingBox);
+        }
+
+        public void AddBrushes(IEnumerable<Brush> brushes)
+        {
+            _brushes.AddRange(brushes);
+            BoundingBox = BoundingBox.CombineWith(BoundingBox.FromBoundingBoxes(brushes.Select(brush => brush.BoundingBox)));
+        }
+
+        public void RemoveBrush(Brush brush)
+        {
+            if (_brushes.Remove(brush))
+            {
+                if (Brushes.Count == 0)
+                    BoundingBox = new BoundingBox(Origin, Origin);
+                else
+                    BoundingBox = BoundingBox.FromBoundingBoxes(Brushes.Select(b => b.BoundingBox));
+            }
         }
 
 

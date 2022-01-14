@@ -65,7 +65,20 @@ namespace MESS.Formats
             try
             {
                 while (true)
-                    map.Entities.Add(ReadEntity(stream, groups, visGroups));
+                {
+                    var entity = ReadEntity(stream, groups, visGroups);
+                    if (entity.ClassName == Entities.Worldspawn)
+                    {
+                        foreach (var kv in entity.Properties)
+                            map.Properties[kv.Key] = kv.Value;
+
+                        map.AddBrushes(entity.Brushes);
+                    }
+                    else
+                    {
+                        map.Entities.Add(entity);
+                    }
+                }
             }
             catch (EndOfStreamException)
             {

@@ -106,7 +106,7 @@ namespace MESS.Macros
                 {
                     if (templateArea.Contains(brush))
                     {
-                        templateMap.WorldGeometry.Add(brush.Copy(offset));
+                        templateMap.AddBrush(brush.Copy(offset));
                         objectsMarkedForRemoval.Add(brush);
                     }
                 }
@@ -122,7 +122,7 @@ namespace MESS.Macros
                 switch (mapObject)
                 {
                     case Entity entity: map.Entities.Remove(entity); break;
-                    case Brush brush: map.WorldGeometry.Remove(brush); break;
+                    case Brush brush: map.RemoveBrush(brush); break;
                 }
                 // TODO: They're also still part of groups, vis-groups, etc!
             }

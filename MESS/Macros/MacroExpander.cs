@@ -92,19 +92,24 @@ namespace MESS.Macros
             var globals = new Dictionary<string, object>();
 
             var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
-            for (int entityID = 0; entityID < map.Entities.Count; entityID++)
+
+            foreach (var rewriteDirective in directiveLookup[Entities.Worldspawn])
+                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random, globals);
+
+            for (int i = 0; i < map.Entities.Count; i++)
             {
-                var entity = map.Entities[entityID];
+                var entity = map.Entities[i];
+                var entityID = i + 1;
 
                 var matchingDirectives = directiveLookup[entity.ClassName];
                 foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity, rewriteDirective, entityID, random, globals);
+                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random, globals);
             }
         }
 
-        private void ApplyRewriteDirective(Entity entity, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
+        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
         {
-            var context = Evaluation.ContextFromProperties(entity.Properties, entityID, random, globals);
+            var context = Evaluation.ContextFromProperties(entityProperties, entityID, random, globals);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
@@ -112,28 +117,28 @@ namespace MESS.Macros
                 if (!ruleGroup.HasCondition || Interpreter.IsTrue(PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(ruleGroup.Condition, context))))
                 {
                     foreach (var rule in ruleGroup.Rules)
-                        ApplyRewriteRule(entity, rule, context);
+                        ApplyRewriteRule(entityProperties, rule, context);
                 }
                 else if (ruleGroup.HasCondition)
                 {
                     foreach (var rule in ruleGroup.AlternateRules)
-                        ApplyRewriteRule(entity, rule, context);
+                        ApplyRewriteRule(entityProperties, rule, context);
                 }
             }
         }
 
-        private void ApplyRewriteRule(Entity entity, RewriteDirective.Rule rule, EvaluationContext context)
+        private void ApplyRewriteRule(Dictionary<string, string> entityProperties, RewriteDirective.Rule rule, EvaluationContext context)
         {
             var attributeName = Evaluation.EvaluateInterpolatedString(rule.Attribute, context);
             if (rule.DeleteAttribute)
             {
-                entity.Properties.Remove(attributeName);
+                entityProperties.Remove(attributeName);
                 context.Bind(attributeName, null);
             }
             else
             {
                 var value = Evaluation.EvaluateInterpolatedString(rule.NewValue, context);
-                entity.Properties[attributeName] = value;
+                entityProperties[attributeName] = value;
                 context.Bind(attributeName, value);
             }
         }
@@ -271,7 +276,7 @@ namespace MESS.Macros
                 if (excludedObjects.Contains(brush))
                     continue;
 
-                context.OutputMap.WorldGeometry.Add(brush.Copy(context.Transform));
+                context.OutputMap.AddBrush(brush.Copy(context.Transform));
             }
         }
 
@@ -412,7 +417,7 @@ namespace MESS.Macros
 
                 case CoverBrushBehavior.WorldGeometry:
                     foreach (var brush in coverEntity.Brushes)
-                        context.OutputMap.WorldGeometry.Add(brush.Copy(new Vector3D()));
+                        context.OutputMap.AddBrush(brush.Copy(new Vector3D()));
                     break;
 
                 case CoverBrushBehavior.FuncDetail:
@@ -668,7 +673,7 @@ namespace MESS.Macros
 
                 var textureName = templateBrush.Faces[0].TextureName;
                 foreach (var copy in CopyBrushes(textureName, excludeOriginBrushes: true))
-                    context.OutputMap.WorldGeometry.Add(copy);
+                    context.OutputMap.AddBrush(copy);
             }
 
             // Entities:
