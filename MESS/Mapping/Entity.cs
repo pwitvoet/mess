@@ -76,14 +76,19 @@ namespace MESS.Mapping
 
         public void AddBrush(Brush brush)
         {
+            var wasEmpty = _brushes.Count == 0;
+
             _brushes.Add(brush);
-            BoundingBox = BoundingBox.CombineWith(brush.BoundingBox);
+            BoundingBox = wasEmpty ? brush.BoundingBox : BoundingBox.CombineWith(brush.BoundingBox);
         }
 
         public void AddBrushes(IEnumerable<Brush> brushes)
         {
+            var wasEmpty = _brushes.Count == 0;
+
             _brushes.AddRange(brushes);
-            BoundingBox = BoundingBox.CombineWith(BoundingBox.FromBoundingBoxes(brushes.Select(brush => brush.BoundingBox)));
+            var brushesBoundingBox = BoundingBox.FromBoundingBoxes(brushes.Select(brush => brush.BoundingBox));
+            BoundingBox = wasEmpty ? brushesBoundingBox : BoundingBox.CombineWith(brushesBoundingBox);
         }
 
         public void RemoveBrush(Brush brush)
