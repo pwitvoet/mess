@@ -20,6 +20,7 @@ namespace MESS.Macros
     /// <summary>
     /// A map template holds entities and brushes that can be inserted by <see cref="MacroEntity.Insert"/>, <see cref="MacroEntity.Cover"/> and <see cref="MacroEntity.Fill"/> entities.
     /// Templates may contain sub-templates (<see cref="MacroEntity.Template"/>) and conditional content (<see cref="MacroEntity.RemoveIf"/>).
+    /// The template's map properties serve as local variables, which are evaluated whenever the template is instantiated.
     /// </summary>
     public class MapTemplate
     {
@@ -90,6 +91,13 @@ namespace MESS.Macros
                 var selectionWeight = templateEntity.GetStringProperty(Attributes.SelectionWeight) ?? "";
                 var offset = GetTemplateEntityOrigin(templateEntity, context) * -1;
                 var templateMap = new Map();
+
+                // Copy custom properties into the template map properties - these will serve as local variables that will be evaluated whenever the template is instantiated:
+                foreach (var property in templateEntity.Properties)
+                    templateMap.Properties[property.Key] = property.Value;
+                templateMap.Properties.Remove(Attributes.Targetname);
+                templateMap.Properties.Remove(Attributes.SelectionWeight);
+                templateMap.Properties.Remove(Attributes.Anchor);
 
                 // Include all entities that are fully inside this template area (except for other macro_template entities - nesting is not supported):
                 foreach (var entity in map.Entities.Where(entity => entity.ClassName != MacroEntity.Template))

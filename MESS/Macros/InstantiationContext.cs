@@ -5,6 +5,7 @@ using MScript;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MESS.Macros
 {
@@ -88,19 +89,23 @@ namespace MESS.Macros
             CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
             SubTemplates = GetNearestMapFileContext().Template.SubTemplates;
 
+            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random, Globals);
+            var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
+                kv => Evaluation.EvaluateInterpolatedString(kv.Key, outerEvaluationContext),
+                kv => PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(kv.Value, outerEvaluationContext)));
+            _evaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
+
             // Every instantiation is written to the same map, but with a different transform:
             OutputMap = parentContext?.OutputMap;
             if (OutputMap == null)
             {
                 // Copy original map properties:
                 OutputMap = new Map();
-                foreach (var kv in template.Map.Properties)
-                    OutputMap.Properties[kv.Key] = kv.Value;
+                foreach (var kv in evaluatedTemplateProperties)
+                    OutputMap.Properties[kv.Key] = Interpreter.Print(kv.Value);
             }
             Transform = transform ?? Transform.Identity;
             Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
-
-            _evaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random, Globals);
         }
 
 

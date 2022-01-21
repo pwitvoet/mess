@@ -27,15 +27,13 @@ namespace MESS.Macros
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
-            // TODO: Map properties are currently not evaluated -- but it may be useful (and consistent!) to do so!
-
             var globals = new Dictionary<string, object>();
             var expander = new MacroExpander(settings, logger);
             var mainTemplate = expander.GetMapTemplate(path, globals);
 
             var context = new InstantiationContext(
                 mainTemplate,
-                insertionEntityProperties: mainTemplate.Map.Properties,
+                insertionEntityProperties: null,
                 workingDirectory: settings.Directory,
                 globals: globals);
             expander.CreateInstance(context);
