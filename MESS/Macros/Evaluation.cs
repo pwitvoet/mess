@@ -35,6 +35,8 @@ namespace MESS.Macros
             return evaluationContext;
         }
 
+        public static EvaluationContext DefaultContext() => new EvaluationContext(null, _globalsContext);
+
 
         /// <summary>
         /// Evaluates the given interpolated string. Expression parts are delimited by curly braces.

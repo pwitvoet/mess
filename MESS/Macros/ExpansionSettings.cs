@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MESS.Macros
 {
     public class ExpansionSettings
@@ -11,5 +12,6 @@ namespace MESS.Macros
         public string OutputPath { get; set; }
         public string Directory { get; set; }
         public string[] GameDataPaths { get; set; }
+        public Dictionary<string, object> Variables { get; set; }
     }
 }

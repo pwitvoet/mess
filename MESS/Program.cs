@@ -6,6 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using MScript.Parsing;
+using MScript.Tokenizing;
+using MScript.Evaluation;
 
 namespace MESS
 {
@@ -86,6 +89,10 @@ namespace MESS
                     s => { settings.GameDataPaths = s.Split(';').Select(Path.GetFullPath).ToArray(); },
                     $"The .fgd file(s) that contains entity rewrite directives. Multiple paths must be separated by semicolons.")
                 .Option(
+                    "-vars",
+                    s => { settings.Variables = ParseVariables(s); },
+                    $"These variables are used when evaluating expressions in the given map's properties and entities. Input format is \"name1 = expression; name2: expression; ...\".")
+                .Option(
                     "-maxrecursion",
                     s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
                     $"Limits recursion depth (templates that insert other templates). This protects against accidentally triggering infinite recursion. Default value is {settings.RecursionLimit}.")
@@ -140,6 +147,19 @@ namespace MESS
                 logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
                 MapFormat.Save(expandedMap, file);
             }
+        }
+
+        private static Dictionary<string, object> ParseVariables(string s)
+        {
+            var tokens = Tokenizer.Tokenize(s);
+            var assignments = Parser.ParseAssignments(tokens);
+
+            var context = Evaluation.DefaultContext();
+            var variables = new Dictionary<string, object>();
+            foreach (var assignment in assignments)
+                variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, context);
+
+            return variables;
         }
 
 

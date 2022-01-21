@@ -33,7 +33,7 @@ namespace MESS.Macros
 
             var context = new InstantiationContext(
                 mainTemplate,
-                insertionEntityProperties: null,
+                insertionEntityProperties: settings.Variables.ToDictionary(kv => kv.Key, kv => Interpreter.Print(kv.Value)),
                 workingDirectory: settings.Directory,
                 globals: globals);
             expander.CreateInstance(context);
