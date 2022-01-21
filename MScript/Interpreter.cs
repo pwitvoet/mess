@@ -15,7 +15,7 @@ namespace MScript
         public static object Evaluate(string input, EvaluationContext context)
         {
             var tokens = Tokenizer.Tokenize(input);
-            var expression = Parser.Parse(tokens);
+            var expression = Parser.ParseExpression(tokens);
             return Evaluator.Evaluate(expression, context);
         }
 

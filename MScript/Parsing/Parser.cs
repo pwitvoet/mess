@@ -7,9 +7,12 @@ using System.Linq;
 
 namespace MScript.Parsing
 {
-    static class Parser
+    public static class Parser
     {
-        public static Expression Parse(IEnumerable<Token> tokens)
+        /// <summary>
+        /// Parses an MScript expression.
+        /// </summary>
+        public static Expression ParseExpression(IEnumerable<Token> tokens)
         {
             var context = new Context(tokens);
             while (!context.IsExhausted)
@@ -23,6 +26,52 @@ namespace MScript.Parsing
 
             return expression;
         }
+
+        /// <summary>
+        /// Parses a sequence of MScript variable assignments.
+        /// </summary>
+        public static IEnumerable<Assignment> ParseAssignments(IEnumerable<Token> tokens)
+        {
+            var context = new Context(tokens);
+            while (!context.IsExhausted)
+            {
+                Shift(context);
+                while (ReduceVariables()) ;
+            }
+
+            if (context.ParseStack.Count != 1 || !(context.ParseStack[0] is Assignment[] assignments))
+                throw ParseError("Invalid assignments sequence.", context);
+
+            return assignments;
+
+
+            // This reduces assignments in addition to normal expressions:
+            bool ReduceVariables()
+            {
+                while (Reduce(context)) ;
+
+                if (context.Stack(-4) is Variable variable &&
+                    context.IsToken(-3, TokenType.SingleEquals) &&
+                    context.Stack(-2) is Expression expression &&
+                    context.IsToken(-1, TokenType.Semicolon))
+                {
+                    // assignments: variable '=' expression ';'
+                    context.ReplaceLast(4, new Assignment[] { new Assignment(variable.Name, expression) });
+                    return true;
+                }
+                else if (context.Stack(-2) is Assignment[] headAssignments &&
+                    context.Stack(-1) is Assignment[] tailAssignments)
+                {
+                    // assignments: assignments assignments
+                    context.ReplaceLast(2, headAssignments.Concat(tailAssignments).ToArray());
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        //public static void ParseInterpolatedString() { }  // This could offer more robust parsing for interpolated strings than a simple regex!
 
 
         private static void Shift(Context context)

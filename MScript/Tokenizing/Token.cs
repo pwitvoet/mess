@@ -1,7 +1,7 @@
 ﻿
 namespace MScript.Tokenizing
 {
-    struct Token
+    public struct Token
     {
         public TokenType Type { get; }
         public string Value { get; }

@@ -1,7 +1,7 @@
 ﻿
 namespace MScript.Parsing
 {
-    abstract class Expression
+    public abstract class Expression
     {
     }
 }

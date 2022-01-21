@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MScript.Evaluation
 {
-    static class Evaluator
+    public static class Evaluator
     {
         public static object Evaluate(Expression expression, EvaluationContext context)
         {

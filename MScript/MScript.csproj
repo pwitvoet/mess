@@ -62,6 +62,7 @@
     <Compile Include="Parsing\AST\ConditionalOperation.cs" />
     <Compile Include="Parsing\AST\FunctionCall.cs" />
     <Compile Include="Parsing\AST\Indexing.cs" />
+    <Compile Include="Parsing\AST\Assignment.cs" />
     <Compile Include="Parsing\AST\Literal.cs" />
     <Compile Include="Parsing\AST\MemberAccess.cs" />
     <Compile Include="Parsing\AST\NoneLiteral.cs" />

@@ -1,7 +1,7 @@
 ﻿
 namespace MScript.Tokenizing
 {
-    enum TokenType
+    public enum TokenType
     {
         EndOfInput,         // special end-of-input marker
 
@@ -9,6 +9,7 @@ namespace MScript.Tokenizing
         String,             // '[^']*'
         Identifier,         // \w[\w\d]*
 
+        SingleEquals,       // =
         ParensOpen,         // (
         ParensClose,        // )
         BracketOpen,        // [
@@ -17,6 +18,7 @@ namespace MScript.Tokenizing
         Comma,              // ,
         QuestionMark,       // ?
         Colon,              // :
+        Semicolon,          // ;
         DoubleAmpersand,    // &&
         DoubleBar,          // ||
 

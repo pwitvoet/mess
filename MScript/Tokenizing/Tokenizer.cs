@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MScript.Tokenizing
 {
-    static class Tokenizer
+    public static class Tokenizer
     {
         public static IEnumerable<Token> Tokenize(string input)
         {
@@ -38,6 +38,7 @@ namespace MScript.Tokenizing
                 case ',': context.MoveNext(); return new Token(TokenType.Comma);
                 case '?': context.MoveNext(); return new Token(TokenType.QuestionMark);
                 case ':': context.MoveNext(); return new Token(TokenType.Colon);
+                case ';': context.MoveNext(); return new Token(TokenType.Semicolon);
                 case '+': context.MoveNext(); return new Token(TokenType.Plus);
                 case '-': context.MoveNext(); return new Token(TokenType.Minus);
                 case '*': context.MoveNext(); return new Token(TokenType.Asterisk);
@@ -46,7 +47,7 @@ namespace MScript.Tokenizing
 
                 case '=':
                     if (!context.MoveNext() || context.Current != '=')
-                        throw ParseError(context, $"Expected '==' but found '={context.Current}'.");
+                        return new Token(TokenType.SingleEquals);
                     context.MoveNext();
                     return new Token(TokenType.Equals);
 
