@@ -54,7 +54,7 @@ The following example defines a `monster_landmine` entity, along with rewrite ru
     // @MESS;
     @PointClass = monster_landmine
     [
-        damage(integer) : "Damage" = 100
+        damage(integer) : "Damage" : 100
         type(choices) : "Type" =
         [
             0 : "Hidden"
