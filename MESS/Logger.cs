@@ -57,6 +57,9 @@ namespace MESS
                 _writer.WriteLine(ex.StackTrace);
                 // TODO: Inner exceptions!
             }
+
+            foreach (var key in ex.Data.Keys)
+                _writer.WriteLine($"  {key}: \"{ex.Data[key]}\"");
         }
     }
 }

@@ -64,7 +64,15 @@ namespace MESS.Macros
             if (string.IsNullOrEmpty(expression?.Trim()))
                 return null;
 
-            return Interpreter.Evaluate(expression, context);
+            try
+            {
+                return Interpreter.Evaluate(expression, context);
+            }
+            catch (Exception ex)
+            {
+                ex.Data["expression"] = expression;
+                throw;
+            }
         }
 
         /// <summary>
