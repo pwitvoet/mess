@@ -83,7 +83,7 @@ namespace MESS.Mapping
         }
 
 
-        private static bool TryParseVector(string value, out double[] vector)
+        public static bool TryParseVector(string value, out double[] vector)
         {
             if (value == null)
             {
@@ -106,6 +106,6 @@ namespace MESS.Mapping
             return true;
         }
 
-        private static bool TryParseDouble(string s, out double result) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+        public static bool TryParseDouble(string s, out double result) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 }

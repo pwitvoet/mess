@@ -30,6 +30,7 @@ MESS contains a small scripting language named MScript. Its syntax is similar to
     - [Trigonometry](#trigonometry)
     - [Colors](#colors)
     - [Flags](#flags)
+    - [Type conversion](#type-conversion)
     - [Globals](#globals)
     - [Directories](#directories)
 
@@ -142,7 +143,7 @@ The equality operators are:
 - `a != b` - unequality
 
 #### Notes
- 
+
 - These operators return either `1` (true) or `none` (false).
 - Values of different types are never equal to each other.
 
@@ -283,6 +284,16 @@ Some entities use flags - various options that can be enabled or disabled. All o
     - Returns the given flags value, but with the specified flag enabled or disabled. If `set` is `0`, the flag will be disabled.
     - If the `flags` argument is omitted, then the value of the `spawnflags` attribute of the parent entity is used as `flags`.
     - If the `set` argument is omitted, then it is set to 1 (which will enable the flag).
+
+### Type conversion:
+Conversion between strings, numbers and vectors can be done with the following functions.
+
+- `none|number num(any value)`
+    - Converts the given value to a number. If the value is already a number, then it is returned directly. If the value is a vector, then the first number is returned, or `none` if the vector is empty. If the value is a string, then it is parsed and the resulting number is returned, or `none` if parsing failed. For any other value, `none` is returned.
+- `none|vector vec(any value)`
+    - Converts the given value to a number. If the value is already a vector, then it is returned directly. If the value is a number, then a vector of length 1 is returned, containing that number. If the value is a string, then it is parsed and the resulting vector is returned, or `none` if parsing failed (the expected format is a sequence of numbers, separated by spaces: `vec('1 2 3')` returns the vector `[1, 2, 3]`). For any other value, `none` is returned.
+- `string str(any value)`
+    - Returns the string representation of the given value. Note that `value + ''` produces the same result.
 
 ### Globals:
 Global variables can be used to 'communicate' between instances. This is useful when templates contain parts that should be shared across instances - think of multiple buttons that target the same `game_counter` or `multisource`. Global state can make things more difficult to manage however, so try not to overuse these functions.

@@ -95,6 +95,31 @@ namespace MESS.Macros
 
         static class GlobalFunctions
         {
+            // Type conversion:
+            public static double? num(object value)
+            {
+                if (value is double number)
+                    return number;
+                else if (value is double[] vector)
+                    return vector.Length > 0 ? (double?)vector[0] : null;
+                else if (value is string str)
+                    return PropertyExtensions.TryParseDouble(str, out number) ? (double?)number : null;
+                else
+                    return null;
+            }
+            public static double[] vec(object value)
+            {
+                if (value is double[] vector)
+                    return vector;
+                else if (value is double number)
+                    return new double[] { number };
+                else if (value is string str)
+                    return PropertyExtensions.TryParseVector(str, out vector) && vector.Length > 0 ? vector : null;
+                else
+                    return null;
+            }
+            public static string str(object value) => Interpreter.Print(value);
+
             // Mathematics:
             public static double min(double value1, double value2) => Math.Min(value1, value2);
             public static double max(double value1, double value2) => Math.Max(value1, value2);
