@@ -1,5 +1,6 @@
 ﻿using MScript.Evaluation.Types;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -104,8 +105,49 @@ namespace MScript.Evaluation
 
 
             // Methods:
-            // TODO: Take a slice ('substring')!
-            // TODO: Append/prepend/concat?
+            public static double[] slice(double[] self, double start, double? end = null, double? step = null)
+            {
+                // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
+                var startIndex = NormalizedIndex((int)start);
+                var stepValue = (int)(step ?? 1);
+                if (stepValue > 0)
+                {
+                    var endIndex = NormalizedIndex((int)(end ?? self.Length));
+                    if (endIndex <= startIndex || startIndex >= self.Length)
+                        return Array.Empty<double>();
+
+                    var result = new List<double>((endIndex - startIndex) / stepValue);
+                    for (int i = startIndex; i < endIndex; i += stepValue)
+                        result.Add(self[i]);
+                    return result.ToArray();
+                }
+                else if (stepValue < 0)
+                {
+                    var endIndex = end is null ? -1 : NormalizedIndex((int)end);
+                    if (startIndex <= endIndex || endIndex >= self.Length)
+                        return Array.Empty<double>();
+
+                    var result = new List<double>((startIndex - endIndex) / -stepValue);
+                    for (int i = startIndex; i > endIndex; i += stepValue)
+                        result.Add(self[i]);
+                    return result.ToArray();
+                }
+                else
+                {
+                    // Produce an empty vector if step is 0:
+                    return Array.Empty<double>();
+                }
+
+                int NormalizedIndex(int index) => index < 0 ? self.Length + index : index;
+            }
+
+            public static double[] skip(double[] self, double count) => self.Skip((int)count).ToArray();
+            public static double[] take(double[] self, double count) => self.Take((int)count).ToArray();
+            public static double[] concat(double[] self, double[] other) => self.Concat(other).ToArray();
+
+            public static double? max(double[] self) => self.Length > 0 ? (double?)self.Max() : null;
+            public static double? min(double[] self) => self.Length > 0 ? (double?)self.Min() : null;
+            public static double sum(double[] self) => self.Sum();
         }
 
         static class StringMembers
@@ -155,6 +197,26 @@ namespace MScript.Evaluation
             public static bool startswith(string self, string str) => self.StartsWith(str);
             public static bool endswith(string self, string str) => self.EndsWith(str);
             public static string replace(string self, string str, string replacement) => self.Replace(str, replacement);
+
+            public static string trim(string self, string chars = null) => self.Trim(chars?.ToArray());
+            public static string trimstart(string self, string chars = null) => self.TrimStart(chars?.ToArray());
+            public static string trimend(string self, string chars = null) => self.TrimEnd(chars?.ToArray());
+
+            public static string segment(string self, string delimiter, double index)
+            {
+                // NOTE: An empty or null delimiter is safe, it just won't cause any splits:
+                var segments = self.Split(new string[] { delimiter }, StringSplitOptions.None);
+
+                // Negative indexing:
+                index = (int)index;
+                if (index < 0)
+                    index = segments.Length + index;
+
+                if (index >= 0 && index < segments.Length)
+                    return segments[(int)index];
+                else
+                    return null;
+            }
         }
     }
 }

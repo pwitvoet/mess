@@ -84,6 +84,29 @@ Vectors are mostly used for rotation angles, colors and positions, which is refl
 - `number z` - same as `vector[2]`
 - `number length` - how many numbers a vector contains: `[0, 0, 0].length` produces `3`.
 
+#### Member functions
+- `vector slice(number start, number? end, number? step)`
+    - Returns a specific part of a vector. The start and end offsets can be negative, just as with indexing. If a step value is given, then this function will take every Nth number from the original vector. A negative step value will work backwards. If no end index is specified, then the function will continue until the end (or, with a negative step, the start) of the vector.
+    - For example, this function can be used to return every 2nd number: `[1, 2, 3, 4].slice(1, none, 2)` returns `[2, 4]`. It can also be used to invert a vector: `[1, 2, 3, 4].slice(-1, none, -1)` returns `[4, 3, 2, 1]`.
+- `vector skip(number count)`
+    - Returns a vector without the first N numbers.
+    - For example, `[1, 2, 3, 4].skip(2)` returns `[3, 4]`.
+- `vector take(number count)`
+    - Returns a vector that contains only the first N numbers.
+    - For example, `[1, 2, 3, 4].take(2)` returns `[1, 2]`.
+- `vector concat(vector other)`
+    - Appends the given vector to the current vector and returns the result.
+    - For example, `[1, 2].concat([3, 4])` returns `[1, 2, 3, 4]`.
+- `none|number max()`
+    - Returns the highest number in the current vector, or `none` if the vector is empty.
+    - For example, `[3, 8, 5].max()` returns `8`.
+- `none|number min()`
+    - Returns the lowest number in the current vector, or `none` if the vector is empty.
+    - For example, `[3, 8, 5].min()` returns `3`.
+- `number sum()`
+    - Returns the sum of all the numbers in the current vector.
+    - For example, `[1, 2, 3, 4].sum()` returns `10`.
+
 
 ### `string`
 A piece of text. Any attribute value that does not look like a number or a sequence of numbers is treated as a string. Within expressions strings must be surrounded by single quotes, to distinguish them from identifiers: `'targetname'` produces the literal text `targetname`, whereas `targetname` would produce the targetname of the macro entity that is instantiating the current template.
@@ -106,6 +129,18 @@ Strings can be indexed in much the same way as vectors can, except that indexing
     - Returns `1` (true) if the current string ends with the given string, or `none` (false) if it does not.
 - `string replace(string str, string replacement)`
     - Returns a string where all occurrences of `str` have been replaced with `replacement`.
+- `string trim(string? chars)`
+    - Returns a string where all leading and trailing occurrences of the given characters have been removed. The chars argument is optional - if omitted, all leading and trailing whitespace will be removed.
+    - For example, `'_ hello,_'.trim(' _,')` returns `'hello'`.
+- string `trimstart(string? chars)`
+    - Returns a string where all leading occurrences of the given characters have been removed. The chars argument is optional - if omitted, all leading whitespace will be removed.
+    - For example, `'  test  '.trimstart()` returns `'test  '`.
+- `string trimend(string? chars)`
+    - Returns a string where all trailing occurrences of the given characters have been removed. The chars argument is optional - if omitted, all trailing whitespace will be removed.
+    - For example, `'what?'.trimend('.!?')` returns `'what'`.
+- `string segment(string delimiter, number index)`
+    - Splits the string using the given delimiter, and returns the Nth segment. Negative indexing is supported.
+    - For example, `'a, b, c'.segment(',', 1)` returns `' b'`, and `'my name is MESS'.segment(' ', -1)` returns `'MESS'`.
 
 
 ### `none`
