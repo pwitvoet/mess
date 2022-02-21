@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using MScript.Parsing;
 using MScript.Tokenizing;
 using MScript.Evaluation;
+using System.Text;
 
 namespace MESS
 {
@@ -168,6 +169,9 @@ namespace MESS
         /// </summary>
         private static void RunMScriptREPL()
         {
+            Console.InputEncoding = Encoding.Unicode;
+            Console.OutputEncoding = Encoding.Unicode;
+
             Console.WriteLine($"MScript interpreter v{Assembly.GetExecutingAssembly().GetName().Version}.");
             Console.WriteLine("Enter 'quit' to quit the interpreter.");
             Console.WriteLine("Bindings can be created with 'name = expression'.");
