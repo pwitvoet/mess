@@ -127,11 +127,58 @@ namespace MScript.Tokenizing
 
             var buffer = new StringBuilder();
             context.MoveNext(); // Consume the opening '
-            while (!context.IsExhausted && context.Current != '\'')
+
+            var isEscapeSequence = false;
+            while (!context.IsExhausted)
             {
-                buffer.Append(context.Current);
-                context.MoveNext();
+                if (!isEscapeSequence)
+                {
+                    if (context.Current == '\'')
+                    {
+                        break;
+                    }
+                    else if (context.Current == '\\')
+                    {
+                        isEscapeSequence = true;
+                        context.MoveNext();
+                    }
+                    else
+                    {
+                        buffer.Append(context.Current);
+                        context.MoveNext();
+                    }
+                }
+                else
+                {
+                    var current = context.Current;
+                    context.MoveNext();
+                    switch (current)
+                    {
+                        case '\'': buffer.Append('\'');break;
+                        case '"': buffer.Append('"'); break;
+                        case '\\': buffer.Append('\\'); break;
+                        case '0': buffer.Append('\0'); break;
+                        case 'a': buffer.Append('\a'); break;
+                        case 'b': buffer.Append('\b'); break;
+                        case 'f': buffer.Append('\f'); break;
+                        case 'n': buffer.Append('\n'); break;
+                        case 'r': buffer.Append('\r'); break;
+                        case 't': buffer.Append('\t'); break;
+                        case 'v': buffer.Append('\v'); break;
+                        case 'x': buffer.Append(ReadUnicodeEscapeSequence(context, 2)); break;
+                        case 'u': buffer.Append(ReadUnicodeEscapeSequence(context, 4)); break;
+                        //case 'U': buffer.Append(ReadUnicodeEscapeSequence(context, 8)); break;    // TODO: This requires handling of surrogate pairs!
+
+                        default:
+                            throw ParseError(context, $"Unknown escape sequence: \\'{current}'.");
+                    }
+
+                    isEscapeSequence = false;
+                }
             }
+
+            if (isEscapeSequence)
+                throw ParseError(context, $"Expected the rest of an escape sequence, but found end of input.");
 
             if (context.IsExhausted)
                 throw ParseError(context, $"Expected a closing ' but found end of input.");
@@ -157,6 +204,32 @@ namespace MScript.Tokenizing
                 return new Token(keyword);
 
             return new Token(TokenType.Identifier, name);
+        }
+
+        // TODO: 8-digit escape sequences require surrogate pair handling!
+        private static char ReadUnicodeEscapeSequence(Context context, int length)
+        {
+            var hexValue = 0;
+            for (int i = 0; i < length; i++)
+            {
+                if (context.IsExhausted)
+                    throw ParseError(context, $"Expected a Unicode escape sequence with {length} hex digits, but found end of input.");
+
+                var digitValue = 0;
+                if (context.Current >= '0' && context.Current <= '9')
+                    digitValue = context.Current - '0';
+                else if (context.Current >= 'a' && context.Current <= 'f')
+                    digitValue = 10 + context.Current - 'a';
+                else if (context.Current >= 'A' && context.Current <= 'F')
+                    digitValue = 10 + context.Current - 'A';
+                else
+                    throw ParseError(context, $"Invalid Unicode escape sequence: '{context.Current}' is not a hex digit.");
+
+                hexValue = (hexValue << 4) | digitValue;
+
+                context.MoveNext();
+            }
+            return (char)hexValue;
         }
 
 

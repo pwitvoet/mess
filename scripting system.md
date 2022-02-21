@@ -113,6 +113,8 @@ A piece of text. Any attribute value that does not look like a number or a seque
 
 Strings can be indexed in much the same way as vectors can, except that indexing returns a 1-character string instead of a number. Negative indexing is also supported, and indexes that do not exist produce the special value `none`.
 
+The following escape sequences are recognized: `\'` (single quote), `\"` (double quote), `\\` (backslash), `\0` (null-terminator), `\a` (alert), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\v` (vertical tab), `\xHH` (2-digit Unicode sequence) and `\uHHHH` (4-digit Unicode sequence).
+
 #### Properties
 
 - `number length`
