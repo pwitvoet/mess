@@ -16,7 +16,7 @@ namespace MESS.Mathematics
         public static Matrix3x3 ToMatrix(this Angles eulerAngles)
         {
             var x = eulerAngles.Roll.ToRadians();
-            var y = eulerAngles.Pitch.ToRadians();
+            var y = -eulerAngles.Pitch.ToRadians();
             var z = eulerAngles.Yaw.ToRadians();
 
             return new Matrix3x3(
@@ -47,7 +47,7 @@ namespace MESS.Mathematics
                 var y = (float)-Math.Asin(m.r31);
                 var x = (float)Math.Atan2(m.r32 / Math.Cos(y), m.r33 / Math.Cos(y));
                 var z = (float)Math.Atan2(m.r21 / Math.Cos(y), m.r11 / Math.Cos(y));
-                return new Angles(x.ToDegrees(), y.ToDegrees(), z.ToDegrees());
+                return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
 
                 // Alternate solution:
                 //var y2 = (float)Math.PI - y;
@@ -63,13 +63,13 @@ namespace MESS.Mathematics
                 {
                     var y = (float)Math.PI / 2;
                     var x = z + (float)Math.Atan2(m.r12, m.r13);
-                    return new Angles(x.ToDegrees(), y.ToDegrees(), z.ToDegrees());
+                    return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
                 }
                 else
                 {
                     var y = (float)-Math.PI / 2;
                     var x = -z + (float)Math.Atan2(-m.r12, -m.r13);
-                    return new Angles(x.ToDegrees(), y.ToDegrees(), z.ToDegrees());
+                    return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
                 }
             }
         }

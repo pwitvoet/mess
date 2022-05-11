@@ -135,7 +135,7 @@ namespace MESS.Macros
             {
                 // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
                 if (copy.Angles is Angles angles)
-                    copy.Angles = (angles.ToMatrix() * context.Transform.Rotation).ToAngles();
+                    copy.Angles = (context.Transform.Rotation * angles.ToMatrix()).ToAngles();
 
                 if (copy.Scale is double scale)
                     copy.Scale = scale * context.Transform.Scale;
