@@ -57,6 +57,12 @@ namespace MESS
                     catch (Exception ex)
                     {
                         logger.Error("Failed to process macro entities", ex);
+                        var innerException = ex.InnerException;
+                        while (innerException != null)
+                        {
+                            logger.Error("Inner exception:", innerException);
+                            innerException = innerException.InnerException;
+                        }
                         // TODO: Show more error details here?
                         return -1;
                     }

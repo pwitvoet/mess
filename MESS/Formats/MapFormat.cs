@@ -23,24 +23,31 @@ namespace MESS.Formats
 
                 while (!reader.EndOfStream)
                 {
-                    var line = reader.ReadLine();
-                    if (!line.Trim().StartsWith("{"))
-                        continue;
-
-                    var entity = ReadEntity(reader);
-                    if (entity == null)
-                        break;
-
-                    if (entity.ClassName == Entities.Worldspawn)
+                    try
                     {
-                        foreach (var kv in entity.Properties)
-                            map.Properties[kv.Key] = kv.Value;
+                        var line = reader.ReadLine();
+                        if (!line.Trim().StartsWith("{"))
+                            continue;
 
-                        map.AddBrushes(entity.Brushes);
+                        var entity = ReadEntity(reader);
+                        if (entity == null)
+                            break;
+
+                        if (entity.ClassName == Entities.Worldspawn)
+                        {
+                            foreach (var kv in entity.Properties)
+                                map.Properties[kv.Key] = kv.Value;
+
+                            map.AddBrushes(entity.Brushes);
+                        }
+                        else
+                        {
+                            map.Entities.Add(entity);
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        map.Entities.Add(entity);
+                        throw new InvalidDataException($"Failed to parse entity #{map.Entities.Count}.", ex);
                     }
                 }
                 return map;
@@ -83,7 +90,14 @@ namespace MESS.Formats
                 }
                 else if (line.StartsWith("{"))
                 {
-                    brushes.Add(ReadBrush(reader));
+                    try
+                    {
+                        brushes.Add(ReadBrush(reader));
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidDataException($"Failed to parse brush #{brushes.Count}.", ex);
+                    }
                 }
                 else if (line.StartsWith("}"))
                 {
