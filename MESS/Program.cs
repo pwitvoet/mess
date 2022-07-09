@@ -10,6 +10,7 @@ using MScript.Parsing;
 using MScript.Tokenizing;
 using MScript.Evaluation;
 using System.Text;
+using System.Diagnostics;
 
 namespace MESS
 {
@@ -24,6 +25,7 @@ namespace MESS
     {
         static int Main(string[] args)
         {
+            var stopwatch = Stopwatch.StartNew();
             var settings = new ExpansionSettings();
             var commandLineParser = GetCommandLineParser(settings);
 
@@ -47,6 +49,7 @@ namespace MESS
                         Console.WriteLine("----- BEGIN MESS -----");
                         Console.WriteLine($"Command line: {Environment.CommandLine}");
                         Console.WriteLine($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                        Console.WriteLine();
                     }
 
                     try
@@ -73,6 +76,17 @@ namespace MESS
                 Console.WriteLine($"Failed to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
                 ShowHelp(commandLineParser);
                 return -1;
+            }
+            finally
+            {
+                // TODO: Log a small summary as well? Number of templates/instances/etc?
+                if (settings.LogLevel != LogLevel.Off)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
+                    Console.WriteLine();
+                    Console.WriteLine("----- END MESS -----");
+                }
             }
         }
 
