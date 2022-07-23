@@ -55,7 +55,7 @@ namespace MESS.Macros
         /// Creates a copy of this brush, adjusted by the given offset. Ignores VIS-group and group relationships.
         /// </summary>
         public static Brush Copy(this Brush brush, Vector3D offset)
-            => brush.Copy(new Transform(1, Matrix3x3.Identity, offset));
+            => brush.Copy(new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset));
 
         /// <summary>
         /// Creates a copy of this brush, adjusted by the given transform. Ignores VIS-group and group relationships.
@@ -68,19 +68,39 @@ namespace MESS.Macros
             {
                 var copy = new Face();
 
-                copy.Vertices.AddRange(face.Vertices.Select(vertex => ApplyTransform(vertex, transform)));
-                copy.PlanePoints = face.PlanePoints.Select(point => ApplyTransform(point, transform)).ToArray();
+                // If an odd number of axis has a negative scale, then we need to flip faces around (otherwise we'd get an 'inside-out' or 'inverted' brush):
+                var flipFace = transform.GeometryScale.X < 0;
+                if (transform.GeometryScale.Y < 0)
+                    flipFace = !flipFace;
+                if (transform.GeometryScale.Z < 0)
+                    flipFace = !flipFace;
+
+                if (flipFace)
+                {
+                    copy.Vertices.AddRange(face.Vertices.Select(vertex => ApplyTransform(vertex, transform)).Reverse());
+                    copy.PlanePoints = face.PlanePoints.Select(point => ApplyTransform(point, transform)).Reverse().ToArray();
+                }
+                else
+                {
+                    copy.Vertices.AddRange(face.Vertices.Select(vertex => ApplyTransform(vertex, transform)));
+                    copy.PlanePoints = face.PlanePoints.Select(point => ApplyTransform(point, transform)).ToArray();
+                }
+
+                var newTextureRightAxis = transform.Rotation * (face.TextureRightAxis * (1f / transform.GeometryScale));
+                var newTextureDownAxis = transform.Rotation * (face.TextureDownAxis * (1f / transform.GeometryScale));
+                var rightScaleFactor = newTextureRightAxis.Length();
+                var downScaleFactor = newTextureDownAxis.Length();
 
                 copy.TextureName = face.TextureName;
-                copy.TextureRightAxis = transform.Rotation * face.TextureRightAxis;
-                copy.TextureDownAxis = transform.Rotation * face.TextureDownAxis;
+                copy.TextureRightAxis = newTextureRightAxis.Normalized();
+                copy.TextureDownAxis = newTextureDownAxis.Normalized();
                 copy.TextureAngle = face.TextureAngle;
-                copy.TextureScale = transform.Scale * face.TextureScale;
+                copy.TextureScale = new Vector2D(face.TextureScale.X / rightScaleFactor, face.TextureScale.Y / downScaleFactor);
 
                 // Apply 'texture lock' while moving:
-                var oldTextureCoordinates = GetTextureCoordinates(face.PlanePoints[0], face.TextureDownAxis, face.TextureRightAxis, face.TextureScale) + face.TextureShift;
-                var newTextureCoordinates = GetTextureCoordinates(copy.PlanePoints[0], copy.TextureDownAxis, copy.TextureRightAxis, copy.TextureScale);
-                copy.TextureShift = oldTextureCoordinates - newTextureCoordinates;
+                var oldTextureCoordinates = GetTextureCoordinates(face.PlanePoints[0], face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
+                var newTextureCoordinates = GetTextureCoordinates(copy.PlanePoints[flipFace ? copy.PlanePoints.Length - 1 : 0], copy.TextureDownAxis, copy.TextureRightAxis, copy.TextureScale);
+                copy.TextureShift = (oldTextureCoordinates + face.TextureShift) - newTextureCoordinates;
 
                 return copy;
             }
@@ -93,7 +113,7 @@ namespace MESS.Macros
         /// </summary>
         public static Entity Copy(this Entity entity, Vector3D offset)
         {
-            var transform = new Transform(1, Matrix3x3.Identity, offset);
+            var transform = new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset);
             var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(transform)));
 
             foreach (var kv in entity.Properties)
@@ -149,7 +169,7 @@ namespace MESS.Macros
 
 
         private static Vector3D ApplyTransform(Vector3D point, Transform transform)
-            => transform.Offset + (transform.Rotation * (point * transform.Scale));
+            => transform.Offset + (transform.Rotation * (point * transform.GeometryScale));
 
         private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureScale)
         {

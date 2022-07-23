@@ -49,10 +49,11 @@ namespace MESS.Mathematics.Spatial
         public static Vector3D operator +(Vector3D left, Vector3D right) => new Vector3D(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
         public static Vector3D operator -(Vector3D left, Vector3D right) => new Vector3D(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
 
+        public static Vector3D operator *(Vector3D left, Vector3D right) => new Vector3D(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
         public static Vector3D operator *(Vector3D vector, float scalar) => new Vector3D(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
         public static Vector3D operator *(float scalar, Vector3D vector) => vector * scalar;
         public static Vector3D operator /(Vector3D vector, float scalar) => new Vector3D(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
-        public static Vector3D operator /(float scalar, Vector3D vector) => vector / scalar;
+        public static Vector3D operator /(float scalar, Vector3D vector) => new Vector3D(scalar / vector.X, scalar / vector.Y, scalar / vector.Z);
 
         public static bool operator ==(Vector3D left, Vector3D right) => left.X == right.X && left.Y == right.Y && left.Z == right.Z;
         public static bool operator !=(Vector3D left, Vector3D right) => left.X != right.X || left.Y != right.Y || left.Z != right.Z;

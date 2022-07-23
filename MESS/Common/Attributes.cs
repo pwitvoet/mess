@@ -21,12 +21,12 @@ namespace MESS.Common
         public const string Origin = "origin";
 
         /// <summary>
-        /// The orientation of an entity, in 'pitch yaw roll' format.
+        /// The orientation of an entity, in 'pitch yaw roll' format. Defaults to `0 0 0`.
         /// </summary>
         public const string Angles = "angles";
 
         /// <summary>
-        /// The scale of an entity.
+        /// The scale of an entity. Defaults to 1.
         /// </summary>
         public const string Scale = "scale";
 
@@ -45,6 +45,20 @@ namespace MESS.Common
         /// For most other entities: the message that is shown when an entity is triggered.
         /// </summary>
         public const string Message = "message";
+
+
+        // Instance orientation attributes, used by macro_insert, macro_cover and macro_fill:
+        /// <summary>
+        /// The scale for the geometry (brushes) of an instance. If empty, the <see cref="Scale"/> or <see cref="InstanceScale"/> attribute is used instead.
+        /// This attribute will be evaluated again for each instance.
+        /// </summary>
+        public const string InstanceGeometryScale = "instance_geometry_scale";
+
+        /// <summary>
+        /// The offset for an instance. This allows repositioning instances with scripting.
+        /// This attribute will be evaluated again for each instance.
+        /// </summary>
+        public const string InstanceOffset = "instance_offset";
 
 
         // Template-referencing attributes, used by macro_insert, macro_cover, macro_fill and macro_brush:
@@ -121,7 +135,7 @@ namespace MESS.Common
         public const string GridGranularity = "grid_granularity";
 
 
-        // macro_cover and macro_fill attributes that are evaluated again for each instance:
+        // macro_cover and macro_fill-specific attributes that are evaluated again for each instance:
 
         /// <summary>
         /// The orientation of an instance created by a multi-inserting macro entity.

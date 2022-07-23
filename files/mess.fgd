@@ -33,6 +33,12 @@
 
     // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
     random_seed(integer) : "Random seed"
+
+    // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
+    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
+
+    // Moves an instance along the x, y and z axis. This enables script-based positioning.
+    instance_offset(string) : "Instance offset"
 ]
 
 @BaseClass base(TemplateInserter) = MultiTemplateInserter

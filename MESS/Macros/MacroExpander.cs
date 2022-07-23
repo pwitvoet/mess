@@ -326,10 +326,17 @@ namespace MESS.Macros
             //       'angles' and 'scale' properties!
 
             // Create a child context for this insertion, with a properly adjusted transform:
+            // NOTE: MappingExtensions.Copy(Entity) already applied context.Transform to the scale and angles attributes, but geometry-scale is not affected:
+            var scale = (float)(insertEntity.Scale ?? 1);
+            var geometryScale = (insertEntity.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale)) * context.Transform.GeometryScale;
+            var anglesMatrix = insertEntity.Angles?.ToMatrix() ?? Matrix3x3.Identity;
+            var offset = insertEntity.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+
             var transform = new Transform(
-                (float)(insertEntity.Scale ?? 1),
-                insertEntity.Angles?.ToMatrix() ?? Matrix3x3.Identity,
-                insertEntity.Origin);
+                scale,
+                geometryScale,
+                anglesMatrix,
+                insertEntity.Origin + offset);
 
             // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
             var insertionContext = new InstantiationContext(template, transform, insertEntity.Properties, context);
@@ -460,10 +467,16 @@ namespace MESS.Macros
                     }
                 }
 
-                var scale = evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1;
-                var angles = (evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles) ?? new Angles()).ToMatrix();
+                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1);
+                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
+                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
 
-                return new Transform((float)scale, rotation * angles, insertionPoint);
+                return new Transform(
+                    scale,
+                    geometryScale,
+                    rotation * anglesMatrix,
+                    insertionPoint + offset);
             }
         }
 
@@ -606,10 +619,16 @@ namespace MESS.Macros
                 if (orientation == Orientation.Local)
                     rotation = context.Transform.Rotation;
 
-                var scale = evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1;
-                var angles = (evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles) ?? new Angles()).ToMatrix();
+                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1);
+                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
+                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
 
-                return new Transform((float)scale, rotation * angles, insertionPoint);
+                return new Transform(
+                    scale,
+                    geometryScale,
+                    rotation * anglesMatrix,
+                    insertionPoint + offset);
             }
 
             Vector3D SnapToGrid(Vector3D point, Vector3D cellSize)
