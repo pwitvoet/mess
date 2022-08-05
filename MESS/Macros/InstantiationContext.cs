@@ -89,6 +89,9 @@ namespace MESS.Macros
             CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
             SubTemplates = GetNearestMapFileContext().Template.SubTemplates;
 
+            Transform = transform ?? Transform.Identity;
+            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
+
             var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random, Globals);
             var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
                 kv => Evaluation.EvaluateInterpolatedString(kv.Key, outerEvaluationContext),
@@ -104,8 +107,6 @@ namespace MESS.Macros
                 foreach (var kv in evaluatedTemplateProperties)
                     OutputMap.Properties[kv.Key] = Interpreter.Print(kv.Value);
             }
-            Transform = transform ?? Transform.Identity;
-            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
         }
 
 
