@@ -194,7 +194,7 @@ namespace MESS.Formats
 
             stream.ReadBytes(14);   // ?
 
-            if (brushCount == 0)
+            if (entity.IsPointBased)
                 entity.Origin = ReadVector3D(stream);
             else
                 ReadVector3D(stream);

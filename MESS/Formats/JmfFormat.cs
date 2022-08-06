@@ -217,8 +217,10 @@ namespace MESS.Formats
 
             var entity = new Entity(brushes);
             entity.ClassName = className;
-            entity.Origin = origin;
             entity.Color = color;
+
+            if (entity.IsPointBased)
+                entity.Origin = origin;
 
             entity.Group = (groupID != 0 && groups.TryGetValue(groupID, out var group)) ? group : null;
             //entity.VisGroup;  // TODO: MESS does not support objects being part of multiple VIS groups!
