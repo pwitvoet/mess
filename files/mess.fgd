@@ -33,7 +33,10 @@
 
     // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
     random_seed(integer) : "Random seed"
+]
 
+@BaseClass base(TemplateInserter) = GeometricTemplateInserter
+[
     // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
     instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
 
@@ -41,7 +44,7 @@
     instance_offset(string) : "Instance offset" : "0 0 0"
 ]
 
-@BaseClass base(TemplateInserter) = MultiTemplateInserter
+@BaseClass base(GeometricTemplateInserter) = MultiTemplateInserter
 [
     // Between 0 and 1, this acts as a 'coverage factor'. Above 1, it's the maximum number of instances that this entity will attempt to insert.
     max_instances(string) : "Maximum number of instances" : "0.5"
@@ -58,7 +61,7 @@
 
 // Inserts the contents of a template or map at the current position.
 // Any custom properties are used to substitute placeholders in the template contents, and to determine whether any content needs to be excluded.
-@PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(TemplateInserter, Orientable) = macro_insert : "Insert a template"
+@PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(GeometricTemplateInserter, Orientable) = macro_insert : "Insert a template"
 [
     // The number of instances to create. The default is 1.
     instance_count(integer) : "Instance count" : "1"
