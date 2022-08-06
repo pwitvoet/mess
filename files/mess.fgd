@@ -1,6 +1,6 @@
 // ================================================================================
 // Macro Entity Substitution System (MESS) entity definitions
-// v1.0
+// v1.2
 // 
 // All macro entities are substituted or otherwise processed by mess.exe
 // They are not meant to appear in the final map.
@@ -38,7 +38,7 @@
     instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
 
     // Moves an instance along the x, y and z axis. This enables script-based positioning.
-    instance_offset(string) : "Instance offset"
+    instance_offset(string) : "Instance offset" : "0 0 0"
 ]
 
 @BaseClass base(TemplateInserter) = MultiTemplateInserter
@@ -58,7 +58,11 @@
 
 // Inserts the contents of a template or map at the current position.
 // Any custom properties are used to substitute placeholders in the template contents, and to determine whether any content needs to be excluded.
-@PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(TemplateInserter, Orientable) = macro_insert : "Insert a template" [ ]
+@PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(TemplateInserter, Orientable) = macro_insert : "Insert a template"
+[
+    // The number of instances to create. The default is 1.
+    instance_count(integer) : "Instance count" : "1"
+]
 
 // A variant of macro_insert, this brush entity creates multiple instances of a template, covering its non-'NULL' faces.
 @SolidClass base(MultiTemplateInserter) = macro_cover : "Insert templates across a surface"

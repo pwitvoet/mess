@@ -107,7 +107,7 @@ namespace MESS.Macros
 
         private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
         {
-            var context = Evaluation.ContextFromProperties(entityProperties, entityID, random, globals);
+            var context = Evaluation.ContextFromProperties(entityProperties, entityID, entityID, random, globals);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
@@ -245,7 +245,7 @@ namespace MESS.Macros
         /// </summary>
         private void CreateInstance(InstantiationContext context)
         {
-            Logger.Verbose($"Creating instance #{context.ID} at {context.Transform}.");
+            Logger.Verbose($"Creating instance #{context.ID} (sequence number: {context.SequenceNumber}) at {context.Transform}.");
 
             _instanceCount += 1;
             if (_instanceCount > Settings.InstanceLimit)
@@ -286,7 +286,7 @@ namespace MESS.Macros
                 case MacroEntity.Insert:
                     // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
                     //       to ensure that transformation always works correctly?
-                    HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform));
+                    HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
                     break;
 
                 case MacroEntity.Cover:
@@ -317,31 +317,50 @@ namespace MESS.Macros
         {
             Logger.Verbose($"Processing a {insertEntity.ClassName} entity for instance #{context.ID}.");
 
-            // Resolve the template:
-            var template = ResolveTemplate(insertEntity.GetStringProperty(Attributes.TemplateMap), insertEntity.GetStringProperty(Attributes.TemplateName), context);
-            if (template == null)
-                return;
+            // Most properties will be evaluated again for each template instance that this entity creates,
+            // but there are a few that are needed up-front, so these will only be evaluated once:
+            EvaluateProperties(context, insertEntity, Attributes.InstanceCount, Attributes.RandomSeed);
 
-            // TODO: Verify that this works correctly even when the macro_insert entity does not originally contain
-            //       'angles' and 'scale' properties!
+            var instanceCount = insertEntity.GetIntegerProperty(Attributes.InstanceCount) ?? 1;
+            var randomSeed = insertEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
 
-            // Create a child context for this insertion, with a properly adjusted transform:
-            // NOTE: MappingExtensions.Copy(Entity) already applied context.Transform to the scale and angles attributes, but geometry-scale is not affected:
-            var scale = (float)(insertEntity.Scale ?? 1);
-            var geometryScale = (insertEntity.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale)) * context.Transform.GeometryScale;
-            var anglesMatrix = insertEntity.Angles?.ToMatrix() ?? Matrix3x3.Identity;
-            var offset = insertEntity.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+            var random = new Random(randomSeed);
+            for (int i = 0; i < instanceCount; i++)
+            {
+                var sequenceContext = context.GetChildContextWithSequenceNumber(i);
+                var template = ResolveTemplate(
+                    sequenceContext.EvaluateInterpolatedString(insertEntity.GetStringProperty(Attributes.TemplateMap)),
+                    sequenceContext.EvaluateInterpolatedString(insertEntity.GetStringProperty(Attributes.TemplateName)),
+                    sequenceContext);
+                if (template == null)
+                    continue;
 
-            var transform = new Transform(
-                scale,
-                geometryScale,
-                anglesMatrix,
-                insertEntity.Origin + offset);
+                // Evaluating properties again for each instance allows for randomization:
+                var evaluatedProperties = insertEntity.Properties.ToDictionary(
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));    // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
 
-            // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
-            var insertionContext = new InstantiationContext(template, transform, insertEntity.Properties, context);
+                // TODO: Verify that this works correctly even when the macro_insert entity does not originally contain
+                //       'angles' and 'scale' properties!
 
-            CreateInstance(insertionContext);
+                // Create a child context for this insertion, with a properly adjusted transform:
+                // NOTE: MappingExtensions.Copy(Entity) already applied context.Transform to the scale and angles attributes, but geometry-scale is not affected:
+                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.Scale) ?? 1);
+                var geometryScale = (evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale)) * sequenceContext.Transform.GeometryScale;
+                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+
+                var transform = new Transform(
+                    scale,
+                    geometryScale,
+                    anglesMatrix,
+                    insertEntity.Origin + offset);
+
+                // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
+                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
+
+                CreateInstance(insertionContext);
+            }
         }
 
         private void HandleMacroCoverEntity(InstantiationContext context, Entity coverEntity)
@@ -389,6 +408,7 @@ namespace MESS.Macros
             Logger.Verbose($"Maximum number of instances: {maxInstances}, total surface area: {totalArea}.");
 
             var random = new Random(randomSeed);
+            var sequenceNumber = 0;
             var availableArea = new SphereCollection();
             for (int i = 0; i < (int)maxInstances; i++)
             {
@@ -397,21 +417,24 @@ namespace MESS.Macros
                 if (radius > 0.0 && !availableArea.TryInsert(insertionPoint, radius))
                     continue;
 
+                var sequenceContext = context.GetChildContextWithSequenceNumber(sequenceNumber);
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateMap)),
-                    context.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateName)),
-                    context);
+                    sequenceContext.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateMap)),
+                    sequenceContext.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateName)),
+                    sequenceContext);
                 if (template == null)
                     continue;
 
                 // Evaluating properties again for each instance allows for randomization:
                 var evaluatedProperties = coverEntity.Properties.ToDictionary(
-                    kv => context.EvaluateInterpolatedString(kv.Key),
-                    kv => context.EvaluateInterpolatedString(kv.Value));
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
                 var transform = GetTransform(insertionPoint, selection.Face, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
+                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
+
+                sequenceNumber += 1;
             }
 
             switch (brushBehavior)
@@ -531,6 +554,7 @@ namespace MESS.Macros
 
 
             var random = new Random(randomSeed);
+            var sequenceNumber = 0;
             switch (fillMode)
             {
                 default:
@@ -596,21 +620,24 @@ namespace MESS.Macros
 
             void CreateInstanceAtPoint(Vector3D insertionPoint)
             {
+                var sequenceContext = context.GetChildContextWithSequenceNumber(sequenceNumber);
                 var template = ResolveTemplate(
-                    context.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateMap)),
-                    context.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateName)),
-                    context);
+                    sequenceContext.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateMap)),
+                    sequenceContext.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateName)),
+                    sequenceContext);
                 if (template == null)
                     return;
 
                 // Evaluating properties again for each instance allows for randomization:
                 var evaluatedProperties = fillEntity.Properties.ToDictionary(
-                    kv => context.EvaluateInterpolatedString(kv.Key),
-                    kv => context.EvaluateInterpolatedString(kv.Value));
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
+                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
                 var transform = GetTransform(insertionPoint, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, context);
+                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
+
+                sequenceNumber += 1;
             }
 
             Transform GetTransform(Vector3D insertionPoint, Dictionary<string, string> evaluatedProperties)
@@ -694,10 +721,13 @@ namespace MESS.Macros
             }
 
             // Entities:
+            var sequenceNumber = 0;
             foreach (var templateEntity in template.Map.Entities)
             {
                 if (templateEntity.IsPointBased || excludedObjects.Contains(templateEntity))
                     continue;
+
+                var sequenceContext = brushContext.GetChildContextWithSequenceNumber(sequenceNumber);
 
                 // Origin brushes are only copied if the template entity also contains an origin brush.
                 var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
@@ -716,13 +746,14 @@ namespace MESS.Macros
                 var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
 
                 // Use the current transform - macro_brushes do not support angles/scale:
-                var insertionContext = new InstantiationContext(template, brushContext.Transform, brushEntity.Properties, brushContext);
                 foreach (var kv in templateEntity.Properties)
-                    entityCopy.Properties[insertionContext.EvaluateInterpolatedString(kv.Key)] = insertionContext.EvaluateInterpolatedString(kv.Value);
+                    entityCopy.Properties[sequenceContext.EvaluateInterpolatedString(kv.Key)] = sequenceContext.EvaluateInterpolatedString(kv.Value);
 
 
                 // The copy already has its final orientation, so we don't want it to be transformed again:
-                HandleEntity(insertionContext, entityCopy, applyTransform: false);
+                HandleEntity(sequenceContext, entityCopy, applyTransform: false);
+
+                sequenceNumber += 1;
             }
 
 

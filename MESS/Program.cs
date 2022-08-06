@@ -199,7 +199,7 @@ namespace MESS
             Console.WriteLine();
 
             var globals = new Dictionary<string, object>();
-            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, new Random(), globals);
+            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, 0, new Random(), globals);
             while (true)
             {
                 try

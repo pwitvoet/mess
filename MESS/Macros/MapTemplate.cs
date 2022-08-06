@@ -80,7 +80,7 @@ namespace MESS.Macros
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
 
             var randomSeed = (int)(map.Properties.GetNumericProperty(Attributes.RandomSeed) ?? 0);
-            var context = Evaluation.ContextFromProperties(map.Properties, 0, new Random(randomSeed), globals);
+            var context = Evaluation.ContextFromProperties(map.Properties, 0, 0, new Random(randomSeed), globals);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();

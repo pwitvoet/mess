@@ -248,6 +248,8 @@ MESS provides a small number of 'standard library' functions.
     - Returns the numeric ID of the current instance. When used inside an entity rewrite rule, returns the ID of the current entity.
 - `string id()`
     - Returns either the `targetname` of the macro entity that is creating the current instance, or the numeric ID (as a string) of the current instance. Shorthand for `targetname or (iid() + '')`.
+- `number nth()`
+    - Returns the 'sequence number' of the current instance. For example, this will return `0` in the first instance created by a `macro_cover`, it will return `1` in the second instance created by the same `macro_cover`, and so on. When used in rewrite rules, it will return the entity index (`0` for the first entity in the map file, `1` for the second entity, and so on).
 
 ### Randomness:
 To ensure the exact same result each time a map is compiled, randomness in MESS is not actually random but pseudo-random. To get different results, it's possible to provide a different 'seed' value.

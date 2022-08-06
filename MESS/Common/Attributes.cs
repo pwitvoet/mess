@@ -48,6 +48,7 @@ namespace MESS.Common
 
 
         // Instance orientation attributes, used by macro_insert, macro_cover and macro_fill:
+
         /// <summary>
         /// The scale for the geometry (brushes) of an instance. If empty, the <see cref="Scale"/> or <see cref="InstanceScale"/> attribute is used instead.
         /// This attribute will be evaluated again for each instance.
@@ -75,6 +76,15 @@ namespace MESS.Common
         /// Multi-inserting macro entities will evaluate this again for each instance.
         /// </summary>
         public const string TemplateName = "template_name";
+
+
+        // macro_insert attributes that are only evaluated once:
+
+        /// <summary>
+        /// The number of instances to create. Defaults to 1.
+        /// This attribute will only be evaluated once.
+        /// </summary>
+        public const string InstanceCount = "instance_count";
 
 
         // macro_cover and macro_fill attributes that are only evaluated once:

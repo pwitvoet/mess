@@ -21,15 +21,20 @@ namespace MESS.Macros
         /// Returns an evaluation context that contains bindings for 'standard library' functions, for instance ID and randomness functions,
         /// and bindings for the given properties (which have been parsed into properly typed values).
         /// </summary>
-        public static EvaluationContext ContextFromProperties(IDictionary<string, string> properties, double id, Random random, IDictionary<string, object> globals)
+        public static EvaluationContext ContextFromProperties(
+            IDictionary<string, string> properties,
+            double id,
+            double sequenceNumber,
+            Random random,
+            IDictionary<string, object> globals,
+            EvaluationContext parentContext = null)
         {
-            var evaluationContext = new EvaluationContext(
-                properties?.ToDictionary(
-                    kv => kv.Key,
-                    kv => PropertyExtensions.ParseProperty(kv.Value)),
-                _globalsContext);
+            var typedProperties = properties?.ToDictionary(
+                kv => kv.Key,
+                kv => PropertyExtensions.ParseProperty(kv.Value));
 
-            var instanceFunctions = new InstanceFunctions(id, random, globals);
+            var evaluationContext = new EvaluationContext(typedProperties, parentContext ?? _globalsContext);
+            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, typedProperties, globals);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -203,14 +208,18 @@ namespace MESS.Macros
         class InstanceFunctions
         {
             private double _id;
+            private double _sequenceNumber;
             private Random _random;
+            private IDictionary<string, object> _properties;
             private IDictionary<string, object> _globals;
 
 
-            public InstanceFunctions(double id, Random random, IDictionary<string, object> globals)
+            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object> properties, IDictionary<string, object> globals)
             {
                 _id = id;
+                _sequenceNumber = sequenceNumber;
                 _random = random;
+                _properties = properties;
                 _globals = globals;
             }
 
@@ -242,6 +251,9 @@ namespace MESS.Macros
 
                 return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
             }
+
+            // Enumeration:
+            public double nth() => _sequenceNumber;
 
             // Globals:
             public object getglobal(string name) => _globals.TryGetValue(name, out var value) ? value : null;

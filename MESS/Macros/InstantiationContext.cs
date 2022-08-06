@@ -20,6 +20,12 @@ namespace MESS.Macros
         public int ID { get; }
 
         /// <summary>
+        /// The number of instances that have already been created by the macro entity that is creating this instance.
+        /// This is available to MScript expressions via the 'nth()' function.
+        /// </summary>
+        public int SequenceNumber { get; }
+
+        /// <summary>
         /// The recursion depth of this context. The root context is at depth 0.
         /// </summary>
         public int RecursionDepth { get; }
@@ -58,6 +64,7 @@ namespace MESS.Macros
 
 
         private Random _random;
+        private IDictionary<string, string> _insertionEntityProperties;
         private InstantiationContext _parentContext;
         private EvaluationContext _evaluationContext;
 
@@ -70,7 +77,8 @@ namespace MESS.Macros
             IDictionary<string, string> insertionEntityProperties = null,
             InstantiationContext parentContext = null,
             string workingDirectory = null,
-            IDictionary<string, object> globals = null)
+            IDictionary<string, object> globals = null,
+            int sequenceNumber = 0)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
             // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
@@ -81,9 +89,11 @@ namespace MESS.Macros
             if (insertionEntityProperties?.GetNumericProperty(Attributes.RandomSeed) is double seed)
                 randomSeed = (int)seed;
             _random = new Random(randomSeed);
+            _insertionEntityProperties = insertionEntityProperties;
             _parentContext = parentContext;
 
             ID = GetRootContext()._nextID++;
+            SequenceNumber = sequenceNumber;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
             CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
@@ -92,7 +102,7 @@ namespace MESS.Macros
             Transform = transform ?? Transform.Identity;
             Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
 
-            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, _random, Globals);
+            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, SequenceNumber, _random, Globals);
             var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
                 kv => Evaluation.EvaluateInterpolatedString(kv.Key, outerEvaluationContext),
                 kv => PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(kv.Value, outerEvaluationContext)));
@@ -107,6 +117,25 @@ namespace MESS.Macros
                 foreach (var kv in evaluatedTemplateProperties)
                     OutputMap.Properties[kv.Key] = Interpreter.Print(kv.Value);
             }
+        }
+
+        private InstantiationContext(InstantiationContext parentContext, int sequenceNumber)
+        {
+            _random = parentContext._random;
+            _insertionEntityProperties = parentContext._insertionEntityProperties;
+            _parentContext = parentContext;
+
+            ID = parentContext.ID;
+            SequenceNumber = sequenceNumber;
+            RecursionDepth = parentContext.RecursionDepth;
+            Template = parentContext.Template;
+            CurrentWorkingDirectory = parentContext.CurrentWorkingDirectory;
+            SubTemplates = parentContext.SubTemplates;
+            Transform = parentContext.Transform;
+            Globals = parentContext.Globals;
+            OutputMap = parentContext.OutputMap;
+
+            _evaluationContext = Evaluation.ContextFromProperties(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, parentContext._evaluationContext);
         }
 
 
@@ -124,6 +153,8 @@ namespace MESS.Macros
         /// Returns a random double. Min is inclusive, max is exclusive.
         /// </summary>
         public double GetRandomDouble(double min, double max) => (min + _random.NextDouble() * (max - min));
+
+        public InstantiationContext GetChildContextWithSequenceNumber(int sequenceNumber) => new InstantiationContext(this, sequenceNumber);
 
 
         private InstantiationContext GetRootContext() => _parentContext?.GetRootContext() ?? this;
