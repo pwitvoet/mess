@@ -1,4 +1,5 @@
 ﻿using MESS.Common;
+using MESS.Logging;
 using MESS.Mapping;
 using MScript;
 using MScript.Evaluation;
@@ -27,6 +28,7 @@ namespace MESS.Macros
             double sequenceNumber,
             Random random,
             IDictionary<string, object> globals,
+            ILogger logger,
             EvaluationContext parentContext = null)
         {
             var typedProperties = properties?.ToDictionary(
@@ -34,7 +36,7 @@ namespace MESS.Macros
                 kv => PropertyExtensions.ParseProperty(kv.Value));
 
             var evaluationContext = new EvaluationContext(typedProperties, parentContext ?? _globalsContext);
-            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, typedProperties, globals);
+            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, typedProperties, globals, logger);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -202,6 +204,9 @@ namespace MESS.Macros
                 else
                     return (int)flags & ~(1 << (int)flag);
             }
+
+            // Debugging:
+            public static bool assert(object condition, string message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
         }
 
 
@@ -212,15 +217,17 @@ namespace MESS.Macros
             private Random _random;
             private IDictionary<string, object> _properties;
             private IDictionary<string, object> _globals;
+            private ILogger _logger;
 
 
-            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object> properties, IDictionary<string, object> globals)
+            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object> properties, IDictionary<string, object> globals, ILogger logger)
             {
                 _id = id;
                 _sequenceNumber = sequenceNumber;
                 _random = random;
                 _properties = properties;
                 _globals = globals;
+                _logger = logger;
             }
 
 
@@ -269,6 +276,13 @@ namespace MESS.Macros
 
                 _globals[name] = 1.0;
                 return false;
+            }
+
+            // Debugging:
+            public object trace(object value, string message = null)
+            {
+                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace from instance: #{_id}, sequence number: #{_sequenceNumber}).");
+                return value;
             }
 
 

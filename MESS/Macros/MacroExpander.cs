@@ -1,5 +1,6 @@
 ﻿using MESS.Common;
 using MESS.EntityRewriting;
+using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
@@ -23,7 +24,7 @@ namespace MESS.Macros
         /// Loads the specified map file, expands any macro entities within, and returns the resulting map.
         /// The given path must be absolute.
         /// </summary>
-        public static Map ExpandMacros(string path, ExpansionSettings settings, Logger logger)
+        public static Map ExpandMacros(string path, ExpansionSettings settings, ILogger logger)
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
@@ -33,6 +34,7 @@ namespace MESS.Macros
 
             var context = new InstantiationContext(
                 mainTemplate,
+                logger,
                 insertionEntityProperties: settings.Variables?.ToDictionary(kv => kv.Key, kv => Interpreter.Print(kv.Value)) ?? new Dictionary<string, string>(),
                 workingDirectory: settings.Directory,
                 globals: globals);
@@ -43,7 +45,7 @@ namespace MESS.Macros
 
 
         private ExpansionSettings Settings { get; }
-        private Logger Logger { get; }
+        private ILogger Logger { get; }
 
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
@@ -52,7 +54,7 @@ namespace MESS.Macros
         private DirectoryFunctions _directoryFunctions;
 
 
-        private MacroExpander(ExpansionSettings settings, Logger logger)
+        private MacroExpander(ExpansionSettings settings, ILogger logger)
         {
             Settings = settings;
             Logger = logger;
@@ -107,7 +109,7 @@ namespace MESS.Macros
 
         private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
         {
-            var context = Evaluation.ContextFromProperties(entityProperties, entityID, entityID, random, globals);
+            var context = Evaluation.ContextFromProperties(entityProperties, entityID, entityID, random, globals, Logger);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
@@ -158,7 +160,7 @@ namespace MESS.Macros
                 map.ExpandPaths();
                 ApplyRewriteDirectives(map, _rewriteDirectives);
 
-                template = MapTemplate.FromMap(map, path, globals);
+                template = MapTemplate.FromMap(map, path, globals, Logger);
 
                 _mapTemplateCache[path] = template;
             }
@@ -357,7 +359,7 @@ namespace MESS.Macros
                     insertEntity.Origin + offset);
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
-                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
+                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
 
                 CreateInstance(insertionContext);
             }
@@ -431,7 +433,7 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
                 var transform = GetTransform(insertionPoint, selection.Face, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
+                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
                 sequenceNumber += 1;
@@ -634,7 +636,7 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
                 var transform = GetTransform(insertionPoint, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
+                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
                 sequenceNumber += 1;
@@ -698,7 +700,7 @@ namespace MESS.Macros
             // based on the world brushes and brush entities in the template. Another way of looking at it is
             // that the brushes and entities in the template take on the 'shape' of this macro_brush.
 
-            var brushContext = new InstantiationContext(template, insertionEntityProperties: brushEntity.Properties, parentContext: context);
+            var brushContext = new InstantiationContext(template, Logger, insertionEntityProperties: brushEntity.Properties, parentContext: context);
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
@@ -779,7 +781,7 @@ namespace MESS.Macros
         }
 
 
-        private static HashSet<object> GetExcludedObjects(InstantiationContext context, Logger logger)
+        private static HashSet<object> GetExcludedObjects(InstantiationContext context, ILogger logger)
         {
             var excludedObjects = new HashSet<object>();
             foreach (var conditionalContent in context.Template.ConditionalContents)

@@ -11,6 +11,7 @@ using MScript.Tokenizing;
 using MScript.Evaluation;
 using System.Text;
 using System.Diagnostics;
+using MESS.Logging;
 
 namespace MESS
 {
@@ -41,7 +42,7 @@ namespace MESS
 
                 commandLineParser.Parse(args);
 
-                using (var logger = new Logger(new StreamWriter(Console.OpenStandardOutput()), settings.LogLevel))
+                using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
                 {
                     if (settings.LogLevel != LogLevel.Off)
                     {
@@ -144,7 +145,7 @@ namespace MESS
                 commandLine.ShowDescriptions(output);
         }
 
-        private static void ProcessMacroEntities(ExpansionSettings settings, Logger logger)
+        private static void ProcessMacroEntities(ExpansionSettings settings, ILogger logger)
         {
             // Default to .map, if no extension was specified (unless there's an extensionless file that matches):
             var inputPath = settings.InputPath;
@@ -198,34 +199,37 @@ namespace MESS
             Console.WriteLine("============================================================");
             Console.WriteLine();
 
-            var globals = new Dictionary<string, object>();
-            var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, 0, new Random(), globals);
-            while (true)
+            using (var logger = new ConsoleLogger(LogLevel.Verbose))
             {
-                try
+                var globals = new Dictionary<string, object>();
+                var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, 0, new Random(), globals, logger);
+                while (true)
                 {
-                    Console.Write("> ");
-                    var input = Console.ReadLine();
-                    if (input == "quit")
-                        break;
-
-                    // TODO: Quick hacky way to support assignment, for testing purposes:
-                    var match = Regex.Match(input, @"(?<variable>\w+)\s*=\s*(?<value>[^=].*)");
-                    if (match?.Success == true)
+                    try
                     {
-                        var variable = match.Groups["variable"].Value;
-                        var value = MScript.Interpreter.Evaluate(match.Groups["value"].Value, context);
-                        context.Bind(variable, value);
+                        Console.Write("> ");
+                        var input = Console.ReadLine();
+                        if (input == "quit")
+                            break;
 
-                        continue;
+                        // TODO: Quick hacky way to support assignment, for testing purposes:
+                        var match = Regex.Match(input, @"(?<variable>\w+)\s*=\s*(?<value>[^=].*)");
+                        if (match?.Success == true)
+                        {
+                            var variable = match.Groups["variable"].Value;
+                            var value = MScript.Interpreter.Evaluate(match.Groups["value"].Value, context);
+                            context.Bind(variable, value);
+
+                            continue;
+                        }
+
+                        var result = MScript.Interpreter.Evaluate(input, context);
+                        Console.WriteLine($"< {(result != null ? MScript.Interpreter.Print(result) : "NONE")}");
                     }
-
-                    var result = MScript.Interpreter.Evaluate(input, context);
-                    Console.WriteLine($"< {(result != null ? MScript.Interpreter.Print(result) : "NONE")}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
+                    }
                 }
             }
         }

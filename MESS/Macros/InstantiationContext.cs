@@ -1,4 +1,5 @@
 ﻿using MESS.Common;
+using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MScript;
@@ -63,6 +64,7 @@ namespace MESS.Macros
         public IDictionary<string, object> Globals { get; }
 
 
+        private ILogger _logger;
         private Random _random;
         private IDictionary<string, string> _insertionEntityProperties;
         private InstantiationContext _parentContext;
@@ -73,6 +75,7 @@ namespace MESS.Macros
 
         public InstantiationContext(
             MapTemplate template,
+            ILogger logger,
             Transform transform = null,
             IDictionary<string, string> insertionEntityProperties = null,
             InstantiationContext parentContext = null,
@@ -89,6 +92,7 @@ namespace MESS.Macros
             if (insertionEntityProperties?.GetNumericProperty(Attributes.RandomSeed) is double seed)
                 randomSeed = (int)seed;
             _random = new Random(randomSeed);
+            _logger = logger;
             _insertionEntityProperties = insertionEntityProperties;
             _parentContext = parentContext;
 
@@ -102,7 +106,7 @@ namespace MESS.Macros
             Transform = transform ?? Transform.Identity;
             Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
 
-            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, SequenceNumber, _random, Globals);
+            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger);
             var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
                 kv => Evaluation.EvaluateInterpolatedString(kv.Key, outerEvaluationContext),
                 kv => PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(kv.Value, outerEvaluationContext)));
@@ -135,7 +139,7 @@ namespace MESS.Macros
             Globals = parentContext.Globals;
             OutputMap = parentContext.OutputMap;
 
-            _evaluationContext = Evaluation.ContextFromProperties(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, parentContext._evaluationContext);
+            _evaluationContext = Evaluation.ContextFromProperties(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger, parentContext._evaluationContext);
         }
 
 

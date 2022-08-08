@@ -51,9 +51,13 @@
     <Compile Include="Formats\JmfFormat.cs" />
     <Compile Include="Formats\MapExtensions.cs" />
     <Compile Include="EntityRewriting\RewriteDirectiveParser.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="LogLevel.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\FileLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Common\Attributes.cs" />
+    <Compile Include="Logging\MultiLogger.cs" />
+    <Compile Include="Macros\AssertException.cs" />
     <Compile Include="Macros\CoverBrushBehavior.cs" />
     <Compile Include="Macros\Evaluation.cs" />
     <Compile Include="Macros\FillMode.cs" />

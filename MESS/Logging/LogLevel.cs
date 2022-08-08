@@ -1,10 +1,6 @@
 ﻿
-namespace MESS
+namespace MESS.Logging
 {
-    // - errors only (e.g. exceptions that will abort the process)
-    // - warnings (template not found, various other things that MESS can safely ignore or skip
-    // - informational (loading templates)
-    // - verbose (log verbose info about each instantiation - entity type, position, source map/sub-template, current bindings, etc.)
     public enum LogLevel
     {
         /// <summary>

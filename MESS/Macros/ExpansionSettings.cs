@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MESS.Logging;
+using System.Collections.Generic;
 
 namespace MESS.Macros
 {
