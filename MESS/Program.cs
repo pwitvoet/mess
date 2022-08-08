@@ -44,14 +44,11 @@ namespace MESS
 
                 using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
                 {
-                    if (settings.LogLevel != LogLevel.Off)
-                    {
-                        ShowToolInfo();
-                        Console.WriteLine("----- BEGIN MESS -----");
-                        Console.WriteLine($"Command line: {Environment.CommandLine}");
-                        Console.WriteLine($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
-                        Console.WriteLine();
-                    }
+                    logger.Minimal($"MESS v{Assembly.GetExecutingAssembly().GetName().Version}: Macro Entity Substitution System");
+                    logger.Minimal("----- BEGIN MESS -----");
+                    logger.Minimal($"Command line: {Environment.CommandLine}");
+                    logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                    logger.Minimal("");
 
                     try
                     {
@@ -70,6 +67,14 @@ namespace MESS
                         // TODO: Show more error details here?
                         return -1;
                     }
+                    finally
+                    {
+                        // TODO: Log a small summary as well? Number of templates/instances/etc?
+                        logger.Minimal("");
+                        logger.Minimal($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
+                        logger.Minimal("");
+                        logger.Minimal("----- END MESS -----");
+                    }
                 }
             }
             catch (Exception ex)
@@ -77,17 +82,6 @@ namespace MESS
                 Console.WriteLine($"Failed to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
                 ShowHelp(commandLineParser);
                 return -1;
-            }
-            finally
-            {
-                // TODO: Log a small summary as well? Number of templates/instances/etc?
-                if (settings.LogLevel != LogLevel.Off)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
-                    Console.WriteLine();
-                    Console.WriteLine("----- END MESS -----");
-                }
             }
         }
 
@@ -132,11 +126,6 @@ namespace MESS
                 .OptionalArgument(
                     s => { settings.OutputPath = Path.GetFullPath(s); },
                     "Output map file. If not specified, the input map file will be overwritten.");
-        }
-
-        private static void ShowToolInfo()
-        {
-            Console.WriteLine($"MESS v{Assembly.GetExecutingAssembly().GetName().Version}: Macro Entity Substitution System");
         }
 
         private static void ShowHelp(CommandLine commandLine)

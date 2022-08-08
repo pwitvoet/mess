@@ -247,6 +247,7 @@ namespace MESS.Macros
         /// </summary>
         private void CreateInstance(InstantiationContext context)
         {
+            Logger.Verbose("");
             Logger.Verbose($"Creating instance #{context.ID} (sequence number: {context.SequenceNumber}) at {context.Transform}.");
 
             _instanceCount += 1;
@@ -283,35 +284,45 @@ namespace MESS.Macros
 
         private void HandleEntity(InstantiationContext context, Entity entity, bool applyTransform = true)
         {
-            switch (entity.ClassName)
+            try
             {
-                case MacroEntity.Insert:
-                    // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
-                    //       to ensure that transformation always works correctly?
-                    HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
-                    break;
+                switch (entity.ClassName)
+                {
+                    case MacroEntity.Insert:
+                        // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
+                        //       to ensure that transformation always works correctly?
+                        HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        break;
 
-                case MacroEntity.Cover:
-                    // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
-                    HandleMacroCoverEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
-                    break;
+                    case MacroEntity.Cover:
+                        // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
+                        HandleMacroCoverEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        break;
 
-                case MacroEntity.Fill:
-                    // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
-                    HandleMacroFillEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
-                    break;
+                    case MacroEntity.Fill:
+                        // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
+                        HandleMacroFillEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        break;
 
-                case MacroEntity.Brush:
-                    // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
-                    HandleMacroBrushEntity(context, entity.Copy(context, applyTransform: applyTransform));
-                    break;
+                    case MacroEntity.Brush:
+                        // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
+                        HandleMacroBrushEntity(context, entity.Copy(context, applyTransform: applyTransform));
+                        break;
 
-                //case MacroEntity.Script:
+                    //case MacroEntity.Script:
 
-                default:
-                    // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                    context.OutputMap.Entities.Add(entity.Copy(context, applyTransform: applyTransform));
-                    break;
+                    default:
+                        // Other entities are copied directly, with expressions in their property keys/values being evaluated:
+                        context.OutputMap.Entities.Add(entity.Copy(context, applyTransform: applyTransform));
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data["classname"] = entity.ClassName;
+                ex.Data["targetname"] = entity.GetStringProperty("targetname");
+                ex.Data["context ID"] = context.ID;
+                throw;
             }
         }
 

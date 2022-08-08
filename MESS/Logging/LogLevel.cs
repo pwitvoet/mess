@@ -9,6 +9,11 @@ namespace MESS.Logging
         Off,
 
         /// <summary>
+        /// Only a minimal amount of information is logged.
+        /// </summary>
+        Minimal,
+
+        /// <summary>
         /// Only critical errors are logged.
         /// </summary>
         Error,

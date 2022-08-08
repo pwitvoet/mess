@@ -46,6 +46,13 @@ namespace MESS.Logging
                 logger.Error(message, exception);
         }
 
+        public void Minimal(string message)
+        {
+            foreach (var logger in _loggers)
+                logger.Minimal(message);
+        }
+
+
         public void Log(LogLevel level, string message)
         {
             foreach (var logger in _loggers)

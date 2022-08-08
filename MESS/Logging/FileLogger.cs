@@ -35,6 +35,9 @@ namespace MESS.Logging
 
         public void Error(string message, Exception exception = null) => Log(LogLevel.Error, message, exception);
 
+        public void Minimal(string message) => Log(LogLevel.Minimal, message);
+
+
         public void Log(LogLevel level, string message)
         {
             if (level > LogLevel)
