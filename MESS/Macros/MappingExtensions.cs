@@ -151,6 +151,8 @@ namespace MESS.Macros
                     copy.Properties[kv.Key] = kv.Value;
             }
 
+            copy.Properties.Remove("");
+
             if (applyTransform)
             {
                 // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
