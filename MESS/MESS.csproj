@@ -74,6 +74,7 @@
     <Compile Include="Macros\PointDistributionExtensions.cs" />
     <Compile Include="Macros\RemovableContent.cs" />
     <Compile Include="Macros\SphereCollection.cs" />
+    <Compile Include="Util\StringEqualityComparer.cs" />
     <Compile Include="MapFile.cs" />
     <Compile Include="Mapping\Brush.cs" />
     <Compile Include="Mapping\Camera.cs" />

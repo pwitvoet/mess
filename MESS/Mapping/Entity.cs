@@ -1,5 +1,6 @@
 ﻿using MESS.Common;
 using MESS.Mathematics.Spatial;
+using MESS.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -58,7 +59,7 @@ namespace MESS.Mapping
         }
 
 
-        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringEqualityComparer.InvariantIgnoreCase);
 
         private List<Brush> _brushes = new List<Brush>();
         public IReadOnlyList<Brush> Brushes => _brushes;
