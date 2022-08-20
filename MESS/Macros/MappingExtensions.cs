@@ -77,13 +77,13 @@ namespace MESS.Macros
 
                 if (flipFace)
                 {
-                    copy.Vertices.AddRange(face.Vertices.Select(vertex => ApplyTransform(vertex, transform)).Reverse());
-                    copy.PlanePoints = face.PlanePoints.Select(point => ApplyTransform(point, transform)).Reverse().ToArray();
+                    copy.Vertices.AddRange(face.Vertices.Select(transform.Apply).Reverse());
+                    copy.PlanePoints = face.PlanePoints.Select(transform.Apply).Reverse().ToArray();
                 }
                 else
                 {
-                    copy.Vertices.AddRange(face.Vertices.Select(vertex => ApplyTransform(vertex, transform)));
-                    copy.PlanePoints = face.PlanePoints.Select(point => ApplyTransform(point, transform)).ToArray();
+                    copy.Vertices.AddRange(face.Vertices.Select(transform.Apply));
+                    copy.PlanePoints = face.PlanePoints.Select(transform.Apply).ToArray();
                 }
 
                 var newTextureRightAxis = transform.Rotation * (face.TextureRightAxis * (1f / transform.GeometryScale));
@@ -125,17 +125,15 @@ namespace MESS.Macros
             return copy;
         }
 
-        // TODO: If 'angles' and 'scale' are missing, that could cause issues...? But what if we always insert them,
-        //       could that also be problematic in different situations?
         /// <summary>
-        /// Creates a copy of this entity. The copy is scaled, rotated and translated,
-        /// and by default any expressions in its properties will be evaluated.
-        /// If it contains 'angles' and 'scale' properties, then these will be updated according to how the entity has been transformed.
+        /// Creates a copy of this entity.
+        /// By default, the entity's brushwork is rotated, scaled and translated, any expressions in its attributes are evaluated,
+        /// and if the entity contains angles, scale and origin attributes then these are updated accordingly, but each of these steps can be disabled.
         /// Ignores VIS-group and group relationships.
         /// </summary>
-        public static Entity Copy(this Entity entity, InstantiationContext context, bool applyTransform = true, bool evaluateExpressions = true)
+        public static Entity Copy(this Entity entity, InstantiationContext context, bool transformBrushes = true, bool evaluateExpressions = true, bool updateTransformAttributes = true)
         {
-            var transform = applyTransform ? context.Transform : Transform.Identity;
+            var transform = transformBrushes ? context.Transform : Transform.Identity;
             var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(transform)));
 
             if (evaluateExpressions)
@@ -153,9 +151,8 @@ namespace MESS.Macros
 
             copy.Properties.Remove("");
 
-            if (applyTransform)
+            if (updateTransformAttributes)
             {
-                // TODO: Also check whether maybe the angles/scale keys do exist, but contain invalid values!
                 if (copy.Angles is Angles angles)
                     copy.Angles = (context.Transform.Rotation * angles.ToMatrix()).ToAngles();
 
@@ -163,15 +160,12 @@ namespace MESS.Macros
                     copy.Scale = scale * context.Transform.Scale;
 
                 if (copy.IsPointBased)
-                    copy.Origin = ApplyTransform(copy.Origin, context.Transform);
+                    copy.Origin = context.Transform.Apply(copy.Origin);
             }
 
             return copy;
         }
 
-
-        private static Vector3D ApplyTransform(Vector3D point, Transform transform)
-            => transform.Offset + (transform.Rotation * (point * transform.GeometryScale));
 
         private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureScale)
         {

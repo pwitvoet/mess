@@ -20,6 +20,8 @@ namespace MESS.Mathematics
             Offset = offset;
         }
 
+        public Vector3D Apply(Vector3D point) => Offset + (Rotation * (point * GeometryScale));
+
 
         public override string ToString() => $"(scale: {Scale}, geometry scale: {GeometryScale}, rotation: {Rotation}, offset: {Offset})";
     }

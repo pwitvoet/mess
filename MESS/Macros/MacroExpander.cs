@@ -282,7 +282,7 @@ namespace MESS.Macros
         }
 
 
-        private void HandleEntity(InstantiationContext context, Entity entity, bool applyTransform = true)
+        private void HandleEntity(InstantiationContext context, Entity entity, bool transformBrushes = true)
         {
             try
             {
@@ -291,29 +291,29 @@ namespace MESS.Macros
                     case MacroEntity.Insert:
                         // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
                         //       to ensure that transformation always works correctly?
-                        HandleMacroInsertEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        HandleMacroInsertEntity(context, entity.Copy(context, transformBrushes, false, false));
                         break;
 
                     case MacroEntity.Cover:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
-                        HandleMacroCoverEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        HandleMacroCoverEntity(context, entity.Copy(context, transformBrushes, false, false));
                         break;
 
                     case MacroEntity.Fill:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
-                        HandleMacroFillEntity(context, entity.Copy(context, applyTransform: applyTransform, evaluateExpressions: false));
+                        HandleMacroFillEntity(context, entity.Copy(context, transformBrushes, false, false));
                         break;
 
                     case MacroEntity.Brush:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
-                        HandleMacroBrushEntity(context, entity.Copy(context, applyTransform: applyTransform));
+                        HandleMacroBrushEntity(context, entity.Copy(context, transformBrushes));
                         break;
 
                     //case MacroEntity.Script:
 
                     default:
                         // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                        context.OutputMap.Entities.Add(entity.Copy(context, applyTransform: applyTransform));
+                        context.OutputMap.Entities.Add(entity.Copy(context, transformBrushes: transformBrushes));
                         break;
                 }
             }
@@ -353,21 +353,18 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));    // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
 
-                // TODO: Verify that this works correctly even when the macro_insert entity does not originally contain
-                //       'angles' and 'scale' properties!
-
                 // Create a child context for this insertion, with a properly adjusted transform:
                 // NOTE: MappingExtensions.Copy(Entity) already applied context.Transform to the scale and angles attributes, but geometry-scale is not affected:
                 var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.Scale) ?? 1);
-                var geometryScale = (evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale)) * sequenceContext.Transform.GeometryScale;
+                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
                 var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
                 var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
 
                 var transform = new Transform(
-                    scale,
-                    geometryScale,
-                    anglesMatrix,
-                    insertEntity.Origin + offset);
+                    sequenceContext.Transform.Scale * scale,
+                    sequenceContext.Transform.GeometryScale * geometryScale,
+                    sequenceContext.Transform.Rotation * anglesMatrix,
+                    sequenceContext.Transform.Apply(insertEntity.Origin) + offset);
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
@@ -764,7 +761,7 @@ namespace MESS.Macros
 
 
                 // The copy already has its final orientation, so we don't want it to be transformed again:
-                HandleEntity(sequenceContext, entityCopy, applyTransform: false);
+                HandleEntity(sequenceContext, entityCopy, transformBrushes: false);
 
                 sequenceNumber += 1;
             }
