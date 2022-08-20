@@ -353,8 +353,13 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));    // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
 
+                // NOTE: Because some editors use 0 as default value for missing attributes, we'll swap values here to ensure that Local is the default behavior:
+                var orientation = (evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0) == 0 ? Orientation.Local : Orientation.Global;
+                var rotation = Matrix3x3.Identity;
+                if (orientation == Orientation.Local)
+                    rotation = sequenceContext.Transform.Rotation;
+
                 // Create a child context for this insertion, with a properly adjusted transform:
-                // NOTE: MappingExtensions.Copy(Entity) already applied context.Transform to the scale and angles attributes, but geometry-scale is not affected:
                 var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.Scale) ?? 1);
                 var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
                 var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
@@ -363,7 +368,7 @@ namespace MESS.Macros
                 var transform = new Transform(
                     sequenceContext.Transform.Scale * scale,
                     sequenceContext.Transform.GeometryScale * geometryScale,
-                    sequenceContext.Transform.Rotation * anglesMatrix,
+                    rotation * anglesMatrix,
                     sequenceContext.Transform.Apply(insertEntity.Origin) + offset);
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
@@ -398,12 +403,11 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.InstanceOrientation, Attributes.RandomSeed, Attributes.BrushBehavior);
+            EvaluateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
             SetBrushEntityOriginProperty(coverEntity);
 
             var maxInstances = coverEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
             var radius = (float)(coverEntity.GetNumericProperty(Attributes.Radius) ?? 0);
-            var orientation = (Orientation)(coverEntity.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
             var randomSeed = coverEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
             var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty(Attributes.BrushBehavior) ?? 0);
 
@@ -440,7 +444,8 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
-                var transform = GetTransform(insertionPoint, selection.Face, evaluatedProperties);
+                var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
+                var transform = GetTransform(insertionPoint, orientation, selection.Face, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
@@ -466,7 +471,7 @@ namespace MESS.Macros
             }
 
 
-            Transform GetTransform(Vector3D insertionPoint, Face face, Dictionary<string, string> evaluatedProperties)
+            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Face face, Dictionary<string, string> evaluatedProperties)
             {
                 var rotation = Matrix3x3.Identity;  // Global
                 switch (orientation)
@@ -535,12 +540,11 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.InstanceOrientation, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
+            EvaluateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
             SetBrushEntityOriginProperty(fillEntity);
 
             var maxInstances = fillEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
             var radius = (float)(fillEntity.GetNumericProperty(Attributes.Radius) ?? 0);
-            var orientation = (Orientation)(fillEntity.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0); // TODO: Only global & local!
             var randomSeed = fillEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
             var fillMode = (FillMode)(fillEntity.GetIntegerProperty(Attributes.FillMode) ?? 0);
 
@@ -643,14 +647,15 @@ namespace MESS.Macros
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
 
-                var transform = GetTransform(insertionPoint, evaluatedProperties);
+                var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
+                var transform = GetTransform(insertionPoint, orientation, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
                 sequenceNumber += 1;
             }
 
-            Transform GetTransform(Vector3D insertionPoint, Dictionary<string, string> evaluatedProperties)
+            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Dictionary<string, string> evaluatedProperties)
             {
                 var rotation = Matrix3x3.Identity;  // Global (macro_fill only supports global and local orientations)
                 if (orientation == Orientation.Local)
