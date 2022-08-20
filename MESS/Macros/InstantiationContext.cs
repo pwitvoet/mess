@@ -126,6 +126,7 @@ namespace MESS.Macros
         private InstantiationContext(InstantiationContext parentContext, int sequenceNumber)
         {
             _random = parentContext._random;
+            _logger = parentContext._logger;
             _insertionEntityProperties = parentContext._insertionEntityProperties;
             _parentContext = parentContext;
 
@@ -135,8 +136,10 @@ namespace MESS.Macros
             Template = parentContext.Template;
             CurrentWorkingDirectory = parentContext.CurrentWorkingDirectory;
             SubTemplates = parentContext.SubTemplates;
+
             Transform = parentContext.Transform;
             Globals = parentContext.Globals;
+
             OutputMap = parentContext.OutputMap;
 
             _evaluationContext = Evaluation.ContextFromProperties(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger, parentContext._evaluationContext);
