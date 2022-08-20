@@ -58,7 +58,7 @@ namespace MESS.Logging
                 return;
 
             _writer.WriteLine(FormatMessage(level, $"{message}: {exception.GetType().Name}: '{exception.Message}'."));
-            if (LogLevel > LogLevel.Verbose)
+            if (LogLevel >= LogLevel.Verbose)
             {
                 _writer.WriteLine(exception.StackTrace);
                 // TODO: Inner exceptions!
