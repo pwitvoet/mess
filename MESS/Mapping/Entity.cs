@@ -20,13 +20,13 @@ namespace MESS.Mapping
         public string ClassName
         {
             get => Properties.GetStringProperty(Attributes.Classname);
-            set => Properties[Attributes.Classname] = value;
+            set => Properties.SetStringProperty(Attributes.Classname, value);
         }
 
         public int Flags
         {
             get => Properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
-            set => Properties[Attributes.Spawnflags] = value.ToString(CultureInfo.InvariantCulture);
+            set => Properties.SetIntegerProperty(Attributes.Spawnflags, value);
         }
 
         public Vector3D Origin
@@ -34,7 +34,7 @@ namespace MESS.Mapping
             get => Properties.GetVector3DProperty(Attributes.Origin) ?? new Vector3D();
             set
             {
-                Properties[Attributes.Origin] = FormattableString.Invariant($"{value.X} {value.Y} {value.Z}");
+                Properties.SetVector3DProperty(Attributes.Origin, value);
                 if (IsPointBased)
                     BoundingBox = new BoundingBox(Origin, Origin);
             }
@@ -46,7 +46,7 @@ namespace MESS.Mapping
             set
             {
                 if (value is Angles angles)
-                    Properties[Attributes.Angles] = FormattableString.Invariant($"{angles.Pitch} {angles.Yaw} {angles.Roll}");
+                    Properties.SetAnglesProperty(Attributes.Angles, angles);
                 else
                     Properties.Remove(Attributes.Angles);
             }
@@ -55,7 +55,13 @@ namespace MESS.Mapping
         public double? Scale
         {
             get => Properties.GetNumericProperty(Attributes.Scale);
-            set => Properties[Attributes.Scale] = value?.ToString(CultureInfo.InvariantCulture);
+            set
+            {
+                if (value is double scale)
+                    Properties.SetNumericProperty(Attributes.Scale, scale);
+                else
+                    Properties[Attributes.Scale] = null;
+            }
         }
 
 

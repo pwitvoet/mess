@@ -141,7 +141,7 @@ namespace MESS.Macros
                 foreach (var kv in entity.Properties)
                     copy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
 
-                UpdateSpawnFlags(copy);
+                UpdateSpawnFlags(copy.Properties);
             }
             else
             {
@@ -152,18 +152,54 @@ namespace MESS.Macros
             copy.Properties.Remove("");
 
             if (updateTransformAttributes)
-            {
-                if (copy.Angles is Angles angles)
-                    copy.Angles = (context.Transform.Rotation * angles.ToMatrix()).ToAngles();
-
-                if (copy.Scale is double scale)
-                    copy.Scale = scale * context.Transform.Scale;
-
-                if (copy.IsPointBased)
-                    copy.Origin = context.Transform.Apply(copy.Origin);
-            }
+                UpdateTransformProperties(copy.Properties, context.Transform);
 
             return copy;
+        }
+
+
+        /// <summary>
+        /// Updates the angles, scale and origin attributes (if present) by applying the given transform to them.
+        /// </summary>
+        public static void UpdateTransformProperties(this IDictionary<string, string> properties, Transform transform)
+        {
+            if (properties.GetAnglesProperty(Attributes.Angles) is Angles angles)
+                properties.SetAnglesProperty(Attributes.Angles, (transform.Rotation * angles.ToMatrix()).ToAngles());
+
+            if (properties.GetNumericProperty(Attributes.Scale) is double scale)
+                properties.SetNumericProperty(Attributes.Scale, scale * transform.Scale);
+
+            if (properties.GetVector3DProperty(Attributes.Origin) is Vector3D origin)
+                properties.SetVector3DProperty(Attributes.Origin, transform.Apply(origin));
+        }
+
+        /// <summary>
+        /// Searches for 'spawnflag{N}' attributes and uses them to update the special 'spawnflags' attribute.
+        /// The 'spawnflag{N}' attributes are removed afterwards.
+        /// This makes it possible to control spawn flags with MScript - which, due to how editors handle the spawnflags attribute,
+        /// would otherwise not be possible.
+        /// </summary>
+        public static void UpdateSpawnFlags(this IDictionary<string, string> properties)
+        {
+            var spawnFlags = properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
+            for (int i = 0; i < 32; i++)
+            {
+                var flagName = FormattableString.Invariant($"spawnflag{i}");
+                if (!properties.TryGetValue(flagName, out var stringValue))
+                    continue;
+
+                var value = PropertyExtensions.ParseProperty(stringValue);
+                var isChecked = Interpreter.IsTrue(value) && !(value is double d && d == 0);
+                if (isChecked)
+                    spawnFlags |= (1 << i);
+                else
+                    spawnFlags = spawnFlags & ~(1 << i);
+
+                properties.Remove(flagName);
+            }
+
+            if (properties.ContainsKey(Attributes.Spawnflags) || spawnFlags != 0)
+                properties.SetIntegerProperty(Attributes.Spawnflags, spawnFlags);
         }
 
 
@@ -177,33 +213,6 @@ namespace MESS.Macros
             return new Vector2D(
                 x / textureScale.X,
                 y / textureScale.Y);
-        }
-
-        /// <summary>
-        /// Searches for 'spawnflag{N}' attributes and uses them to update the special 'spawnflags' attribute.
-        /// The 'spawnflag{N}' attributes are removed afterwards.
-        /// This makes it possible to control spawn flags with MScript - which, due to how editors handle the spawnflags attribute,
-        /// would otherwise not be possible.
-        /// </summary>
-        private static void UpdateSpawnFlags(Entity entity)
-        {
-            var spawnFlags = entity.Flags;
-            for (int i = 0; i < 32; i++)
-            {
-                var flagName = FormattableString.Invariant($"spawnflag{i}");
-                if (!entity.Properties.TryGetValue(flagName, out var stringValue))
-                    continue;
-
-                var value = PropertyExtensions.ParseProperty(stringValue);
-                var isChecked = Interpreter.IsTrue(value) && !(value is double d && d == 0);
-                if (isChecked)
-                    spawnFlags |= (1 << i);
-                else
-                    spawnFlags = spawnFlags & ~(1 << i);
-
-                entity.Properties.Remove(flagName);
-            }
-            entity.Flags = spawnFlags;
         }
     }
 }

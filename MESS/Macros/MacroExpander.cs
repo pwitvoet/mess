@@ -372,6 +372,8 @@ namespace MESS.Macros
                     sequenceContext.Transform.Apply(insertEntity.Origin) + offset);
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
+                evaluatedProperties.UpdateSpawnFlags();
+                evaluatedProperties.UpdateTransformProperties(context.Transform);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
 
                 CreateInstance(insertionContext);

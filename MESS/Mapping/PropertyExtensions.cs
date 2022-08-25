@@ -83,6 +83,23 @@ namespace MESS.Mapping
         }
 
 
+        // Setters (with proper invariant formatting):
+        public static void SetIntegerProperty(this IDictionary<string, string> properties, string propertyName, int value)
+            => properties[propertyName] = value.ToString(CultureInfo.InvariantCulture);
+
+        public static void SetNumericProperty(this IDictionary<string, string> properties, string propertyName, double value)
+            => properties[propertyName] = value.ToString(CultureInfo.InvariantCulture);
+
+        public static void SetAnglesProperty(this IDictionary<string, string> properties, string propertyName, Angles value)
+            => properties[propertyName] = FormattableString.Invariant($"{value.Pitch} {value.Yaw} {value.Roll}");
+
+        public static void SetVector3DProperty(this IDictionary<string, string> properties, string propertyName, Vector3D value)
+            => properties[propertyName] = FormattableString.Invariant($"{value.X} {value.Y} {value.Z}");
+
+        public static void SetStringProperty(this IDictionary<string, string> properties, string propertyName, string value)
+            => properties[propertyName] = value;
+
+
         public static bool TryParseVector(string value, out double[] vector)
         {
             if (value == null)
