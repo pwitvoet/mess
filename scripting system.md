@@ -287,6 +287,11 @@ Basic math functions:
 - `number sqrt(number value)`
     - Takes the square root of the given value.
 
+Constants:
+
+- `number PI`
+    - The constant π (3.1415926535897931) is the ratio between a circle's circumference and its diameter.
+
 ### Trigonometry:
 Functions related to rotations and angles:
 
