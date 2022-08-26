@@ -63,6 +63,11 @@
 // Any custom properties are used to substitute placeholders in the template contents, and to determine whether any content needs to be excluded.
 @PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(GeometricTemplateInserter, Orientable) = macro_insert : "Insert a template"
 [
+    instance_orientation(choices) : "Instance orientation" : 0 =
+    [
+        0 : "Local"
+        1 : "Global"
+    ]
     // The number of instances to create. The default is 1.
     instance_count(integer) : "Instance count" : "1"
 ]
@@ -131,7 +136,7 @@
 @SolidClass color(255 80 0) base(NamedEntity) = macro_template : "Template area"
 [
     // The anchor point or origin of a template determines where its contents will be positioned, relative to the point of insertion.
-    anchor(Choices) : "Anchor point (origin)" : 1 =
+    anchor(choices) : "Anchor point (origin)" : 1 =
     [
         0 : "Bottom center"
         1 : "Center"
