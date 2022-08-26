@@ -284,6 +284,8 @@ namespace MESS.Macros
 
         private void HandleEntity(InstantiationContext context, Entity entity, bool transformBrushes = true)
         {
+            var transform = transformBrushes ? context.Transform : Transform.Identity;
+
             try
             {
                 switch (entity.ClassName)
@@ -291,29 +293,27 @@ namespace MESS.Macros
                     case MacroEntity.Insert:
                         // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
                         //       to ensure that transformation always works correctly?
-                        HandleMacroInsertEntity(context, entity.Copy(context, transformBrushes, false, false));
+                        HandleMacroInsertEntity(context, entity.Copy(transform));
                         break;
 
                     case MacroEntity.Cover:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
-                        HandleMacroCoverEntity(context, entity.Copy(context, transformBrushes, false, false));
+                        HandleMacroCoverEntity(context, entity.Copy(transform));
                         break;
 
                     case MacroEntity.Fill:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
-                        HandleMacroFillEntity(context, entity.Copy(context, transformBrushes, false, false));
+                        HandleMacroFillEntity(context, entity.Copy(transform));
                         break;
 
                     case MacroEntity.Brush:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
-                        HandleMacroBrushEntity(context, entity.Copy(context, transformBrushes));
+                        HandleMacroBrushEntity(context, entity.Copy(transform));
                         break;
-
-                    //case MacroEntity.Script:
 
                     default:
                         // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                        context.OutputMap.Entities.Add(entity.Copy(context, transformBrushes: transformBrushes));
+                        HandleNormalEntity(context, entity.Copy(transform));
                         break;
                 }
             }
@@ -793,6 +793,37 @@ namespace MESS.Macros
                     yield return copy;
                 }
             }
+        }
+
+        private void HandleNormalEntity(InstantiationContext context, Entity normalEntity)
+        {
+            // Evaluate expressions in both keys and values:
+            var evaluatedProperties = normalEntity.Properties.ToDictionary(
+                kv => context.EvaluateInterpolatedString(kv.Key),
+                kv => context.EvaluateInterpolatedString(kv.Value));
+
+            normalEntity.Properties.Clear();
+            foreach (var kv in evaluatedProperties)
+                normalEntity.Properties[kv.Key] = kv.Value;
+
+            // Handle special 'spawnflagN' attributes, and remove attribute(s) with empty key(s):
+            normalEntity.Properties.UpdateSpawnFlags();
+            normalEntity.Properties.Remove("");
+
+            // TODO: This should be configuration-based!
+            var className = normalEntity.ClassName?.ToLowerInvariant() ?? "";
+            var invertedPitch = className.StartsWith("ammo_") ||
+                className.StartsWith("item_") ||
+                className.StartsWith("weapon_") ||
+                className.StartsWith("cycler") ||
+                className.StartsWith("monster_") ||
+                className.StartsWith("xen_") ||
+                className.StartsWith("light_") ||
+                className.Contains("sprite");
+                // TODO: And probably a few others!
+            normalEntity.Properties.UpdateTransformProperties(context.Transform, invertedPitch);
+
+            context.OutputMap.Entities.Add(normalEntity);
         }
 
 

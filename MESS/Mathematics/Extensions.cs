@@ -13,11 +13,14 @@ namespace MESS.Mathematics
         /// <summary>
         /// Turns Euler angles into a rotation matrix. The angles are assumed to be in degrees.
         /// </summary>
-        public static Matrix3x3 ToMatrix(this Angles eulerAngles)
+        public static Matrix3x3 ToMatrix(this Angles eulerAngles, bool invertedPitch = false)
         {
             var x = eulerAngles.Roll.ToRadians();
-            var y = -eulerAngles.Pitch.ToRadians();
+            var y = eulerAngles.Pitch.ToRadians();
             var z = eulerAngles.Yaw.ToRadians();
+
+            if (invertedPitch)
+                y = -y;
 
             return new Matrix3x3(
                 (float)(Math.Cos(y) * Math.Cos(z)),
@@ -38,7 +41,7 @@ namespace MESS.Mathematics
         /// Turns a rotation matrix into Euler angles. Note that there are multiple possible angles,
         /// and that this approach can suffer from Gimbal lock.
         /// </summary>
-        public static Angles ToAngles(this Matrix3x3 matrix)
+        public static Angles ToAngles(this Matrix3x3 matrix, bool invertedPitch = false)
         {
             // NOTE: There are always multiple solutions!
             var m = matrix;
@@ -47,7 +50,7 @@ namespace MESS.Mathematics
                 var y = (float)-Math.Asin(m.r31);
                 var x = (float)Math.Atan2(m.r32 / Math.Cos(y), m.r33 / Math.Cos(y));
                 var z = (float)Math.Atan2(m.r21 / Math.Cos(y), m.r11 / Math.Cos(y));
-                return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
+                return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
 
                 // Alternate solution:
                 //var y2 = (float)Math.PI - y;
@@ -63,13 +66,13 @@ namespace MESS.Mathematics
                 {
                     var y = (float)Math.PI / 2;
                     var x = z + (float)Math.Atan2(m.r12, m.r13);
-                    return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
+                    return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
                 }
                 else
                 {
                     var y = (float)-Math.PI / 2;
                     var x = -z + (float)Math.Atan2(-m.r12, -m.r13);
-                    return new Angles(x.ToDegrees(), -y.ToDegrees(), z.ToDegrees());
+                    return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
                 }
             }
         }

@@ -9,7 +9,7 @@ namespace MESS.Mathematics.Spatial
     public struct Angles
     {
         public float Roll;  // x-axis: Leaning over sidewards to the right (positive) or left (negative)
-        public float Pitch; // y-axis: Looking up (positive) or down (negative)
+        public float Pitch; // y-axis: Looking down (positive) or up (negative) (NOTE: for studio models and light entities, this is inverted!)
         public float Yaw;   // z-axis: Turning left (positive) or right (negative)
 
         public Angles(float roll, float pitch, float yaw)

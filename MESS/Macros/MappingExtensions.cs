@@ -126,33 +126,14 @@ namespace MESS.Macros
         }
 
         /// <summary>
-        /// Creates a copy of this entity.
-        /// By default, the entity's brushwork is rotated, scaled and translated, any expressions in its attributes are evaluated,
-        /// and if the entity contains angles, scale and origin attributes then these are updated accordingly, but each of these steps can be disabled.
+        /// Creates a copy of this entity. The brushwork will be rotated, translated and scaled using the given transform.
         /// Ignores VIS-group and group relationships.
         /// </summary>
-        public static Entity Copy(this Entity entity, InstantiationContext context, bool transformBrushes = true, bool evaluateExpressions = true, bool updateTransformAttributes = true)
+        public static Entity Copy(this Entity entity, Transform transform)
         {
-            var transform = transformBrushes ? context.Transform : Transform.Identity;
             var copy = new Entity(entity.Brushes.Select(brush => brush.Copy(transform)));
-
-            if (evaluateExpressions)
-            {
-                foreach (var kv in entity.Properties)
-                    copy.Properties[context.EvaluateInterpolatedString(kv.Key)] = context.EvaluateInterpolatedString(kv.Value);
-
-                UpdateSpawnFlags(copy.Properties);
-            }
-            else
-            {
-                foreach (var kv in entity.Properties)
-                    copy.Properties[kv.Key] = kv.Value;
-            }
-
-            copy.Properties.Remove("");
-
-            if (updateTransformAttributes)
-                UpdateTransformProperties(copy.Properties, context.Transform);
+            foreach (var kv in entity.Properties)
+                copy.Properties[kv.Key] = kv.Value;
 
             return copy;
         }
@@ -161,10 +142,10 @@ namespace MESS.Macros
         /// <summary>
         /// Updates the angles, scale and origin attributes (if present) by applying the given transform to them.
         /// </summary>
-        public static void UpdateTransformProperties(this IDictionary<string, string> properties, Transform transform)
+        public static void UpdateTransformProperties(this IDictionary<string, string> properties, Transform transform, bool invertedPitch = false)
         {
             if (properties.GetAnglesProperty(Attributes.Angles) is Angles angles)
-                properties.SetAnglesProperty(Attributes.Angles, (transform.Rotation * angles.ToMatrix()).ToAngles());
+                properties.SetAnglesProperty(Attributes.Angles, (transform.Rotation * angles.ToMatrix(invertedPitch)).ToAngles(invertedPitch));
 
             if (properties.GetNumericProperty(Attributes.Scale) is double scale)
                 properties.SetNumericProperty(Attributes.Scale, scale * transform.Scale);
