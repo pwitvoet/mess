@@ -1,7 +1,9 @@
 ﻿using MESS.Logging;
 using MESS.Macros;
+using MScript;
 using MScript.Evaluation;
 using MScript.Parsing;
+using MScript.Parsing.AST;
 using MScript.Tokenizing;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,6 @@ namespace MESS
             evaluationContext.Bind("EXE_DIR", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
             string currentSegment = null;
-            var fgdPaths = new List<string>();
             var lines = File.ReadLines(path, Encoding.UTF8).ToArray();
             for (int i = 0; i < lines.Length; i++)
             {
@@ -48,9 +49,7 @@ namespace MESS
                                 break;
 
                             case "variables":
-                                // TODO: This approach does not support comments at the end of a line!
-                                var assignments = Parser.ParseAssignments(Tokenizer.Tokenize(line + ";"));
-                                foreach (var assignment in assignments)
+                                foreach (var assignment in ParseAssignments(line, evaluationContext))
                                     settings.Variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
                                 break;
 
@@ -118,6 +117,15 @@ namespace MESS
 
                 return part.Trim();
             }
+        }
+
+
+        private static IEnumerable<Assignment> ParseAssignments(string line, EvaluationContext evaluationContext)
+        {
+            var tokens = Tokenizer.Tokenize(line)
+                .TakeWhile(token => token.Type != TokenType.Comment)
+                .Append(new Token(TokenType.Semicolon));
+            return Parser.ParseAssignments(tokens);
         }
     }
 }

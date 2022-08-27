@@ -41,5 +41,7 @@ namespace MScript.Tokenizing
         Not,                // not
         If,                 // if
         Else,               // else
+
+        Comment,            // //
     }
 }

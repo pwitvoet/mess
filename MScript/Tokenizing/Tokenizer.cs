@@ -42,8 +42,13 @@ namespace MScript.Tokenizing
                 case '+': context.MoveNext(); return new Token(TokenType.Plus);
                 case '-': context.MoveNext(); return new Token(TokenType.Minus);
                 case '*': context.MoveNext(); return new Token(TokenType.Asterisk);
-                case '/': context.MoveNext(); return new Token(TokenType.Slash);
                 case '%': context.MoveNext(); return new Token(TokenType.PercentageSign);
+
+                case '/':
+                    if (!context.MoveNext() || context.Current != '/')
+                        return new Token(TokenType.Slash);
+                    context.MoveNext();
+                    return new Token(TokenType.Comment);
 
                 case '=':
                     if (!context.MoveNext() || context.Current != '=')
