@@ -32,6 +32,14 @@ namespace MESS
 
             try
             {
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("MESS requires at least one argument (the input map file).");
+                    Console.WriteLine("");
+                    ShowHelp(commandLineParser);
+                    return -1;
+                }
+
                 // NOTE: The -repl argument enables a different mode, so required arguments are no longer required,
                 //       but the cmd-line parser doesn't support that, so here's a quick hacky workaround:
                 if (args.Any(arg => arg == "-repl"))
@@ -40,6 +48,7 @@ namespace MESS
                     return 0;
                 }
 
+                ConfigFile.ReadSettings(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mess.config"), settings);
                 commandLineParser.Parse(args);
 
                 using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
@@ -79,7 +88,7 @@ namespace MESS
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
+                Console.WriteLine($"Failed to read config file or to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
                 ShowHelp(commandLineParser);
                 return -1;
             }
@@ -102,11 +111,11 @@ namespace MESS
                     $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
                 .Option(
                     "-fgd",
-                    s => { settings.GameDataPaths = s.Split(';').Select(Path.GetFullPath).ToArray(); },
+                    s => { settings.GameDataPaths.AddRange(s.Split(';').Select(Path.GetFullPath)); },
                     $"The .fgd file(s) that contains entity rewrite directives. Multiple paths must be separated by semicolons.")
                 .Option(
                     "-vars",
-                    s => { settings.Variables = ParseVariables(s); },
+                    s => { ParseVariables(s, settings.Variables); },
                     $"These variables are used when evaluating expressions in the given map's properties and entities. Input format is \"name1 = expression; name2: expression; ...\".")
                 .Option(
                     "-maxrecursion",
@@ -160,17 +169,14 @@ namespace MESS
             }
         }
 
-        private static Dictionary<string, object> ParseVariables(string s)
+        private static void ParseVariables(string s, IDictionary<string, object> variables)
         {
             var tokens = Tokenizer.Tokenize(s);
             var assignments = Parser.ParseAssignments(tokens);
 
             var context = Evaluation.DefaultContext();
-            var variables = new Dictionary<string, object>();
             foreach (var assignment in assignments)
                 variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, context);
-
-            return variables;
         }
 
 

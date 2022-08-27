@@ -806,23 +806,24 @@ namespace MESS.Macros
             foreach (var kv in evaluatedProperties)
                 normalEntity.Properties[kv.Key] = kv.Value;
 
+
             // Handle special 'spawnflagN' attributes, and remove attribute(s) with empty key(s):
             normalEntity.Properties.UpdateSpawnFlags();
             normalEntity.Properties.Remove("");
 
-            // TODO: This should be configuration-based!
-            var className = normalEntity.ClassName?.ToLowerInvariant() ?? "";
-            var invertedPitch = className.StartsWith("ammo_") ||
-                className.StartsWith("item_") ||
-                className.StartsWith("weapon_") ||
-                className.StartsWith("cycler") ||
-                className.StartsWith("monster_") ||
-                className.StartsWith("xen_") ||
-                className.StartsWith("light_") ||
-                className.Contains("sprite");
-                // TODO: And probably a few others!
+
+            // Determine whether this entity requires inverted-pitch handling:
+            var invertedPitch = false;
+            if (Settings.InvertedPitchPredicate != null)
+            {
+                var evaluationContext = Evaluation.ContextFromProperties(normalEntity.Properties, 0, 0, new Random(), context.Globals, Logger);
+                var predicateResult = PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(Settings.InvertedPitchPredicate, evaluationContext));
+                invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
+            }
             normalEntity.Properties.UpdateTransformProperties(context.Transform, invertedPitch);
 
+
+            Logger.Verbose($"Creating '{normalEntity.ClassName}', using {(invertedPitch ? "inverted" : "normal")} pitch.");
             context.OutputMap.Entities.Add(normalEntity);
         }
 

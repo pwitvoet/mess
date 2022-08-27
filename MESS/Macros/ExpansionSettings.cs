@@ -12,7 +12,9 @@ namespace MESS.Macros
         public string InputPath { get; set; }
         public string OutputPath { get; set; }
         public string Directory { get; set; }
-        public string[] GameDataPaths { get; set; }
-        public Dictionary<string, object> Variables { get; set; }
+        public List<string> GameDataPaths { get; } = new List<string>();
+        public Dictionary<string, object> Variables { get; } = new Dictionary<string, object>();
+
+        public string InvertedPitchPredicate { get; set; }
     }
 }

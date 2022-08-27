@@ -46,6 +46,7 @@
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common\Entities.cs" />
     <Compile Include="Common\Textures.cs" />
+    <Compile Include="ConfigFile.cs" />
     <Compile Include="EntityRewriting\FgdTokenizer.cs" />
     <Compile Include="EntityRewriting\RewriteDirective.cs" />
     <Compile Include="Formats\JmfFormat.cs" />
