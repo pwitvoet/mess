@@ -184,6 +184,22 @@ namespace MESS.Macros
         }
 
 
+        public static Vector3D GetAnchorPoint(this Entity entity, TemplateAreaAnchor anchor)
+        {
+            if (anchor == TemplateAreaAnchor.OriginBrush && entity.GetOrigin() is Vector3D origin)
+                return origin;
+
+            switch (anchor)
+            {
+                // NOTE: The bottom anchor point is our fallback for when there's no origin brush:
+                default:
+                case TemplateAreaAnchor.Bottom: return new Vector3D(entity.BoundingBox.Center.X, entity.BoundingBox.Center.Y, entity.BoundingBox.Min.Z);
+                case TemplateAreaAnchor.Center: return entity.BoundingBox.Center;
+                case TemplateAreaAnchor.Top: return new Vector3D(entity.BoundingBox.Center.X, entity.BoundingBox.Center.Y, entity.BoundingBox.Max.Z);
+            }
+        }
+
+
         private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureScale)
         {
             var texturePlaneNormal = textureDownAxis.CrossProduct(textureRightAxis);

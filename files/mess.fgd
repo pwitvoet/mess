@@ -124,6 +124,17 @@
 // Each copy takes on the textures and entity properties of the matching world brush or brush entity in the template.
 @SolidClass base(TemplateInserter) = macro_brush : "Use brushes with template"
 [
+    // Point entities in the chosen template will be placed relative to the anchor point of the macro_brush.
+    anchor(choices) : "Point entity anchor (origin)" : 0 =
+    [
+        0 : "Bottom center"
+        1 : "Center"
+        2 : "Top center"
+        3 : "Origin brush"
+    ]
+
+    // This offset is added to the anchor point of the macro_brush, which allows for more specific placement of point entities.
+    instance_offset(string) : "Point entity offset" : "0 0 0"
 ]
 
 

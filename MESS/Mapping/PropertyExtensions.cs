@@ -18,6 +18,10 @@ namespace MESS.Mapping
 
         public static Vector3D? GetVector3DProperty(this Entity entity, string propertyName) => entity.Properties.GetVector3DProperty(propertyName);
 
+        public static TEnum? GetEnumProperty<TEnum>(this Entity entity, string propertyName)
+            where TEnum: struct
+            => entity.Properties.GetEnumProperty<TEnum>(propertyName);
+
         public static string GetStringProperty(this Entity entity, string propertyName) => entity.Properties.GetStringProperty(propertyName);
 
 
@@ -61,6 +65,15 @@ namespace MESS.Mapping
         {
             if (properties.GetNumericArrayProperty(propertyName) is double[] array && array.Length == 3)
                 return new Vector3D((float)array[0], (float)array[1], (float)array[2]);
+
+            return null;
+        }
+
+        public static TEnum? GetEnumProperty<TEnum>(this IDictionary<string, string> properties, string propertyName)
+            where TEnum: struct
+        {
+            if (properties.TryGetValue(propertyName, out var stringValue) && Enum.TryParse<TEnum>(stringValue, out var value))
+                return value;
 
             return null;
         }

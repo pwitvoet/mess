@@ -307,7 +307,6 @@ namespace MESS.Macros
                         break;
 
                     case MacroEntity.Brush:
-                        // TODO: 'spawnflags' won't be updated here! (however, macro_brush doesn't have any flags, so...)
                         HandleMacroBrushEntity(context, entity.Copy(transform));
                         break;
 
@@ -704,18 +703,40 @@ namespace MESS.Macros
         {
             Logger.Verbose($"Processing a {brushEntity.ClassName} entity for instance #{context.ID}.");
 
-            var template = ResolveTemplate(brushEntity.GetStringProperty(Attributes.TemplateMap), brushEntity.GetStringProperty(Attributes.TemplateName), context);
+            // This function creates a brush-copying instance, so it also counts towards the (failsafe) limits:
+            _instanceCount += 1;
+            if (_instanceCount > Settings.InstanceLimit)
+                throw new InvalidOperationException("Instance limit exceeded.");
+
+            if (context.RecursionDepth > Settings.RecursionLimit)
+                throw new InvalidOperationException("Recursion limit exceeded.");
+
+
+            // A macro_brush only creates a single 'instance' of its template, so all properties are evaluated up-front, once:
+            SetBrushEntityOriginProperty(brushEntity);
+            var evaluatedProperties = brushEntity.Properties.ToDictionary(
+                kv => context.EvaluateInterpolatedString(kv.Key),
+                kv => context.EvaluateInterpolatedString(kv.Value));
+            evaluatedProperties.UpdateSpawnFlags();
+            evaluatedProperties.UpdateTransformProperties(context.Transform);
+
+            var template = ResolveTemplate(evaluatedProperties.GetStringProperty(Attributes.TemplateMap), evaluatedProperties.GetStringProperty(Attributes.TemplateName), context);
             if (template == null)
                 return;
 
-
-            SetBrushEntityOriginProperty(brushEntity);
 
             // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
             // based on the world brushes and brush entities in the template. Another way of looking at it is
             // that the brushes and entities in the template take on the 'shape' of this macro_brush.
 
-            var brushContext = new InstantiationContext(template, Logger, insertionEntityProperties: brushEntity.Properties, parentContext: context);
+            // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
+            //       Verify that this works correctly now!!!
+            var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.GetEnumProperty<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
+            anchorPoint += evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+
+            var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, anchorPoint);
+            var brushContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
+
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
@@ -738,39 +759,41 @@ namespace MESS.Macros
             }
 
             // Entities:
-            var sequenceNumber = 0;
             foreach (var templateEntity in template.Map.Entities)
             {
-                if (templateEntity.IsPointBased || excludedObjects.Contains(templateEntity))
+                if (excludedObjects.Contains(templateEntity))
                     continue;
 
-                var sequenceContext = brushContext.GetChildContextWithSequenceNumber(sequenceNumber);
-
-                // Origin brushes are only copied if the template entity also contains an origin brush.
-                var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
-                var templateTextureNames = templateEntity.Brushes
-                    .Where(brush => !brush.IsOriginBrush())
-                    .SelectMany(brush => brush.Faces)
-                    .Select(face => face.TextureName)
-                    .Distinct();
-                if (templateTextureNames.Count() != 1)
+                if (!templateEntity.IsPointBased)
                 {
-                    Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
-                    continue;
+                    // Brush entities take on the 'shape' of the macro_brush.
+
+                    // Origin brushes are only copied if the template entity also contains an origin brush.
+                    var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
+                    var templateTextureNames = templateEntity.Brushes
+                        .Where(brush => !brush.IsOriginBrush())
+                        .SelectMany(brush => brush.Faces)
+                        .Select(face => face.TextureName)
+                        .Distinct();
+                    if (templateTextureNames.Count() != 1)
+                    {
+                        Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
+                        continue;
+                    }
+
+                    var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
+                    var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
+                    foreach (var kv in templateEntity.Properties)
+                        entityCopy.Properties[kv.Key] = kv.Value;   // NOTE: Expression evaluation is taken care of by HandleEntity.
+
+                    // The copy already has its final orientation, so we don't want it to be transformed again:
+                    HandleEntity(brushContext, entityCopy, transformBrushes: false);
                 }
-
-                var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
-                var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
-
-                // Use the current transform - macro_brushes do not support angles/scale:
-                foreach (var kv in templateEntity.Properties)
-                    entityCopy.Properties[sequenceContext.EvaluateInterpolatedString(kv.Key)] = sequenceContext.EvaluateInterpolatedString(kv.Value);
-
-
-                // The copy already has its final orientation, so we don't want it to be transformed again:
-                HandleEntity(sequenceContext, entityCopy, transformBrushes: false);
-
-                sequenceNumber += 1;
+                else
+                {
+                    // Point entities are copied relative to the macro_brush's anchor point:
+                    HandleEntity(brushContext, templateEntity);
+                }
             }
 
 

@@ -144,20 +144,7 @@ namespace MESS.Macros
             if (!Enum.TryParse<TemplateAreaAnchor>(Evaluation.EvaluateInterpolatedString(templateEntity.GetStringProperty(Attributes.Anchor), context), out var anchor))
                 anchor = TemplateAreaAnchor.OriginBrush;
 
-            if (anchor == TemplateAreaAnchor.OriginBrush)
-            {
-                if (templateEntity.GetOrigin() is Vector3D origin)
-                    return origin;
-            }
-
-            // NOTE: The bottom anchor point is our default fallback for when there's no origin brush.
-            switch (anchor)
-            {
-                default:
-                case TemplateAreaAnchor.Bottom: return new Vector3D(templateEntity.BoundingBox.Center.X, templateEntity.BoundingBox.Center.Y, templateEntity.BoundingBox.Min.Z);
-                case TemplateAreaAnchor.Center: return templateEntity.BoundingBox.Center;
-                case TemplateAreaAnchor.Top: return new Vector3D(templateEntity.BoundingBox.Center.X, templateEntity.BoundingBox.Center.Y, templateEntity.BoundingBox.Max.Z);
-            }
+            return templateEntity.GetAnchorPoint(anchor);
         }
 
         /// <summary>
