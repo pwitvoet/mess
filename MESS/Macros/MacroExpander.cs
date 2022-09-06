@@ -347,7 +347,7 @@ namespace MESS.Macros
                 if (template == null)
                     continue;
 
-                // Evaluating properties again for each instance allows for randomization:
+                // Evaluating properties again for each instance allows for iterating (nth function) and randomization (rand/randi functions):
                 var evaluatedProperties = insertEntity.Properties.ToDictionary(
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
                     kv => sequenceContext.EvaluateInterpolatedString(kv.Value));    // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
@@ -368,7 +368,7 @@ namespace MESS.Macros
                     sequenceContext.Transform.Scale * scale,
                     sequenceContext.Transform.GeometryScale * geometryScale,
                     rotation * anglesMatrix,
-                    sequenceContext.Transform.Apply(insertEntity.Origin) + offset);
+                    sequenceContext.Transform.Apply(insertEntity.Origin + offset));
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
                 evaluatedProperties.UpdateSpawnFlags();
