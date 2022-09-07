@@ -6,25 +6,18 @@
 // They are not meant to appear in the final map.
 // ================================================================================
 
+
 // --------------------------------------------------------------------------------
-// Base classes:
+// Template insertion macros:
 // --------------------------------------------------------------------------------
-@BaseClass = NamedEntity
+
+// Inserts the contents of a template or map at the current position.
+// Any custom properties are used to substitute placeholders in the template contents, and to determine whether any content needs to be excluded.
+@PointClass size(-8 -8 -8, 8 8 8) color(255 80 0) = macro_insert : "Insert a template"
 [
+    // Entities in the chosen template can use this name by using the following expressions: {targetname} or {id()}.
     targetname(target_source) : "Name"
-]
 
-@BaseClass = Orientable
-[
-    // Half-Life (and MESS) performs rotations in roll-pitch-yaw order, which corresponds to rotating around the x, y and z axis respectively.
-    // Also note that Hammer's transform tool rotates around the y-axis (pitch) in the opposite direction as Half-Life does.
-    angles(string) : "Angles (Pitch Yaw Roll)" : "0 0 0"
-
-    scale(string) : "Scale" : "1"
-]
-
-@BaseClass base(NamedEntity) = TemplateInserter
-[
     // Map paths can be absolute or relative. .map, .rmf and .jmf formats are supported. The extension must be provided.
     template_map(string) : "Template map path"
 
@@ -33,48 +26,49 @@
 
     // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
     random_seed(integer) : "Random seed"
-]
-
-@BaseClass base(TemplateInserter) = GeometricTemplateInserter
-[
-    // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
-    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
-
-    // Moves an instance along the x, y and z axis. This enables script-based positioning.
-    instance_offset(string) : "Instance offset" : "0 0 0"
-]
-
-@BaseClass base(GeometricTemplateInserter) = MultiTemplateInserter
-[
-    // Between 0 and 1, this acts as a 'coverage factor'. Above 1, it's the maximum number of instances that this entity will attempt to insert.
-    max_instances(string) : "Maximum number of instances" : "0.5"
-
-    // How much space to leave empty around each instance. This can be used to prevent instances from overlapping each other.
-    // Setting this to 0 disables overlap prevention.
-    radius(integer) : "Instance radius" : 32
-]
 
 
-// --------------------------------------------------------------------------------
-// Template insertion macros:
-// --------------------------------------------------------------------------------
-
-// Inserts the contents of a template or map at the current position.
-// Any custom properties are used to substitute placeholders in the template contents, and to determine whether any content needs to be excluded.
-@PointClass size(-16 -16 0, 16 16 32) color(255 80 0) base(GeometricTemplateInserter, Orientable) = macro_insert : "Insert a template"
-[
+    // The number of instances to create. The default is 1.
+    instance_count(integer) : "Instance count" : "1"
     instance_orientation(choices) : "Instance orientation" : 0 =
     [
         0 : "Local"
         1 : "Global"
     ]
-    // The number of instances to create. The default is 1.
-    instance_count(integer) : "Instance count" : "1"
+
+
+    // Half-Life (and MESS) performs rotations in roll-pitch-yaw order, which corresponds to rotating around the x, y and z axis respectively.
+    // - pitch (y-axis): Looking down (positive) or up (negative). NOTE: studio model (.mdl) and light entities use inverted pitch!
+    // - yaw   (z-axis): Turning left (positive) or right (negative).
+    // - roll  (x-axis): Leaning over sidewards to the right (positive) or to the left (negative).
+    // NOTE: Model and light-related entities turn around the y-axis (pitch) in the opposite direction, so a positive pitch will make them look up instead of down.
+    angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
+    scale(string) : "Instance scale" : "1"
+
+    // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
+    instance_geometry_scale(string) : "Instance geometry scale (x y z)" : "1 1 1"
+
+    // Moves an instance along the x, y and z axis. This enables script-based positioning.
+    instance_offset(string) : "Instance offset" : "0 0 0"
 ]
 
 // A variant of macro_insert, this brush entity creates multiple instances of a template, covering its non-'NULL' faces.
-@SolidClass base(MultiTemplateInserter) = macro_cover : "Insert templates across a surface"
+@SolidClass = macro_cover : "Insert templates across a surface"
 [
+    targetname(target_source) : "Name"
+    template_map(string) : "Template map path"
+    template_name(target_destination) : "Template entity"
+    random_seed(integer) : "Random seed"
+    brush_behavior(choices) : "Brush behavior" : 0 =
+    [
+        0 : "Remove brushes"
+        1 : "Leave as world geometry"
+        2 : "Leave as func_detail"
+    ]
+
+
+    // Between 0 and 1, this acts as a 'coverage factor'. Above 1, it's the maximum number of instances that this entity will attempt to insert.
+    max_instances(string) : "Coverage (<1) or max instance count (>=1)" : "0.5"
     instance_orientation(choices) : "Instance orientation" : 0 =
     [
         0 : "Global"
@@ -82,26 +76,35 @@
         2 : "Face"
         3 : "Texture plane"
     ]
+
+
     instance_angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
     instance_scale(string) : "Instance scale" : "1"
-    brush_behavior(choices) : "Brush behavior" : 0 =
-    [
-        0 : "Remove brushes"
-        1 : "Leave as world geometry"
-        2 : "Leave as func_detail"
-    ]
+    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
+    instance_offset(string) : "Instance offset" : "0 0 0"
+
+    // How much space to leave empty around each instance. This can be used to prevent instances from overlapping each other.
+    // Setting this to 0 disables overlap prevention.
+    radius(integer) : "Instance radius" : 32
 ]
 
 // Another variant of macro_insert, this brush entity creates multiple instances of a template, filling its brushes.
-@SolidClass base(MultiTemplateInserter) = macro_fill : "Insert templates inside a volume"
+@SolidClass = macro_fill : "Insert templates inside a volume"
 [
+    targetname(target_source) : "Name"
+    template_map(string) : "Template map path"
+    template_name(target_destination) : "Template entity"
+    random_seed(integer) : "Random seed"
+
+
+    // Between 0 and 1, this acts as a 'coverage factor'. Above 1, it's the maximum number of instances that this entity will attempt to insert.
+    max_instances(string) : "Coverage (<1) or max instance count (>=1)" : "0.5"
     instance_orientation(choices) : "Instance orientation" : 0 =
     [
         0 : "Global"
         1 : "Local"
     ]
-    instance_angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
-    instance_scale(string) : "Instance scale" : "1"
+
 
     fill_mode(choices) : "Fill mode" : 0 =
     [
@@ -118,14 +121,33 @@
 
     // Snapping only applies to axis with a granularity that is greater than 0, so (0 0 0) disables snapping, while (4 0 0) only snaps along the x-axis.
     grid_granularity(string) : "Grid granularity (x y z)" : "0 0 0"
+
+
+    instance_angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
+    instance_scale(string) : "Instance scale" : "1"
+    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
+    instance_offset(string) : "Instance offset" : "0 0 0"
+
+    radius(integer) : "Instance radius" : 32
 ]
 
 // This entity creates a copy of its brushwork for each world brush and brush entity in the specified template.
 // Each copy takes on the textures and entity properties of the matching world brush or brush entity in the template.
 @SolidClass base(TemplateInserter) = macro_brush : "Use brushes with template"
 [
+    targetname(target_source) : "Name"
+
+    // Map paths can be absolute or relative. .map, .rmf and .jmf formats are supported. The extension must be provided.
+    template_map(string) : "Template map path"
+
+    // Specifies which macro_template to use. This setting is ignored if template_map is not empty.
+    template_name(target_destination) : "Template entity"
+
+    // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
+    random_seed(integer) : "Random seed"
+
     // Point entities in the chosen template will be placed relative to the anchor point of the macro_brush.
-    anchor(choices) : "Point entity anchor (origin)" : 0 =
+    anchor(choices) : "Point entity anchor position" : 0 =
     [
         0 : "Bottom center"
         1 : "Center"
@@ -144,8 +166,10 @@
 
 // Any entity or brush that is fully inside the bounding box of this entity becomes part of a template.
 // The template itself is removed from the map, but it can be instantiated by other macro entities.
-@SolidClass color(255 80 0) base(NamedEntity) = macro_template : "Template area"
+@SolidClass color(255 80 0) = macro_template : "Template area"
 [
+    targetname(target_source) : "Name"
+
     // The anchor point or origin of a template determines where its contents will be positioned, relative to the point of insertion.
     anchor(choices) : "Anchor point (origin)" : 1 =
     [
