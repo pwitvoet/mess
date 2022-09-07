@@ -307,7 +307,8 @@ namespace MESS.Macros
                         break;
 
                     case MacroEntity.Brush:
-                        HandleMacroBrushEntity(context, entity.Copy(transform));
+                        // NOTE: Brush rotation is taken care of within HandleMacroBrushEntity itself:
+                        HandleMacroBrushEntity(context, entity.Copy(Transform.Identity));
                         break;
 
                     default:
@@ -732,9 +733,9 @@ namespace MESS.Macros
             // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
             //       Verify that this works correctly now!!!
             var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.GetEnumProperty<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
-            anchorPoint += evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+            var anchorOffset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
 
-            var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, anchorPoint);
+            var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
             var brushContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
 
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
@@ -807,7 +808,7 @@ namespace MESS.Macros
                     if (excludeOriginBrushes && brush.IsOriginBrush())
                         continue;
 
-                    var copy = brush.Copy(new Vector3D());
+                    var copy = brush.Copy(context.Transform);
                     if (applyTexture && !brush.IsOriginBrush())
                     {
                         foreach (var face in copy.Faces)
