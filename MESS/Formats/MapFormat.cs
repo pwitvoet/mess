@@ -83,7 +83,11 @@ namespace MESS.Formats
             while (true)
             {
                 var line = reader.ReadLine().Trim();
-                if (line.StartsWith("\""))
+                if (line.StartsWith("//"))
+                {
+                    continue;
+                }
+                else if (line.StartsWith("\""))
                 {
                     var parts = line.Split('"');    // NOTE: There is no support for escaping double quotes!
                     properties[parts[1]] = parts[3];
@@ -122,7 +126,9 @@ namespace MESS.Formats
             while (true)
             {
                 var line = reader.ReadLine().Trim();
-                if (line.StartsWith("("))
+                if (line.StartsWith("//"))
+                    continue;
+                else if (line.StartsWith("("))
                     faces.Add(ReadFace(line));
                 else if (line.StartsWith("}"))
                     break;

@@ -9,7 +9,7 @@ namespace MESS
     public static class MapFile
     {
         /// <summary>
-        /// Loads the specified map file. Supports both MAP and RMF formats.
+        /// Loads the specified map file. Supports .map, .rmf and .jmf formats.
         /// </summary>
         public static Map Load(string path)
         {
@@ -20,21 +20,21 @@ namespace MESS
                 file.Seek(0, SeekOrigin.Begin);
 
                 if (bytesRead == 0)
-                    throw new InvalidDataException("File is empty. Map files must at least contain a worldspawn entity.");
+                    throw new InvalidDataException("Map file is empty. Map files must at least contain a worldspawn entity.");
 
-                if (header[0] == (byte)'{')
-                    return MapFormat.Load(file);
-                else if (bytesRead >= 4 && Encoding.ASCII.GetString(header, 0, 4) == "JHMF")
+                if (bytesRead >= 4 && Encoding.ASCII.GetString(header, 0, 4) == "JHMF")
                     return JmfFormat.Load(file);
                 else if (bytesRead == header.Length && Encoding.ASCII.GetString(header, 4, 3) == "RMF")
                     return RmfFormat.Load(file);
+                else if (Path.GetExtension(path) == ".map")
+                    return MapFormat.Load(file);
                 else
-                    throw new InvalidDataException("Unknown file format.");
+                    throw new InvalidDataException("Unknown map file format.");
             }
         }
 
         /// <summary>
-        /// Saves the given map to the specified file path. Supports only the MAP format.
+        /// Saves the given map to the specified file path. Supports only the .map format.
         /// </summary>
         public static void Save(Map map, string path)
         {
