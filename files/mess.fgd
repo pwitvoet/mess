@@ -29,7 +29,7 @@
 
 
     // The number of instances to create. The default is 1.
-    instance_count(integer) : "Instance count" : "1"
+    instance_count(integer) : "Instance count" : 1
     instance_orientation(choices) : "Instance orientation" : 0 =
     [
         0 : "Local"
