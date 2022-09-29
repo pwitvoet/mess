@@ -1,10 +1,6 @@
 ﻿using MESS.Common;
 using MESS.Mathematics.Spatial;
 using MESS.Util;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 
 namespace MESS.Mapping
 {
@@ -19,7 +15,7 @@ namespace MESS.Mapping
 
         public string ClassName
         {
-            get => Properties.GetStringProperty(Attributes.Classname);
+            get => Properties.GetStringProperty(Attributes.Classname) ?? "";
             set => Properties.SetStringProperty(Attributes.Classname, value);
         }
 
@@ -60,20 +56,20 @@ namespace MESS.Mapping
                 if (value is double scale)
                     Properties.SetNumericProperty(Attributes.Scale, scale);
                 else
-                    Properties[Attributes.Scale] = null;
+                    Properties.Remove(Attributes.Scale);
             }
         }
 
 
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringEqualityComparer.InvariantIgnoreCase);
 
-        private List<Brush> _brushes = new List<Brush>();
+        private List<Brush> _brushes = new();
         public IReadOnlyList<Brush> Brushes => _brushes;
 
         public BoundingBox BoundingBox { get; private set; }
 
 
-        public Entity(IEnumerable<Brush> brushes = null)
+        public Entity(IEnumerable<Brush>? brushes = null)
         {
             if (brushes != null)
                 AddBrushes(brushes);

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace MScript.Parsing.AST
+﻿namespace MScript.Parsing.AST
 {
     class VectorLiteral : Literal
     {

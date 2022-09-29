@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MScript
+﻿namespace MScript
 {
     public class ParseException : Exception
     {

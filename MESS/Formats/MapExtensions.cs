@@ -1,8 +1,5 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MESS.Formats
 {
@@ -14,7 +11,7 @@ namespace MESS.Formats
             //       and it may be too late to update an entity after it has already been yielded.
 
             var index = 0;
-            Entity previousEntity = null;
+            Entity? previousEntity = null;
             foreach (var node in path.Nodes)
             {
                 var entity = CreateEntityForNode(node);
@@ -25,6 +22,9 @@ namespace MESS.Formats
                 previousEntity = entity;
                 index += 1;
             }
+
+            if (previousEntity is null)
+                yield break;
 
             if (path.Type == PathType.Circular)
             {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MScript.Evaluation
+﻿namespace MScript.Evaluation
 {
     public interface IFunction
     {
@@ -8,6 +6,6 @@ namespace MScript.Evaluation
         IReadOnlyList<Parameter> Parameters { get; }
 
 
-        object Apply(object[] arguments, EvaluationContext context);
+        object? Apply(object?[] arguments, EvaluationContext context);
     }
 }

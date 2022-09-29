@@ -1,118 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0E37B023-13DD-48FE-863D-554351916B16}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MESS</RootNamespace>
-    <AssemblyName>MESS</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StartupObject>MESS.Program</StartupObject>
+    <AssemblyVersion>1.1.9</AssemblyVersion>
+    <FileVersion>1.1.9</FileVersion>
+    <Version>1.1.9</Version>
+    <Title>MESS</Title>
+    <Authors>Pieter Witvoet</Authors>
+    <Company></Company>
+    <Product>MESS</Product>
+    <Description>MESS (Macro Entity Scripting System) is a custom GoldSource compile tool that provides a scriptable template instancing system.</Description>
+    <Copyright>Copyright © Pieter Witvoet 2022</Copyright>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\MScript\MScript.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CommandLine.cs" />
-    <Compile Include="Common\Entities.cs" />
-    <Compile Include="Common\Textures.cs" />
-    <Compile Include="ConfigFile.cs" />
-    <Compile Include="EntityRewriting\FgdTokenizer.cs" />
-    <Compile Include="EntityRewriting\RewriteDirective.cs" />
-    <Compile Include="Formats\JmfFormat.cs" />
-    <Compile Include="Formats\MapExtensions.cs" />
-    <Compile Include="EntityRewriting\RewriteDirectiveParser.cs" />
-    <Compile Include="Logging\ConsoleLogger.cs" />
-    <Compile Include="Logging\FileLogger.cs" />
-    <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\LogLevel.cs" />
-    <Compile Include="Common\Attributes.cs" />
-    <Compile Include="Logging\MultiLogger.cs" />
-    <Compile Include="Macros\AssertException.cs" />
-    <Compile Include="Macros\CoverBrushBehavior.cs" />
-    <Compile Include="Macros\Evaluation.cs" />
-    <Compile Include="Macros\FillMode.cs" />
-    <Compile Include="Macros\Orientation.cs" />
-    <Compile Include="Macros\ExpansionSettings.cs" />
-    <Compile Include="Macros\InstantiationContext.cs" />
-    <Compile Include="Macros\MacroEntity.cs" />
-    <Compile Include="Macros\MacroExpander.cs" />
-    <Compile Include="Macros\MappingExtensions.cs" />
-    <Compile Include="Formats\MapFormat.cs" />
-    <Compile Include="Formats\RmfFormat.cs" />
-    <Compile Include="Formats\StreamExtensions.cs" />
-    <Compile Include="Macros\MapTemplate.cs" />
-    <Compile Include="Macros\PointDistributionExtensions.cs" />
-    <Compile Include="Macros\RemovableContent.cs" />
-    <Compile Include="Macros\SphereCollection.cs" />
-    <Compile Include="Util\StringEqualityComparer.cs" />
-    <Compile Include="MapFile.cs" />
-    <Compile Include="Mapping\Brush.cs" />
-    <Compile Include="Mapping\Camera.cs" />
-    <Compile Include="Mapping\CollisionExtensions.cs" />
-    <Compile Include="Mapping\Color.cs" />
-    <Compile Include="Mapping\EntityPathNode.cs" />
-    <Compile Include="Mapping\Entity.cs" />
-    <Compile Include="Mapping\Face.cs" />
-    <Compile Include="Mapping\Group.cs" />
-    <Compile Include="Mapping\Map.cs" />
-    <Compile Include="Mapping\MapObject.cs" />
-    <Compile Include="Mapping\EntityPath.cs" />
-    <Compile Include="Mapping\PropertyExtensions.cs" />
-    <Compile Include="Mapping\VisGroup.cs" />
-    <Compile Include="Mathematics\Extensions.cs" />
-    <Compile Include="Mathematics\Matrix3x3.cs" />
-    <Compile Include="Mathematics\Spatial\Angles.cs" />
-    <Compile Include="Mathematics\Spatial\Tetrahedron.cs" />
-    <Compile Include="Mathematics\Spatial\Triangle.cs" />
-    <Compile Include="Mathematics\Transform.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Mathematics\Spatial\BoundingBox.cs" />
-    <Compile Include="Mathematics\Spatial\Line.cs" />
-    <Compile Include="Mathematics\Spatial\Plane.cs" />
-    <Compile Include="Mathematics\Spatial\Vector2D.cs" />
-    <Compile Include="Mathematics\Spatial\Vector3D.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MScript\MScript.csproj">
-      <Project>{2e0b469a-714b-4d7c-95a6-200d93ec08ae}</Project>
-      <Name>MScript</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

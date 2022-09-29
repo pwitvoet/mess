@@ -3,10 +3,6 @@ using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MScript;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace MESS.Macros
 {
@@ -61,13 +57,13 @@ namespace MESS.Macros
         /// <summary>
         /// Storage for global MScript variables, used by the 'getglobal' and 'setglobal' functions.
         /// </summary>
-        public IDictionary<string, object> Globals { get; }
+        public IDictionary<string, object?> Globals { get; }
 
 
         private ILogger _logger;
         private Random _random;
         private IDictionary<string, string> _insertionEntityProperties;
-        private InstantiationContext _parentContext;
+        private InstantiationContext? _parentContext;
         private EvaluationContext _evaluationContext;
 
         private int _nextID = 1;
@@ -76,11 +72,32 @@ namespace MESS.Macros
         public InstantiationContext(
             MapTemplate template,
             ILogger logger,
-            Transform transform = null,
-            IDictionary<string, string> insertionEntityProperties = null,
-            InstantiationContext parentContext = null,
-            string workingDirectory = null,
-            IDictionary<string, object> globals = null,
+            IDictionary<string, string> insertionEntityProperties,
+            string workingDirectory,
+            IDictionary<string, object?> globals)
+            : this(template, logger, Transform.Identity, insertionEntityProperties, null, workingDirectory, globals, 0)
+        {
+        }
+
+        public InstantiationContext(
+            MapTemplate template,
+            ILogger logger,
+            Transform transform,
+            IDictionary<string, string> insertionEntityProperties,
+            InstantiationContext parentContext,
+            int sequenceNumber = 0)
+            : this(template, logger, transform, insertionEntityProperties, parentContext, null, null, sequenceNumber)
+        {
+        }
+
+        private InstantiationContext(
+            MapTemplate template,
+            ILogger logger,
+            Transform transform,
+            IDictionary<string, string> insertionEntityProperties,
+            InstantiationContext? parentContext = null,
+            string? workingDirectory = null,
+            IDictionary<string, object?>? globals = null,
             int sequenceNumber = 0)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
@@ -89,7 +106,7 @@ namespace MESS.Macros
             //       This ensures that switching between explicit and implicit seeding does not result in 'sibling' contexts
             //       getting different seed values.
             var randomSeed = parentContext?._random.Next() ?? 0;
-            if (insertionEntityProperties?.GetNumericProperty(Attributes.RandomSeed) is double seed)
+            if (insertionEntityProperties.GetNumericProperty(Attributes.RandomSeed) is double seed)
                 randomSeed = (int)seed;
             _random = new Random(randomSeed);
             _logger = logger;
@@ -100,11 +117,11 @@ namespace MESS.Macros
             SequenceNumber = sequenceNumber;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
-            CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext().Template.Name);
-            SubTemplates = GetNearestMapFileContext().Template.SubTemplates;
+            CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext()?.Template?.Name) ?? "";
+            SubTemplates = GetNearestMapFileContext()?.Template?.SubTemplates ?? Array.Empty<MapTemplate>();
 
             Transform = transform ?? Transform.Identity;
-            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object>();
+            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object?>();
 
             var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger);
             var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
@@ -113,14 +130,15 @@ namespace MESS.Macros
             _evaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
 
             // Every instantiation is written to the same map, but with a different transform:
-            OutputMap = parentContext?.OutputMap;
-            if (OutputMap == null)
+            var outputMap = parentContext?.OutputMap;
+            if (outputMap == null)
             {
                 // Copy original map properties:
-                OutputMap = new Map();
+                outputMap = new Map();
                 foreach (var kv in evaluatedTemplateProperties)
-                    OutputMap.Properties[kv.Key] = Interpreter.Print(kv.Value);
+                    outputMap.Properties[kv.Key ?? ""] = Interpreter.Print(kv.Value);
             }
+            OutputMap = outputMap;
         }
 
         private InstantiationContext(InstantiationContext parentContext, int sequenceNumber)
@@ -149,12 +167,12 @@ namespace MESS.Macros
         /// <summary>
         /// Calls <see cref="Evaluation.EvaluateInterpolatedString(string, EvaluationContext)"/>, using this instance's evaluation context.
         /// </summary>
-        public string EvaluateInterpolatedString(string interpolatedString) => Evaluation.EvaluateInterpolatedString(interpolatedString, _evaluationContext);
+        public string EvaluateInterpolatedString(string? interpolatedString) => Evaluation.EvaluateInterpolatedString(interpolatedString, _evaluationContext);
 
         /// <summary>
         /// Calls <see cref="Evaluation.EvaluateExpression(string, EvaluationContext)"/>, using this instance's evaluation context.
         /// </summary>
-        public object EvaluateExpression(string expression) => Evaluation.EvaluateExpression(expression, _evaluationContext);
+        public object? EvaluateExpression(string? expression) => Evaluation.EvaluateExpression(expression, _evaluationContext);
 
         /// <summary>
         /// Returns a random double. Min is inclusive, max is exclusive.
@@ -167,6 +185,6 @@ namespace MESS.Macros
         private InstantiationContext GetRootContext() => _parentContext?.GetRootContext() ?? this;
 
         // NOTE: Returns the first parent context who'se template is not a sub-template but a template loaded from a file:
-        private InstantiationContext GetNearestMapFileContext() => !Template.IsSubTemplate ? this : _parentContext?.GetNearestMapFileContext();
+        private InstantiationContext? GetNearestMapFileContext() => !Template.IsSubTemplate ? this : _parentContext?.GetNearestMapFileContext();
     }
 }

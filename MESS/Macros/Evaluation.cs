@@ -3,10 +3,7 @@ using MESS.Logging;
 using MESS.Mapping;
 using MScript;
 using MScript.Evaluation;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace MESS.Macros
@@ -27,11 +24,11 @@ namespace MESS.Macros
             double id,
             double sequenceNumber,
             Random random,
-            IDictionary<string, object> globals,
+            IDictionary<string, object?> globals,
             ILogger logger,
-            EvaluationContext parentContext = null)
+            EvaluationContext? parentContext = null)
         {
-            var typedProperties = properties?.ToDictionary(
+            var typedProperties = properties.ToDictionary(
                 kv => kv.Key,
                 kv => PropertyExtensions.ParseProperty(kv.Value));
 
@@ -50,10 +47,10 @@ namespace MESS.Macros
         /// For example: "name{1 + 2}" evaluates to "name3".
         /// Note that identifiers are case-sensitive: 'name' and 'NAME' do not refer to the same variable.
         /// </summary>
-        public static string EvaluateInterpolatedString(string interpolatedString, EvaluationContext context)
+        public static string EvaluateInterpolatedString(string? interpolatedString, EvaluationContext context)
         {
             if (interpolatedString == null)
-                return null;
+                return "";
 
             return _expressionRegex.Replace(interpolatedString, match =>
             {
@@ -66,7 +63,7 @@ namespace MESS.Macros
         /// <summary>
         /// Evaluates the given expression and returns the resulting value.
         /// </summary>
-        public static object EvaluateExpression(string expression, EvaluationContext context)
+        public static object? EvaluateExpression(string? expression, EvaluationContext context)
         {
             if (string.IsNullOrEmpty(expression?.Trim()))
                 return null;
@@ -103,7 +100,7 @@ namespace MESS.Macros
         static class GlobalFunctions
         {
             // Type conversion:
-            public static double? num(object value)
+            public static double? num(object? value)
             {
                 if (value is double number)
                     return number;
@@ -114,7 +111,7 @@ namespace MESS.Macros
                 else
                     return null;
             }
-            public static double[] vec(object value)
+            public static double[]? vec(object? value)
             {
                 if (value is double[] vector)
                     return vector;
@@ -125,7 +122,7 @@ namespace MESS.Macros
                 else
                     return null;
             }
-            public static string str(object value) => Interpreter.Print(value);
+            public static string str(object? value) => Interpreter.Print(value);
 
             // Mathematics:
             public static double min(double value1, double value2) => Math.Min(value1, value2);
@@ -206,7 +203,7 @@ namespace MESS.Macros
             }
 
             // Debugging:
-            public static bool assert(object condition, string message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
+            public static bool assert(object? condition, string? message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
         }
 
 
@@ -215,12 +212,12 @@ namespace MESS.Macros
             private double _id;
             private double _sequenceNumber;
             private Random _random;
-            private IDictionary<string, object> _properties;
-            private IDictionary<string, object> _globals;
+            private IDictionary<string, object?> _properties;
+            private IDictionary<string, object?> _globals;
             private ILogger _logger;
 
 
-            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object> properties, IDictionary<string, object> globals, ILogger logger)
+            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, IDictionary<string, object?> globals, ILogger logger)
             {
                 _id = id;
                 _sequenceNumber = sequenceNumber;
@@ -263,23 +260,23 @@ namespace MESS.Macros
             public double nth() => _sequenceNumber;
 
             // Globals:
-            public object getglobal(string name) => _globals.TryGetValue(name, out var value) ? value : null;
-            public object setglobal(string name, object value)
+            public object? getglobal(string? name) => _globals.TryGetValue(name ?? "", out var value) ? value : null;
+            public object? setglobal(string? name, object? value)
             {
-                _globals[name] = value;
+                _globals[name ?? ""] = value;
                 return value;
             }
-            public bool useglobal(string name)
+            public bool useglobal(string? name)
             {
-                if (_globals.TryGetValue(name, out var value) && value != null)
+                if (_globals.TryGetValue(name ?? "", out var value) && value != null)
                     return true;
 
-                _globals[name] = 1.0;
+                _globals[name ?? ""] = 1.0;
                 return false;
             }
 
             // Debugging:
-            public object trace(object value, string message = null)
+            public object? trace(object? value, string? message = null)
             {
                 _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace from instance: #{_id}, sequence number: #{_sequenceNumber}).");
                 return value;

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace MESS.EntityRewriting
 {
@@ -148,7 +142,7 @@ namespace MESS.EntityRewriting
                 throw ParseError(context, $"Unknown MESS directive: '{directiveMatch.Value}'.");
 
             var rewriteDirective = new RewriteDirective();
-            RewriteDirective.RuleGroup currentGroup = null;
+            RewriteDirective.RuleGroup? currentGroup = null;
             var insideElseBlock = false;
 
             context.MoveNext();
@@ -209,8 +203,7 @@ namespace MESS.EntityRewriting
 
                         var rewriteRule = new RewriteDirective.Rule(
                             attributeNameValueMatch.Groups["attributename"].Value,
-                            attributeNameValueMatch.Groups["value"].Value,
-                            false);
+                            attributeNameValueMatch.Groups["value"].Value);
                         (insideElseBlock ? currentGroup.AlternateRules : currentGroup.Rules).Add(rewriteRule);
                         continue;
                     }
@@ -224,8 +217,7 @@ namespace MESS.EntityRewriting
 
                         var rewriteRule = new RewriteDirective.Rule(
                             deleteAttributeNameMatch.Groups["attributename"].Value,
-                            null,
-                            true);
+                            null);
                         (insideElseBlock ? currentGroup.AlternateRules : currentGroup.Rules).Add(rewriteRule);
                         continue;
                     }
@@ -297,8 +289,7 @@ namespace MESS.EntityRewriting
 
             public void Dispose()
             {
-                _tokens?.Dispose();
-                _tokens = null;
+                _tokens.Dispose();
             }
 
             public bool MoveNext()

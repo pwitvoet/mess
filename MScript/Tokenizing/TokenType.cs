@@ -1,5 +1,4 @@
-﻿
-namespace MScript.Tokenizing
+﻿namespace MScript.Tokenizing
 {
     public enum TokenType
     {

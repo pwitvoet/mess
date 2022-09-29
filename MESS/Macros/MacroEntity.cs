@@ -1,5 +1,4 @@
-﻿
-namespace MESS.Macros
+﻿namespace MESS.Macros
 {
     public static class MacroEntity
     {

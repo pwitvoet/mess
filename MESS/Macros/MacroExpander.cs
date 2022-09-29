@@ -6,11 +6,7 @@ using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
 using MScript.Evaluation;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace MESS.Macros
@@ -28,16 +24,16 @@ namespace MESS.Macros
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
-            var globals = new Dictionary<string, object>();
+            var globals = new Dictionary<string, object?>();
             var expander = new MacroExpander(settings, logger);
             var mainTemplate = expander.GetMapTemplate(path, globals);
 
             var context = new InstantiationContext(
                 mainTemplate,
                 logger,
-                insertionEntityProperties: settings.Variables?.ToDictionary(kv => kv.Key, kv => Interpreter.Print(kv.Value)) ?? new Dictionary<string, string>(),
-                workingDirectory: settings.Directory,
-                globals: globals);
+                settings.Variables?.ToDictionary(kv => kv.Key, kv => Interpreter.Print(kv.Value)) ?? new(),
+                settings.Directory,
+                globals);
             expander.CreateInstance(context);
 
             return context.OutputMap;
@@ -60,7 +56,7 @@ namespace MESS.Macros
             Logger = logger;
 
             _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
-            _directoryFunctions = new DirectoryFunctions(settings.Directory, Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+            _directoryFunctions = new DirectoryFunctions(settings.Directory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "");
         }
 
 
@@ -89,7 +85,7 @@ namespace MESS.Macros
 
             var randomSeed = (int)(map.Properties.GetNumericProperty(Attributes.RandomSeed) ?? 0);
             var random = new Random(randomSeed);
-            var globals = new Dictionary<string, object>();
+            var globals = new Dictionary<string, object?>();
 
             var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
 
@@ -101,13 +97,13 @@ namespace MESS.Macros
                 var entity = map.Entities[i];
                 var entityID = i + 1;
 
-                var matchingDirectives = directiveLookup[entity.ClassName];
+                var matchingDirectives = directiveLookup[entity.ClassName ?? ""];
                 foreach (var rewriteDirective in matchingDirectives)
                     ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random, globals);
             }
         }
 
-        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object> globals)
+        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object?> globals)
         {
             var context = Evaluation.ContextFromProperties(entityProperties, entityID, entityID, random, globals, Logger);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
@@ -147,7 +143,7 @@ namespace MESS.Macros
         /// <summary>
         /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
         /// </summary>
-        private MapTemplate GetMapTemplate(string path, IDictionary<string, object> globals)
+        private MapTemplate GetMapTemplate(string path, IDictionary<string, object?> globals)
         {
             path = Path.GetFullPath(path);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
@@ -175,7 +171,7 @@ namespace MESS.Macros
         /// Resolves a template by either loading it from a file or by picking a sub-template from the current context.
         /// Logs a warning and returns null if the specified template could not be resolved.
         /// </summary>
-        private MapTemplate ResolveTemplate(string mapPath, string templateName, InstantiationContext context)
+        private MapTemplate? ResolveTemplate(string? mapPath, string? templateName, InstantiationContext context)
         {
             if (mapPath != null)
             {
@@ -429,6 +425,9 @@ namespace MESS.Macros
             for (int i = 0; i < (int)maxInstances; i++)
             {
                 var selection = TakeFromWeightedList(candidateFaces, random.NextDouble() * totalArea, candidate => candidate.Area);
+                if (selection == null)
+                    continue;
+
                 var insertionPoint = selection.Triangle.GetRandomPoint(random);
                 if (radius > 0.0 && !availableArea.TryInsert(insertionPoint, radius))
                     continue;
@@ -590,7 +589,10 @@ namespace MESS.Macros
                     var availableArea = new SphereCollection();
                     for (int i = 0; i < (int)maxInstances; i++)
                     {
-                        var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume).Tetrahedron;
+                        var tetrahedron = TakeFromWeightedList(candidateVolumes, random.NextDouble() * totalVolume, candidate => candidate.Volume)?.Tetrahedron;
+                        if (tetrahedron == null)
+                            continue;
+
                         var insertionPoint = tetrahedron.GetRandomPoint(random);
                         if (fillMode == FillMode.RandomSnappedToGrid && hasGridSnapping)
                         {
@@ -828,7 +830,7 @@ namespace MESS.Macros
 
             normalEntity.Properties.Clear();
             foreach (var kv in evaluatedProperties)
-                normalEntity.Properties[kv.Key] = kv.Value;
+                normalEntity.Properties[kv.Key ?? ""] = kv.Value;
 
 
             // Handle special 'spawnflagN' attributes, and remove attribute(s) with empty key(s):
@@ -880,7 +882,7 @@ namespace MESS.Macros
             }
         }
 
-        private static TElement TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)
+        private static TElement? TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)
         {
             var lastElement = default(TElement);
             foreach (var element in elements)

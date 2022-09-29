@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace MScript.Evaluation.Types
+﻿namespace MScript.Evaluation.Types
 {
     /// <summary>
     /// Describes an MScript type.
@@ -21,25 +17,25 @@ namespace MScript.Evaluation.Types
             _members = members?.ToDictionary(member => member.Name, member => member) ?? new Dictionary<string, MemberDescriptor>();
         }
 
-        public PropertyDescriptor GetProperty(string name) => GetMember(name) as PropertyDescriptor;
+        public PropertyDescriptor? GetProperty(string name) => GetMember(name) as PropertyDescriptor;
 
-        public MethodDescriptor GetMethod(string name) => GetMember(name) as MethodDescriptor;
+        public MethodDescriptor? GetMethod(string name) => GetMember(name) as MethodDescriptor;
 
-        public MemberDescriptor GetMember(string name) => _members.TryGetValue(name, out var member) ? member : null;
+        public MemberDescriptor? GetMember(string name) => _members.TryGetValue(name, out var member) ? member : null;
 
 
         internal void AddMember(MemberDescriptor member) => _members[member.Name] = member;
 
 
-        public override bool Equals(object obj) => obj is TypeDescriptor other && Equals(other);
+        public override bool Equals(object? obj) => obj is TypeDescriptor other && Equals(other);
 
         public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString() => $"<{Name}>";
 
-        public bool Equals(TypeDescriptor other)
+        public bool Equals(TypeDescriptor? other)
         {
-            return !(other is null) &&
+            return other is not null &&
                 Name == other.Name;
         }
 
@@ -48,17 +44,15 @@ namespace MScript.Evaluation.Types
         public static bool operator !=(TypeDescriptor left, TypeDescriptor right) => !(left?.Equals(right) ?? false);
 
 
-        public static TypeDescriptor GetType(object value)
+        public static TypeDescriptor GetType(object? value) => value switch
         {
-            switch (value)
-            {
-                case null: return BaseTypes.None;
-                case double _: return BaseTypes.Number;
-                case double[] _: return BaseTypes.Vector;
-                case string _: return BaseTypes.String;
-                case IFunction _: return BaseTypes.Function;
-                default: throw new InvalidOperationException($"Unknown value type: {value.GetType().FullName}.");
-            }
-        }
+            null => BaseTypes.None,
+            double _ => BaseTypes.Number,
+            double[] _ => BaseTypes.Vector,
+            string _ => BaseTypes.String,
+            IFunction _ => BaseTypes.Function,
+
+            _ => throw new InvalidOperationException($"Unknown value type: {value.GetType().FullName}."),
+        };
     }
 }

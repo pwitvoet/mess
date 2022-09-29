@@ -1,5 +1,4 @@
-﻿
-namespace MScript.Parsing.AST
+﻿namespace MScript.Parsing.AST
 {
     class NumberLiteral : Literal
     {

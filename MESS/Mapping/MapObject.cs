@@ -1,13 +1,12 @@
-﻿
-namespace MESS.Mapping
+﻿namespace MESS.Mapping
 {
     /// <summary>
     /// Base class for brushes, entities and groups.
     /// </summary>
     public abstract class MapObject
     {
-        private Group _group;
-        public Group Group
+        private Group? _group;
+        public Group? Group
         {
             get => _group;
             set
@@ -18,8 +17,8 @@ namespace MESS.Mapping
             }
         }
 
-        private VisGroup _visGroup;
-        public VisGroup VisGroup
+        private VisGroup? _visGroup;
+        public VisGroup? VisGroup
         {
             get => _visGroup;
             set

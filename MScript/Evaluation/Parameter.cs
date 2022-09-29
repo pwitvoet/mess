@@ -7,10 +7,10 @@ namespace MScript.Evaluation
         public string Name { get; }
         public TypeDescriptor Type { get; }
         public bool IsOptional { get; }
-        public object DefaultValue { get; }
+        public object? DefaultValue { get; }
 
 
-        public Parameter(string name, TypeDescriptor type, bool isOptional = false, object defaultValue = null)
+        public Parameter(string name, TypeDescriptor type, bool isOptional = false, object? defaultValue = null)
         {
             Name = name;
             Type = type;

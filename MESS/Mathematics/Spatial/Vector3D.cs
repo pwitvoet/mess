@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MESS.Mathematics.Spatial
+﻿namespace MESS.Mathematics.Spatial
 {
     public struct Vector3D
     {
@@ -15,7 +13,7 @@ namespace MESS.Mathematics.Spatial
             Z = z;
         }
 
-        public override bool Equals(object obj) => obj is Vector3D other && this == other;
+        public override bool Equals(object? obj) => obj is Vector3D other && this == other;
 
         public override int GetHashCode()
         {

@@ -1,5 +1,4 @@
-﻿
-namespace MESS.Common
+﻿namespace MESS.Common
 {
     public static class Textures
     {

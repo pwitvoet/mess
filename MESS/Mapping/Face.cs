@@ -1,5 +1,4 @@
 ﻿using MESS.Mathematics.Spatial;
-using System.Collections.Generic;
 
 namespace MESS.Mapping
 {
@@ -13,11 +12,11 @@ namespace MESS.Mapping
     /// </summary>
     public class Face
     {
-        public List<Vector3D> Vertices { get; } = new List<Vector3D>();
-        public Vector3D[] PlanePoints { get; set; }
+        public List<Vector3D> Vertices { get; } = new();
+        public Vector3D[] PlanePoints { get; set; } = Array.Empty<Vector3D>();
         public Plane Plane { get; set; }
 
-        public string TextureName { get; set; }
+        public string TextureName { get; set; } = "";
         public Vector3D TextureRightAxis { get; set; }
         public Vector3D TextureDownAxis { get; set; }
         public Vector2D TextureShift { get; set; }

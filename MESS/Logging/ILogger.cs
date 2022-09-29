@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MESS.Logging
+﻿namespace MESS.Logging
 {
     public interface ILogger : IDisposable
     {
@@ -8,11 +6,11 @@ namespace MESS.Logging
 
         void Verbose(string message);
         void Info(string message);
-        void Warning(string message, Exception exception = null);
-        void Error(string message, Exception exception = null);
+        void Warning(string message, Exception? exception = null);
+        void Error(string message, Exception? exception = null);
         void Minimal(string message);
 
         void Log(LogLevel level, string message);
-        void Log(LogLevel level, string message, Exception exception);
+        void Log(LogLevel level, string message, Exception? exception);
     }
 }

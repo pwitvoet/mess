@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MESS.Logging
+﻿namespace MESS.Logging
 {
     class MultiLogger : ILogger
     {
@@ -34,13 +31,13 @@ namespace MESS.Logging
                 logger.Info(message);
         }
 
-        public void Warning(string message, Exception exception = null)
+        public void Warning(string message, Exception? exception = null)
         {
             foreach (var logger in _loggers)
                 logger.Warning(message, exception);
         }
 
-        public void Error(string message, Exception exception = null)
+        public void Error(string message, Exception? exception = null)
         {
             foreach (var logger in _loggers)
                 logger.Error(message, exception);
@@ -59,7 +56,7 @@ namespace MESS.Logging
                 logger.Log(level, message);
         }
 
-        public void Log(LogLevel level, string message, Exception exception)
+        public void Log(LogLevel level, string message, Exception? exception)
         {
             foreach (var logger in _loggers)
                 logger.Log(level, message, exception);

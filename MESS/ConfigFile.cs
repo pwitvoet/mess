@@ -5,13 +5,8 @@ using MScript.Evaluation;
 using MScript.Parsing;
 using MScript.Parsing.AST;
 using MScript.Tokenizing;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MESS
 {
@@ -29,7 +24,7 @@ namespace MESS
             var evaluationContext = Evaluation.DefaultContext();
             evaluationContext.Bind("EXE_DIR", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
-            string currentSegment = null;
+            string? currentSegment = null;
             var lines = File.ReadLines(path, Encoding.UTF8).ToArray();
             for (int i = 0; i < lines.Length; i++)
             {

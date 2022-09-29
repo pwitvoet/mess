@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MESS.Logging
+﻿namespace MESS.Logging
 {
     class ConsoleLogger : ILogger
     {
@@ -21,9 +19,9 @@ namespace MESS.Logging
 
         public void Info(string message) => Log(LogLevel.Info, message);
 
-        public void Warning(string message, Exception exception = null) => Log(LogLevel.Warning, message, exception);
+        public void Warning(string message, Exception? exception = null) => Log(LogLevel.Warning, message, exception);
 
-        public void Error(string message, Exception exception = null) => Log(LogLevel.Error, message, exception);
+        public void Error(string message, Exception? exception = null) => Log(LogLevel.Error, message, exception);
 
         public void Minimal(string message) => Log(LogLevel.Minimal, message);
 
@@ -36,7 +34,7 @@ namespace MESS.Logging
             Console.WriteLine(message);
         }
 
-        public void Log(LogLevel level, string message, Exception exception)
+        public void Log(LogLevel level, string message, Exception? exception)
         {
             if (exception == null)
             {

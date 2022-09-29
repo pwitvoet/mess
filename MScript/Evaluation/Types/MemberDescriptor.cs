@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MScript.Evaluation.Types
+﻿namespace MScript.Evaluation.Types
 {
     public abstract class MemberDescriptor : IEquatable<MemberDescriptor>
     {
@@ -14,16 +12,16 @@ namespace MScript.Evaluation.Types
             Type = type;
         }
 
-        public abstract object GetValue(object obj);
+        public abstract object? GetValue(object? obj);
 
 
-        public override bool Equals(object obj) => obj is MemberDescriptor other && Equals(other);
+        public override bool Equals(object? obj) => obj is MemberDescriptor other && Equals(other);
 
         public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString() => $"<MEMBER: {Name}>";
 
-        public abstract bool Equals(MemberDescriptor other);
+        public abstract bool Equals(MemberDescriptor? other);
 
 
         public static bool operator ==(MemberDescriptor left, MemberDescriptor right) => left?.Equals(right) ?? false;

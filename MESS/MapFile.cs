@@ -1,7 +1,5 @@
 ﻿using MESS.Formats;
 using MESS.Mapping;
-using System;
-using System.IO;
 using System.Text;
 
 namespace MESS

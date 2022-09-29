@@ -3,9 +3,6 @@ using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using MScript;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MESS.Macros
 {
@@ -25,7 +22,7 @@ namespace MESS.Macros
     /// </summary>
     public class MapTemplate
     {
-        public static MapTemplate Load(string path, IDictionary<string, object> globals, ILogger logger)
+        public static MapTemplate Load(string path, IDictionary<string, object?> globals, ILogger logger)
         {
             path = NormalizePath(path);
 
@@ -35,7 +32,7 @@ namespace MESS.Macros
             return FromMap(map, path, globals, logger);
         }
 
-        public static MapTemplate FromMap(Map map, string path, IDictionary<string, object> globals, ILogger logger)
+        public static MapTemplate FromMap(Map map, string path, IDictionary<string, object?> globals, ILogger logger)
         {
             var subTemplates = ExtractSubTemplates(map, globals, logger);
             var conditionalContent = ExtractConditionalContent(map);
@@ -56,7 +53,13 @@ namespace MESS.Macros
         public IReadOnlyCollection<RemovableContent> ConditionalContents { get; }
 
 
-        public MapTemplate(Map map, string name, bool isSubTemplate, string selectionWeightExpression = "1", IEnumerable<MapTemplate> subTemplates = null, IEnumerable<RemovableContent> conditionalContent = null)
+        public MapTemplate(
+            Map map,
+            string name,
+            bool isSubTemplate,
+            string selectionWeightExpression = "1",
+            IEnumerable<MapTemplate>? subTemplates = null,
+            IEnumerable<RemovableContent>? conditionalContent = null)
         {
             Name = name;
             Map = map;
@@ -75,7 +78,7 @@ namespace MESS.Macros
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
         /// Template area names do not need to be unique.
         /// </summary>
-        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, IDictionary<string, object> globals, ILogger logger)
+        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, IDictionary<string, object?> globals, ILogger logger)
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);

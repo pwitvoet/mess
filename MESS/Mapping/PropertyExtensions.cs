@@ -1,6 +1,4 @@
 ﻿using MESS.Mathematics.Spatial;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace MESS.Mapping
@@ -12,7 +10,7 @@ namespace MESS.Mapping
 
         public static double? GetNumericProperty(this Entity entity, string propertyName) => entity.Properties.GetNumericProperty(propertyName);
 
-        public static double[] GetNumericArrayProperty(this Entity entity, string propertyName) => entity.Properties.GetNumericArrayProperty(propertyName);
+        public static double[]? GetNumericArrayProperty(this Entity entity, string propertyName) => entity.Properties.GetNumericArrayProperty(propertyName);
 
         public static Angles? GetAnglesProperty(this Entity entity, string propertyName) => entity.Properties.GetAnglesProperty(propertyName);
 
@@ -22,7 +20,7 @@ namespace MESS.Mapping
             where TEnum: struct
             => entity.Properties.GetEnumProperty<TEnum>(propertyName);
 
-        public static string GetStringProperty(this Entity entity, string propertyName) => entity.Properties.GetStringProperty(propertyName);
+        public static string? GetStringProperty(this Entity entity, string propertyName) => entity.Properties.GetStringProperty(propertyName);
 
 
         // Raw dictionary variants:
@@ -44,7 +42,7 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static double[] GetNumericArrayProperty(this IDictionary<string, string> properties, string propertyName)
+        public static double[]? GetNumericArrayProperty(this IDictionary<string, string> properties, string propertyName)
         {
             if (properties.TryGetValue(propertyName, out var stringValue) &&
                 TryParseVector(stringValue, out var array))
@@ -78,10 +76,10 @@ namespace MESS.Mapping
             return null;
         }
 
-        public static string GetStringProperty(this IDictionary<string, string> properties, string propertyName)
+        public static string? GetStringProperty(this IDictionary<string, string> properties, string propertyName)
             => properties.TryGetValue(propertyName, out var value) ? value : null;
 
-        public static object ParseProperty(string value)
+        public static object? ParseProperty(string? value)
         {
             if (string.IsNullOrEmpty(value))
                 return null;
@@ -113,11 +111,11 @@ namespace MESS.Mapping
             => properties[propertyName] = value;
 
 
-        public static bool TryParseVector(string value, out double[] vector)
+        public static bool TryParseVector(string? value, out double[] vector)
         {
             if (value == null)
             {
-                vector = null;
+                vector = Array.Empty<double>();
                 return false;
             }
 
@@ -127,7 +125,7 @@ namespace MESS.Mapping
             {
                 if (!TryParseDouble(parts[i], out var number))
                 {
-                    vector = null;
+                    vector = Array.Empty<double>();
                     return false;
                 }
 
@@ -136,6 +134,6 @@ namespace MESS.Mapping
             return true;
         }
 
-        public static bool TryParseDouble(string s, out double result) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+        public static bool TryParseDouble(string? s, out double result) => double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 }

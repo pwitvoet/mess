@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace MESS
 {
@@ -13,12 +9,12 @@ namespace MESS
     {
         class CmdOption
         {
-            public string Name { get; }
+            public string? Name { get; }
             public bool HasValue { get; }
             public Action<string> Parse { get; }
             public string Description { get; }
 
-            public CmdOption(string name, bool hasValue, Action<string> parse, string description)
+            public CmdOption(string? name, bool hasValue, Action<string> parse, string description)
             {
                 Name = name;
                 HasValue = hasValue;
@@ -28,8 +24,8 @@ namespace MESS
         }
 
 
-        private Dictionary<string, CmdOption> _options = new Dictionary<string, CmdOption>();
-        private List<CmdOption> _arguments = new List<CmdOption>();
+        private Dictionary<string, CmdOption> _options = new();
+        private List<CmdOption> _arguments = new();
         private int _requiredArgumentsCount;
 
 
@@ -49,7 +45,7 @@ namespace MESS
                 }
                 else
                 {
-                    option.Parse(null);
+                    option.Parse("");
                     index += 1;
                 }
             }

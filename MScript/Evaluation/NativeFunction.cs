@@ -1,7 +1,4 @@
 ﻿using MScript.Evaluation.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MScript.Evaluation
 {
@@ -11,10 +8,10 @@ namespace MScript.Evaluation
         public IReadOnlyList<Parameter> Parameters { get; }
 
 
-        private Func<object[], EvaluationContext, object> _func;
+        private Func<object?[], EvaluationContext, object?> _func;
 
 
-        public NativeFunction(string name, IEnumerable<Parameter> parameters, Func<object[], EvaluationContext, object> func)
+        public NativeFunction(string name, IEnumerable<Parameter> parameters, Func<object?[], EvaluationContext, object?> func)
         {
             Name = name;
             Parameters = parameters?.ToArray() ?? Array.Empty<Parameter>();
@@ -24,7 +21,7 @@ namespace MScript.Evaluation
         public override string ToString() => $"<FUNCTION {Name}>";
 
 
-        public object Apply(object[] arguments, EvaluationContext context)
+        public object? Apply(object?[] arguments, EvaluationContext context)
         {
             if (arguments == null || arguments.Length != Parameters.Count)
                 throw new InvalidOperationException($"Invalid parameter count: expected {Parameters.Count} but got {arguments?.Length}.");

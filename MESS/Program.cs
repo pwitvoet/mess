@@ -1,10 +1,6 @@
 ﻿using MESS.Macros;
 using MESS.Formats;
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using MScript.Parsing;
 using MScript.Tokenizing;
@@ -48,7 +44,7 @@ namespace MESS
                     return 0;
                 }
 
-                ConfigFile.ReadSettings(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mess.config"), settings);
+                ConfigFile.ReadSettings(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", "mess.config"), settings);
                 commandLineParser.Parse(args);
 
                 using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
@@ -154,7 +150,7 @@ namespace MESS
                 settings.OutputPath = inputPath;
 
             if (settings.Directory == null)
-                settings.Directory = Path.GetDirectoryName(settings.InputPath);
+                settings.Directory = Path.GetDirectoryName(settings.InputPath) ?? "";
 
 
             logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
@@ -169,7 +165,7 @@ namespace MESS
             }
         }
 
-        private static void ParseVariables(string s, IDictionary<string, object> variables)
+        private static void ParseVariables(string s, IDictionary<string, object?> variables)
         {
             var tokens = Tokenizer.Tokenize(s);
             var assignments = Parser.ParseAssignments(tokens);
@@ -196,7 +192,7 @@ namespace MESS
 
             using (var logger = new ConsoleLogger(LogLevel.Verbose))
             {
-                var globals = new Dictionary<string, object>();
+                var globals = new Dictionary<string, object?>();
                 var context = Evaluation.ContextFromProperties(new Dictionary<string, string>(), 0, 0, new Random(), globals, logger);
                 while (true)
                 {
@@ -204,7 +200,9 @@ namespace MESS
                     {
                         Console.Write("> ");
                         var input = Console.ReadLine();
-                        if (input == "quit")
+                        if (input is null)
+                            continue;
+                        else if (input == "quit")
                             break;
 
                         // TODO: Quick hacky way to support assignment, for testing purposes:

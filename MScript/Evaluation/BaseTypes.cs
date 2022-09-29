@@ -1,7 +1,4 @@
 ﻿using MScript.Evaluation.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace MScript.Evaluation
@@ -82,7 +79,7 @@ namespace MScript.Evaluation
             }
         }
 
-        private static Func<object, object> CreateGetter(MethodInfo method) => obj => method.Invoke(null, new object[] { obj });
+        private static Func<object?, object?> CreateGetter(MethodInfo method) => obj => method.Invoke(null, new[] { obj });
 
 
         static class VectorMembers
@@ -193,19 +190,19 @@ namespace MScript.Evaluation
                 return self.Substring((int)offset, (int)length);
             }
 
-            public static bool contains(string self, string str) => self.Contains(str);
-            public static bool startswith(string self, string str) => self.StartsWith(str);
-            public static bool endswith(string self, string str) => self.EndsWith(str);
-            public static string replace(string self, string str, string replacement) => self.Replace(str, replacement);
+            public static bool contains(string self, string? str) => str is not null ? self.Contains(str) : false;
+            public static bool startswith(string self, string? str) => str is not null ? self.StartsWith(str) : false;
+            public static bool endswith(string self, string? str) => str is not null ? self.EndsWith(str) : false;
+            public static string replace(string self, string? str, string? replacement) => str is not null ? self.Replace(str, replacement) : self;
 
-            public static string trim(string self, string chars = null) => self.Trim(chars?.ToArray());
-            public static string trimstart(string self, string chars = null) => self.TrimStart(chars?.ToArray());
-            public static string trimend(string self, string chars = null) => self.TrimEnd(chars?.ToArray());
+            public static string trim(string self, string? chars = null) => self.Trim(chars?.ToArray());
+            public static string trimstart(string self, string? chars = null) => self.TrimStart(chars?.ToArray());
+            public static string trimend(string self, string? chars = null) => self.TrimEnd(chars?.ToArray());
 
-            public static string segment(string self, string delimiter, double index)
+            public static string? segment(string self, string? delimiter, double index)
             {
                 // NOTE: An empty or null delimiter is safe, it just won't cause any splits:
-                var segments = self.Split(new string[] { delimiter }, StringSplitOptions.None);
+                var segments = self.Split(new string[] { delimiter ?? "" }, StringSplitOptions.None);
 
                 // Negative indexing:
                 index = (int)index;

@@ -4,9 +4,6 @@ using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MESS.Macros
 {

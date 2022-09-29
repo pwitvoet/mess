@@ -1,31 +1,29 @@
 ﻿using MScript.Evaluation.Types;
 using MScript.Parsing;
 using MScript.Parsing.AST;
-using System;
-using System.Linq;
 
 namespace MScript.Evaluation
 {
     public static class Evaluator
     {
-        public static object Evaluate(Expression expression, EvaluationContext context)
+        public static object? Evaluate(Expression expression, EvaluationContext context)
         {
-            switch (expression)
+            return expression switch
             {
-                case NoneLiteral noneLiteral: return null;
-                case NumberLiteral numberLiteral: return numberLiteral.Value;
-                case StringLiteral stringLiteral: return stringLiteral.Value;
-                case VectorLiteral vectorLiteral: return EvaluateVectorLiteral(vectorLiteral, context);
-                case Variable variable: return context.Resolve(variable.Name);
-                case FunctionCall functionCall: return EvaluateFunctionCall(functionCall, context);
-                case Indexing indexing: return EvaluateIndexing(indexing, context);
-                case MemberAccess memberAccess: return EvaluateMemberAccess(memberAccess, context);
-                case BinaryOperation binaryOperation: return EvaluateBinaryOperation(binaryOperation, context);
-                case UnaryOperation unaryOperation: return EvaluateUnaryOperation(unaryOperation, context);
-                case ConditionalOperation conditionalOperation: return EvaluateConditionalOperation(conditionalOperation, context);
+                NoneLiteral noneLiteral => null,
+                NumberLiteral numberLiteral => numberLiteral.Value,
+                StringLiteral stringLiteral => stringLiteral.Value,
+                VectorLiteral vectorLiteral => EvaluateVectorLiteral(vectorLiteral, context),
+                Variable variable => context.Resolve(variable.Name),
+                FunctionCall functionCall => EvaluateFunctionCall(functionCall, context),
+                Indexing indexing => EvaluateIndexing(indexing, context),
+                MemberAccess memberAccess => EvaluateMemberAccess(memberAccess, context),
+                BinaryOperation binaryOperation => EvaluateBinaryOperation(binaryOperation, context),
+                UnaryOperation unaryOperation => EvaluateUnaryOperation(unaryOperation, context),
+                ConditionalOperation conditionalOperation => EvaluateConditionalOperation(conditionalOperation, context),
 
-                default: throw new InvalidOperationException($"Unknown expression type: {expression}.");
-            }
+                _ => throw new InvalidOperationException($"Unknown expression type: {expression}."),
+            };
         }
 
 
@@ -42,7 +40,7 @@ namespace MScript.Evaluation
             return vector;
         }
 
-        private static object EvaluateFunctionCall(FunctionCall functionCall, EvaluationContext context)
+        private static object? EvaluateFunctionCall(FunctionCall functionCall, EvaluationContext context)
         {
             var functionResult = Evaluate(functionCall.Function, context);
             if (!(functionResult is IFunction function))
@@ -66,7 +64,7 @@ namespace MScript.Evaluation
             return function.Apply(arguments, context);
         }
 
-        private static object EvaluateIndexing(Indexing indexing, EvaluationContext context)
+        private static object? EvaluateIndexing(Indexing indexing, EvaluationContext context)
         {
             var indexable = Evaluate(indexing.Indexable, context);
             if (indexable is double[] || indexable is string)
@@ -84,18 +82,18 @@ namespace MScript.Evaluation
             throw new InvalidOperationException($"A {TypeDescriptor.GetType(indexable)} cannot be indexed.");
         }
 
-        private static object EvaluateMemberAccess(MemberAccess memberAccess, EvaluationContext context)
+        private static object? EvaluateMemberAccess(MemberAccess memberAccess, EvaluationContext context)
         {
-            var @object = Evaluate(memberAccess.Object, context);
-            var type = TypeDescriptor.GetType(@object);
+            var obj = Evaluate(memberAccess.Object, context);
+            var type = TypeDescriptor.GetType(obj);
             var member = type.GetMember(memberAccess.MemberName);
             if (member is null)
                 throw new InvalidOperationException($"{type} does not have a member named '{memberAccess.MemberName}'.");
 
-            return member.GetValue(@object);
+            return member.GetValue(obj);
         }
 
-        private static object EvaluateBinaryOperation(BinaryOperation binaryOperation, EvaluationContext context)
+        private static object? EvaluateBinaryOperation(BinaryOperation binaryOperation, EvaluationContext context)
         {
             switch (binaryOperation.Operator)
             {
@@ -122,7 +120,7 @@ namespace MScript.Evaluation
             }
         }
 
-        private static object EvaluateUnaryOperation(UnaryOperation unaryOperation, EvaluationContext context)
+        private static object? EvaluateUnaryOperation(UnaryOperation unaryOperation, EvaluationContext context)
         {
             var operand = Evaluate(unaryOperation.Operand, context);
             switch (unaryOperation.Operator)
@@ -133,7 +131,7 @@ namespace MScript.Evaluation
             }
         }
 
-        private static object EvaluateConditionalOperation(ConditionalOperation conditionalOperation, EvaluationContext context)
+        private static object? EvaluateConditionalOperation(ConditionalOperation conditionalOperation, EvaluationContext context)
         {
             return Operations.Conditional(
                 conditionalOperation.Condition,

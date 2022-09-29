@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace MESS.Formats
 {
@@ -38,7 +35,7 @@ namespace MESS.Formats
         /// <summary>
         /// Reads a length-prefixed string, where the length is a 32-bit integer.
         /// </summary>
-        public static string ReadLengthPrefixedString(this Stream stream, Encoding encoding = null)
+        public static string? ReadLengthPrefixedString(this Stream stream, Encoding? encoding = null)
         {
             var length = stream.ReadInt();
             if (length == -1)

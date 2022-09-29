@@ -1,10 +1,7 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 
 namespace MESS.Formats
@@ -26,6 +23,9 @@ namespace MESS.Formats
                     try
                     {
                         var line = reader.ReadLine();
+                        if (line is null)
+                            break;
+
                         if (!line.Trim().StartsWith("{"))
                             continue;
 
@@ -82,7 +82,10 @@ namespace MESS.Formats
             var brushes = new List<Brush>();
             while (true)
             {
-                var line = reader.ReadLine().Trim();
+                var line = reader.ReadLine()?.Trim();
+                if (line is null)
+                    throw new InvalidDataException($"Expected key-value pair, brush or end of entity, but found end of file.");
+
                 if (line.StartsWith("//"))
                 {
                     continue;
@@ -125,7 +128,10 @@ namespace MESS.Formats
             var faces = new List<Face>();
             while (true)
             {
-                var line = reader.ReadLine().Trim();
+                var line = reader.ReadLine()?.Trim();
+                if (line is null)
+                    throw new InvalidDataException($"Expected face or end of brush, but found end of file.");
+
                 if (line.StartsWith("//"))
                     continue;
                 else if (line.StartsWith("("))

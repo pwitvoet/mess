@@ -1,6 +1,4 @@
 ﻿using MESS.Mathematics.Spatial;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MESS.Macros
 {
@@ -10,7 +8,7 @@ namespace MESS.Macros
     class SphereCollection
     {
         // TODO: Replace this with a more optimized data-structure, such as a grid or quadtree, for performance improvements!
-        private List<Sphere> _spheres = new List<Sphere>();
+        private List<Sphere> _spheres = new();
 
 
         /// <summary>

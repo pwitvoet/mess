@@ -1,9 +1,6 @@
 ﻿using MScript.Parsing.AST;
 using MScript.Tokenizing;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace MScript.Parsing
 {
@@ -293,9 +290,9 @@ namespace MScript.Parsing
         }
 
 
-        private static BinaryOperator? GetBinaryOperator(object element)
+        private static BinaryOperator? GetBinaryOperator(object? element)
         {
-            if (!(element is Token token))
+            if (element is not Token token)
                 return null;
 
             switch (token.Type)
@@ -324,9 +321,9 @@ namespace MScript.Parsing
             }
         }
 
-        private static UnaryOperator? GetUnaryOperator(object element)
+        private static UnaryOperator? GetUnaryOperator(object? element)
         {
-            if (!(element is Token token))
+            if (element is not Token token)
                 return null;
 
             switch (token.Type)
@@ -393,7 +390,7 @@ namespace MScript.Parsing
 
         class Context : IDisposable
         {
-            public List<object> ParseStack { get; } = new List<object>();
+            public List<object> ParseStack { get; } = new();
             public Token CurrentToken => _tokens.Current;
             public bool IsExhausted { get; private set; }
 
@@ -421,7 +418,7 @@ namespace MScript.Parsing
             /// Negative indexes start from the end, where -1 is the last element, -2 the next-to-last, and so on.
             /// Returns null if the index is out of range.
             /// </summary>
-            public object Stack(int index)
+            public object? Stack(int index)
             {
                 index = (index < 0) ? ParseStack.Count + index : index;
                 if (index < 0 || index >= ParseStack.Count)

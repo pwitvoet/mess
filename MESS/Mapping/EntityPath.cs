@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MESS.Mapping
+﻿namespace MESS.Mapping
 {
     public enum PathType
     {
@@ -14,9 +12,9 @@ namespace MESS.Mapping
     /// </summary>
     public class EntityPath
     {
-        public string Name { get; set; }
-        public string ClassName { get; set; }
+        public string Name { get; set; } = "";
+        public string ClassName { get; set; } = "";
         public PathType Type { get; set; }
-        public List<EntityPathNode> Nodes { get; } = new List<EntityPathNode>();
+        public List<EntityPathNode> Nodes { get; } = new();
     }
 }

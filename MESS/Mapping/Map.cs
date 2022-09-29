@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MESS.Mapping
+﻿namespace MESS.Mapping
 {
     /// <summary>
     /// A map consists of entities (in-game 'things') and brushes (3-dimensional textured shapes).
@@ -24,18 +22,18 @@ namespace MESS.Mapping
         /// <summary>
         /// A list of all entities in this map (excluding the special <see cref="Worldspawn"/> entity).
         /// </summary>
-        public List<Entity> Entities { get; } = new List<Entity>();
+        public List<Entity> Entities { get; } = new();
 
 
         // RMF/JMF formats only:
-        public List<EntityPath> EntityPaths { get; } = new List<EntityPath>();
+        public List<EntityPath> EntityPaths { get; } = new();
 
-        public List<Group> Groups { get; } = new List<Group>();
+        public List<Group> Groups { get; } = new();
 
         public int ActiveCameraIndex { get; set; }
-        public List<Camera> Cameras { get; } = new List<Camera>();
+        public List<Camera> Cameras { get; } = new();
 
-        public List<VisGroup> VisGroups { get; } = new List<VisGroup>();
+        public List<VisGroup> VisGroups { get; } = new();
 
 
         private Entity _worldspawn = new Entity { ClassName = Common.Entities.Worldspawn };

@@ -1,14 +1,12 @@
 ﻿using MScript.Parsing;
-using System;
 using System.Globalization;
-using System.Linq;
 
 namespace MScript.Evaluation
 {
     static class Operations
     {
         // Arithmetic:
-        public static object Add(object leftOperand, object rightOperand)
+        public static object? Add(object? leftOperand, object? rightOperand)
         {
             if (leftOperand is null && rightOperand is null)
                 return null;
@@ -19,17 +17,17 @@ namespace MScript.Evaluation
             return NumericOperation(leftOperand, rightOperand, (a, b) => a + b);
         }
 
-        public static object Subtract(object leftOperand, object rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a - b);
+        public static object? Subtract(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a - b);
 
-        public static object Multiply(object leftOperand, object rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a * b);
+        public static object? Multiply(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a * b);
 
-        public static object Divide(object leftOperand, object rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a / b);
+        public static object? Divide(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a / b);
 
-        public static object Remainder(object leftOperand, object rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a % b);
+        public static object? Remainder(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a % b);
 
 
         // Equality:
-        public static new object Equals(object leftOperand, object rightOperand)
+        public static new object? Equals(object? leftOperand, object? rightOperand)
         {
             if (ReferenceEquals(leftOperand, rightOperand))
                 return ToBoolean(true);
@@ -52,21 +50,21 @@ namespace MScript.Evaluation
             return ToBoolean(false);
         }
 
-        public static object NotEquals(object leftOperand, object rightOperand) => ToBoolean(!IsTrue(Equals(leftOperand, rightOperand)));
+        public static object? NotEquals(object? leftOperand, object? rightOperand) => ToBoolean(!IsTrue(Equals(leftOperand, rightOperand)));
 
 
         // Comparison:
-        public static object GreaterThan(object leftOperand, object rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a > b);
+        public static object? GreaterThan(object? leftOperand, object? rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a > b);
 
-        public static object GreaterThanOrEqual(object leftOperand, object rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a >= b);
+        public static object? GreaterThanOrEqual(object? leftOperand, object? rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a >= b);
 
-        public static object LessThan(object leftOperand, object rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a < b);
+        public static object? LessThan(object? leftOperand, object? rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a < b);
 
-        public static object LessThanOrEqual(object leftOperand, object rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a <= b);
+        public static object? LessThanOrEqual(object? leftOperand, object? rightOperand) => NumericComparison(leftOperand, rightOperand, (a, b) => a <= b);
 
 
         // Logical:
-        public static object And(Expression leftOperand, Expression rightOperand, EvaluationContext context)
+        public static object? And(Expression leftOperand, Expression rightOperand, EvaluationContext context)
         {
             if (IsTrue(Evaluator.Evaluate(leftOperand, context)))
             {
@@ -78,7 +76,7 @@ namespace MScript.Evaluation
             return ToBoolean(false);
         }
 
-        public static object Or(Expression leftOperand, Expression rightOperand, EvaluationContext context)
+        public static object? Or(Expression leftOperand, Expression rightOperand, EvaluationContext context)
         {
             var leftValue = Evaluator.Evaluate(leftOperand, context);
             if (IsTrue(leftValue))
@@ -93,23 +91,20 @@ namespace MScript.Evaluation
 
 
         // Negation (unary):
-        public static object Negate(object operand)
+        public static object? Negate(object? operand) => operand switch
         {
-            switch (operand)
-            {
-                case null: return null;
-                case double number: return -number;
-                case double[] vector: return vector.Select(n => -n).ToArray();
-            }
+            null => null,
+            double number => -number,
+            double[] vector => vector.Select(n => -n).ToArray(),
 
-            throw new InvalidOperationException($"Cannot negate {operand}.");
-        }
+            _ => throw new InvalidOperationException($"Cannot negate {operand}."),
+        };
 
-        public static object LogicalNegate(object operand) => ToBoolean(!IsTrue(operand));
+        public static object? LogicalNegate(object? operand) => ToBoolean(!IsTrue(operand));
 
 
         // Conditional:
-        public static object Conditional(Expression condition, Expression trueExpression, Expression falseExpression, EvaluationContext context)
+        public static object? Conditional(Expression condition, Expression trueExpression, Expression falseExpression, EvaluationContext context)
         {
             if (IsTrue(Evaluator.Evaluate(condition, context)))
                 return Evaluator.Evaluate(trueExpression, context);
@@ -127,7 +122,7 @@ namespace MScript.Evaluation
             return vector[index];
         }
 
-        public static string Index(string @string, int index)
+        public static string? Index(string @string, int index)
         {
             index = GetIndex(@string.Length, index);
             if (index < 0 || index >= @string.Length)
@@ -138,28 +133,18 @@ namespace MScript.Evaluation
 
 
         // Others:
-        public static bool IsTrue(object value) => value != null;
+        public static bool IsTrue(object? value) => value is not null;
 
-        public static string ToString(object value)
+        public static string ToString(object? value) => value switch
         {
-            switch (value)
-            {
-                case null:
-                    return "";
-
-                case double number:
-                    return number.ToString(CultureInfo.InvariantCulture);
-
-                case double[] vector:
-                    return string.Join(" ", vector.Select(num => num.ToString(CultureInfo.InvariantCulture)));
-
-                default:
-                    return value.ToString();
-            }
-        }
+            null => "",
+            double number => number.ToString(CultureInfo.InvariantCulture),
+            double[] vector => string.Join(" ", vector.Select(num => num.ToString(CultureInfo.InvariantCulture))),
+            _ => value.ToString() ?? "",
+        };
 
 
-        private static object NumericOperation(object leftOperand, object rightOperand, Func<double, double, double> operation)
+        private static object? NumericOperation(object? leftOperand, object? rightOperand, Func<double, double, double> operation)
         {
             if (leftOperand is double[] leftVector)
             {
@@ -200,7 +185,7 @@ namespace MScript.Evaluation
             return left.Zip(right, operation).ToArray();
         }
 
-        private static object NumericComparison(object leftOperand, object rightOperand, Func<double, double, bool> comparison)
+        private static object? NumericComparison(object? leftOperand, object? rightOperand, Func<double, double, bool> comparison)
         {
             if (leftOperand is double leftNumber)
             {
@@ -222,6 +207,6 @@ namespace MScript.Evaluation
 
         private static int GetIndex(int length, int index) => index < 0 ? length + index : index;
 
-        private static object ToBoolean(bool boolean) => boolean ? (object)1.0 : null;
+        private static object? ToBoolean(bool boolean) => boolean ? 1.0 : null;
     }
 }

@@ -1,5 +1,4 @@
-﻿
-namespace MESS.Logging
+﻿namespace MESS.Logging
 {
     public enum LogLevel
     {

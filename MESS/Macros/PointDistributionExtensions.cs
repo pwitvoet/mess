@@ -1,8 +1,5 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MESS.Macros
 {

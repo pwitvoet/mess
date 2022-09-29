@@ -1,7 +1,6 @@
 ﻿using MScript.Evaluation;
 using MScript.Parsing;
 using MScript.Tokenizing;
-using System;
 
 namespace MScript
 {
@@ -12,7 +11,7 @@ namespace MScript
         /// </summary>
         /// <exception cref="ParseException" />
         /// <exception cref="InvalidOperationException" />
-        public static object Evaluate(string input, EvaluationContext context)
+        public static object? Evaluate(string input, EvaluationContext context)
         {
             var tokens = Tokenizer.Tokenize(input);
             var expression = Parser.ParseExpression(tokens);
@@ -22,12 +21,12 @@ namespace MScript
         /// <summary>
         /// Returns a string representation of the given value.
         /// </summary>
-        public static string Print(object value) => Operations.ToString(value);
+        public static string Print(object? value) => Operations.ToString(value);
 
         /// <summary>
         /// Returns whether the given value is true in a boolean context.
         /// Only `none` (null) is considered to be false.
         /// </summary>
-        public static bool IsTrue(object value) => Operations.IsTrue(value);
+        public static bool IsTrue(object? value) => Operations.IsTrue(value);
     }
 }

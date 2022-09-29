@@ -1,6 +1,4 @@
 ﻿using MScript.Evaluation.Types;
-using System;
-using System.Linq;
 using System.Reflection;
 
 namespace MScript.Evaluation
@@ -43,7 +41,7 @@ namespace MScript.Evaluation
         /// </summary>
         /// <exception cref="NotSupportedException"/>
         /// <exception cref="InvalidOperationException"/>
-        public static NativeFunction CreateFunction(MethodInfo method, object instance = null)
+        public static NativeFunction CreateFunction(MethodInfo method, object? instance = null)
         {
             if (!method.IsStatic && instance == null)
                 throw new InvalidOperationException($"A member function requires an instance.");
@@ -61,7 +59,7 @@ namespace MScript.Evaluation
 
             var parameters = method.GetParameters()
                 .Where(parameter => parameter.ParameterType != typeof(EvaluationContext))
-                .Select(param => new Parameter(param.Name, GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
+                .Select(param => new Parameter(param.Name ?? "", GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
                 .ToArray();
 
             if (contextParametersCount > 0)
@@ -105,14 +103,11 @@ namespace MScript.Evaluation
         /// Helper method that converts 'native' boolean results to an MScript-compatible result.
         /// Any other result is returned as-is.
         /// </summary>
-        private static object ConvertResult(object result)
+        private static object? ConvertResult(object? result) => result switch
         {
-            switch (result)
-            {
-                case true: return 1.0;
-                case false: return null;
-                default: return result;
-            }
-        }
+            true => 1.0,
+            false => null,
+            _ => result,
+        };
     }
 }

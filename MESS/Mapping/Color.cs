@@ -1,5 +1,4 @@
-﻿
-namespace MESS.Mapping
+﻿namespace MESS.Mapping
 {
     public struct Color
     {

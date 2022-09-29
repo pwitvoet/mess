@@ -1,10 +1,6 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace MESS.Formats
 {
@@ -126,8 +122,8 @@ namespace MESS.Formats
         private static EntityPath ReadEntityPath(Stream stream)
         {
             var path = new EntityPath();
-            path.ClassName = stream.ReadLengthPrefixedString();
-            path.Name = stream.ReadLengthPrefixedString();
+            path.ClassName = stream.ReadLengthPrefixedString() ?? "";
+            path.Name = stream.ReadLengthPrefixedString() ?? "";
             path.Type = (PathType)stream.ReadInt();
             var unknown1 = stream.ReadBytes(4);
             var color = ReadColor(stream);
@@ -162,7 +158,7 @@ namespace MESS.Formats
             {
                 var key = stream.ReadLengthPrefixedString();
                 var value = stream.ReadLengthPrefixedString();
-                node.Properties[key] = value;
+                node.Properties[key ?? ""] = value ?? "";
             }
 
             return node;
@@ -216,7 +212,7 @@ namespace MESS.Formats
                 .ToArray();
 
             var entity = new Entity(brushes);
-            entity.ClassName = className;
+            entity.ClassName = className ?? "";
             entity.Color = color;
 
             if (entity.IsPointBased)
@@ -226,7 +222,7 @@ namespace MESS.Formats
             //entity.VisGroup;  // TODO: MESS does not support objects being part of multiple VIS groups!
 
             foreach (var property in properties)
-                entity.Properties[property.Item1] = property.Item2;
+                entity.Properties[property.Item1 ?? ""] = property.Item2 ?? "";
 
             return entity;
         }

@@ -1,5 +1,4 @@
 ﻿using MESS.Mathematics.Spatial;
-using System;
 
 namespace MESS.Mathematics
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 
 namespace MESS.Logging
 {
@@ -23,7 +21,6 @@ namespace MESS.Logging
         public void Dispose()
         {
             _writer.Dispose();
-            _writer = null;
         }
 
 
@@ -31,9 +28,9 @@ namespace MESS.Logging
 
         public void Info(string message) => Log(LogLevel.Info, message);
 
-        public void Warning(string message, Exception exception = null) => Log(LogLevel.Warning, message, exception);
+        public void Warning(string message, Exception? exception = null) => Log(LogLevel.Warning, message, exception);
 
-        public void Error(string message, Exception exception = null) => Log(LogLevel.Error, message, exception);
+        public void Error(string message, Exception? exception = null) => Log(LogLevel.Error, message, exception);
 
         public void Minimal(string message) => Log(LogLevel.Minimal, message);
 
@@ -46,7 +43,7 @@ namespace MESS.Logging
             _writer.WriteLine(FormatMessage(level, message));
         }
 
-        public void Log(LogLevel level, string message, Exception exception)
+        public void Log(LogLevel level, string message, Exception? exception)
         {
             if (exception == null)
             {

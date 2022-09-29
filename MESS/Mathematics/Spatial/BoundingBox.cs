@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace MESS.Mathematics.Spatial
+﻿namespace MESS.Mathematics.Spatial
 {
     public struct BoundingBox
     {

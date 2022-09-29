@@ -1,5 +1,4 @@
 ﻿using MESS.Mathematics.Spatial;
-using System.Collections.Generic;
 
 namespace MESS.Mapping
 {
@@ -10,7 +9,7 @@ namespace MESS.Mapping
     {
         public Vector3D Position { get; set; }
         public int Index { get; set; }
-        public string NameOverride { get; set; }
-        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+        public string? NameOverride { get; set; }
+        public Dictionary<string, string> Properties { get; } = new();
     }
 }

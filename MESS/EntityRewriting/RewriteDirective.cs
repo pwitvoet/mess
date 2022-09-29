@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MESS.EntityRewriting
+﻿namespace MESS.EntityRewriting
 {
     /// <summary>
     /// Entity rewrite rules are used to modify matching entities immediately after a map file is loaded.
@@ -9,8 +7,8 @@ namespace MESS.EntityRewriting
     /// </summary>
     public class RewriteDirective
     {
-        public string ClassName { get; internal set;  }
-        public List<RuleGroup> RuleGroups { get; } = new List<RuleGroup>();
+        public string ClassName { get; internal set; } = "";
+        public List<RuleGroup> RuleGroups { get; } = new();
 
 
         /// <summary>
@@ -21,14 +19,14 @@ namespace MESS.EntityRewriting
         /// </summary>
         public class RuleGroup
         {
-            public string Condition { get; }
+            public string? Condition { get; }
             public bool HasCondition => Condition != null;
 
-            public List<Rule> Rules { get; } = new List<Rule>();
-            public List<Rule> AlternateRules { get; } = new List<Rule>();
+            public List<Rule> Rules { get; } = new();
+            public List<Rule> AlternateRules { get; } = new();
 
 
-            public RuleGroup(string condition = null)
+            public RuleGroup(string? condition = null)
             {
                 Condition = condition;
             }
@@ -42,15 +40,14 @@ namespace MESS.EntityRewriting
         public class Rule
         {
             public string Attribute { get; }
-            public string NewValue { get; }
-            public bool DeleteAttribute { get; }
+            public string? NewValue { get; }
+            public bool DeleteAttribute => NewValue == null;
 
 
-            public Rule(string attribute, string newValue, bool deleteAttribute)
+            public Rule(string attribute, string? newValue)
             {
                 Attribute = attribute;
                 NewValue = newValue;
-                DeleteAttribute = deleteAttribute;
             }
         }
     }

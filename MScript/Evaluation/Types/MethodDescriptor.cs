@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MScript.Evaluation.Types
+﻿namespace MScript.Evaluation.Types
 {
     public class MethodDescriptor : MemberDescriptor, IEquatable<MethodDescriptor>
     {
@@ -13,20 +11,20 @@ namespace MScript.Evaluation.Types
             _function = function;
         }
 
-        public override object GetValue(object obj) => new BoundMethod(obj, _function);
+        public override object? GetValue(object? obj) => new BoundMethod(obj, _function);
 
 
-        public override bool Equals(object obj) => obj is PropertyDescriptor other && Equals(other);
+        public override bool Equals(object? obj) => obj is PropertyDescriptor other && Equals(other);
 
         public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString() => $"<METHOD: {Name}>";
 
-        public override bool Equals(MemberDescriptor other) => Equals(other as MethodDescriptor);
+        public override bool Equals(MemberDescriptor? other) => Equals(other as MethodDescriptor);
 
-        public bool Equals(MethodDescriptor other)
+        public bool Equals(MethodDescriptor? other)
         {
-            return !(other is null) &&
+            return other is not null &&
                 Name == other.Name;
         }
 

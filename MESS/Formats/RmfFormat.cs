@@ -1,10 +1,7 @@
 ﻿using MESS.Common;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace MESS.Formats
