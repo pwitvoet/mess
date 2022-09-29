@@ -113,7 +113,7 @@ namespace MESS.Mapping
 
         public static bool TryParseVector(string? value, out double[] vector)
         {
-            if (value == null)
+            if (string.IsNullOrEmpty(value))
             {
                 vector = Array.Empty<double>();
                 return false;

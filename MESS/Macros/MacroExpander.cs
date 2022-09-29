@@ -173,7 +173,7 @@ namespace MESS.Macros
         /// </summary>
         private MapTemplate? ResolveTemplate(string? mapPath, string? templateName, InstantiationContext context)
         {
-            if (mapPath != null)
+            if (!string.IsNullOrEmpty(mapPath))
             {
                 Logger.Verbose($"Resolving map template '{mapPath}'.");
 
@@ -192,7 +192,7 @@ namespace MESS.Macros
                     return null;
                 }
             }
-            else if (templateName != null)
+            else if (!string.IsNullOrEmpty(templateName))
             {
                 Logger.Verbose($"Resolving sub-template '{templateName}'.");
 
@@ -561,7 +561,7 @@ namespace MESS.Macros
                     gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[0], (float)granularityArray[0]);
                 else if (granularityArray.Length == 2)
                     gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], 0);
-                else
+                else if (granularityArray.Length >= 3)
                     gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], (float)granularityArray[2]);
             }
 
