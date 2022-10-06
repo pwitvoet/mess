@@ -206,7 +206,7 @@ namespace MESS
                             break;
 
                         // TODO: Quick hacky way to support assignment, for testing purposes:
-                        var match = Regex.Match(input, @"(?<variable>\w+)\s*=\s*(?<value>[^=].*)");
+                        var match = Regex.Match(input, @"(?<variable>\w+)\s*=[^>]\s*(?<value>[^=].*)");
                         if (match?.Success == true)
                         {
                             var variable = match.Groups["variable"].Value;

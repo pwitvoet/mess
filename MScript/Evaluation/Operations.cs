@@ -41,6 +41,10 @@ namespace MScript.Evaluation
             if (leftOperand is double[] leftVector && rightOperand is double[] rightVector)
                 return ToBoolean(Enumerable.SequenceEqual(leftVector, rightVector));
 
+            if (leftOperand is MObject leftObject && rightOperand is MObject rightObject)
+                return ToBoolean(leftObject.Equals(rightObject));
+
+
             if (leftOperand is string leftString)
                 return ToBoolean(leftString == ToString(rightOperand));
 

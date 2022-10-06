@@ -26,6 +26,11 @@ namespace MScript.Evaluation
         public static TypeDescriptor String { get; }
 
         /// <summary>
+        /// An immutable object that contains a collection of names and associated values.
+        /// </summary>
+        public static TypeDescriptor Object { get; }
+
+        /// <summary>
         /// A function or method.
         /// </summary>
         public static TypeDescriptor Function { get; }
@@ -42,6 +47,7 @@ namespace MScript.Evaluation
             Number = new TypeDescriptor(nameof(Number));
             Vector = new TypeDescriptor(nameof(Vector));
             String = new TypeDescriptor(nameof(String));
+            Object = new TypeDescriptor(nameof(Object));
             Function = new TypeDescriptor(nameof(Function));
             Any = new TypeDescriptor(nameof(Any));
 

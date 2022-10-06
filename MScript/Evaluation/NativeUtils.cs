@@ -90,6 +90,8 @@ namespace MScript.Evaluation
                 return BaseTypes.Vector;
             else if (type == typeof(string))
                 return BaseTypes.String;
+            else if (type == typeof(MObject))
+                return BaseTypes.Object;
             else if (typeof(IFunction).IsAssignableFrom(type))
                 return BaseTypes.Function;
             else if (type == typeof(bool) || type == typeof(object))

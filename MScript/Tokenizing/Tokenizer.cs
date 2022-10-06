@@ -32,6 +32,8 @@ namespace MScript.Tokenizing
                 case ')': context.MoveNext(); return new Token(TokenType.ParensClose);
                 case '[': context.MoveNext(); return new Token(TokenType.BracketOpen);
                 case ']': context.MoveNext(); return new Token(TokenType.BracketClose);
+                case '{': context.MoveNext(); return new Token(TokenType.BraceOpen);
+                case '}': context.MoveNext(); return new Token(TokenType.BraceClose);
                 case '.': context.MoveNext(); return new Token(TokenType.Period);
                 case ',': context.MoveNext(); return new Token(TokenType.Comma);
                 case '?': context.MoveNext(); return new Token(TokenType.QuestionMark);
@@ -49,10 +51,11 @@ namespace MScript.Tokenizing
                     return new Token(TokenType.Comment);
 
                 case '=':
-                    if (!context.MoveNext() || context.Current != '=')
+                    if (!context.MoveNext() || (context.Current != '=' && context.Current != '>'))
                         return new Token(TokenType.SingleEquals);
+                    var tokenType = context.Current == '=' ? TokenType.Equals : TokenType.FatArrow;
                     context.MoveNext();
-                    return new Token(TokenType.Equals);
+                    return new Token(tokenType);
 
                 case '!':
                     if (!context.MoveNext() || context.Current != '=')

@@ -10,10 +10,12 @@ namespace MScript.Evaluation
         {
             return expression switch
             {
-                NoneLiteral noneLiteral => null,
+                NoneLiteral _ => null,
                 NumberLiteral numberLiteral => numberLiteral.Value,
                 StringLiteral stringLiteral => stringLiteral.Value,
                 VectorLiteral vectorLiteral => EvaluateVectorLiteral(vectorLiteral, context),
+                ObjectLiteral objectLiteral => EvaluateObjectLiteral(objectLiteral, context),
+                AnonymousFunctionDefinition anonymousFunctionDefinition => EvaluateAnonymousFunctionDefinition(anonymousFunctionDefinition, context),
                 Variable variable => context.Resolve(variable.Name),
                 FunctionCall functionCall => EvaluateFunctionCall(functionCall, context),
                 Indexing indexing => EvaluateIndexing(indexing, context),
@@ -38,6 +40,20 @@ namespace MScript.Evaluation
                 vector[i] = number;
             }
             return vector;
+        }
+
+        private static object EvaluateObjectLiteral(ObjectLiteral objectLiteral, EvaluationContext context)
+        {
+            var fields = new Dictionary<string, object?>();
+            foreach ((var name, var expression) in objectLiteral.Fields)
+                fields[name] = Evaluate(expression, context);
+
+            return new MObject(fields);
+        }
+
+        private static object EvaluateAnonymousFunctionDefinition(AnonymousFunctionDefinition anonymousFunctionDefinition, EvaluationContext context)
+        {
+            return new AnonymousFunction(anonymousFunctionDefinition.ArgumentNames, anonymousFunctionDefinition.Body, context);
         }
 
         private static object? EvaluateFunctionCall(FunctionCall functionCall, EvaluationContext context)
@@ -84,13 +100,21 @@ namespace MScript.Evaluation
 
         private static object? EvaluateMemberAccess(MemberAccess memberAccess, EvaluationContext context)
         {
-            var obj = Evaluate(memberAccess.Object, context);
-            var type = TypeDescriptor.GetType(obj);
-            var member = type.GetMember(memberAccess.MemberName);
-            if (member is null)
-                throw new InvalidOperationException($"{type} does not have a member named '{memberAccess.MemberName}'.");
+            var owner = Evaluate(memberAccess.Object, context);
+            var type = TypeDescriptor.GetType(owner);
+            if (owner is MObject obj)
+            {
+                if (obj.Fields.TryGetValue(memberAccess.MemberName, out var value))
+                    return value;
+            }
+            else
+            {
+                var member = type.GetMember(memberAccess.MemberName);
+                if (member is not null)
+                    return member.GetValue(owner);
+            }
 
-            return member.GetValue(obj);
+            throw new InvalidOperationException($"{type} does not have a member named '{memberAccess.MemberName}'.");
         }
 
         private static object? EvaluateBinaryOperation(BinaryOperation binaryOperation, EvaluationContext context)

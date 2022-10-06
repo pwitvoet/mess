@@ -50,6 +50,7 @@
             double _ => BaseTypes.Number,
             double[] _ => BaseTypes.Vector,
             string _ => BaseTypes.String,
+            MObject _ => BaseTypes.Object,
             IFunction _ => BaseTypes.Function,
 
             _ => throw new InvalidOperationException($"Unknown value type: {value.GetType().FullName}."),

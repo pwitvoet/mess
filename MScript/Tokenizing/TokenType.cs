@@ -13,6 +13,8 @@
         ParensClose,        // )
         BracketOpen,        // [
         BracketClose,       // ]
+        BraceOpen,          // {
+        BraceClose,         // }
         Period,             // .
         Comma,              // ,
         QuestionMark,       // ?
@@ -20,6 +22,7 @@
         Semicolon,          // ;
         DoubleAmpersand,    // &&
         DoubleBar,          // ||
+        FatArrow,           // =>
 
         Plus,               // +
         Minus,              // -
