@@ -77,7 +77,7 @@ namespace MScript.Parsing
 
         private static void Shift(Context context)
         {
-            context.ParseStack.Add(context.CurrentToken);
+            context.ParseStack.Add(context.NextToken);
             context.MoveNext();
         }
 
@@ -161,7 +161,7 @@ namespace MScript.Parsing
             }
 
             // parameter-name-list
-            if (context.CurrentToken.Type == TokenType.FatArrow)
+            if (context.NextToken.Type == TokenType.FatArrow)
             {
                 // <identifier> =>
                 return context.ReplaceLast(1, new ParameterNameList(token.Value));
@@ -175,7 +175,7 @@ namespace MScript.Parsing
         {
             Assert(token.Type == TokenType.ParensClose);
 
-            if (context.CurrentToken.Type == TokenType.FatArrow)
+            if (context.NextToken.Type == TokenType.FatArrow)
             {
                 // identifier-list ) =>
                 if (context.Stack(-4) is Variable firstIdentifier &&
@@ -553,7 +553,7 @@ namespace MScript.Parsing
         class Context : IDisposable
         {
             public List<object> ParseStack { get; } = new();
-            public Token CurrentToken => _tokens.Current;
+            public Token NextToken => _tokens.Current;
             public bool IsExhausted { get; private set; }
 
 
