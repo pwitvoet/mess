@@ -728,7 +728,8 @@ namespace MESS.Macros
             var anchorOffset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
 
             var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
-            var brushContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
+            var pointContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
+            var brushContext = new InstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, context);
 
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
@@ -785,7 +786,7 @@ namespace MESS.Macros
                 else
                 {
                     // Point entities are copied relative to the macro_brush's anchor point:
-                    HandleEntity(brushContext, templateEntity);
+                    HandleEntity(pointContext, templateEntity);
                 }
             }
 
