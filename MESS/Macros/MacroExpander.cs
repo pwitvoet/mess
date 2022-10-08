@@ -345,9 +345,7 @@ namespace MESS.Macros
                     continue;
 
                 // Evaluating properties again for each instance allows for iterating (nth function) and randomization (rand/randi functions):
-                var evaluatedProperties = insertEntity.Properties.ToDictionary(
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));    // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
+                var evaluatedProperties = EvaluateAllProperties(sequenceContext, insertEntity.Properties);  // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
 
                 // NOTE: Because some editors use 0 as default value for missing attributes, we'll swap values here to ensure that Local is the default behavior:
                 var orientation = (evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0) == 0 ? Orientation.Local : Orientation.Global;
@@ -368,7 +366,6 @@ namespace MESS.Macros
                     sequenceContext.Transform.Apply(insertEntity.Origin + offset));
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
-                evaluatedProperties.UpdateSpawnFlags();
                 evaluatedProperties.UpdateTransformProperties(context.Transform);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
 
@@ -441,9 +438,7 @@ namespace MESS.Macros
                     continue;
 
                 // Evaluating properties again for each instance allows for randomization:
-                var evaluatedProperties = coverEntity.Properties.ToDictionary(
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
+                var evaluatedProperties = EvaluateAllProperties(sequenceContext, coverEntity.Properties);
 
                 var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, selection.Face, evaluatedProperties);
@@ -647,9 +642,7 @@ namespace MESS.Macros
                     return;
 
                 // Evaluating properties again for each instance allows for randomization:
-                var evaluatedProperties = fillEntity.Properties.ToDictionary(
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Key),
-                    kv => sequenceContext.EvaluateInterpolatedString(kv.Value));
+                var evaluatedProperties = EvaluateAllProperties(sequenceContext, fillEntity.Properties);
 
                 var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, evaluatedProperties);
@@ -717,10 +710,7 @@ namespace MESS.Macros
 
             // A macro_brush only creates a single 'instance' of its template, so all properties are evaluated up-front, once:
             SetBrushEntityOriginProperty(brushEntity);
-            var evaluatedProperties = brushEntity.Properties.ToDictionary(
-                kv => context.EvaluateInterpolatedString(kv.Key),
-                kv => context.EvaluateInterpolatedString(kv.Value));
-            evaluatedProperties.UpdateSpawnFlags();
+            var evaluatedProperties = EvaluateAllProperties(context, brushEntity.Properties);
             evaluatedProperties.UpdateTransformProperties(context.Transform);
 
             var template = ResolveTemplate(evaluatedProperties.GetStringProperty(Attributes.TemplateMap), evaluatedProperties.GetStringProperty(Attributes.TemplateName), context);
@@ -824,18 +814,11 @@ namespace MESS.Macros
         private void HandleNormalEntity(InstantiationContext context, Entity normalEntity)
         {
             // Evaluate expressions in both keys and values:
-            var evaluatedProperties = normalEntity.Properties.ToDictionary(
-                kv => context.EvaluateInterpolatedString(kv.Key),
-                kv => context.EvaluateInterpolatedString(kv.Value));
+            var evaluatedProperties = EvaluateAllProperties(context, normalEntity.Properties);
 
             normalEntity.Properties.Clear();
             foreach (var kv in evaluatedProperties)
-                normalEntity.Properties[kv.Key ?? ""] = kv.Value;
-
-
-            // Handle special 'spawnflagN' attributes, and remove attribute(s) with empty key(s):
-            normalEntity.Properties.UpdateSpawnFlags();
-            normalEntity.Properties.Remove("");
+                normalEntity.Properties[kv.Key] = kv.Value;
 
 
             // Determine whether this entity requires inverted-pitch handling:
@@ -880,6 +863,25 @@ namespace MESS.Macros
                 if (entity.Properties.TryGetValue(name, out var value))
                     entity.Properties[name] = context.EvaluateInterpolatedString(value);
             }
+        }
+
+        /// <summary>
+        /// Evaluates any expressions in the given properties.
+        /// Keys that evaluate to "" are omitted (their values are not evaluated).
+        /// Any 'spawnflag{N}' attributes are removed, but their values are used to set or update the special 'spawnflags' attribute.
+        /// </summary>
+        private static Dictionary<string, string> EvaluateAllProperties(InstantiationContext context, IDictionary<string, string> properties)
+        {
+            var evaluatedProperties = new Dictionary<string, string>();
+            foreach (var kv in properties)
+            {
+                var key = context.EvaluateInterpolatedString(kv.Key);
+                if (key != "")
+                    evaluatedProperties[key] = context.EvaluateInterpolatedString(kv.Value);
+            }
+
+            evaluatedProperties.UpdateSpawnFlags();
+            return evaluatedProperties;
         }
 
         private static TElement? TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)
