@@ -19,6 +19,6 @@
         public override string ToString() => $"<FUNCTION {Name}>";
 
 
-        public object? Apply(object?[] arguments, EvaluationContext context) => _function.Apply(new[] { _object }.Concat(arguments).ToArray(), context);
+        public object? Apply(object?[] arguments) => _function.Apply(new[] { _object }.Concat(arguments).ToArray());
     }
 }

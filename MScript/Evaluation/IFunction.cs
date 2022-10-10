@@ -6,6 +6,6 @@
         IReadOnlyList<Parameter> Parameters { get; }
 
 
-        object? Apply(object?[] arguments, EvaluationContext context);
+        object? Apply(object?[] arguments);
     }
 }

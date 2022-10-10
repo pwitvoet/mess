@@ -179,29 +179,6 @@ namespace MESS.Macros
                 return color;
             }
 
-            // Flags:
-            public static bool hasflag(EvaluationContext context, double flag, double? flags = null)
-            {
-                if (flags == null)
-                    flags = (context.Resolve(Attributes.Spawnflags) is double d) ? d : 0;
-
-                var bit = (int)flag;
-                if (bit < 0 || bit > 31)
-                    return false;
-
-                return (((int)flags >> bit) & 1) == 1;
-            }
-            public static double setflag(EvaluationContext context, double flag, double? set = 1, double? flags = null)
-            {
-                if (flags == null)
-                    flags = (context.Resolve(Attributes.Spawnflags) is double d) ? d : 0;
-
-                if (set != 0)
-                    return (int)flags | (1 << (int)flag);
-                else
-                    return (int)flags & ~(1 << (int)flag);
-            }
-
             // Debugging:
             public static bool assert(object? condition, string? message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
         }
@@ -229,10 +206,16 @@ namespace MESS.Macros
 
 
             // Entity ID:
-            public string id(EvaluationContext context)
+            public string id()
             {
-                var targetname = context.Resolve(Attributes.Targetname);
-                return (targetname != null) ? Interpreter.Print(targetname) : _id.ToString(CultureInfo.InvariantCulture);
+                if (_properties.TryGetValue(Attributes.Targetname, out var targetname))
+                {
+                    var name = Interpreter.Print(targetname);
+                    if (name != "")
+                        return name;
+                }
+
+                return _id.ToString(CultureInfo.InvariantCulture);
             }
             public double iid() => _id;
 
@@ -258,6 +241,29 @@ namespace MESS.Macros
 
             // Enumeration:
             public double nth() => _sequenceNumber;
+
+            // Flags:
+            public bool hasflag(double flag, double? flags = null)
+            {
+                if (flags == null)
+                    flags = _properties.TryGetValue(Attributes.Spawnflags, out var val) && val is double d ? d : 0;
+
+                var bit = (int)flags;
+                if (bit < 0 || bit > 31)
+                    return false;
+
+                return (((int)flags >> bit) & 1) == 1;
+            }
+            public double setflag(double flag, double? set = 1, double? flags = null)
+            {
+                if (flags == null)
+                    flags = _properties.TryGetValue(Attributes.Spawnflags, out var val) && val is double d ? d : 0;
+
+                if (set != 0)
+                    return (int)flags | (1 << (int)flag);
+                else
+                    return (int)flags & ~(1 << (int)flag);
+            }
 
             // Globals:
             public object? getglobal(string? name) => _globals.TryGetValue(name ?? "", out var value) ? value : null;

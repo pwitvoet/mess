@@ -33,8 +33,7 @@ namespace MScript.Evaluation
         /// Creates an MScript function that calls a 'native' method.
         /// <para>
         /// All parameters must be MScript-compatible types
-        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="IFunction"/> or <see cref="object"/>).
-        /// Additionally, methods can have a first parameter of type <see cref="EvaluationContext"/>.
+        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="MObject"/>, <see cref="IFunction"/> or <see cref="object"/>).
         /// The return type can also be <see cref="bool"/>. Parameters of type <see cref="object"/> are not type-checked by MScript.
         /// Optional parameters are also optional in MScript.
         /// </para>
@@ -50,32 +49,14 @@ namespace MScript.Evaluation
                 instance = null;
 
             // TODO: param.DefaultValue may not be an 'MScript-compatible' type!
-            var nativeParameters = method.GetParameters();
-            var contextParametersCount = nativeParameters.Count(parameter => parameter.ParameterType == typeof(EvaluationContext));
-            if (contextParametersCount > 0 && nativeParameters[0].ParameterType != typeof(EvaluationContext))
-                throw new InvalidOperationException($"Methods that accept an {typeof(EvaluationContext)} must have that as their first parameter.");
-            else if (contextParametersCount > 1)
-                throw new InvalidOperationException($"Only one {typeof(EvaluationContext)} parameter is allowed.");
-
             var parameters = method.GetParameters()
-                .Where(parameter => parameter.ParameterType != typeof(EvaluationContext))
                 .Select(param => new Parameter(param.Name ?? "", GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
                 .ToArray();
 
-            if (contextParametersCount > 0)
-            {
-                return new NativeFunction(
-                    method.Name,
-                    parameters,
-                    (arguments, context) => ConvertResult(method.Invoke(instance, arguments.Prepend(context).ToArray())));
-            }
-            else
-            {
-                return new NativeFunction(
-                    method.Name,
-                    parameters,
-                    (arguments, context) => ConvertResult(method.Invoke(instance, arguments)));
-            }
+            return new NativeFunction(
+                method.Name,
+                parameters,
+                arguments => ConvertResult(method.Invoke(instance, arguments)));
         }
 
         /// <summary>

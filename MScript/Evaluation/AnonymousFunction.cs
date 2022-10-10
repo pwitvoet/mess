@@ -25,7 +25,7 @@ namespace MScript.Evaluation
         public override string ToString() => $"<FUNCTION ({string.Join(", ", Parameters.Select(parameter => parameter.Name))})>";
 
 
-        public object? Apply(object?[] arguments, EvaluationContext context)
+        public object? Apply(object?[] arguments)
         {
             var localContext = new EvaluationContext(parentContext: _capturedContext);
             for (int i = 0; i < Parameters.Count; i++)

@@ -77,7 +77,7 @@ namespace MScript.Evaluation
                     .ToArray();
             }
 
-            return function.Apply(arguments, context);
+            return function.Apply(arguments);
         }
 
         private static object? EvaluateIndexing(Indexing indexing, EvaluationContext context)
