@@ -299,19 +299,19 @@ namespace MScript.Parsing
             if (context.IsToken(-2, TokenType.BracketOpen))
             {
                 // [ ]
-                return context.ReplaceLast(2, new VectorLiteral(Array.Empty<Expression>()));
+                return context.ReplaceLast(2, new ArrayLiteral(Array.Empty<Expression>()));
             }
             else if (context.IsToken(-3, TokenType.BracketOpen))
             {
                 if (context.Stack(-2) is Expression expression)
                 {
                     // [ expression ]
-                    return context.ReplaceLast(3, new VectorLiteral(new[] { expression }));
+                    return context.ReplaceLast(3, new ArrayLiteral(new[] { expression }));
                 }
                 else if (context.Stack(-2) is ExpressionList expressionList)
                 {
                     // [ expression-list ]
-                    return context.ReplaceLast(3, new VectorLiteral(expressionList.Expressions));
+                    return context.ReplaceLast(3, new ArrayLiteral(expressionList.Expressions));
                 }
             }
 

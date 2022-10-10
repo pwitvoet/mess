@@ -33,7 +33,7 @@ namespace MScript.Evaluation
         /// Creates an MScript function that calls a 'native' method.
         /// <para>
         /// All parameters must be MScript-compatible types
-        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="double[]"/>, <see cref="string"/>, <see cref="MObject"/>, <see cref="IFunction"/> or <see cref="object"/>).
+        /// (<see cref="double"/>, <see cref="double?"/>, <see cref="object?[]"/>, <see cref="string"/>, <see cref="MObject"/>, <see cref="IFunction"/> or <see cref="object"/>).
         /// The return type can also be <see cref="bool"/>. Parameters of type <see cref="object"/> are not type-checked by MScript.
         /// Optional parameters are also optional in MScript.
         /// </para>
@@ -67,8 +67,8 @@ namespace MScript.Evaluation
         {
             if (type == typeof(double) || type == typeof(double?))
                 return BaseTypes.Number;
-            else if (type == typeof(double[]))
-                return BaseTypes.Vector;
+            else if (type == typeof(object?[]))
+                return BaseTypes.Array;
             else if (type == typeof(string))
                 return BaseTypes.String;
             else if (type == typeof(MObject))

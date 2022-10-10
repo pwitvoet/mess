@@ -13,7 +13,7 @@ namespace MScript.Evaluation
                 NoneLiteral _ => null,
                 NumberLiteral numberLiteral => numberLiteral.Value,
                 StringLiteral stringLiteral => stringLiteral.Value,
-                VectorLiteral vectorLiteral => EvaluateVectorLiteral(vectorLiteral, context),
+                ArrayLiteral arrayLiteral => EvaluateArrayLiteral(arrayLiteral, context),
                 ObjectLiteral objectLiteral => EvaluateObjectLiteral(objectLiteral, context),
                 AnonymousFunctionDefinition anonymousFunctionDefinition => EvaluateAnonymousFunctionDefinition(anonymousFunctionDefinition, context),
                 Variable variable => context.Resolve(variable.Name),
@@ -29,16 +29,12 @@ namespace MScript.Evaluation
         }
 
 
-        private static object EvaluateVectorLiteral(VectorLiteral vectorLiteral, EvaluationContext context)
+        private static object EvaluateArrayLiteral(ArrayLiteral arrayLiteral, EvaluationContext context)
         {
-            var vector = new double[vectorLiteral.Elements.Count];
-            for (int i = 0; i < vectorLiteral.Elements.Count; i++)
-            {
-                if (!((Evaluate(vectorLiteral.Elements[i], context) ?? 0.0) is double number))
-                    throw new InvalidOperationException($"A {BaseTypes.Vector} can only contain numbers.");
+            var vector = new object?[arrayLiteral.Elements.Count];
+            for (int i = 0; i < arrayLiteral.Elements.Count; i++)
+                vector[i] = Evaluate(arrayLiteral.Elements[i], context);
 
-                vector[i] = number;
-            }
             return vector;
         }
 
@@ -83,14 +79,14 @@ namespace MScript.Evaluation
         private static object? EvaluateIndexing(Indexing indexing, EvaluationContext context)
         {
             var indexable = Evaluate(indexing.Indexable, context);
-            if (indexable is double[] || indexable is string)
+            if (indexable is object?[] || indexable is string)
             {
                 var indexResult = Evaluate(indexing.Index, context) ?? 0.0;
                 if (!(indexResult is double index))
                     throw new InvalidOperationException($"An index must be a {BaseTypes.Number}, not a {TypeDescriptor.GetType(indexResult)}.");
 
-                if (indexable is double[] vector)
-                    return Operations.Index(vector, (int)index);
+                if (indexable is object?[] array)
+                    return Operations.Index(array, (int)index);
                 else if (indexable is string @string)
                     return Operations.Index(@string, (int)index);
             }

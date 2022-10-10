@@ -1,11 +1,11 @@
 ﻿namespace MScript.Parsing.AST
 {
-    class VectorLiteral : Literal
+    class ArrayLiteral : Literal
     {
         public IReadOnlyList<Expression> Elements { get; }
 
 
-        public VectorLiteral(IEnumerable<Expression> elements)
+        public ArrayLiteral(IEnumerable<Expression> elements)
         {
             Elements = elements.ToArray();
         }

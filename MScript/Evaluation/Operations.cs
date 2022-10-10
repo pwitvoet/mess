@@ -8,22 +8,25 @@ namespace MScript.Evaluation
         // Arithmetic:
         public static object? Add(object? leftOperand, object? rightOperand)
         {
-            if (leftOperand is null && rightOperand is null)
-                return null;
+            return RecursiveOperation(leftOperand, rightOperand, (left, right) =>
+                {
+                    if (left is null && right is null)
+                        return null;
 
-            if (leftOperand is string || rightOperand is string)
-                return ToString(leftOperand) + ToString(rightOperand);
+                    if (left is string || right is string)
+                        return ToString(left) + ToString(right);
 
-            return NumericOperation(leftOperand, rightOperand, (a, b) => a + b);
+                    return RecursiveNumericOperation(left, right, (a, b) => a + b);
+                });
         }
 
-        public static object? Subtract(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a - b);
+        public static object? Subtract(object? leftOperand, object? rightOperand) => RecursiveNumericOperation(leftOperand, rightOperand, (a, b) => a - b);
 
-        public static object? Multiply(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a * b);
+        public static object? Multiply(object? leftOperand, object? rightOperand) => RecursiveNumericOperation(leftOperand, rightOperand, (a, b) => a * b);
 
-        public static object? Divide(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a / b);
+        public static object? Divide(object? leftOperand, object? rightOperand) => RecursiveNumericOperation(leftOperand, rightOperand, (a, b) => a / b);
 
-        public static object? Remainder(object? leftOperand, object? rightOperand) => NumericOperation(leftOperand, rightOperand, (a, b) => a % b);
+        public static object? Remainder(object? leftOperand, object? rightOperand) => RecursiveNumericOperation(leftOperand, rightOperand, (a, b) => a % b);
 
 
         // Equality:
@@ -38,8 +41,17 @@ namespace MScript.Evaluation
             if (leftOperand is double leftNumber && rightOperand is double rightNumber)
                 return ToBoolean(leftNumber == rightNumber);
 
-            if (leftOperand is double[] leftVector && rightOperand is double[] rightVector)
-                return ToBoolean(Enumerable.SequenceEqual(leftVector, rightVector));
+            if (leftOperand is object?[] leftArray && rightOperand is object?[] rightArray)
+            {
+                if (leftArray.Length != rightArray.Length)
+                    return false;
+
+                for (int i = 0; i < leftArray.Length; i++)
+                    if (!IsTrue(Equals(leftArray[i], rightArray[i])))
+                        return false;
+
+                return true;
+            }
 
             if (leftOperand is MObject leftObject && rightOperand is MObject rightObject)
                 return ToBoolean(leftObject.Equals(rightObject));
@@ -99,7 +111,7 @@ namespace MScript.Evaluation
         {
             null => null,
             double number => -number,
-            double[] vector => vector.Select(n => -n).ToArray(),
+            object?[] array => array.Select(Negate).ToArray(),
 
             _ => throw new InvalidOperationException($"Cannot negate {operand}."),
         };
@@ -117,13 +129,13 @@ namespace MScript.Evaluation
         }
 
         // Indexing:
-        public static double? Index(double[] vector, int index)
+        public static object? Index(object?[] array, int index)
         {
-            index = GetIndex(vector.Length, index);
-            if (index < 0 || index >= vector.Length)
+            index = GetIndex(array.Length, index);
+            if (index < 0 || index >= array.Length)
                 return null;
 
-            return vector[index];
+            return array[index];
         }
 
         public static string? Index(string @string, int index)
@@ -143,71 +155,64 @@ namespace MScript.Evaluation
         {
             null => "",
             double number => number.ToString(CultureInfo.InvariantCulture),
-            double[] vector => string.Join(" ", vector.Select(num => num.ToString(CultureInfo.InvariantCulture))),
+            object?[] array => string.Join(" ", array.Select(ToString)),
             _ => value.ToString() ?? "",
         };
 
 
-        private static object? NumericOperation(object? leftOperand, object? rightOperand, Func<double, double, double> operation)
+        private static object? RecursiveOperation(object? leftOperand, object? rightOperand, Func<object?, object?, object?> operation)
         {
-            if (leftOperand is double[] leftVector)
-            {
-                if (rightOperand is double[] rightVector)
-                    return VectorOperation(leftVector, rightVector, operation);
-                else if (rightOperand is double rightNumber)
-                    return VectorOperation(leftVector, Enumerable.Range(0, leftVector.Length).Select(i => rightNumber).ToArray(), operation);
-                else if (rightOperand is null)
-                    return VectorOperation(leftVector, Enumerable.Repeat(0.0, leftVector.Length).ToArray(), operation);
-            }
-            else if (leftOperand is double leftNumber)
-            {
-                if (rightOperand is double[] rightVector)
-                    return VectorOperation(Enumerable.Range(0, rightVector.Length).Select(i => leftNumber).ToArray(), rightVector, operation);
-                else if (rightOperand is double rightNumber)
-                    return operation(leftNumber, rightNumber);
-                else if (rightOperand is null)
-                    return operation(leftNumber, 0.0);
-            }
-            else if (leftOperand is null)
-            {
-                if (rightOperand is double[] rightVector)
-                    return VectorOperation(Enumerable.Repeat(0.0, rightVector.Length).ToArray(), rightVector, operation);
-                else if (rightOperand is double rightNumber)
-                    return operation(0.0, rightNumber);
-                else if (rightOperand is null)
-                    return null;
-            }
+            var leftArray = leftOperand as object?[];
+            var rightArray = rightOperand as object?[];
 
-            throw new InvalidOperationException($"Cannot perform numeric operation on {leftOperand} and {rightOperand}.");
+            if (leftArray is not null || rightArray is not null)
+            {
+                var leftArrayLength = leftArray?.Length ?? 0;
+                var rightArrayLength = rightArray?.Length ?? 0;
+                var maxLength = Math.Max(leftArrayLength, rightArrayLength);
+
+                var leftDefaultValue = leftArray is null ? leftOperand : null;
+                var rightDefaultValue = rightArray is null ? rightOperand : null;
+
+                var result = new object?[maxLength];
+                for (int i = 0; i < maxLength; i++)
+                {
+                    var left = i < leftArrayLength ? leftArray![i] : leftDefaultValue;
+                    var right = i < rightArrayLength ? rightArray![i] : rightDefaultValue;
+                    result[i] = RecursiveOperation(left, right, operation);
+                }
+                return result;
+            }
+            else
+            {
+                return operation(leftOperand, rightOperand);
+            }
         }
 
-        private static double[] VectorOperation(double[] leftVector, double[] rightVector, Func<double, double, double> operation)
+        private static object? RecursiveNumericOperation(object? leftOperand, object? rightOperand, Func<double, double, double> operation)
         {
-            var length = Math.Max(leftVector.Length, rightVector.Length);
-            var left = leftVector.Concat(Enumerable.Repeat(0.0, length - leftVector.Length));
-            var right = rightVector.Concat(Enumerable.Repeat(0.0, length - rightVector.Length));
-            return left.Zip(right, operation).ToArray();
+            return RecursiveOperation(leftOperand, rightOperand, (left, right) =>
+                {
+                    if (GetNumericalValue(left) is not double leftNumber || GetNumericalValue(right) is not double rightNumber)
+                        throw new InvalidOperationException($"Cannot perform numeric operation on {left} and {right}.");
+
+                    return operation(leftNumber, rightNumber);
+                });
         }
 
         private static object? NumericComparison(object? leftOperand, object? rightOperand, Func<double, double, bool> comparison)
         {
-            if (leftOperand is double leftNumber)
-            {
-                if (rightOperand is double rightNumber)
-                    return ToBoolean(comparison(leftNumber, rightNumber));
-                else if (rightOperand is null)
-                    return ToBoolean(comparison(leftNumber, 0.0));
-            }
-            else if (leftOperand is null)
-            {
-                if (rightOperand is double rightNumber)
-                    return ToBoolean(comparison(0.0, rightNumber));
-                else if (rightOperand is null)
-                    return ToBoolean(comparison(0.0, 0.0));
-            }
+            if (GetNumericalValue(leftOperand) is not double leftNumber || GetNumericalValue(rightOperand) is not double rightNumber)
+                throw new InvalidOperationException($"Cannot compare {leftOperand} and {rightOperand}.");
 
-            throw new InvalidOperationException($"Cannot compare {leftOperand} and {rightOperand}.");
+            return ToBoolean(comparison(leftNumber, rightNumber));
         }
+
+        private static double? GetNumericalValue(object? operand) => operand switch {
+            double value => value,
+            null => 0.0,
+            _ => null,
+        };
 
         private static int GetIndex(int length, int index) => index < 0 ? length + index : index;
 

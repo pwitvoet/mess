@@ -104,21 +104,10 @@ namespace MESS.Macros
             {
                 if (value is double number)
                     return number;
-                else if (value is double[] vector)
-                    return vector.Length > 0 ? (double?)vector[0] : null;
+                else if (value is object?[] array)
+                    return array.Length > 0 ? num(array[0]) : null;
                 else if (value is string str)
-                    return PropertyExtensions.TryParseDouble(str, out number) ? (double?)number : null;
-                else
-                    return null;
-            }
-            public static double[]? vec(object? value)
-            {
-                if (value is double[] vector)
-                    return vector;
-                else if (value is double number)
-                    return new double[] { number };
-                else if (value is string str)
-                    return PropertyExtensions.TryParseVector(str, out vector) && vector.Length > 0 ? vector : null;
+                    return PropertyExtensions.TryParseDouble(str, out number) ? number : null;
                 else
                     return null;
             }
@@ -158,25 +147,30 @@ namespace MESS.Macros
             // Colors:
             /// <summary>
             /// Returns a vector with either 3 or 4 values, where the first 3 values are between 0 and 255.
-            /// Useful to 'sanitize' colors.
+            /// Accepts both numbers and numerical strings. Other values are treated as 0. Useful to 'sanitize' colors.
             /// </summary>
-            public static double[] color(double[] color)
+            public static object?[] color(object?[] color)
             {
-                if (color == null)
-                    return new double[] { 0, 0, 0 };
+                var result = new object?[] { 0.0, 0.0, 0.0 };
+                if (color is null)
+                    return result;
 
-                if (color.Length < 3)
-                    color = color.Concat(Enumerable.Repeat(0.0, 3 - color.Length)).ToArray();
-                else if (color.Length > 4)
-                    color = color.Take(4).ToArray();
+                if (color.Length >= 4)
+                    result = new object?[] { 0.0, 0.0, 0.0, 0.0 };
 
-                for (int i = 0; i < 3; i++)
-                    color[i] = clamp(Math.Round(color[i]), 0, 255);
+                for (int i = 0; i < color.Length && i < 3; i++)
+                    result[i] = clamp(Math.Round(GetNumber(i)), 0, 255);
 
-                if (color.Length > 3)
-                    color[3] = Math.Round(color[3]);
+                if (result.Length > 3)
+                    result[3] = Math.Round(GetNumber(3));
 
-                return color;
+                return result;
+
+                double GetNumber(int index) => color[index] switch {
+                    double number => number,
+                    string str => double.TryParse(str, out var number) ? number : 0.0,
+                    _ => 0.0,
+                };
             }
 
             // Debugging:

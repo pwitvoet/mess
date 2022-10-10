@@ -42,8 +42,8 @@ namespace MScript.Evaluation
                 {
                     if (parameter.Type == BaseTypes.Number)
                         arguments[i] = 0.0;
-                    else if (parameter.Type == BaseTypes.Vector)
-                        arguments[i] = new double[] { };
+                    else if (parameter.Type == BaseTypes.Array)
+                        arguments[i] = Array.Empty<object?>();
                     else if (parameter.Type == BaseTypes.String)
                         arguments[i] = "";
                     else

@@ -16,14 +16,14 @@ namespace MScript.Evaluation
         public static TypeDescriptor Number { get; }
 
         /// <summary>
-        /// A fixed-length sequence of numbers.
-        /// </summary>
-        public static TypeDescriptor Vector { get; }
-
-        /// <summary>
         /// A sequence of characters.
         /// </summary>
         public static TypeDescriptor String { get; }
+
+        /// <summary>
+        /// A fixed-length sequence of values.
+        /// </summary>
+        public static TypeDescriptor Array { get; }
 
         /// <summary>
         /// An immutable object that contains a collection of names and associated values.
@@ -45,14 +45,14 @@ namespace MScript.Evaluation
         {
             None = new TypeDescriptor(nameof(None));
             Number = new TypeDescriptor(nameof(Number));
-            Vector = new TypeDescriptor(nameof(Vector));
             String = new TypeDescriptor(nameof(String));
+            Array = new TypeDescriptor(nameof(Array));
             Object = new TypeDescriptor(nameof(Object));
             Function = new TypeDescriptor(nameof(Function));
             Any = new TypeDescriptor(nameof(Any));
 
-            RegisterMembers(typeof(VectorMembers));
             RegisterMembers(typeof(StringMembers));
+            RegisterMembers(typeof(ArrayMembers));
         }
 
 
@@ -87,71 +87,6 @@ namespace MScript.Evaluation
 
         private static Func<object?, object?> CreateGetter(MethodInfo method) => obj => method.Invoke(null, new[] { obj });
 
-
-        static class VectorMembers
-        {
-            // Properties:
-            public static double GET_length(double[] self) => self.Length;
-            // Position:
-            public static double? GET_x(double[] self) => Operations.Index(self, 0);
-            public static double? GET_y(double[] self) => Operations.Index(self, 1);
-            public static double? GET_z(double[] self) => Operations.Index(self, 2);
-            // Angles:
-            public static double? GET_pitch(double[] self) => Operations.Index(self, 0);
-            public static double? GET_yaw(double[] self) => Operations.Index(self, 1);
-            public static double? GET_roll(double[] self) => Operations.Index(self, 2);
-            // Color:
-            public static double? GET_r(double[] self) => Operations.Index(self, 0);
-            public static double? GET_g(double[] self) => Operations.Index(self, 1);
-            public static double? GET_b(double[] self) => Operations.Index(self, 2);
-            public static double? GET_brightness(double[] self) => Operations.Index(self, 3);
-
-
-            // Methods:
-            public static double[] slice(double[] self, double start, double? end = null, double? step = null)
-            {
-                // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
-                var startIndex = NormalizedIndex((int)start);
-                var stepValue = (int)(step ?? 1);
-                if (stepValue > 0)
-                {
-                    var endIndex = NormalizedIndex((int)(end ?? self.Length));
-                    if (endIndex <= startIndex || startIndex >= self.Length)
-                        return Array.Empty<double>();
-
-                    var result = new List<double>((endIndex - startIndex) / stepValue);
-                    for (int i = startIndex; i < endIndex; i += stepValue)
-                        result.Add(self[i]);
-                    return result.ToArray();
-                }
-                else if (stepValue < 0)
-                {
-                    var endIndex = end is null ? -1 : NormalizedIndex((int)end);
-                    if (startIndex <= endIndex || endIndex >= self.Length)
-                        return Array.Empty<double>();
-
-                    var result = new List<double>((startIndex - endIndex) / -stepValue);
-                    for (int i = startIndex; i > endIndex; i += stepValue)
-                        result.Add(self[i]);
-                    return result.ToArray();
-                }
-                else
-                {
-                    // Produce an empty vector if step is 0:
-                    return Array.Empty<double>();
-                }
-
-                int NormalizedIndex(int index) => index < 0 ? self.Length + index : index;
-            }
-
-            public static double[] skip(double[] self, double count) => self.Skip((int)count).ToArray();
-            public static double[] take(double[] self, double count) => self.Take((int)count).ToArray();
-            public static double[] concat(double[] self, double[] other) => self.Concat(other).ToArray();
-
-            public static double? max(double[] self) => self.Length > 0 ? (double?)self.Max() : null;
-            public static double? min(double[] self) => self.Length > 0 ? (double?)self.Min() : null;
-            public static double sum(double[] self) => self.Sum();
-        }
 
         static class StringMembers
         {
@@ -219,6 +154,88 @@ namespace MScript.Evaluation
                     return segments[(int)index];
                 else
                     return null;
+            }
+        }
+
+        static class ArrayMembers
+        {
+            // Properties:
+            public static double GET_length(object?[] self) => self.Length;
+            // Position:
+            public static object? GET_x(object?[] self) => Operations.Index(self, 0);
+            public static object? GET_y(object?[] self) => Operations.Index(self, 1);
+            public static object? GET_z(object?[] self) => Operations.Index(self, 2);
+            // Angles:
+            public static object? GET_pitch(object?[] self) => Operations.Index(self, 0);
+            public static object? GET_yaw(object?[] self) => Operations.Index(self, 1);
+            public static object? GET_roll(object?[] self) => Operations.Index(self, 2);
+            // Color:
+            public static object? GET_r(object?[] self) => Operations.Index(self, 0);
+            public static object? GET_g(object?[] self) => Operations.Index(self, 1);
+            public static object? GET_b(object?[] self) => Operations.Index(self, 2);
+            public static object? GET_brightness(object?[] self) => Operations.Index(self, 3);
+
+
+            // Methods:
+            public static object?[] slice(object?[] self, double start, double? end = null, double? step = null)
+            {
+                // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
+                var startIndex = NormalizedIndex((int)start);
+                var stepValue = (int)(step ?? 1);
+                if (stepValue > 0)
+                {
+                    var endIndex = NormalizedIndex((int)(end ?? self.Length));
+                    if (endIndex <= startIndex || startIndex >= self.Length)
+                        return System.Array.Empty<object?>();
+
+                    var result = new List<object?>((endIndex - startIndex) / stepValue);
+                    for (int i = startIndex; i < endIndex; i += stepValue)
+                        result.Add(self[i]);
+                    return result.ToArray();
+                }
+                else if (stepValue < 0)
+                {
+                    var endIndex = end is null ? -1 : NormalizedIndex((int)end);
+                    if (startIndex <= endIndex || endIndex >= self.Length)
+                        return System.Array.Empty<object?>();
+
+                    var result = new List<object?>((startIndex - endIndex) / -stepValue);
+                    for (int i = startIndex; i > endIndex; i += stepValue)
+                        result.Add(self[i]);
+                    return result.ToArray();
+                }
+                else
+                {
+                    // Produce an empty vector if step is 0:
+                    return System.Array.Empty<object?>();
+                }
+
+                int NormalizedIndex(int index) => index < 0 ? self.Length + index : index;
+            }
+
+            public static object?[] skip(object?[] self, double count) => self.Skip((int)count).ToArray();
+            public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
+            public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
+
+            public static double? max(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Max, selector);
+            public static double? min(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Min, selector);
+            public static double? sum(object?[] self, IFunction? selector = null) => ReduceToNumber(self, (sum, number) => sum + number, selector);
+
+
+            private static double? ReduceToNumber(object?[] array, Func<double, double, double> aggregate, IFunction? selector = null)
+            {
+                var result = 0.0;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    var value = selector != null ? selector.Apply(new[] { array[i] }) : array[i];
+                    if (value is null)
+                        result = aggregate(result, 0.0);
+                    else if (value is double number)
+                        result = aggregate(result, number);
+                    else
+                        return null;
+                }
+                return result;
             }
         }
     }

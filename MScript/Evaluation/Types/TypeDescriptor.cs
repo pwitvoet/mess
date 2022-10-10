@@ -48,7 +48,7 @@
         {
             null => BaseTypes.None,
             double _ => BaseTypes.Number,
-            double[] _ => BaseTypes.Vector,
+            object?[] _ => BaseTypes.Array,
             string _ => BaseTypes.String,
             MObject _ => BaseTypes.Object,
             IFunction _ => BaseTypes.Function,
