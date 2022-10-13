@@ -95,6 +95,12 @@ namespace MScript.Evaluation
 
 
             // Methods:
+            public static bool equals(string self, string? str, double? mode = null)
+            {
+                var comparisonType = mode is double d && d == 1 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                return self.Equals(str, comparisonType);
+            }
+
             /// <summary>
             /// Returns a substring.
             /// Supports negative indexing.
@@ -132,6 +138,18 @@ namespace MScript.Evaluation
             }
 
             public static bool contains(string self, string? str) => str is not null ? self.Contains(str) : false;
+            public static double? index(string self, string str, double? offset = null)
+            {
+                var startIndex = NormalizedIndex(self, offset is null ? 0 : (int)offset);
+                var index = self.IndexOf(str, startIndex);
+                return index != -1 ? index : null;
+            }
+            public static double? lastindex(string self, string str, double? offset = null)
+            {
+                var startIndex = NormalizedIndex(self, offset is null ? 0 : (int)offset);
+                var index = self.LastIndexOf(str, startIndex);
+                return index != -1 ? index : null;
+            }
             public static bool startswith(string self, string? str) => str is not null ? self.StartsWith(str) : false;
             public static bool endswith(string self, string? str) => str is not null ? self.EndsWith(str) : false;
             public static string replace(string self, string? str, string? replacement) => str is not null ? self.Replace(str, replacement) : self;
@@ -140,21 +158,11 @@ namespace MScript.Evaluation
             public static string trimstart(string self, string? chars = null) => self.TrimStart(chars?.ToArray());
             public static string trimend(string self, string? chars = null) => self.TrimEnd(chars?.ToArray());
 
-            public static string? segment(string self, string? delimiter, double index)
-            {
-                // NOTE: An empty or null delimiter is safe, it just won't cause any splits:
-                var segments = self.Split(new string[] { delimiter ?? "" }, StringSplitOptions.None);
+            public static object?[] split(string self, string? delimiter = null) => self.Split(delimiter ?? " ", StringSplitOptions.None).Cast<object?>().ToArray();
+            public static string join(string self, object?[] array) => string.Join(self, array.Select(value => Operations.ToString(value)));
 
-                // Negative indexing:
-                index = (int)index;
-                if (index < 0)
-                    index = segments.Length + index;
 
-                if (index >= 0 && index < segments.Length)
-                    return segments[(int)index];
-                else
-                    return null;
-            }
+            private static int NormalizedIndex(string str, int index) => index < 0 ? str.Length + index : index;
         }
 
         static class ArrayMembers
@@ -180,11 +188,11 @@ namespace MScript.Evaluation
             public static object?[] slice(object?[] self, double start, double? end = null, double? step = null)
             {
                 // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
-                var startIndex = NormalizedIndex((int)start);
+                var startIndex = NormalizedIndex(self, (int)start);
                 var stepValue = (int)(step ?? 1);
                 if (stepValue > 0)
                 {
-                    var endIndex = NormalizedIndex((int)(end ?? self.Length));
+                    var endIndex = NormalizedIndex(self, (int)(end ?? self.Length));
                     if (endIndex <= startIndex || startIndex >= self.Length)
                         return System.Array.Empty<object?>();
 
@@ -195,7 +203,7 @@ namespace MScript.Evaluation
                 }
                 else if (stepValue < 0)
                 {
-                    var endIndex = end is null ? -1 : NormalizedIndex((int)end);
+                    var endIndex = end is null ? -1 : NormalizedIndex(self, (int)end);
                     if (startIndex <= endIndex || endIndex >= self.Length)
                         return System.Array.Empty<object?>();
 
@@ -209,13 +217,67 @@ namespace MScript.Evaluation
                     // Produce an empty vector if step is 0:
                     return System.Array.Empty<object?>();
                 }
-
-                int NormalizedIndex(int index) => index < 0 ? self.Length + index : index;
             }
 
             public static object?[] skip(object?[] self, double count) => self.Skip((int)count).ToArray();
             public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
             public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
+
+            public static object?[] map(object?[] self, IFunction function)
+            {
+                if (function.Parameters.Count < 1 || function.Parameters.Count > 2)
+                    throw new InvalidOperationException($"The function given to {nameof(map)} must take 1 (value) or 2 (value, index) arguments, not {function.Parameters.Count}.");
+
+                var result = new object?[self.Length];
+                if (function.Parameters.Count == 1)
+                {
+                    for (int i = 0; i < self.Length; i++)
+                        result[i] = function.Apply(new[] { self[i] });
+                }
+                else
+                {
+                    for (int i = 0; i < self.Length; i++)
+                        result[i] = function.Apply(new[] { self[i], (double)i });
+                }
+                return result;
+            }
+            public static object?[] filter(object?[] self, IFunction predicate)
+            {
+                if (predicate.Parameters.Count < 1 || predicate.Parameters.Count > 2)
+                    throw new InvalidOperationException($"The function given to {nameof(filter)} must take 1 (value) or 2 (value, index) arguments, not {predicate.Parameters.Count}.");
+
+                var result = new List<object?>();
+                if (predicate.Parameters.Count == 1)
+                {
+                    for (int i = 0; i < self.Length; i++)
+                    {
+                        if (Operations.IsTrue(predicate.Apply(new[] { self[i] })))
+                            result.Add(self[i]);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < self.Length; i++)
+                    {
+                        if (Operations.IsTrue(predicate.Apply(new[] { self[i], (double)i })))
+                            result.Add(self[i]);
+                    }
+                }
+                return result.ToArray();
+            }
+            public static object? reduce(object?[] self, IFunction function, object? startValue = null)
+            {
+                if (self.Length == 0)
+                    return startValue;
+
+                var foldBehavior = startValue is not null;
+                var result = foldBehavior ? startValue : self[0];
+                for (int i = foldBehavior ? 0 : 1; i < self.Length; i++)
+                    result = function.Apply(new[] { result, self[i] });
+                return result;
+            }
+            public static object?[] sort(object?[] self, IFunction sortby) => self.OrderBy(value => sortby.Apply(new[] { value }) is double number ? number : 0.0).ToArray();
+            public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
 
             public static double? max(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Max, selector);
             public static double? min(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Min, selector);
@@ -237,6 +299,8 @@ namespace MScript.Evaluation
                 }
                 return result;
             }
+
+            private static int NormalizedIndex(object?[] array, int index) => index < 0 ? array.Length + index : index;
         }
     }
 }
