@@ -170,11 +170,6 @@ namespace MESS.Macros
         public string EvaluateInterpolatedString(string? interpolatedString) => Evaluation.EvaluateInterpolatedString(interpolatedString, _evaluationContext);
 
         /// <summary>
-        /// Calls <see cref="Evaluation.EvaluateExpression(string, EvaluationContext)"/>, using this instance's evaluation context.
-        /// </summary>
-        public object? EvaluateExpression(string? expression) => Evaluation.EvaluateExpression(expression, _evaluationContext);
-
-        /// <summary>
         /// Returns a random double. Min is inclusive, max is exclusive.
         /// </summary>
         public double GetRandomDouble(double min, double max) => (min + _random.NextDouble() * (max - min));

@@ -72,7 +72,71 @@ namespace MScript.Parsing
             }
         }
 
-        //public static void ParseInterpolatedString() { }  // This could offer more robust parsing for interpolated strings than a simple regex!
+        /// <summary>
+        /// Parses the given interpolated string. Any part surrounded by curly braces ({ and }) is parsed as an MScript expression.
+        /// The returned sequence alternatingly consists of strings and <see cref="Expression"/> objects.
+        /// </summary>
+        public static IEnumerable<object> ParseInterpolatedString(string input)
+        {
+            var offset = 0;
+            while (offset < input.Length)
+            {
+                var nextBraceIndex = input.IndexOf('{', offset);
+                if (nextBraceIndex == -1)
+                {
+                    if (input.Length > offset)
+                        yield return input.Substring(offset);
+                    yield break;
+                }
+                else if (nextBraceIndex > offset)
+                {
+                    yield return input.Substring(offset, nextBraceIndex - offset);
+                }
+
+                // Look for the end of the current interpolated expression part:
+                var insideString = false;
+                var openBraceCount = 1;
+                for (int i = nextBraceIndex + 1; i < input.Length; i++)
+                {
+                    if (!insideString && input[i] == '\'')
+                    {
+                        // Find end of string (ignore \' escape sequences):
+                        var isEscaped = false;
+                        for (; i < input.Length; i++)
+                        {
+                            if (!isEscaped)
+                            {
+                                if (input[i] == '\\')
+                                    isEscaped = true;
+                                else if (input[i] == '\'')
+                                    break;
+                            }
+                            else
+                            {
+                                isEscaped = false;
+                            }
+                        }
+                    }
+                    else if (input[i] == '{')
+                    {
+                        openBraceCount += 1;
+                    }
+                    else if (input[i] == '}')
+                    {
+                        openBraceCount -= 1;
+                        if (openBraceCount == 0)
+                        {
+                            var expressionPart = input.Substring(nextBraceIndex + 1, i - nextBraceIndex - 1).Trim();
+                            if (expressionPart != "")
+                                yield return ParseExpression(Tokenizer.Tokenize(expressionPart));
+
+                            offset = i + 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
 
         private static void Shift(Context context)

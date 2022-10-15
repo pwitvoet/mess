@@ -3,15 +3,14 @@ using MESS.Logging;
 using MESS.Mapping;
 using MScript;
 using MScript.Evaluation;
+using MScript.Parsing;
 using System.Globalization;
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace MESS.Macros
 {
     static class Evaluation
     {
-        // NOTE: This regex takes into account that strings inside expressions can contain curly braces:
-        private static Regex _expressionRegex = new Regex(@"{(?<expression>(('[^']*')|[^}'])*)}");
         private static EvaluationContext _globalsContext;
 
 
@@ -52,38 +51,29 @@ namespace MESS.Macros
             if (interpolatedString == null)
                 return "";
 
-            return _expressionRegex.Replace(interpolatedString, match =>
+            var sb = new StringBuilder();
+            foreach (var part in Parser.ParseInterpolatedString(interpolatedString))
             {
-                var expression = match.Groups["expression"].Value;
-                var result = EvaluateExpression(expression, context);
-                return Interpreter.Print(result);
-            });
-        }
-
-        /// <summary>
-        /// Evaluates the given expression and returns the resulting value.
-        /// </summary>
-        public static object? EvaluateExpression(string? expression, EvaluationContext context)
-        {
-            if (string.IsNullOrEmpty(expression?.Trim()))
-                return null;
-
-            try
-            {
-                return Interpreter.Evaluate(expression, context);
+                if (part is string str)
+                {
+                    sb.Append(str);
+                }
+                else if (part is Expression expression)
+                {
+                    try
+                    {
+                        var result = Evaluator.Evaluate(expression, context);
+                        sb.Append(Interpreter.Print(result));
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.Data["expression"] = expression;
+                        throw;
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                ex.Data["expression"] = expression;
-                throw;
-            }
+            return sb.ToString();
         }
-
-        /// <summary>
-        /// Returns true if the given string contains one or more expressions (delimited by curly braces).
-        /// </summary>
-        public static bool ContainsExpressions(string interpolatedString)
-            => _expressionRegex.IsMatch(interpolatedString);
 
 
         static Evaluation()
