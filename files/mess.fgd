@@ -133,7 +133,7 @@
 
 // This entity creates a copy of its brushwork for each world brush and brush entity in the specified template.
 // Each copy takes on the textures and entity properties of the matching world brush or brush entity in the template.
-@SolidClass base(TemplateInserter) = macro_brush : "Use brushes with template"
+@SolidClass = macro_brush : "Use brushes with template"
 [
     targetname(target_source) : "Name"
 
