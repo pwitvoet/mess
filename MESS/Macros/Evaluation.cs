@@ -67,6 +67,7 @@ namespace MESS.Macros
                     }
                     catch (Exception ex)
                     {
+                        ex.Data["input"] = interpolatedString;
                         ex.Data["expression"] = expression;
                         throw;
                     }
@@ -232,7 +233,7 @@ namespace MESS.Macros
                 if (flags == null)
                     flags = _properties.TryGetValue(Attributes.Spawnflags, out var val) && val is double d ? d : 0;
 
-                var bit = (int)flags;
+                var bit = (int)flag;
                 if (bit < 0 || bit > 31)
                     return false;
 
