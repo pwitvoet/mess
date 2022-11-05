@@ -95,6 +95,7 @@ namespace MScript.Parsing
 
                 // Look for the end of the current interpolated expression part:
                 var insideString = false;
+                var endBraceFound = false;
                 var openBraceCount = 1;
                 for (int i = nextBraceIndex + 1; i < input.Length; i++)
                 {
@@ -131,9 +132,16 @@ namespace MScript.Parsing
                                 yield return ParseExpression(Tokenizer.Tokenize(expressionPart));
 
                             offset = i + 1;
+                            endBraceFound = true;
                             break;
                         }
                     }
+                }
+
+                if (!endBraceFound)
+                {
+                    yield return input.Substring(nextBraceIndex);
+                    break;
                 }
             }
         }
