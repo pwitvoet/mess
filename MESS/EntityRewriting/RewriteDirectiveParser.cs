@@ -55,11 +55,7 @@ namespace MESS.EntityRewriting
 
                 // Property arguments:
                 Expect(context, FgdTokenizer.TokenType.ParensOpen);
-                while (context.Current.Type == FgdTokenizer.TokenType.Minus ||
-                    context.Current.Type == FgdTokenizer.TokenType.Integer ||
-                    context.Current.Type == FgdTokenizer.TokenType.String ||
-                    context.Current.Type == FgdTokenizer.TokenType.Name ||
-                    context.Current.Type == FgdTokenizer.TokenType.Comma)
+                while (context.Current.Type != FgdTokenizer.TokenType.ParensClose)  // TODO: Do actual structured parsing -- this is too lenient!
                 {
                     context.MoveNext();
                 }

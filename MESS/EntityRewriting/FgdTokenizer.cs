@@ -60,6 +60,8 @@ namespace MESS.EntityRewriting
                 case ')': context.MoveNext(); return new Token(TokenType.ParensClose, context.Current.ToString());
                 case '[': context.MoveNext(); return new Token(TokenType.BracketOpen, context.Current.ToString());
                 case ']': context.MoveNext(); return new Token(TokenType.BracketClose, context.Current.ToString());
+                case '{': context.MoveNext(); return new Token(TokenType.BraceOpen, context.Current.ToString());
+                case '}': context.MoveNext(); return new Token(TokenType.BraceClose, context.Current.ToString());
 
                 case '"':
                     return ReadString(context);
@@ -171,6 +173,8 @@ namespace MESS.EntityRewriting
             ParensClose,
             BracketOpen,
             BracketClose,
+            BraceOpen,
+            BraceClose,
         }
 
 
