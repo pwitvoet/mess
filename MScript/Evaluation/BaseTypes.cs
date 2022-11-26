@@ -222,6 +222,35 @@ namespace MScript.Evaluation
             public static object?[] skip(object?[] self, double count) => self.Skip((int)count).ToArray();
             public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
             public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
+            public static object?[] insert(object?[] self, double index, object? value)
+            {
+                var insertIndex = NormalizedIndex(self, (int)index);
+                if (insertIndex < 0)
+                    insertIndex = 0;
+                else if (insertIndex > self.Length)
+                    insertIndex = self.Length;
+
+                var result = new object?[self.Length + 1];
+                for (int i = 0; i < insertIndex; i++)
+                    result[i] = self[i];
+
+                result[insertIndex] = value;
+                for (int i = insertIndex; i < self.Length; i++)
+                    result[i + 1] = self[i];
+
+                return result;
+            }
+
+            public static object? contains(object?[] self, object? value) => self.Any(val => Operations.IsTrue(Operations.Equals(val, value)));
+            public static double? indexof(object?[] self, object? value)
+            {
+                for (int i = 0; i < self.Length; i++)
+                {
+                    if (Operations.IsTrue(Operations.Equals(self[i], value)))
+                        return i;
+                }
+                return null;
+            }
 
             public static object?[] map(object?[] self, IFunction function)
             {
@@ -279,6 +308,7 @@ namespace MScript.Evaluation
             public static object?[] sort(object?[] self, IFunction sortby) => self.OrderBy(value => sortby.Apply(new[] { value }) is double number ? number : 0.0).ToArray();
             public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
 
+            // Numerical arrays only:
             public static double? max(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Max, selector);
             public static double? min(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Min, selector);
             public static double? sum(object?[] self, IFunction? selector = null) => ReduceToNumber(self, (sum, number) => sum + number, selector);
