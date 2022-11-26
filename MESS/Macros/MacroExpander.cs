@@ -6,7 +6,6 @@ using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
 using MScript.Evaluation;
-using System.Globalization;
 using System.Reflection;
 
 namespace MESS.Macros
@@ -24,14 +23,17 @@ namespace MESS.Macros
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
+            var random = new Random(0); // TODO: Look for Attributes.RandomSeed in settings.Variables!
             var globals = new Dictionary<string, object?>();
-            var expander = new MacroExpander(settings, logger);
+            var topLevelContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, random, globals, logger);
+
+            var expander = new MacroExpander(settings, topLevelContext, logger);
             var mainTemplate = expander.GetMapTemplate(path, globals);
 
             var context = new InstantiationContext(
                 mainTemplate,
                 logger,
-                settings.Variables?.ToDictionary(kv => kv.Key, kv => Interpreter.Print(kv.Value)) ?? new(),
+                settings.Variables ?? new(),
                 settings.Directory,
                 globals);
             expander.CreateInstance(context);
@@ -41,6 +43,7 @@ namespace MESS.Macros
 
 
         private ExpansionSettings Settings { get; }
+        private EvaluationContext TopLevelContext { get; }
         private ILogger Logger { get; }
 
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
@@ -50,9 +53,10 @@ namespace MESS.Macros
         private DirectoryFunctions _directoryFunctions;
 
 
-        private MacroExpander(ExpansionSettings settings, ILogger logger)
+        private MacroExpander(ExpansionSettings settings, EvaluationContext topLevelContext, ILogger logger)
         {
             Settings = settings;
+            TopLevelContext = topLevelContext;
             Logger = logger;
 
             _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
@@ -79,18 +83,17 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives)
+        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives, EvaluationContext topLevelContext, IDictionary<string, object?> globals)
         {
             Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
 
-            var randomSeed = (int)(map.Properties.GetNumericProperty(Attributes.RandomSeed) ?? 0);
+            var randomSeed = (int)(map.Properties.EvaluateToMScriptValue(Attributes.RandomSeed, topLevelContext) as double? ?? 0.0);
             var random = new Random(randomSeed);
-            var globals = new Dictionary<string, object?>();
 
             var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
 
             foreach (var rewriteDirective in directiveLookup[Entities.Worldspawn])
-                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random, globals);
+                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random, topLevelContext, globals);
 
             for (int i = 0; i < map.Entities.Count; i++)
             {
@@ -99,18 +102,33 @@ namespace MESS.Macros
 
                 var matchingDirectives = directiveLookup[entity.ClassName ?? ""];
                 foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random, globals);
+                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random, topLevelContext, globals);
             }
         }
 
-        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, IDictionary<string, object?> globals)
+        private void ApplyRewriteDirective(
+            Dictionary<string, string> entityProperties,
+            RewriteDirective rewriteDirective,
+            int entityID,
+            Random random,
+            EvaluationContext topLevelContext,
+            IDictionary<string, object?> globals)
         {
-            var context = Evaluation.ContextFromProperties(entityProperties, entityID, entityID, random, globals, Logger);
+            var evaluatedProperties = entityProperties.EvaluateToMScriptValues(topLevelContext);
+
+            var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, globals, Logger);
             NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
-                if (!ruleGroup.HasCondition || Interpreter.IsTrue(PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(ruleGroup.Condition, context))))
+                var isConditionTrue = false;
+                if (ruleGroup.HasCondition)
+                {
+                    var result = Evaluation.EvaluateInterpolatedStringOrExpression(ruleGroup.Condition, context);
+                    isConditionTrue = Interpreter.IsTrue(result) && result is not 0.0;
+                }
+
+                if (!ruleGroup.HasCondition || isConditionTrue)
                 {
                     foreach (var rule in ruleGroup.Rules)
                         ApplyRewriteRule(entityProperties, rule, context);
@@ -154,9 +172,9 @@ namespace MESS.Macros
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
-                ApplyRewriteDirectives(map, _rewriteDirectives);
+                ApplyRewriteDirectives(map, _rewriteDirectives, TopLevelContext, globals);
 
-                template = MapTemplate.FromMap(map, path, globals, Logger);
+                template = MapTemplate.FromMap(map, path, TopLevelContext, globals, Logger);
 
                 _mapTemplateCache[path] = template;
             }
@@ -199,10 +217,10 @@ namespace MESS.Macros
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
-                    .Where(subTemplate => context.EvaluateInterpolatedString(subTemplate.Name) == templateName)
+                    .Where(subTemplate => Evaluation.EvaluateInterpolatedString(subTemplate.Name, context) == templateName)
                     .Select(subTemplate => new {
                         SubTemplate = subTemplate,
-                        Weight = double.TryParse(context.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression), NumberStyles.Float, CultureInfo.InvariantCulture, out var weight) ? weight : 0
+                        Weight = PropertyExtensions.TryParseDouble(Evaluation.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression, context), out var weight) ? weight : 0
                     })
                     .ToArray();
                 if (matchingSubTemplates.Length == 0)
@@ -316,7 +334,7 @@ namespace MESS.Macros
             catch (Exception ex)
             {
                 ex.Data["classname"] = entity.ClassName;
-                ex.Data["targetname"] = entity.GetStringProperty("targetname");
+                ex.Data["targetname"] = entity.Properties.GetString(Attributes.Targetname);
                 ex.Data["context ID"] = context.ID;
                 throw;
             }
@@ -328,36 +346,36 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, insertEntity, Attributes.InstanceCount, Attributes.RandomSeed);
+            EvaluateAndUpdateProperties(context, insertEntity, Attributes.InstanceCount, Attributes.RandomSeed);
 
-            var instanceCount = insertEntity.GetIntegerProperty(Attributes.InstanceCount) ?? 1;
-            var randomSeed = insertEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
+            var instanceCount = insertEntity.Properties.GetInteger(Attributes.InstanceCount) ?? 1;
+            var randomSeed = insertEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
 
             var random = new Random(randomSeed);
             for (int i = 0; i < instanceCount; i++)
             {
                 var sequenceContext = context.GetChildContextWithSequenceNumber(i);
                 var template = ResolveTemplate(
-                    sequenceContext.EvaluateInterpolatedString(insertEntity.GetStringProperty(Attributes.TemplateMap)),
-                    sequenceContext.EvaluateInterpolatedString(insertEntity.GetStringProperty(Attributes.TemplateName)),
+                    Evaluation.EvaluateInterpolatedString(insertEntity.Properties.GetString(Attributes.TemplateMap), sequenceContext),
+                    Evaluation.EvaluateInterpolatedString(insertEntity.Properties.GetString(Attributes.TemplateName), sequenceContext),
                     sequenceContext);
                 if (template == null)
                     continue;
 
                 // Evaluating properties again for each instance allows for iterating (nth function) and randomization (rand/randi functions):
-                var evaluatedProperties = EvaluateAllProperties(sequenceContext, insertEntity.Properties);  // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
+                var evaluatedProperties = insertEntity.Properties.EvaluateToMScriptValues(sequenceContext); // TODO: This can produce different values for instance-count, random-seed, template-map and template-name! (also an issue in macro_cover and macro_fill?)
 
                 // NOTE: Because some editors use 0 as default value for missing attributes, we'll swap values here to ensure that Local is the default behavior:
-                var orientation = (evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0) == 0 ? Orientation.Local : Orientation.Global;
+                var orientation = (evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0) == 0 ? Orientation.Local : Orientation.Global;
                 var rotation = Matrix3x3.Identity;
                 if (orientation == Orientation.Local)
                     rotation = sequenceContext.Transform.Rotation;
 
                 // Create a child context for this insertion, with a properly adjusted transform:
-                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.Scale) ?? 1);
-                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
-                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
-                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+                var scale = (float)(evaluatedProperties.GetDouble(Attributes.Scale) ?? 1);
+                var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
+                var anglesMatrix = evaluatedProperties.GetAngles(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
                 var transform = new Transform(
                     sequenceContext.Transform.Scale * scale,
@@ -398,13 +416,13 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
+            EvaluateAndUpdateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
             SetBrushEntityOriginProperty(coverEntity);
 
-            var maxInstances = coverEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
-            var radius = (float)(coverEntity.GetNumericProperty(Attributes.Radius) ?? 0);
-            var randomSeed = coverEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
-            var brushBehavior = (CoverBrushBehavior)(coverEntity.GetIntegerProperty(Attributes.BrushBehavior) ?? 0);
+            var maxInstances = coverEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
+            var radius = (float)(coverEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
+            var randomSeed = coverEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
+            var brushBehavior = (CoverBrushBehavior)(coverEntity.Properties.GetInteger(Attributes.BrushBehavior) ?? 0);
 
 
             // Between 0 and 1, maxInstances acts as a 'coverage factor':
@@ -431,16 +449,16 @@ namespace MESS.Macros
 
                 var sequenceContext = context.GetChildContextWithSequenceNumber(sequenceNumber);
                 var template = ResolveTemplate(
-                    sequenceContext.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateMap)),
-                    sequenceContext.EvaluateInterpolatedString(coverEntity.GetStringProperty(Attributes.TemplateName)),
+                    Evaluation.EvaluateInterpolatedString(coverEntity.Properties.GetString(Attributes.TemplateMap), sequenceContext),
+                    Evaluation.EvaluateInterpolatedString(coverEntity.Properties.GetString(Attributes.TemplateName), sequenceContext),
                     sequenceContext);
                 if (template == null)
                     continue;
 
                 // Evaluating properties again for each instance allows for randomization:
-                var evaluatedProperties = EvaluateAllProperties(sequenceContext, coverEntity.Properties);
+                var evaluatedProperties = coverEntity.Properties.EvaluateToMScriptValues(sequenceContext);
 
-                var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
+                var orientation = (Orientation)(evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, selection.Face, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
@@ -467,7 +485,7 @@ namespace MESS.Macros
             }
 
 
-            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Face face, Dictionary<string, string> evaluatedProperties)
+            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Face face, Dictionary<string, object?> evaluatedProperties)
             {
                 var rotation = Matrix3x3.Identity;  // Global
                 switch (orientation)
@@ -501,10 +519,10 @@ namespace MESS.Macros
                     }
                 }
 
-                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1);
-                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
-                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
-                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+                var scale = (float)(evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1);
+                var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
+                var anglesMatrix = evaluatedProperties.GetAngles(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
                 return new Transform(
                     scale,
@@ -536,21 +554,21 @@ namespace MESS.Macros
 
             // Most properties will be evaluated again for each template instance that this entity creates,
             // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
+            EvaluateAndUpdateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
             SetBrushEntityOriginProperty(fillEntity);
 
-            var maxInstances = fillEntity.GetNumericProperty(Attributes.MaxInstances) ?? 0.0;
-            var radius = (float)(fillEntity.GetNumericProperty(Attributes.Radius) ?? 0);
-            var randomSeed = fillEntity.GetIntegerProperty(Attributes.RandomSeed) ?? 0;
-            var fillMode = (FillMode)(fillEntity.GetIntegerProperty(Attributes.FillMode) ?? 0);
+            var maxInstances = fillEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
+            var radius = (float)(fillEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
+            var randomSeed = fillEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
+            var fillMode = (FillMode)(fillEntity.Properties.GetInteger(Attributes.FillMode) ?? 0);
 
             // Grid snapping settings:
-            var gridOrientation = (Orientation)(fillEntity.GetIntegerProperty(Attributes.GridOrientation) ?? 0);    // TODO: Only global & local!
+            var gridOrientation = (Orientation)(fillEntity.Properties.GetInteger(Attributes.GridOrientation) ?? 0);    // TODO: Only global & local!
             var gridOrigin = fillEntity.GetOrigin() ?? new Vector3D();  // TODO: For local grid orientation, pick the insertion point of the current context as fallback!!!
 
             // NOTE: A granularity of 0 (or lower) will disable snapping along that axis.
             var gridGranularity = new Vector3D();
-            if (fillEntity.GetNumericArrayProperty(Attributes.GridGranularity) is double[] granularityArray)
+            if (fillEntity.Properties.GetDoubleArray(Attributes.GridGranularity) is double[] granularityArray)
             {
                 if (granularityArray.Length == 1)
                     gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[0], (float)granularityArray[0]);
@@ -635,16 +653,16 @@ namespace MESS.Macros
             {
                 var sequenceContext = context.GetChildContextWithSequenceNumber(sequenceNumber);
                 var template = ResolveTemplate(
-                    sequenceContext.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateMap)),
-                    sequenceContext.EvaluateInterpolatedString(fillEntity.GetStringProperty(Attributes.TemplateName)),
+                    Evaluation.EvaluateInterpolatedString(fillEntity.Properties.GetString(Attributes.TemplateMap), sequenceContext),
+                    Evaluation.EvaluateInterpolatedString(fillEntity.Properties.GetString(Attributes.TemplateName), sequenceContext),
                     sequenceContext);
                 if (template == null)
                     return;
 
                 // Evaluating properties again for each instance allows for randomization:
-                var evaluatedProperties = EvaluateAllProperties(sequenceContext, fillEntity.Properties);
+                var evaluatedProperties = fillEntity.Properties.EvaluateToMScriptValues(sequenceContext);
 
-                var orientation = (Orientation)(evaluatedProperties.GetIntegerProperty(Attributes.InstanceOrientation) ?? 0);
+                var orientation = (Orientation)(evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, evaluatedProperties);
                 var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
@@ -652,16 +670,16 @@ namespace MESS.Macros
                 sequenceNumber += 1;
             }
 
-            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Dictionary<string, string> evaluatedProperties)
+            Transform GetTransform(Vector3D insertionPoint, Orientation orientation, Dictionary<string, object?> evaluatedProperties)
             {
                 var rotation = Matrix3x3.Identity;  // Global (macro_fill only supports global and local orientations)
                 if (orientation == Orientation.Local)
                     rotation = context.Transform.Rotation;
 
-                var scale = (float)(evaluatedProperties.GetNumericProperty(Attributes.InstanceScale) ?? 1);
-                var geometryScale = evaluatedProperties.GetVector3DProperty(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
-                var anglesMatrix = evaluatedProperties.GetAnglesProperty(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
-                var offset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+                var scale = (float)(evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1);
+                var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
+                var anglesMatrix = evaluatedProperties.GetAngles(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
+                var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
                 return new Transform(
                     scale,
@@ -710,10 +728,10 @@ namespace MESS.Macros
 
             // A macro_brush only creates a single 'instance' of its template, so all properties are evaluated up-front, once:
             SetBrushEntityOriginProperty(brushEntity);
-            var evaluatedProperties = EvaluateAllProperties(context, brushEntity.Properties);
+            var evaluatedProperties = brushEntity.Properties.EvaluateToMScriptValues(context);
             evaluatedProperties.UpdateTransformProperties(context.Transform);
 
-            var template = ResolveTemplate(evaluatedProperties.GetStringProperty(Attributes.TemplateMap), evaluatedProperties.GetStringProperty(Attributes.TemplateName), context);
+            var template = ResolveTemplate(evaluatedProperties.GetString(Attributes.TemplateMap), evaluatedProperties.GetString(Attributes.TemplateName), context);
             if (template == null)
                 return;
 
@@ -724,8 +742,8 @@ namespace MESS.Macros
 
             // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
             //       Verify that this works correctly now!!!
-            var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.GetEnumProperty<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
-            var anchorOffset = evaluatedProperties.GetVector3DProperty(Attributes.InstanceOffset) ?? new Vector3D();
+            var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
+            var anchorOffset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
             var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
             var pointContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
@@ -815,22 +833,22 @@ namespace MESS.Macros
         private void HandleNormalEntity(InstantiationContext context, Entity normalEntity)
         {
             // Evaluate expressions in both keys and values:
-            var evaluatedProperties = EvaluateAllProperties(context, normalEntity.Properties);
-
-            normalEntity.Properties.Clear();
-            foreach (var kv in evaluatedProperties)
-                normalEntity.Properties[kv.Key] = kv.Value;
-
+            var evaluatedProperties = normalEntity.Properties.EvaluateToMScriptValues(context);
 
             // Determine whether this entity requires inverted-pitch handling:
             var invertedPitch = false;
             if (Settings.InvertedPitchPredicate != null)
             {
-                var evaluationContext = Evaluation.ContextFromProperties(normalEntity.Properties, 0, 0, new Random(), context.Globals, Logger);
-                var predicateResult = PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(Settings.InvertedPitchPredicate, evaluationContext));
+                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), context.Globals, Logger);
+                var predicateResult = Evaluation.EvaluateInterpolatedStringOrExpression(Settings.InvertedPitchPredicate, evaluationContext);
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }
-            normalEntity.Properties.UpdateTransformProperties(context.Transform, invertedPitch);
+            evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
+
+
+            normalEntity.Properties.Clear();
+            foreach (var kv in evaluatedProperties)
+                normalEntity.Properties[kv.Key] = Interpreter.Print(kv.Value);
 
 
             Logger.Verbose($"Creating '{normalEntity.ClassName}', using {(invertedPitch ? "inverted" : "normal")} pitch.");
@@ -843,8 +861,8 @@ namespace MESS.Macros
             var excludedObjects = new HashSet<object>();
             foreach (var conditionalContent in context.Template.ConditionalContents)
             {
-                var removal = PropertyExtensions.ParseProperty(context.EvaluateInterpolatedString(conditionalContent.RemovalCondition));
-                if (Interpreter.IsTrue(removal) && !(removal is double d && d == 0))
+                var removal = Evaluation.EvaluateInterpolatedStringOrExpression(conditionalContent.RemovalCondition, context);
+                if (Interpreter.IsTrue(removal) && removal is not 0.0)
                 {
                     logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true ({removal?.ToString()}), excluding {conditionalContent.Contents.Count} objects.");
                     excludedObjects.UnionWith(conditionalContent.Contents);
@@ -857,32 +875,17 @@ namespace MESS.Macros
             return excludedObjects;
         }
 
-        private static void EvaluateProperties(InstantiationContext context, Entity entity, params string[] propertyNames)
+        /// <summary>
+        /// Evaluates the values of only the specified properties, and overwrites their original values.
+        /// Useful for macro entity properties that must be evaluated once, up-front.
+        /// </summary>
+        private static void EvaluateAndUpdateProperties(InstantiationContext context, Entity entity, params string[] propertyNames)
         {
             foreach (var name in propertyNames)
             {
                 if (entity.Properties.TryGetValue(name, out var value))
-                    entity.Properties[name] = context.EvaluateInterpolatedString(value);
+                    entity.Properties[name] = Evaluation.EvaluateInterpolatedString(value, context);
             }
-        }
-
-        /// <summary>
-        /// Evaluates any expressions in the given properties.
-        /// Keys that evaluate to "" are omitted (their values are not evaluated).
-        /// Any 'spawnflag{N}' attributes are removed, but their values are used to set or update the special 'spawnflags' attribute.
-        /// </summary>
-        private static Dictionary<string, string> EvaluateAllProperties(InstantiationContext context, IDictionary<string, string> properties)
-        {
-            var evaluatedProperties = new Dictionary<string, string>();
-            foreach (var kv in properties)
-            {
-                var key = context.EvaluateInterpolatedString(kv.Key);
-                if (key != "")
-                    evaluatedProperties[key] = context.EvaluateInterpolatedString(kv.Value);
-            }
-
-            evaluatedProperties.UpdateSpawnFlags();
-            return evaluatedProperties;
         }
 
         private static TElement? TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)

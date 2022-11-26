@@ -15,22 +15,22 @@ namespace MESS.Mapping
 
         public string ClassName
         {
-            get => Properties.GetStringProperty(Attributes.Classname) ?? "";
-            set => Properties.SetStringProperty(Attributes.Classname, value);
+            get => Properties.GetString(Attributes.Classname) ?? "";
+            set => Properties.SetString(Attributes.Classname, value);
         }
 
         public int Flags
         {
-            get => Properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
-            set => Properties.SetIntegerProperty(Attributes.Spawnflags, value);
+            get => Properties.GetInteger(Attributes.Spawnflags) ?? 0;
+            set => Properties.SetInteger(Attributes.Spawnflags, value);
         }
 
         public Vector3D Origin
         {
-            get => Properties.GetVector3DProperty(Attributes.Origin) ?? new Vector3D();
+            get => Properties.GetVector3D(Attributes.Origin) ?? new Vector3D();
             set
             {
-                Properties.SetVector3DProperty(Attributes.Origin, value);
+                Properties.SetVector3D(Attributes.Origin, value);
                 if (IsPointBased)
                     BoundingBox = new BoundingBox(Origin, Origin);
             }
@@ -38,11 +38,11 @@ namespace MESS.Mapping
 
         public Angles? Angles
         {
-            get => Properties.GetAnglesProperty(Attributes.Angles);
+            get => Properties.GetAngles(Attributes.Angles);
             set
             {
                 if (value is Angles angles)
-                    Properties.SetAnglesProperty(Attributes.Angles, angles);
+                    Properties.SetAngles(Attributes.Angles, angles);
                 else
                     Properties.Remove(Attributes.Angles);
             }
@@ -50,11 +50,11 @@ namespace MESS.Mapping
 
         public double? Scale
         {
-            get => Properties.GetNumericProperty(Attributes.Scale);
+            get => Properties.GetDouble(Attributes.Scale);
             set
             {
                 if (value is double scale)
-                    Properties.SetNumericProperty(Attributes.Scale, scale);
+                    Properties.SetDouble(Attributes.Scale, scale);
                 else
                     Properties.Remove(Attributes.Scale);
             }

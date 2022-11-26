@@ -8,6 +8,8 @@ namespace MESS.Macros
 {
     /// <summary>
     /// Template instantiation always happens within a certain context.
+    /// Macro entities will create a new context for each instance that they create.
+    /// Each context has a unique ID. If a macro entity creates multiple instances, then each context will have a different sequence number.
     /// </summary>
     public class InstantiationContext
     {
@@ -59,12 +61,16 @@ namespace MESS.Macros
         /// </summary>
         public IDictionary<string, object?> Globals { get; }
 
+        /// <summary>
+        /// The MScript evaluation context for this instantiation context.
+        /// </summary>
+        public EvaluationContext EvaluationContext { get; }
+
 
         private ILogger _logger;
         private Random _random;
-        private IDictionary<string, string> _insertionEntityProperties;
+        private IDictionary<string, object?> _insertionEntityProperties;
         private InstantiationContext? _parentContext;
-        private EvaluationContext _evaluationContext;
 
         private int _nextID = 1;
 
@@ -72,7 +78,7 @@ namespace MESS.Macros
         public InstantiationContext(
             MapTemplate template,
             ILogger logger,
-            IDictionary<string, string> insertionEntityProperties,
+            IDictionary<string, object?> insertionEntityProperties,
             string workingDirectory,
             IDictionary<string, object?> globals)
             : this(template, logger, Transform.Identity, insertionEntityProperties, null, workingDirectory, globals, 0)
@@ -83,7 +89,7 @@ namespace MESS.Macros
             MapTemplate template,
             ILogger logger,
             Transform transform,
-            IDictionary<string, string> insertionEntityProperties,
+            IDictionary<string, object?> insertionEntityProperties,
             InstantiationContext parentContext,
             int sequenceNumber = 0)
             : this(template, logger, transform, insertionEntityProperties, parentContext, null, null, sequenceNumber)
@@ -94,7 +100,7 @@ namespace MESS.Macros
             MapTemplate template,
             ILogger logger,
             Transform transform,
-            IDictionary<string, string> insertionEntityProperties,
+            IDictionary<string, object?> insertionEntityProperties,
             InstantiationContext? parentContext = null,
             string? workingDirectory = null,
             IDictionary<string, object?>? globals = null,
@@ -106,8 +112,9 @@ namespace MESS.Macros
             //       This ensures that switching between explicit and implicit seeding does not result in 'sibling' contexts
             //       getting different seed values.
             var randomSeed = parentContext?._random.Next() ?? 0;
-            if (insertionEntityProperties.GetNumericProperty(Attributes.RandomSeed) is double seed)
+            if (insertionEntityProperties.GetDouble(Attributes.RandomSeed) is double seed)
                 randomSeed = (int)seed;
+
             _random = new Random(randomSeed);
             _logger = logger;
             _insertionEntityProperties = insertionEntityProperties;
@@ -123,11 +130,9 @@ namespace MESS.Macros
             Transform = transform ?? Transform.Identity;
             Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object?>();
 
-            var outerEvaluationContext = Evaluation.ContextFromProperties(insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger);
-            var evaluatedTemplateProperties = template.Map.Properties.ToDictionary(
-                kv => Evaluation.EvaluateInterpolatedString(kv.Key, outerEvaluationContext),
-                kv => PropertyExtensions.ParseProperty(Evaluation.EvaluateInterpolatedString(kv.Value, outerEvaluationContext)));
-            _evaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
+            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger);
+            var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
+            EvaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
 
             // Every instantiation is written to the same map, but with a different transform:
             var outputMap = parentContext?.OutputMap;
@@ -160,14 +165,9 @@ namespace MESS.Macros
 
             OutputMap = parentContext.OutputMap;
 
-            _evaluationContext = Evaluation.ContextFromProperties(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger, parentContext._evaluationContext);
+            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger, parentContext.EvaluationContext);
         }
 
-
-        /// <summary>
-        /// Calls <see cref="Evaluation.EvaluateInterpolatedString(string, EvaluationContext)"/>, using this instance's evaluation context.
-        /// </summary>
-        public string EvaluateInterpolatedString(string? interpolatedString) => Evaluation.EvaluateInterpolatedString(interpolatedString, _evaluationContext);
 
         /// <summary>
         /// Returns a random double. Min is inclusive, max is exclusive.

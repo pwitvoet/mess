@@ -22,19 +22,19 @@ namespace MESS.Macros
     /// </summary>
     public class MapTemplate
     {
-        public static MapTemplate Load(string path, IDictionary<string, object?> globals, ILogger logger)
+        public static MapTemplate Load(string path, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)
         {
             path = NormalizePath(path);
 
             var map = MapFile.Load(path);
             map.ExpandPaths();
 
-            return FromMap(map, path, globals, logger);
+            return FromMap(map, path, context, globals, logger);
         }
 
-        public static MapTemplate FromMap(Map map, string path, IDictionary<string, object?> globals, ILogger logger)
+        public static MapTemplate FromMap(Map map, string path, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)
         {
-            var subTemplates = ExtractSubTemplates(map, globals, logger);
+            var subTemplates = ExtractSubTemplates(map, context, globals, logger);
             var conditionalContent = ExtractConditionalContent(map);
             return new MapTemplate(map, path, false, "1", subTemplates, conditionalContent);
         }
@@ -71,29 +71,31 @@ namespace MESS.Macros
         }
 
 
-        private static string NormalizePath(string path) => System.IO.Path.GetFullPath(path);
+        private static string NormalizePath(string path) => Path.GetFullPath(path);
 
 
         /// <summary>
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
         /// Template area names do not need to be unique.
         /// </summary>
-        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, IDictionary<string, object?> globals, ILogger logger)
+        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)  // TODO: Pass in a context with 'top-level' bindings (vars)?
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
 
-            var randomSeed = (int)(map.Properties.GetNumericProperty(Attributes.RandomSeed) ?? 0);
-            var context = Evaluation.ContextFromProperties(map.Properties, 0, 0, new Random(randomSeed), globals, logger);
+            var evaluatedMapProperties = map.Properties.EvaluateToMScriptValues(context);
+            var randomSeed = evaluatedMapProperties.GetInteger(Attributes.RandomSeed) ?? 0;
+
+            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), globals, logger, context);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();
             foreach (var templateEntity in templateEntities)
             {
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
-                var templateName = templateEntity.GetStringProperty(Attributes.Targetname) ?? "";
-                var selectionWeight = templateEntity.GetStringProperty(Attributes.SelectionWeight) ?? "";
-                var offset = GetTemplateEntityOrigin(templateEntity, context) * -1;
+                var templateName = templateEntity.Properties.EvaluateToString(Attributes.Targetname, mapContext);
+                var selectionWeight = templateEntity.Properties.EvaluateToString(Attributes.SelectionWeight, mapContext);
+                var offset = GetTemplateEntityOrigin(templateEntity, mapContext) * -1;
                 var templateMap = new Map();
 
                 // Copy custom properties into the template map properties - these will serve as local variables that will be evaluated whenever the template is instantiated:
@@ -144,7 +146,7 @@ namespace MESS.Macros
 
         private static Vector3D GetTemplateEntityOrigin(Entity templateEntity, EvaluationContext context)
         {
-            if (!Enum.TryParse<TemplateAreaAnchor>(Evaluation.EvaluateInterpolatedString(templateEntity.GetStringProperty(Attributes.Anchor), context), out var anchor))
+            if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity.Properties.EvaluateToString(Attributes.Anchor, context), out var anchor))
                 anchor = TemplateAreaAnchor.OriginBrush;
 
             return templateEntity.GetAnchorPoint(anchor);
@@ -160,7 +162,7 @@ namespace MESS.Macros
             foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf))
             {
                 var removeIfArea = removeIfEntity.BoundingBox.ExpandBy(0.5f);
-                var condition = removeIfEntity.GetStringProperty(Attributes.Condition) ?? "";  // TODO: Validate the expression somehow?
+                var condition = removeIfEntity.Properties.GetString(Attributes.Condition) ?? "";  // TODO: Validate the expression somehow?
                 var removableContent = new HashSet<object>();
 
                 // Reference all entities that are fully inside this remove-if area (except for other macro_remove_if entities):

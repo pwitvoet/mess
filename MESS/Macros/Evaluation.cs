@@ -18,8 +18,8 @@ namespace MESS.Macros
         /// Returns an evaluation context that contains bindings for 'standard library' functions, for instance ID and randomness functions,
         /// and bindings for the given properties (which have been parsed into properly typed values).
         /// </summary>
-        public static EvaluationContext ContextFromProperties(
-            IDictionary<string, string> properties,
+        public static EvaluationContext ContextWithBindings(
+            IDictionary<string, object?> bindings,
             double id,
             double sequenceNumber,
             Random random,
@@ -27,12 +27,8 @@ namespace MESS.Macros
             ILogger logger,
             EvaluationContext? parentContext = null)
         {
-            var typedProperties = properties.ToDictionary(
-                kv => kv.Key,
-                kv => PropertyExtensions.ParseProperty(kv.Value));
-
-            var evaluationContext = new EvaluationContext(typedProperties, parentContext ?? _globalsContext);
-            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, typedProperties, globals, logger);
+            var evaluationContext = new EvaluationContext(bindings, parentContext ?? _globalsContext);
+            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, globals, logger);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -45,14 +41,101 @@ namespace MESS.Macros
         /// Evaluates the given interpolated string. Expression parts are delimited by curly braces.
         /// For example: "name{1 + 2}" evaluates to "name3".
         /// Note that identifiers are case-sensitive: 'name' and 'NAME' do not refer to the same variable.
+        /// Always returns a string.
         /// </summary>
         public static string EvaluateInterpolatedString(string? interpolatedString, EvaluationContext context)
         {
             if (interpolatedString == null)
                 return "";
 
+            try
+            {
+                return EvaluateInterpolatedStringParts(Parser.ParseInterpolatedString(interpolatedString), context);
+            }
+            catch (Exception ex)
+            {
+                ex.Data["input"] = interpolatedString;
+                throw;
+            }
+        }
+
+        /// <inheritdoc cref="EvaluateInterpolatedString(string?, EvaluationContext)"/>
+        public static string EvaluateInterpolatedString(string? interpolatedString, InstantiationContext context)
+            => EvaluateInterpolatedString(interpolatedString, context.EvaluationContext);
+
+        /// <summary>
+        /// Evaluates the given interpolated string. Expression parts are delimited by curly braces.
+        /// For example: "name{1 + 2}" evaluates to "name3".
+        /// Note that identifiers are case-sensitive: 'name' and 'NAME' do not refer to the same variable.
+        /// Returns an MScript value.
+        /// <para>
+        /// For inputs that consist of a single expression ("{expression}"), the result of that expression (an MScript value) is returned directly.
+        /// </para>
+        /// <para>
+        /// For mixed inputs ("name{expression}"), or inputs that contain no expressions ("name"), the resulting string will be converted if possible.
+        /// An empty string is converted to 'none' (null), a numerical string is converted to a number (double),
+        /// and a string that consists of a sequence of numbers, separated by whitespace, is converted to an array (object?[]).
+        /// Any other output is left as a string.
+        /// </para>
+        /// </summary>
+        public static object? EvaluateInterpolatedStringOrExpression(string? interpolatedString, EvaluationContext context)
+        {
+            if (interpolatedString == null)
+                return null;
+
+            try
+            {
+                var parts = Parser.ParseInterpolatedString(interpolatedString).ToArray();
+                if (parts.Count(part => part is Expression) == 1 && parts.All(part => part is Expression || part is string str && string.IsNullOrWhiteSpace(str)))
+                {
+                    var singleExpression = parts.OfType<Expression>().Single();
+                    return Evaluator.Evaluate(singleExpression, context);
+                }
+                else
+                {
+                    var value = EvaluateInterpolatedStringParts(parts, context);
+                    return ParseMScriptValue(value);
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data["input"] = interpolatedString;
+                throw;
+            }
+        }
+
+        /// <inheritdoc cref="EvaluateInterpolatedStringOrExpression(string?, EvaluationContext)"/>
+        public static object? EvaluateInterpolatedStringOrExpression(string? interpolatedString, InstantiationContext context)
+            => EvaluateInterpolatedStringOrExpression(interpolatedString, context.EvaluationContext);
+
+
+        /// <summary>
+        /// Parses the string into an MScript value. Returns 'none' (null) for an empty string, a number (double) for a numerical string,
+        /// and an array (object?[]) for a string that consists of multiple numbers separated by whitespace. Returns the original string for all other inputs.
+        /// </summary>
+        private static object? ParseMScriptValue(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return null;
+
+            if (PropertyExtensions.TryParseDouble(value, out var number))
+                return number;
+
+            if (PropertyExtensions.TryParseNumericalArray(value, out var vector))
+            {
+                var array = new object?[vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    array[i] = vector[i];
+                return array;
+            }
+
+            return value;
+        }
+
+        private static string EvaluateInterpolatedStringParts(IEnumerable<object?> parts, EvaluationContext context)
+        {
             var sb = new StringBuilder();
-            foreach (var part in Parser.ParseInterpolatedString(interpolatedString))
+            foreach (var part in parts)
             {
                 if (part is string str)
                 {
@@ -67,7 +150,6 @@ namespace MESS.Macros
                     }
                     catch (Exception ex)
                     {
-                        ex.Data["input"] = interpolatedString;
                         ex.Data["expression"] = expression;
                         throw;
                     }

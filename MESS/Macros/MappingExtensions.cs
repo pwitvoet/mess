@@ -139,16 +139,16 @@ namespace MESS.Macros
         /// <summary>
         /// Updates the angles, scale and origin attributes (if present) by applying the given transform to them.
         /// </summary>
-        public static void UpdateTransformProperties(this IDictionary<string, string> properties, Transform transform, bool invertedPitch = false)
+        public static void UpdateTransformProperties(this IDictionary<string, object?> properties, Transform transform, bool invertedPitch = false)
         {
-            if (properties.GetAnglesProperty(Attributes.Angles) is Angles angles)
-                properties.SetAnglesProperty(Attributes.Angles, (transform.Rotation * angles.ToMatrix(invertedPitch)).ToAngles(invertedPitch));
+            if (properties.GetAngles(Attributes.Angles) is Angles angles)
+                properties.SetAngles(Attributes.Angles, (transform.Rotation * angles.ToMatrix(invertedPitch)).ToAngles(invertedPitch));
 
-            if (properties.GetNumericProperty(Attributes.Scale) is double scale)
-                properties.SetNumericProperty(Attributes.Scale, scale * transform.Scale);
+            if (properties.GetDouble(Attributes.Scale) is double scale)
+                properties.SetDouble(Attributes.Scale, scale * transform.Scale);
 
-            if (properties.GetVector3DProperty(Attributes.Origin) is Vector3D origin)
-                properties.SetVector3DProperty(Attributes.Origin, transform.Apply(origin));
+            if (properties.GetVector3D(Attributes.Origin) is Vector3D origin)
+                properties.SetVector3D(Attributes.Origin, transform.Apply(origin));
         }
 
         /// <summary>
@@ -157,16 +157,15 @@ namespace MESS.Macros
         /// This makes it possible to control spawn flags with MScript - which, due to how editors handle the spawnflags attribute,
         /// would otherwise not be possible.
         /// </summary>
-        public static void UpdateSpawnFlags(this IDictionary<string, string> properties)
+        public static void UpdateSpawnFlags(this IDictionary<string, object?> properties)
         {
-            var spawnFlags = properties.GetIntegerProperty(Attributes.Spawnflags) ?? 0;
+            var spawnFlags = properties.GetInteger(Attributes.Spawnflags) ?? 0;
             for (int i = 0; i < 32; i++)
             {
                 var flagName = FormattableString.Invariant($"spawnflag{i}");
-                if (!properties.TryGetValue(flagName, out var stringValue))
+                if (!properties.TryGetValue(flagName, out var value))
                     continue;
 
-                var value = PropertyExtensions.ParseProperty(stringValue);
                 var isChecked = Interpreter.IsTrue(value) && !(value is double d && d == 0);
                 if (isChecked)
                     spawnFlags |= (1 << i);
@@ -177,7 +176,7 @@ namespace MESS.Macros
             }
 
             if (properties.ContainsKey(Attributes.Spawnflags) || spawnFlags != 0)
-                properties.SetIntegerProperty(Attributes.Spawnflags, spawnFlags);
+                properties.SetInteger(Attributes.Spawnflags, spawnFlags);
         }
 
 
