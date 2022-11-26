@@ -10,5 +10,8 @@
             ArgumentNames = argumentNames.ToArray();
             Body = body;
         }
+
+
+        public override string ToString() => $"(({string.Join(", ", ArgumentNames)}) => {Body})";
     }
 }

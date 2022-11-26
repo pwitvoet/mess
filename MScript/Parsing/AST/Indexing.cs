@@ -10,5 +10,8 @@
             Indexable = indexable;
             Index = index;
         }
+
+
+        public override string ToString() => $"{Indexable}[{Index}]";
     }
 }

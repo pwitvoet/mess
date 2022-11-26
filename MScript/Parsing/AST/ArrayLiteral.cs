@@ -9,5 +9,8 @@
         {
             Elements = elements.ToArray();
         }
+
+
+        public override string ToString() => $"[{string.Join(", ", Elements)}]";
     }
 }

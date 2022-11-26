@@ -10,5 +10,8 @@
             Operator = @operator;
             Operand = operand;
         }
+
+
+        public override string ToString() => $"({Operator} {Operand})";
     }
 }

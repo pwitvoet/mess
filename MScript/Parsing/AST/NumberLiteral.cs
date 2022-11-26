@@ -5,5 +5,8 @@
         public double Value { get; }
 
         public NumberLiteral(double value) => Value = value;
+
+
+        public override string ToString() => Value.ToString();
     }
 }

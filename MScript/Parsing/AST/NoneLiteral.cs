@@ -2,5 +2,6 @@
 {
     class NoneLiteral : Literal
     {
+        public override string ToString() => "none";
     }
 }

@@ -10,5 +10,8 @@
             Object = @object;
             MemberName = memberName;
         }
+
+
+        public override string ToString() => $"{Object}.{MemberName}";
     }
 }

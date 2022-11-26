@@ -7,7 +7,7 @@
         Subtract,           // exp - exp
         Multiply,           // exp * exp
         Divide,             // exp / exp
-        Remainder,             // exp % exp
+        Remainder,          // exp % exp
 
         // Equality:
         Equals,             // exp == exp

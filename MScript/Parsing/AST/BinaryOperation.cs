@@ -12,5 +12,8 @@
             LeftOperand = leftOperand;
             RightOperand = rightOperand;
         }
+
+
+        public override string ToString() => $"({LeftOperand} {Operator} {RightOperand})";
     }
 }

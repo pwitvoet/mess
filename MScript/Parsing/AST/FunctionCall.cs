@@ -10,5 +10,8 @@
             Function = function;
             Arguments = arguments.ToArray();
         }
+
+
+        public override string ToString() => $"{Function}({string.Join(", ", Arguments)})";
     }
 }

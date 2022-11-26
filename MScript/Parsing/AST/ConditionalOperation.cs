@@ -12,5 +12,8 @@
             TrueExpression = trueExpression;
             FalseExpression = falseExpression;
         }
+
+
+        public override string ToString() => $"({Condition} ? {TrueExpression} : {FalseExpression})";
     }
 }
