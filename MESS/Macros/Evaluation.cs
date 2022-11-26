@@ -309,6 +309,33 @@ namespace MESS.Macros
             // Enumeration:
             public double nth() => _sequenceNumber;
 
+            // Parent entity attributes:
+            public double attr_count() => _properties.Count;
+            public object? get_attr(double? index = null)
+            {
+                if (index == null)
+                {
+                    return _properties
+                        .Select(property => new MObject(new Dictionary<string, object?> {
+                            { "key", property.Key },
+                            { "value", property.Value },
+                        }))
+                        .ToArray();
+                }
+                else
+                {
+                    var normalizedIndex = (int)index < 0 ? _properties.Count + (int)index : (int)index;
+                    if (normalizedIndex < 0 || normalizedIndex >= _properties.Count)
+                        return null;
+
+                    var property = _properties.ToArray()[normalizedIndex];
+                    return new MObject(new Dictionary<string, object?> {
+                        { "key", property.Key },
+                        { "value", property.Value },
+                    });
+                }
+            }
+
             // Flags:
             public bool hasflag(double flag, double? flags = null)
             {
