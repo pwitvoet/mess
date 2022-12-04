@@ -11,11 +11,11 @@ namespace MESS.Macros
 {
     static class Evaluation
     {
-        private static EvaluationContext _globalsContext;
+        private static EvaluationContext _standardLibraryContext;
 
 
         /// <summary>
-        /// Returns an evaluation context that contains bindings for 'standard library' functions, for instance ID and randomness functions,
+        /// Creates an evaluation context that contains bindings for standard library functions, for instance ID and randomness functions,
         /// and bindings for the given properties (which have been parsed into properly typed values).
         /// </summary>
         public static EvaluationContext ContextWithBindings(
@@ -23,18 +23,20 @@ namespace MESS.Macros
             double id,
             double sequenceNumber,
             Random random,
-            IDictionary<string, object?> globals,
             ILogger logger,
-            EvaluationContext? parentContext = null)
+            EvaluationContext? parentContext)
         {
-            var evaluationContext = new EvaluationContext(bindings, parentContext ?? _globalsContext);
-            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, globals, logger);
+            var evaluationContext = new EvaluationContext(bindings, parentContext ?? _standardLibraryContext);
+            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, logger);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
         }
 
-        public static EvaluationContext DefaultContext() => new EvaluationContext(null, _globalsContext);
+        /// <summary>
+        /// Creates an evaluation context that contains bindings for standard library functions.
+        /// </summary>
+        public static EvaluationContext DefaultContext() => new EvaluationContext(null, _standardLibraryContext);
 
 
         /// <summary>
@@ -161,16 +163,16 @@ namespace MESS.Macros
 
         static Evaluation()
         {
-            // The globals context gives access to various global functions:
-            _globalsContext = new EvaluationContext();
-            NativeUtils.RegisterStaticMethods(_globalsContext, typeof(GlobalFunctions));
+            // The globals context gives access standard library functions:
+            _standardLibraryContext = new EvaluationContext();
+            NativeUtils.RegisterStaticMethods(_standardLibraryContext, typeof(StandardLibraryFunctions));
 
             // as well as some constants:
-            _globalsContext.Bind("PI", Math.PI);
+            _standardLibraryContext.Bind("PI", Math.PI);
         }
 
 
-        static class GlobalFunctions
+        static class StandardLibraryFunctions
         {
             // Type conversion:
             public static double? num(object? value)
@@ -257,17 +259,15 @@ namespace MESS.Macros
             private double _sequenceNumber;
             private Random _random;
             private IDictionary<string, object?> _properties;
-            private IDictionary<string, object?> _globals;
             private ILogger _logger;
 
 
-            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, IDictionary<string, object?> globals, ILogger logger)
+            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, ILogger logger)
             {
                 _id = id;
                 _sequenceNumber = sequenceNumber;
                 _random = random;
                 _properties = properties;
-                _globals = globals;
                 _logger = logger;
             }
 
@@ -357,22 +357,6 @@ namespace MESS.Macros
                     return (int)flags | (1 << (int)flag);
                 else
                     return (int)flags & ~(1 << (int)flag);
-            }
-
-            // Globals:
-            public object? getglobal(string? name) => _globals.TryGetValue(name ?? "", out var value) ? value : null;
-            public object? setglobal(string? name, object? value)
-            {
-                _globals[name ?? ""] = value;
-                return value;
-            }
-            public bool useglobal(string? name)
-            {
-                if (_globals.TryGetValue(name ?? "", out var value) && value != null)
-                    return true;
-
-                _globals[name ?? ""] = 1.0;
-                return false;
             }
 
             // Debugging:

@@ -22,19 +22,9 @@ namespace MESS.Macros
     /// </summary>
     public class MapTemplate
     {
-        public static MapTemplate Load(string path, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)
+        public static MapTemplate FromMap(Map map, string path, EvaluationContext context, ILogger logger)
         {
-            path = NormalizePath(path);
-
-            var map = MapFile.Load(path);
-            map.ExpandPaths();
-
-            return FromMap(map, path, context, globals, logger);
-        }
-
-        public static MapTemplate FromMap(Map map, string path, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)
-        {
-            var subTemplates = ExtractSubTemplates(map, context, globals, logger);
+            var subTemplates = ExtractSubTemplates(map, context, logger);
             var conditionalContent = ExtractConditionalContent(map);
             return new MapTemplate(map, path, false, "1", subTemplates, conditionalContent);
         }
@@ -71,14 +61,11 @@ namespace MESS.Macros
         }
 
 
-        private static string NormalizePath(string path) => Path.GetFullPath(path);
-
-
         /// <summary>
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
         /// Template area names do not need to be unique.
         /// </summary>
-        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, EvaluationContext context, IDictionary<string, object?> globals, ILogger logger)  // TODO: Pass in a context with 'top-level' bindings (vars)?
+        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, EvaluationContext context, ILogger logger)
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
@@ -86,7 +73,7 @@ namespace MESS.Macros
             var evaluatedMapProperties = map.Properties.EvaluateToMScriptValues(context);
             var randomSeed = evaluatedMapProperties.GetInteger(Attributes.RandomSeed) ?? 0;
 
-            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), globals, logger, context);
+            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), logger, context);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();

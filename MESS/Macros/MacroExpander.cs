@@ -23,19 +23,15 @@ namespace MESS.Macros
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
-            var random = new Random(0); // TODO: Look for Attributes.RandomSeed in settings.Variables!
-            var globals = new Dictionary<string, object?>();
-            var topLevelContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, random, globals, logger);
-
-            var expander = new MacroExpander(settings, topLevelContext, logger);
-            var mainTemplate = expander.GetMapTemplate(path, globals);
+            var expander = new MacroExpander(settings, logger);
+            var mainTemplate = expander.GetMapTemplate(path);
 
             var context = new InstantiationContext(
                 mainTemplate,
                 logger,
                 settings.Variables ?? new(),
-                settings.TemplateDirectory,
-                globals);
+                expander.BaseEvaluationContext,
+                settings.TemplateDirectory);
             expander.CreateInstance(context);
 
             return context.OutputMap;
@@ -43,24 +39,47 @@ namespace MESS.Macros
 
 
         private ExpansionSettings Settings { get; }
-        private EvaluationContext TopLevelContext { get; }
         private ILogger Logger { get; }
+
+        /// <summary>
+        /// Global variables are used by the <see cref="MacroExpanderFunctions.getglobal(string?)"/>, <see cref="MacroExpanderFunctions.setglobal(string?, object?)"/>
+        /// and <see cref="MacroExpanderFunctions.useglobal(string?)"/> MScript functions. They are useful for things like avoiding duplicate template instantiation,
+        /// but should be used with care.
+        /// </summary>
+        private Dictionary<string, object?> Globals { get; }
+
+        /// <summary>
+        /// This evaluation context contains bindings for standard library functions, as well as settings-related (directory) functions.
+        /// It is intended to be used as a parent context for all other evaluation contexts.
+        /// </summary>
+        private EvaluationContext BaseEvaluationContext { get; }
+
+        /// <summary>
+        /// This evaluation context is based on <see cref="BaseEvaluationContext"/>, but also makes top-level variables available.
+        /// It is intended to be used when loading template maps, applying rewrite rules and when creating the main map instance.
+        /// </summary>
+        private EvaluationContext TopLevelEvaluationContext { get; }
 
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
 
         private RewriteDirective[] _rewriteDirectives = Array.Empty<RewriteDirective>();
-        private DirectoryFunctions _directoryFunctions;
 
 
-        private MacroExpander(ExpansionSettings settings, EvaluationContext topLevelContext, ILogger logger)
+        private MacroExpander(ExpansionSettings settings, ILogger logger)
         {
             Settings = settings;
-            TopLevelContext = topLevelContext;
             Logger = logger;
 
+            Globals = new Dictionary<string, object?>();
+
+            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", Globals);
+            BaseEvaluationContext = Evaluation.DefaultContext();
+            NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
+
+            TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), Logger, BaseEvaluationContext);
+
             _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
-            _directoryFunctions = new DirectoryFunctions(settings.TemplateDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "");
         }
 
 
@@ -83,17 +102,17 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives, EvaluationContext topLevelContext, IDictionary<string, object?> globals)
+        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives)
         {
             Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
 
-            var randomSeed = (int)(map.Properties.EvaluateToMScriptValue(Attributes.RandomSeed, topLevelContext) as double? ?? 0.0);
+            var randomSeed = (int)(map.Properties.EvaluateToMScriptValue(Attributes.RandomSeed, TopLevelEvaluationContext) as double? ?? 0.0);
             var random = new Random(randomSeed);
 
             var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
 
             foreach (var rewriteDirective in directiveLookup[Entities.Worldspawn])
-                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random, topLevelContext, globals);
+                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random);
 
             for (int i = 0; i < map.Entities.Count; i++)
             {
@@ -102,7 +121,7 @@ namespace MESS.Macros
 
                 var matchingDirectives = directiveLookup[entity.ClassName ?? ""];
                 foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random, topLevelContext, globals);
+                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random);
             }
         }
 
@@ -110,14 +129,10 @@ namespace MESS.Macros
             Dictionary<string, string> entityProperties,
             RewriteDirective rewriteDirective,
             int entityID,
-            Random random,
-            EvaluationContext topLevelContext,
-            IDictionary<string, object?> globals)
+            Random random)
         {
-            var evaluatedProperties = entityProperties.EvaluateToMScriptValues(topLevelContext);
-
-            var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, globals, Logger);
-            NativeUtils.RegisterInstanceMethods(context, _directoryFunctions);
+            var evaluatedProperties = entityProperties.EvaluateToMScriptValues(TopLevelEvaluationContext);
+            var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -161,7 +176,7 @@ namespace MESS.Macros
         /// <summary>
         /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
         /// </summary>
-        private MapTemplate GetMapTemplate(string path, IDictionary<string, object?> globals)
+        private MapTemplate GetMapTemplate(string path)
         {
             path = Path.GetFullPath(path);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
@@ -172,9 +187,9 @@ namespace MESS.Macros
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
-                ApplyRewriteDirectives(map, _rewriteDirectives, TopLevelContext, globals);
+                ApplyRewriteDirectives(map, _rewriteDirectives);
 
-                template = MapTemplate.FromMap(map, path, TopLevelContext, globals, Logger);
+                template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 
                 _mapTemplateCache[path] = template;
             }
@@ -202,7 +217,7 @@ namespace MESS.Macros
                 try
                 {
                     // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
-                    return GetMapTemplate(mapPath, context.Globals);
+                    return GetMapTemplate(mapPath);
                 }
                 catch (Exception ex)
                 {
@@ -262,7 +277,7 @@ namespace MESS.Macros
         private void CreateInstance(InstantiationContext context)
         {
             Logger.Verbose("");
-            Logger.Verbose($"Creating instance #{context.ID} (sequence number: {context.SequenceNumber}) at {context.Transform}.");
+            Logger.Verbose($"Creating instance #{context.ID} (template: '{context.Template.Name}', sequence number: {context.SequenceNumber}) at {context.Transform}.");
 
             _instanceCount += 1;
             if (_instanceCount > Settings.InstanceLimit)
@@ -839,7 +854,7 @@ namespace MESS.Macros
             var invertedPitch = false;
             if (Settings.InvertedPitchPredicate != null)
             {
-                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), context.Globals, Logger);
+                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), Logger, BaseEvaluationContext);
                 var predicateResult = Evaluation.EvaluateInterpolatedStringOrExpression(Settings.InvertedPitchPredicate, evaluationContext);
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }
@@ -909,21 +924,42 @@ namespace MESS.Macros
         }
 
 
-        class DirectoryFunctions
+        class MacroExpanderFunctions
         {
-            private string _directory;
+            private string _templateDirectory;
             private string _messDirectory;
+            private IDictionary<string, object?> _globals;
 
 
-            public DirectoryFunctions(string directory, string messDirectory)
+            public MacroExpanderFunctions(string templateDirectory, string messDirectory, IDictionary<string, object?> globals)
             {
-                _directory = directory;
+                _templateDirectory = templateDirectory;
                 _messDirectory = messDirectory;
+                _globals = globals;
             }
 
 
-            public string dir() => _directory;
-            public string messdir() => _messDirectory;
+            // Directories:
+            public string dir() => _templateDirectory;  // TODO: Make this obsolete!
+
+            public string template_dir() => _templateDirectory;
+            public string mess_dir() => _messDirectory;
+
+            // Globals:
+            public object? getglobal(string? name) => _globals.TryGetValue(name ?? "", out var value) ? value : null;
+            public object? setglobal(string? name, object? value)
+            {
+                _globals[name ?? ""] = value;
+                return value;
+            }
+            public bool useglobal(string? name)
+            {
+                if (_globals.TryGetValue(name ?? "", out var value) && value != null)
+                    return true;
+
+                _globals[name ?? ""] = 1.0;
+                return false;
+            }
         }
     }
 }

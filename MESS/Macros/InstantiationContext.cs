@@ -57,11 +57,6 @@ namespace MESS.Macros
         public Transform Transform { get; }
 
         /// <summary>
-        /// Storage for global MScript variables, used by the 'getglobal' and 'setglobal' functions.
-        /// </summary>
-        public IDictionary<string, object?> Globals { get; }
-
-        /// <summary>
         /// The MScript evaluation context for this instantiation context.
         /// </summary>
         public EvaluationContext EvaluationContext { get; }
@@ -70,6 +65,7 @@ namespace MESS.Macros
         private ILogger _logger;
         private Random _random;
         private IDictionary<string, object?> _insertionEntityProperties;
+        private EvaluationContext _baseEvaluationContext;
         private InstantiationContext? _parentContext;
 
         private int _nextID = 1;
@@ -79,9 +75,9 @@ namespace MESS.Macros
             MapTemplate template,
             ILogger logger,
             IDictionary<string, object?> insertionEntityProperties,
-            string workingDirectory,
-            IDictionary<string, object?> globals)
-            : this(template, logger, Transform.Identity, insertionEntityProperties, null, workingDirectory, globals, 0)
+            EvaluationContext baseEvaluationContext,
+            string workingDirectory)
+            : this(template, logger, Transform.Identity, insertionEntityProperties, baseEvaluationContext, null, workingDirectory, 0)
         {
         }
 
@@ -92,7 +88,7 @@ namespace MESS.Macros
             IDictionary<string, object?> insertionEntityProperties,
             InstantiationContext parentContext,
             int sequenceNumber = 0)
-            : this(template, logger, transform, insertionEntityProperties, parentContext, null, null, sequenceNumber)
+            : this(template, logger, transform, insertionEntityProperties, parentContext._baseEvaluationContext, parentContext, null, sequenceNumber)
         {
         }
 
@@ -101,9 +97,9 @@ namespace MESS.Macros
             ILogger logger,
             Transform transform,
             IDictionary<string, object?> insertionEntityProperties,
+            EvaluationContext baseEvaluationContext,
             InstantiationContext? parentContext = null,
             string? workingDirectory = null,
-            IDictionary<string, object?>? globals = null,
             int sequenceNumber = 0)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
@@ -118,6 +114,7 @@ namespace MESS.Macros
             _random = new Random(randomSeed);
             _logger = logger;
             _insertionEntityProperties = insertionEntityProperties;
+            _baseEvaluationContext = baseEvaluationContext;
             _parentContext = parentContext;
 
             ID = GetRootContext()._nextID++;
@@ -128,9 +125,8 @@ namespace MESS.Macros
             SubTemplates = GetNearestMapFileContext()?.Template?.SubTemplates ?? Array.Empty<MapTemplate>();
 
             Transform = transform ?? Transform.Identity;
-            Globals = globals ?? parentContext?.Globals ?? new Dictionary<string, object?>();
 
-            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger);
+            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
             EvaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
 
@@ -151,6 +147,7 @@ namespace MESS.Macros
             _random = parentContext._random;
             _logger = parentContext._logger;
             _insertionEntityProperties = parentContext._insertionEntityProperties;
+            _baseEvaluationContext = parentContext._baseEvaluationContext;
             _parentContext = parentContext;
 
             ID = parentContext.ID;
@@ -161,11 +158,10 @@ namespace MESS.Macros
             SubTemplates = parentContext.SubTemplates;
 
             Transform = parentContext.Transform;
-            Globals = parentContext.Globals;
 
             OutputMap = parentContext.OutputMap;
 
-            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, Globals, _logger, parentContext.EvaluationContext);
+            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, _logger, parentContext.EvaluationContext);
         }
 
 

@@ -194,7 +194,9 @@ namespace MESS
             using (var logger = new ConsoleLogger(LogLevel.Verbose))
             {
                 var globals = new Dictionary<string, object?>();
-                var context = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), 0, 0, new Random(), globals, logger);
+                var stdLibContext = Evaluation.DefaultContext();
+                var context = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), 0, 0, new Random(), logger, stdLibContext);
+
                 while (true)
                 {
                     try
