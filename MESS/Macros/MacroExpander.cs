@@ -34,7 +34,7 @@ namespace MESS.Macros
                 mainTemplate,
                 logger,
                 settings.Variables ?? new(),
-                settings.Directory,
+                settings.TemplateDirectory,
                 globals);
             expander.CreateInstance(context);
 
@@ -60,7 +60,7 @@ namespace MESS.Macros
             Logger = logger;
 
             _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
-            _directoryFunctions = new DirectoryFunctions(settings.Directory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "");
+            _directoryFunctions = new DirectoryFunctions(settings.TemplateDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "");
         }
 
 

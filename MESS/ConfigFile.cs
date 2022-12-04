@@ -62,7 +62,7 @@ namespace MESS
                         switch (name)
                         {
                             case "template-directory":
-                                settings.Directory = Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
+                                settings.TemplateDirectory = Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
                                 break;
 
                             case "max-recursion":

@@ -74,7 +74,6 @@ namespace MESS
                     }
                     finally
                     {
-                        // TODO: Log a small summary as well? Number of templates/instances/etc?
                         logger.Minimal("");
                         logger.Minimal($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
                         logger.Minimal("");
@@ -103,7 +102,7 @@ namespace MESS
                     $"Enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop). All other arguments will be ignored.")
                 .Option(
                     "-dir",
-                    s => { settings.Directory = Path.GetFullPath(s); },
+                    s => { settings.TemplateDirectory = Path.GetFullPath(s); },
                     $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
                 .Option(
                     "-fgd",
@@ -149,8 +148,8 @@ namespace MESS
             if (settings.OutputPath == null)
                 settings.OutputPath = inputPath;
 
-            if (settings.Directory == null)
-                settings.Directory = Path.GetDirectoryName(settings.InputPath) ?? "";
+            if (settings.TemplateDirectory == null)
+                settings.TemplateDirectory = Path.GetDirectoryName(settings.InputPath) ?? "";
 
 
             logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
@@ -162,6 +161,8 @@ namespace MESS
             {
                 logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
                 MapFormat.Save(expandedMap, file);
+
+                logger.Info($"Map saved. Map contains {expandedMap.WorldGeometry.Count} brushes and {expandedMap.Entities.Count} entities.");
             }
         }
 
