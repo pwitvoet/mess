@@ -472,7 +472,7 @@ namespace MScript.Parsing
                 if (context.IsToken(-5, TokenType.QuestionMark) &&
                     context.IsToken(-3, TokenType.Colon))
                 {
-                    if (nextTokenPrecedence > GetPrecedence(TokenType.Colon))
+                    if (nextTokenPrecedence >= GetPrecedence(TokenType.Colon))
                         return false;
 
                     // expression ? expression : expression <?>
@@ -481,7 +481,7 @@ namespace MScript.Parsing
                 else if (context.IsToken(-5, TokenType.If) &&
                     context.IsToken(-3, TokenType.Else))
                 {
-                    if (nextTokenPrecedence > GetPrecedence(TokenType.Else))
+                    if (nextTokenPrecedence >= GetPrecedence(TokenType.Else))
                         return false;
 
                     // expression if expression else expression <?>
