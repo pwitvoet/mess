@@ -16,11 +16,13 @@ namespace MESS.EntityRewriting
     /// </summary>
     public static class RewriteDirectiveParser
     {
-        public static IEnumerable<RewriteDirective> ParseRewriteDirectives(string path)
+        public static IEnumerable<RewriteDirective> ParseRewriteDirectives(Stream stream)
         {
-            var input = File.ReadAllText(path);
-            var tokens = FgdTokenizer.Tokenize(input);
+            var input = "";
+            using (var reader = new StreamReader(stream, leaveOpen: true))
+                input = reader.ReadToEnd();
 
+            var tokens = FgdTokenizer.Tokenize(input);
             using (var context = new Context(tokens.Where(token => token.Type != FgdTokenizer.TokenType.Comment)))
             {
                 while (!context.IsExhausted)

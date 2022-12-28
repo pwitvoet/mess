@@ -1,5 +1,7 @@
 ﻿using MESS.Formats;
 using MESS.Mapping;
+using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace MESS
@@ -8,27 +10,16 @@ namespace MESS
     {
         /// <summary>
         /// Loads the specified map file. Supports .map, .rmf and .jmf formats.
+        /// <para>
+        /// If the specified file cannot be found, then this will try looking inside .mtb files (zip files that are used for distributing template entities).
+        /// For example, if "C:\modding\maps\mymap.map" does not exist, then "C:\modding\maps.mtb" is checked for a "mymap.map" file.
+        /// If that .mtb file does not exist, or if it does not contain the specified file, "C:\modding.mtb" is checked for a "maps\mymap.map" file, and so on.
+        /// </para>
         /// </summary>
         public static Map Load(string path)
         {
-            using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                var header = new byte[7];
-                var bytesRead = file.Read(header, 0, header.Length);
-                file.Seek(0, SeekOrigin.Begin);
-
-                if (bytesRead == 0)
-                    throw new InvalidDataException("Map file is empty. Map files must at least contain a worldspawn entity.");
-
-                if (bytesRead >= 4 && Encoding.ASCII.GetString(header, 0, 4) == "JHMF")
-                    return JmfFormat.Load(file);
-                else if (bytesRead == header.Length && Encoding.ASCII.GetString(header, 4, 3) == "RMF")
-                    return RmfFormat.Load(file);
-                else if (Path.GetExtension(path) == ".map")
-                    return MapFormat.Load(file);
-                else
-                    throw new InvalidDataException("Unknown map file format.");
-            }
+            var mapLoadFunction = GetMapLoadFunction(Path.GetExtension(path));
+            return MtbFileSystem.ReadFile(path, mapLoadFunction);
         }
 
         /// <summary>
@@ -36,25 +27,24 @@ namespace MESS
         /// </summary>
         public static void Save(Map map, string path)
         {
-            if (path.EndsWith(".map"))
-            {
-                using (var file = File.Create(path))
-                    MapFormat.Save(map, file);
-            }
-            else if (path.EndsWith(".jmf"))
-            {
-                using (var file = File.Create(path))
-                    JmfFormat.Save(map, file);
-            }
-            else if (path.EndsWith(".rmf"))
-            {
-                using (var file = File.Create(path))
-                    RmfFormat.Save(map, file);
-            }
-            else
-            {
-                throw new FormatException($"Unknown output format: '{System.IO.Path.GetExtension(path)}'.");
-            }
+            var mapSaveFunction = GetMapSaveFunction(Path.GetExtension(path));
+            using (var file = File.Create(path))
+                mapSaveFunction(map, file);
         }
+
+
+        private static Func<Stream, Map> GetMapLoadFunction(string extension) => extension switch { 
+            ".jmf" => JmfFormat.Load,
+            ".rmf" => RmfFormat.Load,
+            ".map" => MapFormat.Load,
+            _ => throw new InvalidDataException("Unknown map file format.")
+        };
+
+        private static Action<Map, Stream> GetMapSaveFunction(string extension) => extension switch { 
+            ".jmf" => JmfFormat.Save,
+            ".rmf" => RmfFormat.Save,
+            ".map" => MapFormat.Save,
+            _ => throw new InvalidDataException($"Unknown output format: '{extension}'.")
+        };
     }
 }

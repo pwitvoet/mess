@@ -63,7 +63,7 @@ namespace MESS.Macros
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
 
-        private RewriteDirective[] _rewriteDirectives = Array.Empty<RewriteDirective>();
+        private List<RewriteDirective> RewriteDirectives { get; } = new List<RewriteDirective>();
 
 
         private MacroExpander(ExpansionSettings settings, ILogger logger)
@@ -79,25 +79,54 @@ namespace MESS.Macros
 
             TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), Logger, BaseEvaluationContext);
 
-            _rewriteDirectives = settings.GameDataPaths?.SelectMany(LoadRewriteDirectives)?.ToArray() ?? Array.Empty<RewriteDirective>();
+
+            RewriteDirectives.AddRange(LoadTedFileRewriteDirectives(settings.TemplateDirectory));
+
+            if (settings.GameDataPaths?.Any() == true)
+                RewriteDirectives.AddRange(settings.GameDataPaths.SelectMany(LoadRewriteDirectives));
+
+            // Check for conflicting rewrite directives:
+            var duplicateRewriteDirectives = RewriteDirectives
+                .GroupBy(directive => directive.ClassName.ToLowerInvariant())
+                .Where(group => group.Count() > 1)
+                .ToArray();
+            foreach (var group in duplicateRewriteDirectives)
+                Logger.Warning($"Possible rewrite directive conflict: {group.Count()} rewrite directives found for '{group.Key}'!");
         }
 
 
-        private IEnumerable<RewriteDirective> LoadRewriteDirectives(string fgdPath)
+        /// <summary>
+        /// This function searches the given template directory for .ted files (Template Entity Definition), which are small .fgd files that contain entity definitions and MESS rewrite rules.
+        /// It also searches inside .mtb files.
+        /// </summary>
+        private IEnumerable<RewriteDirective> LoadTedFileRewriteDirectives(string templateDirectory)
+        {
+            return MtbFileSystem.ReadFiles(templateDirectory, ".ted", (file, path) => LoadRewriteDirectives(file, path))
+                .SelectMany(rewriteRules => rewriteRules)
+                .ToArray();
+        }
+
+        private IEnumerable<RewriteDirective> LoadRewriteDirectives(string path)
+        {
+            path = Path.GetFullPath(path);
+            using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                return LoadRewriteDirectives(file, path);
+        }
+
+        private IEnumerable<RewriteDirective> LoadRewriteDirectives(Stream stream, string path)
         {
             try
             {
-                var path = Path.GetFullPath(fgdPath);
                 Logger.Info($"Loading rewrite directives from '{path}'.");
 
-                var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(path).ToArray();
+                var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(stream).ToArray();
                 Logger.Info($"{rewriteDirectives.Length} rewrite directives loaded.");
 
                 return rewriteDirectives;
             }
             catch (Exception ex)
             {
-                Logger.Warning($"Failed to load rewrite directives from '{fgdPath}':", ex);
+                Logger.Warning($"Failed to load rewrite directives from '{path}':", ex);
                 return Array.Empty<RewriteDirective>();
             }
         }
@@ -187,7 +216,7 @@ namespace MESS.Macros
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
-                ApplyRewriteDirectives(map, _rewriteDirectives);
+                ApplyRewriteDirectives(map, RewriteDirectives);
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 
