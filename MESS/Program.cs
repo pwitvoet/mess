@@ -145,11 +145,11 @@ namespace MESS
             if (!Path.HasExtension(settings.InputPath) && !File.Exists(settings.InputPath))
                 inputPath = Path.ChangeExtension(settings.InputPath, ".map");
 
-            if (settings.OutputPath == null)
+            if (string.IsNullOrEmpty(settings.OutputPath))
                 settings.OutputPath = inputPath;
 
-            if (settings.TemplateDirectory == null)
-                settings.TemplateDirectory = Path.GetDirectoryName(settings.InputPath) ?? "";
+            if (string.IsNullOrEmpty(settings.TemplateDirectory))
+                settings.TemplateDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "", "templates");
 
 
             logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
