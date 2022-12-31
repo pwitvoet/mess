@@ -189,6 +189,7 @@ namespace MScript.Parsing
                     case TokenType.GreaterThanOrEqual:
                     case TokenType.LessThan:
                     case TokenType.LessThanOrEqual:
+                    case TokenType.Semicolon:
                     case TokenType.DoubleAmpersand:
                     case TokenType.And:
                     case TokenType.DoubleBar:
