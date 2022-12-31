@@ -39,10 +39,6 @@ namespace MESS
                     {
                         switch (currentSegment)
                         {
-                            case "rewrite-fgds":
-                                settings.GameDataPaths.Add(Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(line), evaluationContext)));
-                                break;
-
                             case "variables":
                                 foreach (var assignment in ParseAssignments(line, evaluationContext))
                                     settings.Variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
@@ -61,8 +57,8 @@ namespace MESS
                         var rest = RemoveTrailingComments(line.Substring(nameValueSeparatorIndex + 1));
                         switch (name)
                         {
-                            case "template-directory":
-                                settings.TemplateDirectory = Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
+                            case "templates-directory":
+                                settings.TemplatesDirectory = Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
                                 break;
 
                             case "max-recursion":

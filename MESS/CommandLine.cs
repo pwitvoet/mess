@@ -29,7 +29,7 @@ namespace MESS
         private int _requiredArgumentsCount;
 
 
-        public void Parse(string[] input)
+        public bool Parse(string[] input)
         {
             // Start parsing options:
             int index = 0;
@@ -56,33 +56,32 @@ namespace MESS
                 if (index + i >= input.Length)
                 {
                     if (i < _requiredArgumentsCount)
-                        throw new InvalidOperationException($"At least {_requiredArgumentsCount} arguments must be provided, but found only {i}.");
+                        return false;
 
                     break;
                 }
 
                 _arguments[i].Parse(input[index + i]);
             }
+
+            return true;
         }
 
-        public void ShowDescriptions(Stream output)
+        public void ShowDescriptions(TextWriter output)
         {
-            using (var writer = new StreamWriter(output, new UTF8Encoding(false), 1024, true))
-            {
-                writer.WriteLine("Options:");
-                foreach (var option in _options.Values.OrderBy(option => option.Name))
-                    writer.WriteLine($"{option.Name,-16}{option.Description}");
+            output.WriteLine("Options:");
+            foreach (var option in _options.Values.OrderBy(option => option.Name))
+                output.WriteLine($"{option.Name,-16}{option.Description}");
 
-                writer.WriteLine();
-                writer.WriteLine("Arguments:");
-                foreach (var argument in _arguments.Take(_requiredArgumentsCount))
-                    writer.WriteLine($"{argument.Description}");
+            output.WriteLine();
+            output.WriteLine("Arguments:");
+            foreach (var argument in _arguments.Take(_requiredArgumentsCount))
+                output.WriteLine($"{argument.Description}");
 
-                writer.WriteLine();
-                writer.WriteLine("Optional arguments:");
-                foreach (var argument in _arguments.Skip(_requiredArgumentsCount))
-                    writer.WriteLine($"{argument.Description}");
-            }
+            output.WriteLine();
+            output.WriteLine("Optional arguments:");
+            foreach (var argument in _arguments.Skip(_requiredArgumentsCount))
+                output.WriteLine($"{argument.Description}");
         }
 
 

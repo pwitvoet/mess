@@ -19,11 +19,11 @@ namespace MESS.Macros
         /// Loads the specified map file, expands any macro entities within, and returns the resulting map.
         /// The given path must be absolute.
         /// </summary>
-        public static Map ExpandMacros(string path, ExpansionSettings settings, ILogger logger)
+        public static Map ExpandMacros(string path, ExpansionSettings settings, RewriteDirective[] rewriteDirectives, ILogger logger)
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
 
-            var expander = new MacroExpander(settings, logger);
+            var expander = new MacroExpander(settings, rewriteDirectives, logger);
             var mainTemplate = expander.GetMapTemplate(path);
 
             var context = new InstantiationContext(
@@ -31,7 +31,7 @@ namespace MESS.Macros
                 logger,
                 settings.Variables ?? new(),
                 expander.BaseEvaluationContext,
-                settings.TemplateDirectory);
+                settings.TemplatesDirectory);
             expander.CreateInstance(context);
 
             return context.OutputMap;
@@ -63,73 +63,26 @@ namespace MESS.Macros
         private Dictionary<string, MapTemplate> _mapTemplateCache = new Dictionary<string, MapTemplate>();
         private int _instanceCount = 0;
 
-        private List<RewriteDirective> RewriteDirectives { get; } = new List<RewriteDirective>();
+        private RewriteDirective[] RewriteDirectives { get; }
 
 
-        private MacroExpander(ExpansionSettings settings, ILogger logger)
+        private MacroExpander(ExpansionSettings settings, RewriteDirective[] rewriteDirectives, ILogger logger)
         {
             Settings = settings;
             Logger = logger;
 
             Globals = new Dictionary<string, object?>();
 
-            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", Globals);
+            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplatesDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", Globals);
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
             TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), Logger, BaseEvaluationContext);
 
 
-            RewriteDirectives.AddRange(LoadTedFileRewriteDirectives(settings.TemplateDirectory));
-
-            if (settings.GameDataPaths?.Any() == true)
-                RewriteDirectives.AddRange(settings.GameDataPaths.SelectMany(LoadRewriteDirectives));
-
-            // Check for conflicting rewrite directives:
-            var duplicateRewriteDirectives = RewriteDirectives
-                .GroupBy(directive => directive.ClassName.ToLowerInvariant())
-                .Where(group => group.Count() > 1)
-                .ToArray();
-            foreach (var group in duplicateRewriteDirectives)
-                Logger.Warning($"Possible rewrite directive conflict: {group.Count()} rewrite directives found for '{group.Key}'!");
+            RewriteDirectives = rewriteDirectives;
         }
 
-
-        /// <summary>
-        /// This function searches the given template directory for .ted files (Template Entity Definition), which are small .fgd files that contain entity definitions and MESS rewrite rules.
-        /// It also searches inside .mtb files.
-        /// </summary>
-        private IEnumerable<RewriteDirective> LoadTedFileRewriteDirectives(string templateDirectory)
-        {
-            return MtbFileSystem.ReadFiles(templateDirectory, ".ted", (file, path) => LoadRewriteDirectives(file, path))
-                .SelectMany(rewriteRules => rewriteRules)
-                .ToArray();
-        }
-
-        private IEnumerable<RewriteDirective> LoadRewriteDirectives(string path)
-        {
-            path = Path.GetFullPath(path);
-            using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                return LoadRewriteDirectives(file, path);
-        }
-
-        private IEnumerable<RewriteDirective> LoadRewriteDirectives(Stream stream, string path)
-        {
-            try
-            {
-                Logger.Info($"Loading rewrite directives from '{path}'.");
-
-                var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(stream).ToArray();
-                Logger.Info($"{rewriteDirectives.Length} rewrite directives loaded.");
-
-                return rewriteDirectives;
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning($"Failed to load rewrite directives from '{path}':", ex);
-                return Array.Empty<RewriteDirective>();
-            }
-        }
 
         private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives)
         {
@@ -154,14 +107,11 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteDirective(
-            Dictionary<string, string> entityProperties,
-            RewriteDirective rewriteDirective,
-            int entityID,
-            Random random)
+        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random)
         {
             var evaluatedProperties = entityProperties.EvaluateToMScriptValues(TopLevelEvaluationContext);
             var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
+            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.Directory));
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -955,23 +905,23 @@ namespace MESS.Macros
 
         class MacroExpanderFunctions
         {
-            private string _templateDirectory;
+            private string _templatesDirectory;
             private string _messDirectory;
             private IDictionary<string, object?> _globals;
 
 
-            public MacroExpanderFunctions(string templateDirectory, string messDirectory, IDictionary<string, object?> globals)
+            public MacroExpanderFunctions(string templatesDirectory, string messDirectory, IDictionary<string, object?> globals)
             {
-                _templateDirectory = templateDirectory;
+                _templatesDirectory = templatesDirectory;
                 _messDirectory = messDirectory;
                 _globals = globals;
             }
 
 
             // Directories:
-            public string dir() => _templateDirectory;  // TODO: Make this obsolete!
+            public string dir() => _templatesDirectory;  // TODO: Make this obsolete!
 
-            public string template_dir() => _templateDirectory;
+            public string templates_dir() => _templatesDirectory;
             public string mess_dir() => _messDirectory;
 
             // Globals:
@@ -989,6 +939,22 @@ namespace MESS.Macros
                 _globals[name ?? ""] = 1.0;
                 return false;
             }
+        }
+
+
+        class RewriteDirectiveFunctions
+        {
+            private string _directory;
+
+
+            public RewriteDirectiveFunctions(string directory)
+            {
+                _directory = directory;
+            }
+
+
+            // Bundle directory:
+            public string mtb_dir() => _directory;
         }
     }
 }

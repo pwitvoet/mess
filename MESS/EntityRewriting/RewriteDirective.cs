@@ -7,7 +7,16 @@
     /// </summary>
     public class RewriteDirective
     {
+        /// <summary>
+        /// The entity classname that this directive applies to.
+        /// </summary>
         public string ClassName { get; internal set; } = "";
+
+        /// <summary>
+        /// The directory (or .mtb path) of the .ted file where this rewrite directive was read from.
+        /// </summary>
+        public string Directory { get; internal set; } = "";
+
         public List<RuleGroup> RuleGroups { get; } = new();
 
 

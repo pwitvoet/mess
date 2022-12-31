@@ -81,7 +81,7 @@ namespace MESS
         }
 
         /// <summary>
-        /// Opens all matching files in the given directory and calls the given file reading function for each.
+        /// Opens all matching files in the given directory (and its sub-directories) and calls the given file reading function for each.
         /// This will also look for matching files inside .mtb files.
         /// <para>
         /// The file reading function is given a file content stream and a file path, for identification purposes.
@@ -95,46 +95,47 @@ namespace MESS
             var visitedFiles = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
             var results = new List<TResult>();
 
-            ReadFiles(directory, extension, readFile, visitedFiles, results);
+            ReadFiles(directory);
             return results;
-        }
 
-        private static void ReadFiles<TResult>(string directory, string extension, Func<Stream, string, TResult> readFile, HashSet<string> visitedFiles, List<TResult> results)
-        {
-            // First visit sub-directories - because real files take priority over files inside .mtb files, and .mtb files in sub-directories take priority over .mtb files in parent directories:
-            foreach (var subDirectory in Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly).OrderBy(path => path))
-                ReadFiles(subDirectory, extension, readFile, visitedFiles, results);
 
-            // Then look for matching files:
-            foreach (var path in Directory.EnumerateFiles(directory, "*" + extension, SearchOption.TopDirectoryOnly).OrderBy(path => path))
+            void ReadFiles(string currentDirectory)
             {
-                visitedFiles.Add(path);
-                // Real files always take priority, so we don't need to check whether they've been visited already:
-                using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    results.Add(readFile(file, path));
-            }
+                // First visit sub-directories - because real files take priority over files inside .mtb files, and .mtb files in sub-directories take priority over .mtb files in parent directories:
+                foreach (var subDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly).OrderBy(path => path))
+                    ReadFiles(subDirectory);
 
-            // And finally, look inside .mtb files:
-            foreach (var mtbPath in Directory.EnumerateFiles(directory, "*.mtb", SearchOption.TopDirectoryOnly).OrderBy(path => path))
-            {
-                var mtbDirPath = mtbPath.Replace(".mtb", "", StringComparison.InvariantCultureIgnoreCase);
-
-                using (var file = File.Open(mtbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var zip = new ZipArchive(file, ZipArchiveMode.Read))
+                // Then look for matching files:
+                foreach (var path in Directory.EnumerateFiles(currentDirectory, "*" + extension, SearchOption.TopDirectoryOnly).OrderBy(path => path))
                 {
-                    foreach (var entry in zip.Entries.OrderBy(entry => entry.FullName))
+                    visitedFiles.Add(path);
+                    // Real files always take priority, so we don't need to check whether they've been visited already:
+                    using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        results.Add(readFile(file, path));
+                }
+
+                // And finally, look inside .mtb files:
+                foreach (var mtbPath in Directory.EnumerateFiles(currentDirectory, "*.mtb", SearchOption.TopDirectoryOnly).OrderBy(path => path))
+                {
+                    var mtbDirPath = mtbPath.Replace(".mtb", "", StringComparison.InvariantCultureIgnoreCase);
+
+                    using (var file = File.Open(mtbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var zip = new ZipArchive(file, ZipArchiveMode.Read))
                     {
-                        if (!entry.FullName.EndsWith(extension))
-                            continue;
+                        foreach (var entry in zip.Entries.OrderBy(entry => entry.FullName))
+                        {
+                            if (!entry.FullName.EndsWith(extension))
+                                continue;
 
-                        var normalizedFullname = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
-                        var equivalentPath = Path.Combine(mtbDirPath, normalizedFullname);
-                        if (visitedFiles.Contains(equivalentPath))
-                            continue;
+                            var normalizedFullname = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
+                            var equivalentPath = Path.Combine(mtbDirPath, normalizedFullname);
+                            if (visitedFiles.Contains(equivalentPath))
+                                continue;
 
-                        visitedFiles.Add(equivalentPath);
-                        using (var entryStream = entry.Open())
-                            results.Add(readFile(entryStream, Path.Combine(mtbPath, normalizedFullname)));
+                            visitedFiles.Add(equivalentPath);
+                            using (var entryStream = entry.Open())
+                                results.Add(readFile(entryStream, Path.Combine(mtbPath, normalizedFullname)));
+                        }
                     }
                 }
             }
