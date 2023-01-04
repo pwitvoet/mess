@@ -51,13 +51,39 @@ namespace MESS.Mapping
                         if (Plane.IntersectionPoint(face1.Plane, face2.Plane, face3.Plane) is Vector3D point &&
                             this.Contains(point, epsilon: 1f))  // TODO: Figure out what a reasonable epsilon is, and whether this can cause any problems... (a 0 epsilon will sometimes omit vertices!)
                         {
-                            // TODO: Look into ORDERING these vertices (CCW or CW) -- it matters for some use-cases!
                             if (!face1.Vertices.Contains(point)) face1.Vertices.Add(point);
                             if (!face2.Vertices.Contains(point)) face2.Vertices.Add(point);
                             if (!face3.Vertices.Contains(point)) face3.Vertices.Add(point);
                         }
                     }
                 }
+            }
+
+            // Store vertices in clockwise order:
+            foreach (var face in Faces)
+            {
+                var center = new Vector3D();
+                foreach (var vertex in face.Vertices)
+                    center += vertex;
+                center /= face.Vertices.Count;
+
+                var normal = face.Plane.Normal;
+                var forward = (face.Vertices[0] - center).Normalized();
+                var right = forward.CrossProduct(normal).Normalized();
+
+                var clockwiseVertices = face.Vertices
+                    .Select(vertex =>
+                    {
+                        var point = vertex - center;
+                        var x = point.DotProduct(right);
+                        var y = point.DotProduct(forward);
+                        return new { Angle = Math.Atan2(y, x), Vertex = vertex };
+                    })
+                    .OrderByDescending(item => item.Angle)
+                    .Select(item => item.Vertex)
+                    .ToArray();
+                face.Vertices.Clear();
+                face.Vertices.AddRange(clockwiseVertices);
             }
         }
     }
