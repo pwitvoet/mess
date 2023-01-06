@@ -244,16 +244,6 @@ namespace MESS
             logger.Info($"{rewriteDirectives.Length} rewrite directives read.");
 
 
-            // Log warnings about conflicting rewrite directives:
-            var duplicateRewriteDirectives = rewriteDirectives
-                .GroupBy(directive => directive.ClassName.ToLowerInvariant())
-                .Where(group => group.Count() > 1)
-                .ToArray();
-
-            foreach (var group in duplicateRewriteDirectives)
-                logger.Warning($"Possible rewrite directive conflict: {group.Count()} rewrite directives found for '{group.Key}'!");
-
-
             // Finally, see if mess.fgd needs to be updated (or created):
             logger.Info("Checking for mess.fgd updates...");
 

@@ -159,22 +159,22 @@ namespace MESS.EntityRewriting
 
         public enum TokenType
         {
-            Name,
-            Integer,
-            String,
-            Comment,
-            MessDirective,
+            Name,           // \w[\w\d]*
+            Integer,        // \d+
+            String,         // "[^"]*"
+            Comment,        // //[^\n]*\n
+            MessDirective,  // //\s*@MESS[^\n]*\n
 
-            Comma,
-            Assignment,
-            Colon,
-            Minus,
-            ParensOpen,
-            ParensClose,
-            BracketOpen,
-            BracketClose,
-            BraceOpen,
-            BraceClose,
+            Comma,          // ,
+            Assignment,     // =
+            Colon,          // :
+            Minus,          // -
+            ParensOpen,     // (
+            ParensClose,    // )
+            BracketOpen,    // [
+            BracketClose,   // ]
+            BraceOpen,      // {
+            BraceClose,     // }
         }
 
 

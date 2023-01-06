@@ -25,27 +25,43 @@ namespace MESS.EntityRewriting
             var tokens = FgdTokenizer.Tokenize(input);
             using (var context = new Context(tokens.Where(token => token.Type != FgdTokenizer.TokenType.Comment)))
             {
+                RewriteDirective? unassociatedRewriteDirective = null;
                 while (!context.IsExhausted)
                 {
-                    foreach (var rewriteDirective in ParseEntityRewriteDirectives(context))
+                    if (context.Current.Type == FgdTokenizer.TokenType.MessDirective)
+                    {
+                        if (unassociatedRewriteDirective != null)
+                            throw ParseError(context, "A MESS rewrite directive without FOR or WHEN clauses must be followed by an entity definition!");
+
+                        var rewriteDirective = ParseRewriteDirective(context);
                         yield return rewriteDirective;
+
+                        unassociatedRewriteDirective = (!rewriteDirective.ClassNames.Any() && rewriteDirective.Condition == null) ? rewriteDirective : null;
+                    }
+                    else if (context.Current.Type == FgdTokenizer.TokenType.Name)
+                    {
+                        var entityName = ParseEntityDefinition(context);
+
+                        if (unassociatedRewriteDirective != null)
+                        {
+                            unassociatedRewriteDirective.ClassNames = new[] { entityName };
+                            unassociatedRewriteDirective = null;
+                        }
+                    }
                 }
+
+                if (unassociatedRewriteDirective != null)
+                    throw ParseError(context, "A MESS rewrite directive without FOR or WHEN clauses must be followed by an entity definition!");
             }
         }
 
 
         /// <summary>
-        /// Parses the next entity definition, but only returns the MESS rewrite directives that are associated with it.
-        /// Returns an empty sequence if there are no directives associated with the entity definition.
+        /// Parses the next entity definition and returns its name.
+        /// This function should only be called if the current token is a <see cref="FgdTokenizer.TokenType.Name"/>.
         /// </summary>
-        private static IEnumerable<RewriteDirective> ParseEntityRewriteDirectives(Context context)
+        private static string ParseEntityDefinition(Context context)
         {
-            // Rewrite directives (optional, MESS-specific):
-            var rewriteDirectives = new List<RewriteDirective>();
-            while (context.Current.Type == FgdTokenizer.TokenType.MessDirective)
-                rewriteDirectives.Add(ParseRewriteDirective(context));
-
-
             // Entity type (@BaseClass, @SolidClass or @PointClass):
             Expect(context, FgdTokenizer.TokenType.Name);
 
@@ -123,23 +139,58 @@ namespace MESS.EntityRewriting
             }
             Expect(context, FgdTokenizer.TokenType.BracketClose);
 
-            foreach (var directive in rewriteDirectives)
-                directive.ClassName = entityName;
-            return rewriteDirectives;
+            return entityName;
         }
 
+        /// <summary>
+        /// Parses and returns the next MESS rewrite directive.
+        /// This function should only be called if the current token is a <see cref="FgdTokenizer.TokenType.MessDirective"/>.
+        /// </summary>
         private static RewriteDirective ParseRewriteDirective(Context context)
         {
             Assert(context.Current.Type == FgdTokenizer.TokenType.MessDirective);
 
-            var directiveMatch = Regex.Match(context.Current.Value, @"@MESS\s+(?<directive>\w+)\s*:").Groups["directive"];
-            if (!directiveMatch.Success)
+            var match = Regex.Match(context.Current.Value, @"@MESS\s+(?<directive>\w+)((?<clauses>\s+\w+(\s+""[^""]*"")+)+)?\s*:");
+            if (!match.Success)
                 throw ParseError(context, $"Invalid MESS directive format: '{context.Current.Value}'.");
 
-            if (directiveMatch.Value != "REWRITE")
-                throw ParseError(context, $"Unknown MESS directive: '{directiveMatch.Value}'.");
+            var directive = match.Groups["directive"].Value;
+            if (directive != "REWRITE")
+                throw ParseError(context, $"Unknown MESS directive: '{directive}'.");
 
             var rewriteDirective = new RewriteDirective();
+            var clauses = match.Groups["clauses"];
+            if (clauses.Success)
+            {
+                foreach (Capture clause in clauses.Captures)
+                {
+                    var clauseMatch = Regex.Match(clause.Value, @"(?<name>\w+)(\s+""(?<values>[^""]*)"")+");
+                    var name = clauseMatch.Groups["name"].Value;
+                    var values = clauseMatch.Groups["values"].Captures.Select(val => val.Value).ToArray();
+
+                    if (name == "FOR")
+                    {
+                        if (rewriteDirective.ClassNames.Any())
+                            throw ParseError(context, "Multiple FOR clauses are not allowed.");
+
+                        rewriteDirective.ClassNames = values;
+                    }
+                    else if (name == "WHEN")
+                    {
+                        if (values.Length > 1)
+                            throw ParseError(context, "Only one condition can be specified in a WHEN clause.");
+                        else if (rewriteDirective.Condition != null)
+                            throw ParseError(context, "Multiple WHEN clauses are not allowed.");
+
+                        rewriteDirective.Condition = values[0];
+                    }
+                    else
+                    {
+                        throw ParseError(context, $"Unknown directive clause: '{name}'");
+                    }
+                }
+            }
+
             RewriteDirective.RuleGroup? currentGroup = null;
             var insideElseBlock = false;
 

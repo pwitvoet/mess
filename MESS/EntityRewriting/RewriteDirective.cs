@@ -8,9 +8,14 @@
     public class RewriteDirective
     {
         /// <summary>
-        /// The entity classname that this directive applies to.
+        /// The entity classname(s) that this directive applies to. If empty, then this rewrite directive will be applied to all entities.
         /// </summary>
-        public string ClassName { get; internal set; } = "";
+        public string[] ClassNames { get; internal set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// If not null, then this rewrite directive will only be applied to an entity if it matches this condition.
+        /// </summary>
+        public string? Condition { get; internal set; }
 
         /// <summary>
         /// The directory (or .mtb path) of the .ted file where this rewrite directive was read from.

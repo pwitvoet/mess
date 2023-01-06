@@ -91,19 +91,47 @@ namespace MESS.Macros
             var randomSeed = (int)(map.Properties.EvaluateToMScriptValue(Attributes.RandomSeed, TopLevelEvaluationContext) as double? ?? 0.0);
             var random = new Random(randomSeed);
 
-            var directiveLookup = rewriteDirectives.ToLookup(rewriteDirective => rewriteDirective.ClassName);
+            var directiveLookup = new Dictionary<string, List<RewriteDirective>>();
+            var wildcardDirectives = new List<RewriteDirective>();
+            foreach (var rewriteDirective in rewriteDirectives)
+            {
+                if (rewriteDirective.ClassNames.Length == 0)
+                {
+                    wildcardDirectives.Add(rewriteDirective);
+                    continue;
+                }
 
-            foreach (var rewriteDirective in directiveLookup[Entities.Worldspawn])
-                ApplyRewriteDirective(map.Properties, rewriteDirective, 0, random);
+                foreach (var className in rewriteDirective.ClassNames)
+                {
+                    if (!directiveLookup.TryGetValue(className, out var directives))
+                    {
+                        directives = new List<RewriteDirective>();
+                        directiveLookup[className] = directives;
+                    }
+                    directives.Add(rewriteDirective);
+                }
+            }
+
+            ApplyMatchingDirectives(Entities.Worldspawn, map.Properties, 0);
 
             for (int i = 0; i < map.Entities.Count; i++)
             {
                 var entity = map.Entities[i];
                 var entityID = i + 1;
+                ApplyMatchingDirectives(entity.ClassName ?? "", map.Entities[i].Properties, entityID);
+            }
 
-                var matchingDirectives = directiveLookup[entity.ClassName ?? ""];
-                foreach (var rewriteDirective in matchingDirectives)
-                    ApplyRewriteDirective(entity.Properties, rewriteDirective, entityID, random);
+
+            void ApplyMatchingDirectives(string className, Dictionary<string, string> entityProperties, int entityID)
+            {
+                if (directiveLookup.TryGetValue(className, out var matchingDirectives))
+                {
+                    foreach (var rewriteDirective in matchingDirectives)
+                        ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random);
+                }
+
+                foreach (var rewriteDirective in wildcardDirectives)
+                    ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random);
             }
         }
 
@@ -111,6 +139,14 @@ namespace MESS.Macros
         {
             var evaluatedProperties = entityProperties.EvaluateToMScriptValues(TopLevelEvaluationContext);
             var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
+
+            if (rewriteDirective.Condition != null)
+            {
+                var isMatch = Evaluation.EvaluateInterpolatedStringOrExpression(rewriteDirective.Condition, context);
+                if (!Interpreter.IsTrue(isMatch) || isMatch is 0.0)
+                    return;
+            }
+
             NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.Directory));
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
