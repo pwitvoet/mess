@@ -22,7 +22,7 @@ namespace MESS
                 return;
 
             var evaluationContext = Evaluation.DefaultContext();
-            evaluationContext.Bind("EXE_DIR", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            evaluationContext.Bind("EXE_DIR", AppContext.BaseDirectory);
 
             string? currentSegment = null;
             var lines = File.ReadLines(path, Encoding.UTF8).ToArray();

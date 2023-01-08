@@ -21,10 +21,10 @@ namespace MESS
     /// </summary>
     class Program
     {
-        static string ExePath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
-        static string SettingsFilePath => Path.Combine(ExePath, "mess.config");
-        static string MessFgdFilePath => Path.Combine(ExePath, "mess.fgd");
-        static string DefaultTemplatesDirectory => Path.Combine(ExePath, "templates");
+        static Version? MessVersion => Assembly.GetExecutingAssembly().GetName().Version;
+        static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "mess.config");
+        static string MessFgdFilePath => Path.Combine(AppContext.BaseDirectory, "mess.fgd");
+        static string DefaultTemplatesDirectory => Path.Combine(AppContext.BaseDirectory, "templates");
 
 
         static int Main(string[] args)
@@ -56,7 +56,7 @@ namespace MESS
 
                 using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
                 {
-                    logger.Minimal($"MESS v{Assembly.GetExecutingAssembly().GetName().Version}: Macro Entity Substitution System");
+                    logger.Minimal($"MESS v{MessVersion}: Macro Entity Substitution System");
                     logger.Minimal("----- BEGIN MESS -----");
                     logger.Minimal($"Command line: {Environment.CommandLine}");
                     logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
@@ -144,7 +144,7 @@ namespace MESS
             using (var output = Console.OpenStandardOutput())
             using (var writer = new StreamWriter(output, leaveOpen: true))
             {
-                writer.WriteLine($"MESS v{Assembly.GetExecutingAssembly().GetName().Version}: Macro Entity Substitution System");
+                writer.WriteLine($"MESS v{MessVersion}: Macro Entity Substitution System");
                 commandLine.ShowDescriptions(writer);
             }
         }
@@ -287,7 +287,7 @@ namespace MESS
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
 
-            Console.WriteLine($"MScript interpreter v{Assembly.GetExecutingAssembly().GetName().Version}.");
+            Console.WriteLine($"MScript interpreter v{MessVersion}.");
             Console.WriteLine("Enter 'quit' to quit the interpreter.");
             Console.WriteLine("Bindings can be created with 'name = expression'.");
             Console.WriteLine("============================================================");

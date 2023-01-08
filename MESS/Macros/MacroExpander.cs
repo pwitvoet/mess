@@ -73,7 +73,7 @@ namespace MESS.Macros
 
             Globals = new Dictionary<string, object?>();
 
-            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplatesDirectory, Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", Globals);
+            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplatesDirectory, AppContext.BaseDirectory, Globals);
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
