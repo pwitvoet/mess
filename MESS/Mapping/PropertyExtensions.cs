@@ -76,6 +76,7 @@ namespace MESS.Mapping
 
         /// <summary>
         /// Evaluates all keys to strings and all values to MScript values. Empty keys are excluded (their values are not evaluated).
+        /// Keys that evaluate to arrays are 'flattened' into multiple keys. The values of such array-keys must also be arrays (non-array values are treated as 1-element arrays).
         /// 'spawnflag{0-31}' keys are removed, but their values are used to set specific bits in the special 'spawnflags' attribute.
         /// </summary>
         public static Dictionary<string, object?> EvaluateToMScriptValues(this IDictionary<string, string> properties, EvaluationContext context)
@@ -83,12 +84,32 @@ namespace MESS.Mapping
             var result = new Dictionary<string, object?>();
             foreach (var kv in properties)
             {
-                var key = Evaluation.EvaluateInterpolatedString(kv.Key, context);
-                if (key == "")
-                    continue;
+                var keyObject = Evaluation.EvaluateInterpolatedStringOrExpression(kv.Key, context);
+                if (keyObject is object?[] keyArray)
+                {
+                    var valueObject = Evaluation.EvaluateInterpolatedStringOrExpression(kv.Value, context);
+                    if (!(valueObject is object?[] valueArray))
+                        valueArray = new object?[] { valueObject };
 
-                var value = Evaluation.EvaluateInterpolatedStringOrExpression(kv.Value, context);
-                result[key] = value;
+                    for (int i = 0; i < keyArray.Length; i++)
+                    {
+                        var key = Interpreter.Print(keyArray[i]);
+                        if (key == "")
+                            continue;
+
+                        var value = i < valueArray.Length ? valueArray[i] : null;
+                        result[key] = value;
+                    }
+                }
+                else
+                {
+                    var key = Interpreter.Print(keyObject);
+                    if (key == "")
+                        continue;
+
+                    var value = Evaluation.EvaluateInterpolatedStringOrExpression(kv.Value, context);
+                    result[key] = value;
+                }
             }
 
             result.UpdateSpawnFlags();
