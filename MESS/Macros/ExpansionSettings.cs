@@ -5,7 +5,7 @@ namespace MESS.Macros
     public class ExpansionSettings
     {
         public int? RecursionLimit { get; set; } = 100;
-        public int? InstanceLimit { get; set; } = 10000;
+        public int? InstanceLimit { get; set; } = 100_000;
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
 
         public string InputPath { get; set; } = "";
