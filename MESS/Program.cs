@@ -30,8 +30,8 @@ namespace MESS
         static int Main(string[] args)
         {
             var stopwatch = Stopwatch.StartNew();
-            var settings = new ExpansionSettings();
-            var commandLineParser = GetCommandLineParser(settings);
+            var commandLineSettings = new CommandLineSettings();
+            var commandLineParser = GetCommandLineParser(commandLineSettings);
 
             try
             {
@@ -47,15 +47,22 @@ namespace MESS
                     return 0;
                 }
 
-                ConfigFile.ReadSettings(SettingsFilePath, settings);
                 commandLineParser.Parse(args);
 
-                if (string.IsNullOrEmpty(settings.TemplatesDirectory))
-                    settings.TemplatesDirectory = DefaultTemplatesDirectory;
-
-
-                using (var logger = new MultiLogger(new ConsoleLogger(settings.LogLevel), new FileLogger(settings.InputPath + ".mess.log", settings.LogLevel)))
+                var logPath = string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log";
+                var logLevel = commandLineSettings.LogLevel ?? LogLevel.Info;
+                using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
                 {
+                    var settings = new ExpansionSettings();
+                    ConfigFile.ReadSettings(SettingsFilePath, settings, logger);
+                    MergeSettings(settings, commandLineSettings);
+
+                    if (settings.LogLevel != logLevel)
+                        logger.LogLevel = settings.LogLevel;
+
+                    if (string.IsNullOrEmpty(settings.TemplatesDirectory))
+                        settings.TemplatesDirectory = DefaultTemplatesDirectory;
+
                     logger.Minimal($"MESS v{MessVersion}: Macro Entity Substitution System");
                     logger.Minimal("----- BEGIN MESS -----");
                     logger.Minimal($"Command line: {Environment.CommandLine}");
@@ -94,7 +101,9 @@ namespace MESS
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to read config file or to parse command line arguments: {ex.GetType().Name}: '{ex.Message}'.");
+                using (var errorLogger = new MultiLogger(new ConsoleLogger(LogLevel.Error), new FileLogger("mess.log", LogLevel.Error)))
+                    errorLogger.Error($"A problem has occurred: {ex.GetType().Name}: '{ex.Message}'.");
+
                 ShowHelp(commandLineParser);
                 return -1;
             }
@@ -104,7 +113,7 @@ namespace MESS
         /// <summary>
         /// Returns a command-line parser that will fill the given settings object when it parses command-line arguments.
         /// </summary>
-        private static CommandLine GetCommandLineParser(ExpansionSettings settings)
+        private static CommandLine GetCommandLineParser(CommandLineSettings settings)
         {
             return new CommandLine()
                 .Option(
@@ -137,6 +146,20 @@ namespace MESS
                 .OptionalArgument(
                     s => { settings.OutputPath = Path.GetFullPath(s); },
                     "Output map file. If not specified, the input map file will be overwritten.");
+        }
+
+        private static void MergeSettings(ExpansionSettings settings, CommandLineSettings commandLineSettings)
+        {
+            if (commandLineSettings.RecursionLimit != null) settings.RecursionLimit = commandLineSettings.RecursionLimit;
+            if (commandLineSettings.InstanceLimit != null) settings.InstanceLimit = commandLineSettings.InstanceLimit;
+            if (commandLineSettings.LogLevel != null) settings.LogLevel = commandLineSettings.LogLevel.Value;
+
+            if (commandLineSettings.InputPath != null) settings.InputPath = commandLineSettings.InputPath;
+            if (commandLineSettings.OutputPath != null) settings.OutputPath = commandLineSettings.OutputPath;
+            if (commandLineSettings.TemplatesDirectory != null) settings.TemplatesDirectory = commandLineSettings.TemplatesDirectory;
+
+            foreach (var kv in commandLineSettings.Variables)
+                settings.Variables[kv.Key] = kv.Value;
         }
 
         private static void ShowHelp(CommandLine commandLine)

@@ -2,7 +2,7 @@
 {
     class ConsoleLogger : ILogger
     {
-        public LogLevel LogLevel { get; }
+        public LogLevel LogLevel { get; set; }
 
 
         public ConsoleLogger(LogLevel logLevel)

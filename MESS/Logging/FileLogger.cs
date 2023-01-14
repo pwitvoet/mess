@@ -4,7 +4,7 @@ namespace MESS.Logging
 {
     class FileLogger : ILogger
     {
-        public LogLevel LogLevel { get; }
+        public LogLevel LogLevel { get; set; }
 
 
         private StreamWriter _writer;

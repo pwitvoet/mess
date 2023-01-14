@@ -16,7 +16,7 @@ namespace MESS
         /// Fills the given settings object by reading settings from the 'mess.config' file.
         /// Does nothing if the config file does not exist, but will throw an exception if the config file is not structured correctly.
         /// </summary>
-        public static void ReadSettings(string path, ExpansionSettings settings)
+        public static void ReadSettings(string path, ExpansionSettings settings, ILogger logger)
         {
             if (!File.Exists(path))
                 return;
@@ -45,7 +45,7 @@ namespace MESS
                                 break;
 
                             default:
-                                Console.WriteLine($"Warning: config line #{i + 1} in '{path}' is formatted incorrectly and will be skipped.");
+                                logger.Warning($"Warning: config line #{i + 1} in '{path}' is formatted incorrectly and will be skipped.");
                                 break;
                         }
                     }
@@ -83,14 +83,14 @@ namespace MESS
                                 break;
 
                             default:
-                                Console.WriteLine($"Unknown setting on config line #{i + 1}: '{name}'.");
+                                logger.Warning($"Unknown setting on config line #{i + 1}: '{name}'.");
                                 break;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to read config line #{i + 1} in '{path}': {ex.GetType().Name}: '{ex.Message}'.");
+                    logger.Warning($"Failed to read config line #{i + 1} in '{path}':", ex);
                     continue;
                 }
             }

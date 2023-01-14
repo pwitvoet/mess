@@ -2,7 +2,7 @@
 {
     public interface ILogger : IDisposable
     {
-        LogLevel LogLevel { get; }
+        LogLevel LogLevel { get; set; }
 
         void Verbose(string message);
         void Info(string message);

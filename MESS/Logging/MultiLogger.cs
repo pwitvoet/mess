@@ -2,7 +2,15 @@
 {
     class MultiLogger : ILogger
     {
-        public LogLevel LogLevel => !_loggers.Any() ? LogLevel.Off : _loggers.Max(logger => logger.LogLevel);
+        public LogLevel LogLevel
+        {
+            get => !_loggers.Any() ? LogLevel.Off : _loggers.Max(logger => logger.LogLevel);
+            set
+            {
+                foreach (var logger in _loggers)
+                    logger.LogLevel = value;
+            }
+        }
 
         private ILogger[] _loggers;
 
