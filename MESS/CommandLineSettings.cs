@@ -10,6 +10,8 @@ namespace MESS
 
         public string? InputPath { get; set; }
         public string? OutputPath { get; set; }
+        public string? ConfigFilePath { get; set; }
+        public string? MessFgdFilePath { get; set; }
         public string? TemplatesDirectory { get; set; }
         public Dictionary<string, object?> Variables { get; } = new();
     }

@@ -1,5 +1,6 @@
 ﻿using MESS.Logging;
 using MESS.Macros;
+using MESS.Util;
 using MScript;
 using MScript.Evaluation;
 using MScript.Parsing;
@@ -18,9 +19,6 @@ namespace MESS
         /// </summary>
         public static void ReadSettings(string path, ExpansionSettings settings, ILogger logger)
         {
-            if (!File.Exists(path))
-                return;
-
             var evaluationContext = Evaluation.DefaultContext();
             evaluationContext.Bind("EXE_DIR", AppContext.BaseDirectory);
 
@@ -58,7 +56,11 @@ namespace MESS
                         switch (name)
                         {
                             case "templates-directory":
-                                settings.TemplatesDirectory = Path.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
+                                settings.TemplatesDirectory = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
+                                break;
+
+                            case "fgd-path":
+                                settings.MessFgdFilePath = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
                                 break;
 
                             case "max-recursion":

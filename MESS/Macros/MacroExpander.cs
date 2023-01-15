@@ -4,6 +4,7 @@ using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
+using MESS.Util;
 using MScript;
 using MScript.Evaluation;
 using System.Reflection;
@@ -193,7 +194,7 @@ namespace MESS.Macros
         /// </summary>
         private MapTemplate GetMapTemplate(string path)
         {
-            path = Path.GetFullPath(path);
+            path = FileSystem.GetFullPath(path);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
                 Logger.Info($"Loading map template '{path}' from file.");

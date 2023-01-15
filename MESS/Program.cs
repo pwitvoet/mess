@@ -9,6 +9,7 @@ using System.Text;
 using System.Diagnostics;
 using MESS.Logging;
 using MESS.EntityRewriting;
+using MESS.Util;
 
 namespace MESS
 {
@@ -22,8 +23,8 @@ namespace MESS
     class Program
     {
         static Version? MessVersion => Assembly.GetExecutingAssembly().GetName().Version;
-        static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "mess.config");
-        static string MessFgdFilePath => Path.Combine(AppContext.BaseDirectory, "mess.fgd");
+        static string DefaultConfigFilePath => Path.Combine(AppContext.BaseDirectory, "mess.config");
+        static string DefaultMessFgdFilePath => Path.Combine(AppContext.BaseDirectory, "mess.fgd");
         static string DefaultTemplatesDirectory => Path.Combine(AppContext.BaseDirectory, "templates");
 
 
@@ -49,19 +50,29 @@ namespace MESS
 
                 commandLineParser.Parse(args);
 
-                var logPath = string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log";
+                var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log");
                 var logLevel = commandLineSettings.LogLevel ?? LogLevel.Info;
                 using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
                 {
-                    var settings = new ExpansionSettings();
-                    ConfigFile.ReadSettings(SettingsFilePath, settings, logger);
+                    var configFilePath = commandLineSettings.ConfigFilePath ?? DefaultConfigFilePath;
+                    var settings = new ExpansionSettings {
+                        TemplatesDirectory = DefaultTemplatesDirectory,
+                        MessFgdFilePath = DefaultMessFgdFilePath,
+                    };
+
+                    try
+                    {
+                        ConfigFile.ReadSettings(configFilePath, settings, logger);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warning($"Failed to read config file '{configFilePath}'!", ex);
+                    }
                     MergeSettings(settings, commandLineSettings);
 
                     if (settings.LogLevel != logLevel)
                         logger.LogLevel = settings.LogLevel;
 
-                    if (string.IsNullOrEmpty(settings.TemplatesDirectory))
-                        settings.TemplatesDirectory = DefaultTemplatesDirectory;
 
                     logger.Minimal($"MESS v{MessVersion}: Macro Entity Substitution System");
                     logger.Minimal("----- BEGIN MESS -----");
@@ -69,7 +80,7 @@ namespace MESS
                     logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
                     logger.Minimal("");
 
-                    var rewriteDirectives = LoadTedRewriteDirectives(settings, logger);
+                    var rewriteDirectives = LoadTedRewriteDirectives(settings.TemplatesDirectory, settings.MessFgdFilePath, logger);
 
                     try
                     {
@@ -101,7 +112,7 @@ namespace MESS
             }
             catch (Exception ex)
             {
-                using (var errorLogger = new MultiLogger(new ConsoleLogger(LogLevel.Error), new FileLogger("mess.log", LogLevel.Error)))
+                using (var errorLogger = new MultiLogger(new ConsoleLogger(LogLevel.Error), new FileLogger(FileSystem.GetFullPath("mess.log"), LogLevel.Error)))
                     errorLogger.Error($"A problem has occurred: {ex.GetType().Name}: '{ex.Message}'.");
 
                 ShowHelp(commandLineParser);
@@ -122,8 +133,16 @@ namespace MESS
                     $"Enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop). All other arguments will be ignored.")
                 .Option(
                     "-dir",
-                    s => { settings.TemplatesDirectory = Path.GetFullPath(s); },
+                    s => { settings.TemplatesDirectory = FileSystem.GetFullPath(s); },
                     $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
+                .Option(
+                    "-config",
+                    s => { settings.ConfigFilePath = FileSystem.GetFullPath(s); },
+                    $"Which config file to use. This can be used to switch between different game configurations. The default is mess.config.")
+                .Option(
+                    "-fgd",
+                    s => { settings.MessFgdFilePath = FileSystem.GetFullPath(s); },
+                    $"The MESS fgd file path. MESS will combine all template entity definitions and save them to this fgd file. The default is mess.fgd.")
                 .Option(
                     "-vars",
                     s => { ParseVariables(s, settings.Variables); },
@@ -141,10 +160,10 @@ namespace MESS
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                     $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
                 .Argument(
-                    s => { settings.InputPath = Path.GetFullPath(s); },
+                    s => { settings.InputPath = FileSystem.GetFullPath(s); },
                     "Input map file.")
                 .OptionalArgument(
-                    s => { settings.OutputPath = Path.GetFullPath(s); },
+                    s => { settings.OutputPath = FileSystem.GetFullPath(s); },
                     "Output map file. If not specified, the input map file will be overwritten.");
         }
 
@@ -157,6 +176,7 @@ namespace MESS
             if (commandLineSettings.InputPath != null) settings.InputPath = commandLineSettings.InputPath;
             if (commandLineSettings.OutputPath != null) settings.OutputPath = commandLineSettings.OutputPath;
             if (commandLineSettings.TemplatesDirectory != null) settings.TemplatesDirectory = commandLineSettings.TemplatesDirectory;
+            if (commandLineSettings.MessFgdFilePath != null) settings.MessFgdFilePath = commandLineSettings.MessFgdFilePath;
 
             foreach (var kv in commandLineSettings.Variables)
                 settings.Variables[kv.Key] = kv.Value;
@@ -211,94 +231,122 @@ namespace MESS
         /// This reads rewrite directives from all .ted files (which are basically small .fgd files) in the templates directory (including .ted files inside .mtb files).
         /// It will also update mess.fgd, if it's outdated.
         /// </summary>
-        private static RewriteDirective[] LoadTedRewriteDirectives(ExpansionSettings settings, ILogger logger)
+        private static RewriteDirective[] LoadTedRewriteDirectives(string templatesDirectory, string messFgdFilePath, ILogger logger)
         {
             logger.Info("Loading .ted files...");
 
             var messFgdBuffer = new StringBuilder();
-            var rewriteDirectives = MtbFileSystem.ReadFiles(settings.TemplatesDirectory, ".ted", (file, path) =>
-                {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        file.CopyTo(memoryStream);
+            var rewriteDirectives = Array.Empty<RewriteDirective>();
 
-                        try
-                        {
-                            // First read the rewrite rules:
-                            var directory = Path.GetDirectoryName(path) ?? settings.TemplatesDirectory;
-
-                            memoryStream.Position = 0;
-                            var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(memoryStream).ToArray();
-                            foreach (var rewriteDirective in rewriteDirectives)
-                                rewriteDirective.Directory = directory;
-
-                            logger.Info($"{rewriteDirectives.Length} rewrite directives read from '{path}'.");
-
-                            // Then, if the rewrite rules were read successfully, copy the file content into the mess.fgd content buffer:
-                            memoryStream.Position = 0;
-                            using (var streamReader = new StreamReader(memoryStream, leaveOpen: true))
-                            {
-                                if (messFgdBuffer.Length > 0)
-                                    messFgdBuffer.AppendLine();
-
-                                messFgdBuffer.Append("// ");
-                                messFgdBuffer.AppendLine(new string('=', path.Length));
-                                messFgdBuffer.AppendLine($"// {path}");
-                                messFgdBuffer.Append("// ");
-                                messFgdBuffer.AppendLine(new string('=', path.Length));
-                                messFgdBuffer.AppendLine();
-
-                                messFgdBuffer.Append(streamReader.ReadToEnd());
-                                messFgdBuffer.AppendLine();
-                            }
-
-                            return rewriteDirectives;
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Warning($"Failed to read rewrite directives from '{path}':", ex);
-                            return Array.Empty<RewriteDirective>();
-                        }
-                    }
-                })
-                .SelectMany(rewriteRules => rewriteRules)
-                .ToArray();
-
-            logger.Info($"{rewriteDirectives.Length} rewrite directives read.");
-
-
-            // Finally, see if mess.fgd needs to be updated (or created):
-            logger.Info("Checking for mess.fgd updates...");
-
-            var newMessFgdContent = messFgdBuffer.ToString();
-            var currentMessFgdContent = "";
-            try
+            if (!Directory.Exists(templatesDirectory))
             {
-                currentMessFgdContent = File.ReadAllText(MessFgdFilePath);
-            }
-            catch (Exception ex)
-            {
-                logger.Warning($"Failed to read '{MessFgdFilePath}'!", ex);
-            }
-
-            if (currentMessFgdContent == newMessFgdContent)
-            {
-                logger.Info("mess.fgd is already up-to-date.");
+                logger.Warning($"The specified templates directory ('{templatesDirectory}') does not exist!");
             }
             else
             {
+                rewriteDirectives = MtbFileSystem.ReadFiles(templatesDirectory, ".ted", (file, path) =>
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            file.CopyTo(memoryStream);
+
+                            try
+                            {
+                                // First read the rewrite rules:
+                                var directory = Path.GetDirectoryName(path) ?? templatesDirectory;
+
+                                memoryStream.Position = 0;
+                                var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(memoryStream).ToArray();
+                                foreach (var rewriteDirective in rewriteDirectives)
+                                    rewriteDirective.Directory = directory;
+
+                                logger.Info($"{rewriteDirectives.Length} rewrite directives read from '{path}'.");
+
+                                // Then, if the rewrite rules were read successfully, copy the file content into the mess.fgd content buffer:
+                                memoryStream.Position = 0;
+                                using (var streamReader = new StreamReader(memoryStream, leaveOpen: true))
+                                {
+                                    if (messFgdBuffer.Length > 0)
+                                        messFgdBuffer.AppendLine();
+
+                                    messFgdBuffer.Append("// ");
+                                    messFgdBuffer.AppendLine(new string('=', path.Length));
+                                    messFgdBuffer.AppendLine($"// {path}");
+                                    messFgdBuffer.Append("// ");
+                                    messFgdBuffer.AppendLine(new string('=', path.Length));
+                                    messFgdBuffer.AppendLine();
+
+                                    messFgdBuffer.Append(streamReader.ReadToEnd());
+                                    messFgdBuffer.AppendLine();
+                                }
+
+                                return rewriteDirectives;
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Warning($"Failed to read rewrite directives from '{path}':", ex);
+                                return Array.Empty<RewriteDirective>();
+                            }
+                        }
+                    })
+                    .SelectMany(rewriteRules => rewriteRules)
+                    .ToArray();
+                logger.Info($"{rewriteDirectives.Length} rewrite directives read.");
+            }
+
+
+            UpdateMessFgd(messFgdFilePath, messFgdBuffer.ToString(), logger);
+
+            return rewriteDirectives;
+        }
+
+        private static void UpdateMessFgd(string messFgdFilePath, string newContent, ILogger logger)
+        {
+            // Finally, see if mess.fgd needs to be updated (or created):
+            logger.Info($"Checking for '{messFgdFilePath}' updates...");
+
+            if (!File.Exists(messFgdFilePath))
+            {
                 try
                 {
-                    File.WriteAllText(MessFgdFilePath, newMessFgdContent);
-                    logger.Info("mess.fgd has been updated.");
+                    logger.Info($"'{messFgdFilePath}' does not exist.");
+                    File.WriteAllText(messFgdFilePath, newContent);
+                    logger.Info($"'{messFgdFilePath}' has been created.");
                 }
                 catch (Exception ex)
                 {
-                    logger.Warning($"Failed to update '{MessFgdFilePath}'!", ex);
+                    logger.Warning($"Failed to create '{messFgdFilePath}'!", ex);
                 }
             }
+            else
+            {
+                var oldContent = "";
+                try
+                {
+                    oldContent = File.ReadAllText(messFgdFilePath);
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning($"Failed to read '{messFgdFilePath}'!", ex);
+                }
 
-            return rewriteDirectives;
+                if (oldContent == newContent)
+                {
+                    logger.Info($"'{messFgdFilePath}' is already up-to-date.");
+                }
+                else
+                {
+                    try
+                    {
+                        File.WriteAllText(messFgdFilePath, newContent);
+                        logger.Info($"'{messFgdFilePath}' has been updated.");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warning($"Failed to update '{messFgdFilePath}'!", ex);
+                    }
+                }
+            }
         }
 
 

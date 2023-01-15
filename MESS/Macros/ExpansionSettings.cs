@@ -11,6 +11,7 @@ namespace MESS.Macros
         public string InputPath { get; set; } = "";
         public string? OutputPath { get; set; }
         public string TemplatesDirectory { get; set; } = "";
+        public string MessFgdFilePath { get; set; } = "";
         public Dictionary<string, object?> Variables { get; } = new();
 
         public string? InvertedPitchPredicate { get; set; }
