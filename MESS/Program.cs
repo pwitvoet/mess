@@ -233,7 +233,7 @@ namespace MESS
         /// </summary>
         private static RewriteDirective[] LoadTedRewriteDirectives(string templatesDirectory, string messFgdFilePath, ILogger logger)
         {
-            logger.Info("Loading .ted files...");
+            logger.Info($"Loading .ted files from '{templatesDirectory}'.");
 
             var messFgdBuffer = new StringBuilder();
             var rewriteDirectives = Array.Empty<RewriteDirective>();
