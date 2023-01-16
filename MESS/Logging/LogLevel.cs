@@ -8,9 +8,9 @@
         Off,
 
         /// <summary>
-        /// Only a minimal amount of information is logged.
+        /// Only a few important messages are logged.
         /// </summary>
-        Minimal,
+        Important,
 
         /// <summary>
         /// Only critical errors are logged.

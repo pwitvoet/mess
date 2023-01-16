@@ -51,10 +51,10 @@
                 logger.Error(message, exception);
         }
 
-        public void Minimal(string message)
+        public void Important(string message)
         {
             foreach (var logger in _loggers)
-                logger.Minimal(message);
+                logger.Important(message);
         }
 
 

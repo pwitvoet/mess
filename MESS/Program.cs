@@ -74,11 +74,11 @@ namespace MESS
                         logger.LogLevel = settings.LogLevel;
 
 
-                    logger.Minimal($"MESS v{MessVersion}: Macro Entity Substitution System");
-                    logger.Minimal("----- BEGIN MESS -----");
-                    logger.Minimal($"Command line: {Environment.CommandLine}");
-                    logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
-                    logger.Minimal("");
+                    logger.Important($"MESS v{MessVersion}: Macro Entity Substitution System");
+                    logger.Important("----- BEGIN MESS -----");
+                    logger.Important($"Command line: {Environment.CommandLine}");
+                    logger.Important($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                    logger.Important("");
 
                     var rewriteDirectives = LoadTedRewriteDirectives(settings.TemplatesDirectory, settings.MessFgdFilePath, logger);
 
@@ -103,10 +103,10 @@ namespace MESS
                     }
                     finally
                     {
-                        logger.Minimal("");
-                        logger.Minimal($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
-                        logger.Minimal("");
-                        logger.Minimal("----- END MESS -----");
+                        logger.Important("");
+                        logger.Important($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
+                        logger.Important("");
+                        logger.Important("----- END MESS -----");
                     }
                 }
             }
