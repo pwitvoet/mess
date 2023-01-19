@@ -93,7 +93,7 @@ namespace MScript.Tokenizing
 
             if (char.IsDigit(context.Current))
                 return ReadNumber(context);
-            else if (char.IsLetter(context.Current))
+            else if (char.IsLetter(context.Current) || context.Current == '_')
                 return ReadIdentifier(context);
 
             throw ParseError(context, $"Unexpected '{context.Current}'.");
@@ -196,7 +196,7 @@ namespace MScript.Tokenizing
         private static Token ReadIdentifier(Context context)
         {
             if (context.IsExhausted || (!char.IsLetter(context.Current) && context.Current != '_'))
-                throw ParseError(context, $"");
+                throw ParseError(context, $"Expected a letter or an underscore but found '{context.Current}'.");
 
             var buffer = new StringBuilder();
             while (!context.IsExhausted && (context.Current == '_' || char.IsLetter(context.Current) || char.IsDigit(context.Current)))
