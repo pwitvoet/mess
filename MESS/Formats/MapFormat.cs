@@ -14,22 +14,23 @@ namespace MESS.Formats
     {
         public static Map Load(Stream stream)
         {
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            using (var context = new ReadingContext(stream))
             {
                 var map = new Map();
 
-                while (!reader.EndOfStream)
+                var entityNumber = 0;
+                while (!context.EndOfStream)
                 {
                     try
                     {
-                        var line = reader.ReadLine();
+                        var line = context.ReadLine();
                         if (line is null)
                             break;
 
                         if (!line.Trim().StartsWith("{"))
                             continue;
 
-                        var entity = ReadEntity(reader);
+                        var entity = ReadEntity(context);
                         if (entity == null)
                             break;
 
@@ -44,9 +45,13 @@ namespace MESS.Formats
                         {
                             map.Entities.Add(entity);
                         }
+
+                        entityNumber += 1;
                     }
                     catch (Exception ex)
                     {
+                        ex.Data["EntityNumber"] = entityNumber;
+                        ex.Data["LineNumber"] = context.CurrentLineNumber;
                         throw new InvalidDataException($"Failed to parse entity #{map.Entities.Count}.", ex);
                     }
                 }
@@ -76,13 +81,13 @@ namespace MESS.Formats
         }
 
 
-        private static Entity ReadEntity(TextReader reader)
+        private static Entity ReadEntity(ReadingContext context)
         {
             var properties = new Dictionary<string, string>();
             var brushes = new List<Brush>();
             while (true)
             {
-                var line = reader.ReadLine()?.Trim();
+                var line = context.ReadLine()?.Trim();
                 if (line is null)
                     throw new InvalidDataException($"Expected key-value pair, brush or end of entity, but found end of file.");
 
@@ -92,14 +97,17 @@ namespace MESS.Formats
                 }
                 else if (line.StartsWith("\""))
                 {
-                    var parts = line.Split('"');    // NOTE: There is no support for escaping double quotes!
+                    var parts = line.Split('"');
+                    if (parts.Length > 5)
+                        throw new InvalidDataException($"Found content after key-value pair: '{line}' (double quotes are not allowed in entity key-value pairs).");
+
                     properties[parts[1]] = parts[3];
                 }
                 else if (line.StartsWith("{"))
                 {
                     try
                     {
-                        brushes.Add(ReadBrush(reader));
+                        brushes.Add(ReadBrush(context));
                     }
                     catch (Exception ex)
                     {
@@ -123,12 +131,12 @@ namespace MESS.Formats
             return entity;
         }
 
-        private static Brush ReadBrush(TextReader reader)
+        private static Brush ReadBrush(ReadingContext context)
         {
             var faces = new List<Face>();
             while (true)
             {
-                var line = reader.ReadLine()?.Trim();
+                var line = context.ReadLine()?.Trim();
                 if (line is null)
                     throw new InvalidDataException($"Expected face or end of brush, but found end of file.");
 
@@ -209,5 +217,31 @@ namespace MESS.Formats
 
 
         private static float ParseFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+
+        class ReadingContext : IDisposable
+        {
+            public int CurrentLineNumber { get; private set; }
+            public bool EndOfStream => _reader.EndOfStream;
+
+
+            private StreamReader _reader;
+
+
+            public ReadingContext(Stream stream)
+            {
+                _reader = new StreamReader(stream, Encoding.UTF8);
+            }
+
+            public void Dispose() => _reader.Dispose();
+
+            public string? ReadLine()
+            {
+                var line = _reader.ReadLine();
+                if (line != null)
+                    CurrentLineNumber += 1;
+                return line;
+            }
+        }
     }
 }
