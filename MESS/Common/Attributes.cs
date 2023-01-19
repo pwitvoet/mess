@@ -196,5 +196,11 @@
         /// The attribute is then removed from the entity.
         /// </summary>
         public const string AttachedTemplateName = "_attached_template_name";
+
+        /// <summary>
+        /// This set of attributes can be used to enable or disable a specific spawn flag with MScript.
+        /// These attributes are removed from the entity after the <see cref="Spawnflags"/> attribute has been updated.
+        /// </summary>
+        public const string SpawnflagN = "_spawnflag{0}";
     }
 }

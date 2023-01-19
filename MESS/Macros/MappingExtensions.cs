@@ -4,6 +4,7 @@ using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
 using MScript;
+using System.Globalization;
 
 namespace MESS.Macros
 {
@@ -39,7 +40,7 @@ namespace MESS.Macros
         {
             if (entity.IsPointBased)
             {
-                return entity.Properties.ContainsKey(Attributes.Origin) ? (Vector3D?)entity.Origin : null;
+                return entity.Properties.ContainsKey(Attributes.Origin) ? entity.Origin : null;
             }
             else
             {
@@ -152,8 +153,8 @@ namespace MESS.Macros
         }
 
         /// <summary>
-        /// Searches for 'spawnflag{N}' attributes and uses them to update the special 'spawnflags' attribute.
-        /// The 'spawnflag{N}' attributes are removed afterwards.
+        /// Searches for <see cref="Attributes.SpawnflagN"/> attributes and uses them to update the special <see cref="Attributes.Spawnflags"/> attribute.
+        /// The <see cref="Attributes.SpawnflagN"/> attributes are removed afterwards.
         /// This makes it possible to control spawn flags with MScript - which, due to how editors handle the spawnflags attribute,
         /// would otherwise not be possible.
         /// </summary>
@@ -162,7 +163,7 @@ namespace MESS.Macros
             var spawnFlags = properties.GetInteger(Attributes.Spawnflags) ?? 0;
             for (int i = 0; i < 32; i++)
             {
-                var flagName = FormattableString.Invariant($"spawnflag{i}");
+                var flagName = string.Format(CultureInfo.InvariantCulture, Attributes.SpawnflagN, i);
                 if (!properties.TryGetValue(flagName, out var value))
                     continue;
 
