@@ -181,5 +181,20 @@
         /// A condition that evaluates to 'none' (empty) or 0 will prevent removal.
         /// </summary>
         public const string Condition = "condition";
+
+
+        // Special instruction attributes:
+
+        /// <summary>
+        /// Adding this attribute to a normal (non-macro) entity will insert the specified template map (or maps) at the entity's position.
+        /// The attribute is then removed from the entity.
+        /// </summary>
+        public const string AttachedTemplateMap = "_attached_template_map";
+
+        /// <summary>
+        /// Adding this attribute to a normal (non-macro) entity will insert the specified template (or templates) at the entity's position.
+        /// The attribute is then removed from the entity.
+        /// </summary>
+        public const string AttachedTemplateName = "_attached_template_name";
     }
 }

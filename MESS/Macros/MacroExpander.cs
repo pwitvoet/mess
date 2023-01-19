@@ -7,7 +7,6 @@ using MESS.Mathematics.Spatial;
 using MESS.Util;
 using MScript;
 using MScript.Evaluation;
-using System.Reflection;
 
 namespace MESS.Macros
 {
@@ -27,12 +26,24 @@ namespace MESS.Macros
             var expander = new MacroExpander(settings, rewriteDirectives, logger);
             var mainTemplate = expander.GetMapTemplate(path);
 
+            var templateMapPaths = Array.Empty<string>();
+            var templateNames = Array.Empty<string>();
+            IDictionary<string, object?>? evaluatedMapProperties = null;
+
             var context = new InstantiationContext(
                 mainTemplate,
                 logger,
                 settings.Variables ?? new(),
                 expander.BaseEvaluationContext,
-                settings.TemplatesDirectory);
+                settings.TemplatesDirectory,
+                evaluatedProperties =>
+                {
+                    expander.GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out templateMapPaths, out templateNames);
+                    evaluatedMapProperties = evaluatedProperties;
+                });
+
+            expander.CreateAttachedTemplateInstances(context, new Vector3D(), evaluatedMapProperties ?? new Dictionary<string, object?>(), templateMapPaths, templateNames);
+
             expander.CreateInstance(context);
 
             return context.OutputMap;
@@ -865,6 +876,7 @@ namespace MESS.Macros
         {
             // Evaluate expressions in both keys and values:
             var evaluatedProperties = normalEntity.Properties.EvaluateToMScriptValues(context);
+            var attachedTemplatesPosition = normalEntity.IsPointBased ? normalEntity.Origin : normalEntity.GetOrigin() ?? normalEntity.GetAnchorPoint(TemplateAreaAnchor.Center);
 
             // Determine whether this entity requires inverted-pitch handling:
             var invertedPitch = false;
@@ -875,6 +887,7 @@ namespace MESS.Macros
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }
             evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
+            GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out var templateMapPaths, out var templateNames);
 
 
             normalEntity.Properties.Clear();
@@ -884,6 +897,58 @@ namespace MESS.Macros
 
             Logger.Verbose($"Creating '{normalEntity.ClassName}', using {(invertedPitch ? "inverted" : "normal")} pitch.");
             context.OutputMap.Entities.Add(normalEntity);
+
+            CreateAttachedTemplateInstances(context, attachedTemplatesPosition, evaluatedProperties, templateMapPaths, templateNames);
+        }
+
+
+        /// <summary>
+        /// The first part of handling the special <see cref="Attributes.AttachedTemplateMap"/> and <see cref="Attributes.AttachedTemplateName"/> attributes,
+        /// this removes said attributes and returns the paths and names of the specified templates (if any).
+        /// </summary>
+        private void GetAndRemoveAttachedTemplateAttributes(IDictionary<string, object?> evaluatedProperties, out string[] templateMapPaths, out string[] templateNames)
+        {
+            templateMapPaths = GetStringArray(Attributes.AttachedTemplateMap);
+            evaluatedProperties.Remove(Attributes.AttachedTemplateMap);
+
+            templateNames = GetStringArray(Attributes.AttachedTemplateName);
+            evaluatedProperties.Remove(Attributes.AttachedTemplateName);
+
+            string[] GetStringArray(string attributeName)
+            {
+                if (!evaluatedProperties.TryGetValue(attributeName, out var value))
+                    return Array.Empty<string>();
+
+                return Interpreter.Print(value)
+                    .Split(';')
+                    .Select(part => part.Trim())
+                    .Where(part => part != "")
+                    .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// The second part of handling the special <see cref="Attributes.AttachedTemplateMap"/> and <see cref="Attributes.AttachedTemplateName"/> attributes,
+        /// this creates the actual instances.
+        /// </summary>
+        private void CreateAttachedTemplateInstances(InstantiationContext context, Vector3D position, IDictionary<string, object?> evaluatedProperties, IEnumerable<string> templateMapPaths, IEnumerable<string> templateNames)
+        {
+            var templates = templateMapPaths.Select(mapPath => ResolveTemplate(mapPath, null, context))
+                .Concat(templateNames.Select(templateName => ResolveTemplate(null, templateName, context)))
+                .Where(template => template != null)
+                .ToArray();
+
+            var transform = new Transform(
+                context.Transform.Scale,
+                context.Transform.GeometryScale,
+                context.Transform.Rotation,
+                context.Transform.Apply(position));
+
+            foreach (var template in templates)
+            {
+                var instantiationContext = new InstantiationContext(template!, Logger, transform, evaluatedProperties, context);
+                CreateInstance(instantiationContext);
+            }
         }
 
 

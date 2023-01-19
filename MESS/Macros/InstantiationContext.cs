@@ -76,8 +76,9 @@ namespace MESS.Macros
             ILogger logger,
             IDictionary<string, object?> insertionEntityProperties,
             EvaluationContext baseEvaluationContext,
-            string workingDirectory)
-            : this(template, logger, Transform.Identity, insertionEntityProperties, baseEvaluationContext, null, workingDirectory, 0)
+            string workingDirectory,
+            Action<IDictionary<string, object?>>? handleTemplateProperties = null)
+            : this(template, logger, Transform.Identity, insertionEntityProperties, baseEvaluationContext, null, workingDirectory, 0, handleTemplateProperties)
         {
         }
 
@@ -100,7 +101,8 @@ namespace MESS.Macros
             EvaluationContext baseEvaluationContext,
             InstantiationContext? parentContext = null,
             string? workingDirectory = null,
-            int sequenceNumber = 0)
+            int sequenceNumber = 0,
+            Action<IDictionary<string, object?>>? handleTemplateProperties = null)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
             // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
@@ -128,6 +130,8 @@ namespace MESS.Macros
 
             var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
+            handleTemplateProperties?.Invoke(evaluatedTemplateProperties);
+
             EvaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);
 
             // Every instantiation is written to the same map, but with a different transform:
