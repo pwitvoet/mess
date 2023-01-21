@@ -219,6 +219,29 @@ namespace MESS.Macros
             public static double deg2rad(double degrees) => (degrees / 180.0) * Math.PI;
             public static double rad2deg(double radians) => (radians / Math.PI) * 180.0;
 
+            // Arrays:
+            public static object?[] range(double start, double? stop = null, double? step = null)
+            {
+                if (stop == null)
+                {
+                    stop = start;
+                    start = 0;
+                }
+
+                var intStart = (int)start;
+                var intEnd = (int)stop;
+                var intStep = (int)(step ?? 1);
+                if (intStep == 0 || intStart == intEnd || (intStep < 0 && intEnd > intStart) || (intStep > 0 && intEnd < intStart))
+                    return Array.Empty<object?>();
+
+                var count = (int)Math.Ceiling(Math.Abs(intEnd - intStart) / (double)Math.Abs(intStep));
+                var result = new object?[count];
+                for (int i = 0; i < result.Length; i++)
+                    result[i] = intStart + i * intStep;
+
+                return result;
+            }
+
             // Colors:
             /// <summary>
             /// Returns a vector with either 3 or 4 values, where the first 3 values are between 0 and 255.

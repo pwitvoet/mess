@@ -305,6 +305,16 @@ namespace MScript.Evaluation
                     result = function.Apply(new[] { result, self[i] });
                 return result;
             }
+            public static object?[] zip(object?[] self, object?[] other, IFunction function)
+            {
+                if (function.Parameters.Count != 2)
+                    throw new InvalidOperationException($"The function given {nameof(zip)} must take 2 arguments, not {function.Parameters.Count}.");
+
+                var result = new object?[Math.Min(self.Length, other.Length)];
+                for (int i = 0; i < result.Length; i++)
+                    result[i] = function.Apply(new[] { self[i], other[i] });
+                return result;
+            }
             public static object?[] sort(object?[] self, IFunction sortby) => self.OrderBy(value => sortby.Apply(new[] { value }) is double number ? number : 0.0).ToArray();
             public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
 
