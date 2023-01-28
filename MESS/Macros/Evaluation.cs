@@ -110,12 +110,11 @@ namespace MESS.Macros
         public static object? EvaluateInterpolatedStringOrExpression(string? interpolatedString, InstantiationContext context)
             => EvaluateInterpolatedStringOrExpression(interpolatedString, context.EvaluationContext);
 
-
         /// <summary>
         /// Parses the string into an MScript value. Returns 'none' (null) for an empty string, a number (double) for a numerical string,
         /// and an array (object?[]) for a string that consists of multiple numbers separated by whitespace. Returns the original string for all other inputs.
         /// </summary>
-        private static object? ParseMScriptValue(string? value)
+        public static object? ParseMScriptValue(string? value)
         {
             if (string.IsNullOrEmpty(value))
                 return null;
@@ -123,16 +122,12 @@ namespace MESS.Macros
             if (PropertyExtensions.TryParseDouble(value, out var number))
                 return number;
 
-            if (PropertyExtensions.TryParseNumericalArray(value, out var vector))
-            {
-                var array = new object?[vector.Length];
-                for (int i = 0; i < vector.Length; i++)
-                    array[i] = vector[i];
-                return array;
-            }
+            if (PropertyExtensions.TryParseNumericalArray(value, out var array))
+                return array.Cast<object?>().ToArray();
 
             return value;
         }
+
 
         private static string EvaluateInterpolatedStringParts(IEnumerable<object?> parts, EvaluationContext context)
         {

@@ -46,6 +46,8 @@ namespace MESS.Macros
 
             expander.CreateInstance(context);
 
+            expander.ApplyRewriteDirectives(context.OutputMap, ProcessingStage.AfterMacroExpansion);
+
             return context.OutputMap;
         }
 
@@ -96,17 +98,21 @@ namespace MESS.Macros
         }
 
 
-        private void ApplyRewriteDirectives(Map map, IEnumerable<RewriteDirective> rewriteDirectives)
+        private void ApplyRewriteDirectives(Map map, ProcessingStage processingStage)
         {
-            Logger.Info($"Applying {rewriteDirectives.Count()} rewrite directives to map.");
+            Logger.Info("");
+            Logger.Info($"{processingStage}: applying {RewriteDirectives.Count(directive => directive.Stage == processingStage)} rewrite directives to map.");
 
-            var randomSeed = (int)(map.Properties.EvaluateToMScriptValue(Attributes.RandomSeed, TopLevelEvaluationContext) as double? ?? 0.0);
+            var randomSeed = map.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
             var random = new Random(randomSeed);
 
             var directiveLookup = new Dictionary<string, List<RewriteDirective>>();
             var wildcardDirectives = new List<RewriteDirective>();
-            foreach (var rewriteDirective in rewriteDirectives)
+            foreach (var rewriteDirective in RewriteDirectives)
             {
+                if (rewriteDirective.Stage != processingStage)
+                    continue;
+
                 if (rewriteDirective.ClassNames.Length == 0)
                 {
                     wildcardDirectives.Add(rewriteDirective);
@@ -149,8 +155,10 @@ namespace MESS.Macros
 
         private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random)
         {
-            var evaluatedProperties = entityProperties.EvaluateToMScriptValues(TopLevelEvaluationContext);
-            var context = Evaluation.ContextWithBindings(evaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
+            var unevaluatedProperties = entityProperties.ToDictionary(
+                property => property.Key,
+                property => Evaluation.ParseMScriptValue(property.Value));
+            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
 
             if (rewriteDirective.Condition != null)
             {
@@ -159,7 +167,9 @@ namespace MESS.Macros
                     return;
             }
 
-            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.Directory));
+            Logger.Verbose($"Applying directive from '{rewriteDirective.SourceFilePath}' to {entityProperties.GetString(Attributes.Classname)}.");
+
+            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.SourceFilePath));
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -214,7 +224,7 @@ namespace MESS.Macros
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
-                ApplyRewriteDirectives(map, RewriteDirectives);
+                ApplyRewriteDirectives(map, ProcessingStage.BeforeMacroExpansion);
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 
@@ -1046,17 +1056,20 @@ namespace MESS.Macros
 
         class RewriteDirectiveFunctions
         {
-            private string _directory;
+            private string _sourceFilePath;
 
 
-            public RewriteDirectiveFunctions(string directory)
+            public RewriteDirectiveFunctions(string sourceFilePath)
             {
-                _directory = directory;
+                _sourceFilePath = sourceFilePath;
             }
 
 
-            // Bundle directory:
-            public string mtb_dir() => _directory;
+            // Bundle file or directory:
+            public string? mtb_dir() => Path.GetDirectoryName(_sourceFilePath);
+
+            // .ted file path:
+            public string ted_file() => _sourceFilePath;
         }
     }
 }

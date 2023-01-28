@@ -1,5 +1,12 @@
 ﻿namespace MESS.EntityRewriting
 {
+    public enum ProcessingStage
+    {
+        BeforeMacroExpansion,
+        AfterMacroExpansion,
+    }
+
+
     /// <summary>
     /// Entity rewrite rules are used to modify matching entities immediately after a map file is loaded.
     /// The intended use-case is to turn custom entities into macro entities that reference a specific template map.
@@ -7,6 +14,16 @@
     /// </summary>
     public class RewriteDirective
     {
+        /// <summary>
+        /// The processing stage at which this directive will be applied.
+        /// <para>
+        /// MScript expressions in entity attributes are evaluated during the macro expansion stage.
+        /// This means that rewrite directives that run before macro expansion will see attribute keys and values that may contain unevaluated pieces of MScript.
+        /// Rewrite directives that run after macro expansion will see the final evaluated values.
+        /// </para>
+        /// </summary>
+        public ProcessingStage Stage { get; internal set; }
+
         /// <summary>
         /// The entity classname(s) that this directive applies to. If empty, then this rewrite directive will be applied to all entities.
         /// </summary>
@@ -18,9 +35,9 @@
         public string? Condition { get; internal set; }
 
         /// <summary>
-        /// The directory (or .mtb path) of the .ted file where this rewrite directive was read from.
+        /// The .ted file that this directive was read from. This may refer to an entry inside an .mtb file.
         /// </summary>
-        public string Directory { get; internal set; } = "";
+        public string SourceFilePath { get; internal set; } = "";
 
         public List<RuleGroup> RuleGroups { get; } = new();
 

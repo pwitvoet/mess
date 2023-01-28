@@ -10,6 +10,7 @@ using System.Diagnostics;
 using MESS.Logging;
 using MESS.EntityRewriting;
 using MESS.Util;
+using MScript;
 
 namespace MESS
 {
@@ -253,12 +254,10 @@ namespace MESS
                             try
                             {
                                 // First read the rewrite rules:
-                                var directory = Path.GetDirectoryName(path) ?? templatesDirectory;
-
                                 memoryStream.Position = 0;
                                 var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(memoryStream).ToArray();
                                 foreach (var rewriteDirective in rewriteDirectives)
-                                    rewriteDirective.Directory = directory;
+                                    rewriteDirective.SourceFilePath = path;
 
                                 logger.Info($"{rewriteDirectives.Length} rewrite directives read from '{path}'.");
 

@@ -150,7 +150,7 @@ namespace MESS.EntityRewriting
         {
             Assert(context.Current.Type == FgdTokenizer.TokenType.MessDirective);
 
-            var match = Regex.Match(context.Current.Value, @"@MESS\s+(?<directive>\w+)((?<clauses>\s+\w+(\s+""[^""]*"")+)+)?\s*:");
+            var match = Regex.Match(context.Current.Value, @"@MESS\s+(?<directive>\w+)((?<clauses>\s+\w+(\s+""[^""]*"")*)+)?\s*:");
             if (!match.Success)
                 throw ParseError(context, $"Invalid MESS directive format: '{context.Current.Value}'.");
 
@@ -164,7 +164,7 @@ namespace MESS.EntityRewriting
             {
                 foreach (Capture clause in clauses.Captures)
                 {
-                    var clauseMatch = Regex.Match(clause.Value, @"(?<name>\w+)(\s+""(?<values>[^""]*)"")+");
+                    var clauseMatch = Regex.Match(clause.Value, @"(?<name>\w+)(\s+""(?<values>[^""]*)"")*");
                     var name = clauseMatch.Groups["name"].Value;
                     var values = clauseMatch.Groups["values"].Captures.Select(val => val.Value).ToArray();
 
@@ -183,6 +183,13 @@ namespace MESS.EntityRewriting
                             throw ParseError(context, "Multiple WHEN clauses are not allowed.");
 
                         rewriteDirective.Condition = values[0];
+                    }
+                    else if (name == "AFTER_MACRO_EXPANSION")
+                    {
+                        if (rewriteDirective.Stage == ProcessingStage.AfterMacroExpansion)
+                            throw ParseError(context, "Multiple AFTER_MACRO_EXPANSION clauses are not allowed.");
+
+                        rewriteDirective.Stage = ProcessingStage.AfterMacroExpansion;
                     }
                     else
                     {
