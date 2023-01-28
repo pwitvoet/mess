@@ -244,7 +244,7 @@ namespace MESS.Macros
 
             // Colors:
             /// <summary>
-            /// Returns a vector with either 3 or 4 values, where the first 3 values are between 0 and 255.
+            /// Returns an array with either 3 or 4 values, where the first 3 values are between 0 and 255.
             /// Accepts both numbers and numerical strings. Other values are treated as 0. Useful to 'sanitize' colors.
             /// </summary>
             public static object?[] color(object?[] color)
@@ -334,18 +334,9 @@ namespace MESS.Macros
 
             // Parent entity attributes:
             public double attr_count() => _properties.Count;
-            public object? get_attr(double? index = null)
+            public object? get_attr(object? indexOrName = null)
             {
-                if (index == null)
-                {
-                    return _properties
-                        .Select(property => new MObject(new Dictionary<string, object?> {
-                            { "key", property.Key },
-                            { "value", property.Value },
-                        }))
-                        .ToArray();
-                }
-                else
+                if (indexOrName is double index)
                 {
                     var normalizedIndex = (int)index < 0 ? _properties.Count + (int)index : (int)index;
                     if (normalizedIndex < 0 || normalizedIndex >= _properties.Count)
@@ -356,6 +347,25 @@ namespace MESS.Macros
                         { "key", property.Key },
                         { "value", property.Value },
                     });
+                }
+                else if (indexOrName is string name)
+                {
+                    if (!_properties.TryGetValue(name, out var value))
+                        return null;
+
+                    return new MObject(new Dictionary<string, object?> {
+                        { "key", name },
+                        { "value", value },
+                    });
+                }
+                else
+                {
+                    return _properties
+                        .Select(property => new MObject(new Dictionary<string, object?> {
+                            { "key", property.Key },
+                            { "value", property.Value },
+                        }))
+                        .ToArray();
                 }
             }
 
