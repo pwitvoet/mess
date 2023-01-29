@@ -56,6 +56,9 @@ namespace MESS
                 using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
                 {
                     var configFilePath = commandLineSettings.ConfigFilePath ?? DefaultConfigFilePath;
+                    if (string.IsNullOrEmpty(Path.GetExtension(configFilePath)))
+                        configFilePath = Path.Combine(configFilePath, "mess.config");
+
                     var settings = new ExpansionSettings {
                         TemplatesDirectory = DefaultTemplatesDirectory,
                         MessFgdFilePath = DefaultMessFgdFilePath,
