@@ -37,6 +37,8 @@ namespace MScript.Evaluation
 
             if (leftOperand is null && rightOperand is null)
                 return ToBoolean(true);
+            else if (leftOperand is null || rightOperand is null)
+                return ToBoolean(false);
 
             if (leftOperand is double leftNumber && rightOperand is double rightNumber)
                 return ToBoolean(leftNumber == rightNumber);
@@ -56,12 +58,8 @@ namespace MScript.Evaluation
             if (leftOperand is MObject leftObject && rightOperand is MObject rightObject)
                 return ToBoolean(leftObject.Equals(rightObject));
 
-
-            if (leftOperand is string leftString)
-                return ToBoolean(leftString == ToString(rightOperand));
-
-            if (rightOperand is string rightString)
-                return ToBoolean(ToString(leftOperand) == rightString);
+            if (leftOperand is string leftString && rightOperand is string rightString)
+                return ToBoolean(leftString == rightString);
 
             return ToBoolean(false);
         }
