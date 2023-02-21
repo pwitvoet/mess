@@ -233,7 +233,7 @@ namespace MESS.Macros
                 var count = (int)Math.Ceiling(Math.Abs(intEnd - intStart) / (double)Math.Abs(intStep));
                 var result = new object?[count];
                 for (int i = 0; i < result.Length; i++)
-                    result[i] = intStart + i * intStep;
+                    result[i] = (double)(intStart + i * intStep);
 
                 return result;
             }
