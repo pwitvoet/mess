@@ -186,6 +186,20 @@
         // Special instruction attributes:
 
         /// <summary>
+        /// Adding this attribute to a (template) map will block rewrite directives from all .ted files, except for the paths listed in this attribute.
+        /// Paths can cover specific files or entire directories, and do not need to contain a .ted extension.
+        /// This attribute is removed afterwards.
+        /// </summary>
+        public const string AllowRewriteRules = "_allow_rewrite_rules";
+
+        /// <summary>
+        /// Adding this attribute to a (template) map will block rewrite directives from the .ted file paths listed in this attribute.
+        /// Paths can cover specific files or entire directories, and do not need to contain a .ted extension.
+        /// This attribute is removed afterwards.
+        /// </summary>
+        public const string DenyRewriteRules = "_deny_rewrite_rules";
+
+        /// <summary>
         /// Adding this attribute to a normal (non-macro) entity will insert the specified template map (or maps) at the entity's position.
         /// The attribute is then removed from the entity.
         /// </summary>
@@ -200,6 +214,7 @@
         /// <summary>
         /// This set of attributes can be used to enable or disable a specific spawn flag with MScript.
         /// These attributes are removed from the entity after the <see cref="Spawnflags"/> attribute has been updated.
+        /// The first spawnflag has number 0, the last has number 31.
         /// </summary>
         public const string SpawnflagN = "_spawnflag{0}";
     }

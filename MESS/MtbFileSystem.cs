@@ -11,8 +11,8 @@ namespace MESS
         /// Opens the specified file and calls the given file reading function.
         /// <para>
         /// If the specified file cannot be found, then this will try looking inside .mtb files (zip files that are used for distributing template entities).
-        /// For example, if "C:\modding\maps\mymap.map" does not exist, then "C:\modding\maps.mtb" is checked for a "mymap.map" file.
-        /// If that .mtb file does not exist, or if it does not contain the specified file, "C:\modding.mtb" is checked for a "maps\mymap.map" file, and so on.
+        /// For example, if "C:\modding\maps\mymap.map" does not exist, then it will look inside "C:\modding\maps.mtb" for a "mymap.map" file.
+        /// If that .mtb file does not exist, or if it does not contain the specified file, it will look inside "C:\modding.mtb" for a "maps\mymap.map" file, and so on.
         /// </para>
         /// <para>
         /// If an .mtb path is given (for example, "C:\directory\bundle.mtb\file.ext") then the file will be read from that specific .mtb file only.
@@ -140,6 +140,13 @@ namespace MESS
                 }
             }
         }
+
+        /// <summary>
+        /// Takes a path that points to an entry in an .mtb file, and returns a normalized equivalent path.
+        /// For example, it will return "C:\directory\bundle\file.ext" when given "C:\directory\bundle.mtb\file.ext".
+        /// </summary>
+        public static string GetNormalizedPath(string mtbPath)
+            => mtbPath.Replace(".mtb" + Path.DirectorySeparatorChar, "" + Path.DirectorySeparatorChar);
 
 
         private static ZipArchiveEntry? GetEntry(ZipArchive zipArchive, string entryPath)

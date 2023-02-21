@@ -46,7 +46,7 @@ namespace MESS.Macros
 
             expander.CreateInstance(context);
 
-            expander.ApplyRewriteDirectives(context.OutputMap, ProcessingStage.AfterMacroExpansion);
+            expander.ApplyRewriteDirectives(context.OutputMap, ProcessingStage.AfterMacroExpansion, null, null);
 
             return context.OutputMap;
         }
@@ -98,7 +98,7 @@ namespace MESS.Macros
         }
 
 
-        private void ApplyRewriteDirectives(Map map, ProcessingStage processingStage)
+        private void ApplyRewriteDirectives(Map map, ProcessingStage processingStage, IEnumerable<string>? tedPathWhitelist, IEnumerable<string>? tedPathBlacklist)
         {
             Logger.Info("");
             Logger.Info($"{processingStage}: applying {RewriteDirectives.Count(directive => directive.Stage == processingStage)} rewrite directives to map.");
@@ -111,6 +111,9 @@ namespace MESS.Macros
             foreach (var rewriteDirective in RewriteDirectives)
             {
                 if (rewriteDirective.Stage != processingStage)
+                    continue;
+
+                if (!IsAllowed(rewriteDirective))
                     continue;
 
                 if (rewriteDirective.ClassNames.Length == 0)
@@ -150,6 +153,39 @@ namespace MESS.Macros
 
                 foreach (var rewriteDirective in wildcardDirectives)
                     ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random);
+            }
+
+            bool IsAllowed(RewriteDirective rewriteDirective)
+            {
+                var path = MtbFileSystem.GetNormalizedPath(rewriteDirective.SourceFilePath);
+                if (tedPathWhitelist != null)
+                    return ContainsMatch(tedPathWhitelist, path);
+                else if (tedPathBlacklist != null)
+                    return !ContainsMatch(tedPathBlacklist, path);
+                else
+                    return true;
+            }
+
+            bool ContainsMatch(IEnumerable<string> list, string path)
+            {
+                if (list == null)
+                    return false;
+
+                foreach (var entry in list)
+                {
+                    if (string.Equals(Path.GetExtension(entry), ".ted", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(entry, path, StringComparison.OrdinalIgnoreCase))
+                            return true;
+                    }
+                    else
+                    {
+                        if (FileSystem.IsParentPath(entry, path))
+                            return true;
+                    }
+                }
+
+                return false;
             }
         }
 
@@ -215,7 +251,7 @@ namespace MESS.Macros
         /// </summary>
         private MapTemplate GetMapTemplate(string path)
         {
-            path = FileSystem.GetFullPath(path);
+            path = FileSystem.GetFullPath(path, Settings.TemplatesDirectory);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
                 Logger.Info($"Loading map template '{path}' from file.");
@@ -224,17 +260,34 @@ namespace MESS.Macros
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
-                ApplyRewriteDirectives(map, ProcessingStage.BeforeMacroExpansion);
+
+                var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules);
+                var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules);
+                ApplyRewriteDirectives(map, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 
                 _mapTemplateCache[path] = template;
+
+                map.Properties.Remove(Attributes.AllowRewriteRules);
+                map.Properties.Remove(Attributes.DenyRewriteRules);
             }
             else
             {
                 Logger.Verbose($"Loading map template '{path}' from cache.");
             }
             return template;
+
+            string[]? GetTedPathList(IDictionary<string, string> properties, string propertyName)
+            {
+                var value = properties.EvaluateToMScriptValue(propertyName, TopLevelEvaluationContext);
+                if (value == null)
+                    return properties.ContainsKey(propertyName) ? Array.Empty<string>() : null;
+
+                return Interpreter.Print(value).Split(';')
+                    .Select(path => FileSystem.GetFullPath(path, Settings.TemplatesDirectory))
+                    .ToArray();
+            }
         }
 
         /// <summary>
