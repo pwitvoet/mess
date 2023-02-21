@@ -383,19 +383,20 @@ namespace MESS
                         else if (input == "quit")
                             break;
 
-                        // TODO: Quick hacky way to support assignment, for testing purposes:
-                        var match = Regex.Match(input, @"^\s*(?<variable>\w+)\s*=[^>]\s*(?<value>[^=].*)\s*$");
-                        if (match?.Success == true)
+
+                        if (Regex.IsMatch(input, @"^\s*\w+\s*=[^=]"))
                         {
-                            var variable = match.Groups["variable"].Value;
-                            var value = MScript.Interpreter.Evaluate(match.Groups["value"].Value, context);
-                            context.Bind(variable, value);
+                            var tokens = Tokenizer.Tokenize(input).Append(new Token(TokenType.Semicolon));
+                            var assignment = Parser.ParseAssignments(tokens).First();
 
-                            continue;
+                            var value = Evaluator.Evaluate(assignment.Value, context);
+                            context.Bind(assignment.Identifier, value);
                         }
-
-                        var result = MScript.Interpreter.Evaluate(input, context);
-                        Console.WriteLine($"< {(result != null ? MScript.Interpreter.Print(result) : "NONE")}");
+                        else
+                        {
+                            var result = Interpreter.Evaluate(input, context);
+                            Console.WriteLine($"< {(result != null ? Interpreter.Print(result) : "NONE")}");
+                        }
                     }
                     catch (Exception ex)
                     {
