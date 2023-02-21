@@ -128,7 +128,8 @@ namespace MESS.Macros
 
             Transform = transform ?? Transform.Identity;
 
-            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, _logger, baseEvaluationContext);
+            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
+            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, mapPath, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
             handleTemplateProperties?.Invoke(evaluatedTemplateProperties);
 
@@ -165,7 +166,8 @@ namespace MESS.Macros
 
             OutputMap = parentContext.OutputMap;
 
-            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, _logger, parentContext.EvaluationContext);
+            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
+            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
         }
 
 

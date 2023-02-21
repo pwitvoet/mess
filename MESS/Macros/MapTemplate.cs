@@ -24,7 +24,7 @@ namespace MESS.Macros
     {
         public static MapTemplate FromMap(Map map, string path, EvaluationContext context, ILogger logger)
         {
-            var subTemplates = ExtractSubTemplates(map, context, logger);
+            var subTemplates = ExtractSubTemplates(map, path, context, logger);
             var conditionalContent = ExtractConditionalContent(map);
             return new MapTemplate(map, path, false, "1", subTemplates, conditionalContent);
         }
@@ -65,7 +65,7 @@ namespace MESS.Macros
         /// Removes any template areas (<see cref="MacroEntity.Template"/>) and their contents from the given map, returning them as a dictionary.
         /// Template area names do not need to be unique.
         /// </summary>
-        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, EvaluationContext context, ILogger logger)
+        private static IEnumerable<MapTemplate> ExtractSubTemplates(Map map, string path, EvaluationContext context, ILogger logger)
         {
             var templateEntities = map.GetEntitiesWithClassName(MacroEntity.Template);
             var objectsMarkedForRemoval = new HashSet<object>(templateEntities);
@@ -73,7 +73,7 @@ namespace MESS.Macros
             var evaluatedMapProperties = map.Properties.EvaluateToMScriptValues(context);
             var randomSeed = evaluatedMapProperties.GetInteger(Attributes.RandomSeed) ?? 0;
 
-            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), logger, context);
+            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), path, logger, context);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();

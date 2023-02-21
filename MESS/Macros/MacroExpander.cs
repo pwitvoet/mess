@@ -46,7 +46,7 @@ namespace MESS.Macros
 
             expander.CreateInstance(context);
 
-            expander.ApplyRewriteDirectives(context.OutputMap, ProcessingStage.AfterMacroExpansion, null, null);
+            expander.ApplyRewriteDirectives(context.OutputMap, path, ProcessingStage.AfterMacroExpansion, null, null);
 
             return context.OutputMap;
         }
@@ -91,14 +91,14 @@ namespace MESS.Macros
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
-            TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), Logger, BaseEvaluationContext);
+            TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), "", Logger, BaseEvaluationContext);
 
 
             RewriteDirectives = rewriteDirectives;
         }
 
 
-        private void ApplyRewriteDirectives(Map map, ProcessingStage processingStage, IEnumerable<string>? tedPathWhitelist, IEnumerable<string>? tedPathBlacklist)
+        private void ApplyRewriteDirectives(Map map, string mapPath, ProcessingStage processingStage, IEnumerable<string>? tedPathWhitelist, IEnumerable<string>? tedPathBlacklist)
         {
             Logger.Info("");
             Logger.Info($"{processingStage}: applying {RewriteDirectives.Count(directive => directive.Stage == processingStage)} rewrite directives to map.");
@@ -148,11 +148,11 @@ namespace MESS.Macros
                 if (directiveLookup.TryGetValue(className, out var matchingDirectives))
                 {
                     foreach (var rewriteDirective in matchingDirectives)
-                        ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random);
+                        ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random, mapPath);
                 }
 
                 foreach (var rewriteDirective in wildcardDirectives)
-                    ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random);
+                    ApplyRewriteDirective(entityProperties, rewriteDirective, entityID, random, mapPath);
             }
 
             bool IsAllowed(RewriteDirective rewriteDirective)
@@ -189,12 +189,12 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random)
+        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, string mapPath)
         {
             var unevaluatedProperties = entityProperties.ToDictionary(
                 property => property.Key,
                 property => Evaluation.ParseMScriptValue(property.Value));
-            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, entityID, random, Logger, TopLevelEvaluationContext);
+            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, entityID, random, mapPath, Logger, TopLevelEvaluationContext);
 
             if (rewriteDirective.Condition != null)
             {
@@ -263,7 +263,7 @@ namespace MESS.Macros
 
                 var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules);
                 var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules);
-                ApplyRewriteDirectives(map, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
+                ApplyRewriteDirectives(map, path, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 
@@ -945,7 +945,7 @@ namespace MESS.Macros
             var invertedPitch = false;
             if (Settings.InvertedPitchPredicate != null)
             {
-                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), Logger, BaseEvaluationContext);
+                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), "", Logger, BaseEvaluationContext);
                 var predicateResult = Evaluation.EvaluateInterpolatedStringOrExpression(Settings.InvertedPitchPredicate, evaluationContext);
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }

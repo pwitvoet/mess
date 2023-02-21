@@ -23,11 +23,12 @@ namespace MESS.Macros
             double id,
             double sequenceNumber,
             Random random,
+            string mapPath,
             ILogger logger,
             EvaluationContext? parentContext)
         {
             var evaluationContext = new EvaluationContext(bindings, parentContext ?? _standardLibraryContext);
-            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, logger);
+            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, mapPath, logger);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -277,15 +278,17 @@ namespace MESS.Macros
             private double _sequenceNumber;
             private Random _random;
             private IDictionary<string, object?> _properties;
+            private string _mapPath;
             private ILogger _logger;
 
 
-            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, ILogger logger)
+            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, string mapPath, ILogger logger)
             {
                 _id = id;
                 _sequenceNumber = sequenceNumber;
                 _random = random;
                 _properties = properties;
+                _mapPath = mapPath;
                 _logger = logger;
             }
 
@@ -386,6 +389,10 @@ namespace MESS.Macros
                 else
                     return (int)flags & ~(1 << (int)flag);
             }
+
+            // Current map path:
+            public string map_path() => _mapPath;
+            public string map_dir() => Path.GetDirectoryName(_mapPath) ?? "";
 
             // Debugging:
             public object? trace(object? value, string? message = null)
