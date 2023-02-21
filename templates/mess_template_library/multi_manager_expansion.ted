@@ -1,0 +1,4 @@
+// @MESS REWRITE FOR "multi_manager":
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/multi_manager_expansion.map'}"
+// @MESS;

@@ -1,0 +1,3 @@
+// @MESS REWRITE AFTER_MACRO_EXPANSION FOR "env_sprite":
+// "angles": "{angles.x == 0 ? 360 : angles.x} {angles.y == 0 ? 360 : angles.y} {angles.z == 0 ? 360 : angles.z}"
+// @MESS;
