@@ -170,6 +170,13 @@ namespace MESS.Macros
 
         static class StandardLibraryFunctions
         {
+            // Type checks:
+            public static bool is_num(object? value) => value is double;
+            public static bool is_str(object? value) => value is string;
+            public static bool is_array(object? value) => value is object?[];
+            public static bool is_obj(object? value) => value is MObject;
+            public static bool is_func(object? value) => value is IFunction;
+
             // Type conversion:
             public static double? num(object? value)
             {

@@ -222,6 +222,8 @@ namespace MScript.Evaluation
             public static object?[] skip(object?[] self, double count) => self.Skip((int)count).ToArray();
             public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
             public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
+            public static object?[] prepend(object?[] self, object? value) => self.Prepend(value).ToArray();
+            public static object?[] append(object?[] self, object? value) => self.Append(value).ToArray();
             public static object?[] insert(object?[] self, double index, object? value)
             {
                 var insertIndex = NormalizedIndex(self, (int)index);
@@ -317,6 +319,23 @@ namespace MScript.Evaluation
             }
             public static object?[] sort(object?[] self, IFunction sortby) => self.OrderBy(value => sortby.Apply(new[] { value }) is double number ? number : 0.0).ToArray();
             public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
+            public static bool any(object?[] self, IFunction? predicate = null)
+            {
+                if (predicate == null)
+                    return self.Any();
+
+                if (predicate.Parameters.Count != 1)
+                    throw new InvalidOperationException($"The function given to {nameof(any)} must take 1 (value) argument, not {predicate.Parameters.Count}.");
+
+                return self.Any(value => Operations.IsTrue(predicate.Apply(new[] { value })));
+            }
+            public static bool all(object?[] self, IFunction predicate)
+            {
+                if (predicate.Parameters.Count != 1)
+                    throw new InvalidOperationException($"The function given to {nameof(any)} must take 1 (value) argument, not {predicate.Parameters.Count}.");
+
+                return self.All(value => Operations.IsTrue(predicate.Apply(new[] { value })));
+            }
 
             // Numerical arrays only:
             public static double? max(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Max, selector);
