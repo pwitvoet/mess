@@ -167,7 +167,7 @@ namespace MESS.Macros
             OutputMap = parentContext.OutputMap;
 
             var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            EvaluationContext = Evaluation.ContextWithBindings(_insertionEntityProperties, ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+            EvaluationContext = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
         }
 
 
