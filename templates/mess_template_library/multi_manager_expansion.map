@@ -3,7 +3,8 @@
 "origin" "0 0 0"
 "mapversion" "220"
 "_allow_rewrite_rules" ""
-"targets" "{get_attr().filter(a => !['classname','targetname','origin','template_map'].contains(a.key)).sort(a => num(a.value))}"
+"targets" "{get_attr().filter(a => !['classname','targetname','origin','spawnflags','template_map'].contains(a.key)).sort(a => num(a.value))}"
+"mm_is_multithreaded" "{hasflag(0)}"
 }
 {
 "classname" "macro_insert"
@@ -16,7 +17,7 @@
 "template_name" "multi_manager_template"
 "mm_name" "{nth() == 0 ? targetname : targetname + '_' + iid()}"
 "mm_targets" "{targets.length <= 16 ? targets : nth() == 0 ? targets.skip(targets.length - 15).insert(0, { key: targetname + '_' + iid(), value: '0' }) : targets.skip((nth() - 1) * 16).take(min(16, targets.length - 15 - ((nth() - 1) * 16)))}"
-"mm_is_multithreaded" "{hasflag(0)}"
+"mm_is_multithreaded" "{mm_is_multithreaded}"
 "origin" "0 0 0"
 }
 {
