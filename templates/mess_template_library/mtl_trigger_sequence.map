@@ -1,0 +1,181 @@
+{
+"classname" "worldspawn"
+"origin" "0 0 0"
+"mapversion" "220"
+"_allow_rewrite_rules" ""
+"targetname" "{targetname || 'mm_' + iid()}"
+"targets" "{get_attr().filter(a => !['classname','targetname','origin','template_map','loop_mode','initial_delay','loop_delay'].contains(a.key)).sort(a => num(a.value))}"
+"initial_delay" "{max(0, num(initial_delay) || 0)}"
+"loop_delay" "{max(0, num(loop_delay) || 0)}"
+"multithreaded" "{hasflag(0)}"
+"start_on" "{hasflag(1)}"
+"loop_until_triggered" "{loop_mode == 1}"
+"loop_indefinitely" "{loop_mode == 2}"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "start_on_template"
+{
+( 128 248 128 ) ( 128 248 -0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 256 128 ) ( 256 256 -0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 128 ) ( 128 256 -0 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 248 128 ) ( 256 248 -0 ) ( 128 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 248 128 ) ( 128 256 128 ) ( 256 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 256 0 ) ( 128 248 0 ) ( 256 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 256 136 128 ) ( 256 136 -0 ) ( 256 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 128 128 ) ( 128 128 -0 ) ( 128 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 128 128 ) ( 256 128 -0 ) ( 128 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 128 ) ( 128 136 -0 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 0 ) ( 128 128 0 ) ( 256 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 128 128 ) ( 128 136 128 ) ( 256 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"template_map" "{map_dir() + '/multi_manager_expansion.map'}"
+"{targets.map(a => a.key)}" "{targets.map(a => a.value)}"
+"targetname" "{loop_until_triggered ? targetname + '_mm' : targetname}"
+"{loop_indefinitely || loop_until_triggered ? targetname + '_loop' : none}" "{targets.max(a => a.value) + loop_delay}"
+"_spawnflag0" "{multithreaded}"
+"origin" "0 0 0"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -64"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{start_on ? 1 : 0}"
+"template_name" "start_on_template"
+"targetname" "{targetname}"
+"initial_delay" "{initial_delay}"
+"origin" "0 0 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "loop_indefinitely_template"
+{
+( 256 64 128 ) ( 256 64 0 ) ( 256 56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 56 128 ) ( 128 56 0 ) ( 128 64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 56 128 ) ( 256 56 0 ) ( 128 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 128 ) ( 128 64 0 ) ( 256 64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 0 ) ( 128 56 0 ) ( 256 64 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 56 128 ) ( 128 64 128 ) ( 256 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -64 128 ) ( 128 -64 0 ) ( 128 -56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -56 128 ) ( 256 -56 0 ) ( 256 -64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -56 128 ) ( 128 -56 0 ) ( 256 -56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -64 128 ) ( 256 -64 0 ) ( 128 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -64 128 ) ( 128 -56 128 ) ( 256 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -56 0 ) ( 128 -64 0 ) ( 256 -56 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "trigger_auto"
+"spawnflags" "1"
+"triggerstate" "1"
+"delay" "{initial_delay}"
+"target" "{targetname}"
+"origin" "192 192 64"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -32"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{loop_indefinitely || loop_until_triggered ? 1 : 0}"
+"template_name" "{loop_indefinitely ? 'loop_indefinitely_template' : 'loop_until_triggered_template'}"
+"targetname" "{targetname}"
+"origin" "0 0 32"
+}
+{
+"classname" "multi_manager"
+"targetname" "{targetname}_loop"
+"{targetname}" "0.01"
+"origin" "192 0 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "loop_until_triggered_template"
+{
+( 256 -128 128 ) ( 256 -128 0 ) ( 256 -136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -136 0 ) ( 128 -128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -136 128 ) ( 256 -136 0 ) ( 128 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 128 ) ( 128 -128 0 ) ( 256 -128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 0 ) ( 128 -136 0 ) ( 256 -128 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -128 128 ) ( 256 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -256 128 ) ( 128 -256 0 ) ( 128 -248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -248 128 ) ( 256 -248 0 ) ( 256 -256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -248 128 ) ( 128 -248 0 ) ( 256 -248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -256 128 ) ( 256 -256 0 ) ( 128 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -256 128 ) ( 128 -248 128 ) ( 256 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -248 0 ) ( 128 -256 0 ) ( 256 -248 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "button_target"
+"targetname" "{targetname}"
+"target" "{targetname}_on"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_changetarget"
+"delay" "0"
+"targetname" "{targetname}_off"
+"target" "{targetname}"
+"m_iszNewTarget" "{targetname}_on"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_changetarget"
+"delay" "0"
+"targetname" "{targetname}_off"
+"target" "{targetname}_loop"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_changetarget"
+"delay" "0"
+"targetname" "{targetname}_on"
+"target" "{targetname}"
+"m_iszNewTarget" "{targetname}_off"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_changetarget"
+"delay" "0"
+"targetname" "{targetname}_on"
+"target" "{targetname}_loop"
+"m_iszNewTarget" "{targetname}_mm"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_relay"
+"triggerstate" "0"
+"delay" "0"
+"targetname" "{targetname}_on"
+"target" "{targetname}_mm"
+"origin" "192 -192 64"
+}
+{
+"classname" "trigger_relay"
+"triggerstate" "0"
+"delay" "0.01"
+"targetname" "{targetname}_loop"
+"target" "{targetname}_mm"
+"origin" "192 -192 64"
+}

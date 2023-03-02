@@ -1,0 +1,24 @@
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/mtl_trigger_sequence.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_sequence
+[
+    targetname(target_source) : "Name"
+
+    loop_mode(choices) : "Loop mode" =
+    [
+        0 : "No looping"
+        1 : "Loop until triggered again"
+        2 : "Loop indefinitely"
+    ]
+
+    initial_delay(string) : "Initial delay (Start on)"
+    loop_delay(string) : "Delay between loops"
+
+    spawnflags(flags) =
+    [
+        1 : "Multithreaded" : 0
+        2 : "Start on" : 0
+    ]
+]
