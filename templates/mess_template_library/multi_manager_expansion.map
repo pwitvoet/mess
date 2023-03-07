@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" ""
+"_allow_rewrite_rules" "{}"
 "targets" "{get_attr().filter(a => !['classname','targetname','origin','spawnflags','template_map'].contains(a.key)).sort(a => num(a.value))}"
 "mm_is_multithreaded" "{hasflag(0)}"
 }

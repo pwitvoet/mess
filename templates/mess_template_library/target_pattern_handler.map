@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" ""
+"_allow_rewrite_rules" "{}"
 "name" "{target or ''}"
 }
 {
