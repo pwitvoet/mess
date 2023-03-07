@@ -1,0 +1,208 @@
+{
+"classname" "worldspawn"
+"origin" "0 0 0"
+"mapversion" "220"
+"_allow_rewrite_rules" "{}"
+"targetname" "{targetname}"
+"targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','min_interval','max_interval'].contains(a.key))}"
+"min_interval" "{max(0, num(min_interval) || 0)}"
+"max_interval" "{max(0, num(max_interval) || 0)}"
+"start_on" "{hasflag(0)}"
+"loop_until_triggered" "{trigger_mode == 1}"
+"random_buttons_name" "rnd_{iid()}"
+"beamname" "{trigger_mode == 1 ? targetname : targetname + '_beam'}"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "random_button_template"
+{
+( 256 256 128 ) ( 256 256 -0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 248 128 ) ( 128 248 -0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 248 128 ) ( 256 248 -0 ) ( 128 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 128 ) ( 128 256 -0 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 0 ) ( 128 248 0 ) ( 256 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 248 128 ) ( 128 256 128 ) ( 256 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 128 128 ) ( 128 128 -0 ) ( 128 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 136 128 ) ( 256 136 -0 ) ( 256 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 128 ) ( 128 136 -0 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 128 128 ) ( 256 128 -0 ) ( 128 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 128 128 ) ( 128 136 128 ) ( 256 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 136 0 ) ( 128 128 0 ) ( 256 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -32"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 {(nth() / targets.length) * 360} 0"
+"instance_orientation" "0"
+"instance_count" "{targets.length}"
+"targetname" "{random_buttons_name}"
+"target" "{targets[nth()].key}"
+"template_name" "random_button_template"
+"origin" "0 0 32"
+}
+{
+"classname" "env_beam"
+"spawnflags" "2"
+"damage" "2"
+"StrikeTime" "{loop_until_triggered ? max(0, max_interval - min_interval) : 0}"
+"framestart" "0"
+"framerate" "0"
+"TextureScroll" "0"
+"texture" "sprites/laserbeam.spr"
+"NoiseAmplitude" "0"
+"BoltWidth" "20"
+"life" "{loop_until_triggered ? min_interval : 0.1}"
+"Radius" "256"
+"rendercolor" "0 0 0"
+"renderamt" "0"
+"renderfx" "0"
+"targetname" "{beamname}"
+"LightningStart" "{beamname}"
+"LightningEnd" "{random_buttons_name}"
+"_spawnflag0" "{start_on && loop_until_triggered}"
+"_spawnflag2" "{loop_until_triggered}"
+"origin" "0 0 0"
+}
+{
+"classname" "func_button"
+"spawnflags" "1"
+"unlocked_sentence" "0"
+"locked_sentence" "0"
+"unlocked_sound" "0"
+"locked_sound" "0"
+"health" "1"
+"delay" "0"
+"wait" "0.01"
+"sounds" "0"
+"speed" "5"
+"zhlt_lightflags" "0"
+"zhlt_noclip" "1"
+"angles" "0 0 0"
+"rendercolor" "0 0 0"
+"rendermode" "0"
+"renderfx" "0"
+"targetname" "{targetname}"
+"target" "{target}"
+{
+( 204 193 65 ) ( 204 193 63 ) ( 204 191 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 200 191 65 ) ( 200 191 63 ) ( 200 193 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 204 191 65 ) ( 204 191 63 ) ( 200 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 200 193 65 ) ( 200 193 63 ) ( 204 193 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 200 193 63 ) ( 200 191 63 ) ( 204 193 63 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 200 191 65 ) ( 200 193 65 ) ( 204 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 200 193 65 ) ( 200 193 63 ) ( 200 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 191 65 ) ( 196 191 63 ) ( 196 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 200 191 65 ) ( 200 191 63 ) ( 196 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 193 65 ) ( 196 193 63 ) ( 200 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 193 63 ) ( 196 191 63 ) ( 200 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 196 191 65 ) ( 196 193 65 ) ( 200 191 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 0"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "1"
+"template_map" "{map_dir() + '/target_pattern_handler.map'}"
+"target" "{target}"
+"origin" "192 192 64"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -64"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{loop_until_triggered ? 0 : 1}"
+"target" "{targets[nth()].key}"
+"template_name" "toggle_multi_manager_template"
+"targetname" "{targetname}"
+"beamname" "{beamname}"
+"origin" "0 0 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "toggle_multi_manager_template"
+{
+( 256 64 128 ) ( 256 64 -0 ) ( 256 56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 56 128 ) ( 128 56 -0 ) ( 128 64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 56 128 ) ( 256 56 -0 ) ( 128 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 128 ) ( 128 64 -0 ) ( 256 64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 0 ) ( 128 56 0 ) ( 256 64 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 56 128 ) ( 128 64 128 ) ( 256 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -64 128 ) ( 128 -64 -0 ) ( 128 -56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -56 128 ) ( 256 -56 -0 ) ( 256 -64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -56 128 ) ( 128 -56 -0 ) ( 256 -56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -64 128 ) ( 256 -64 -0 ) ( 128 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -64 128 ) ( 128 -56 128 ) ( 256 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -56 0 ) ( 128 -64 0 ) ( 256 -56 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "multi_manager"
+"targetname" "{targetname}"
+"{beamname}" "0"
+"{beamname}#1" "0.1"
+"origin" "192 0 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "auto_start_once_template"
+{
+( 256 -128 128 ) ( 256 -128 0 ) ( 256 -136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -136 0 ) ( 128 -128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -136 128 ) ( 256 -136 0 ) ( 128 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 128 ) ( 128 -128 0 ) ( 256 -128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 0 ) ( 128 -136 0 ) ( 256 -128 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -128 128 ) ( 256 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -256 128 ) ( 128 -256 0 ) ( 128 -248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -248 128 ) ( 256 -248 0 ) ( 256 -256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -248 128 ) ( 128 -248 0 ) ( 256 -248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -256 128 ) ( 256 -256 0 ) ( 128 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -256 128 ) ( 128 -248 128 ) ( 256 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -248 0 ) ( 128 -256 0 ) ( 256 -248 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -48"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{start_on && !loop_until_triggered ? 1 : 0}"
+"target" "{targets[nth()].key}"
+"template_name" "auto_start_once_template"
+"targetname" "{targetname}"
+"beamname" "{beamname}"
+"origin" "0 0 48"
+}
+{
+"classname" "trigger_auto"
+"spawnflags" "1"
+"triggerstate" "1"
+"delay" "0"
+"target" "{targetname}"
+"origin" "192 -192 64"
+}

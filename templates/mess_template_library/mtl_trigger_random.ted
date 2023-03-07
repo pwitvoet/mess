@@ -1,0 +1,20 @@
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/mtl_trigger_random.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_random
+[
+    targetname(target_source) : "Name"
+    trigger_mode(choices) : "Trigger mode" : 0 =
+    [
+        0 : "Fire one target"
+        1 : "Keep firing targets (until toggled)"
+    ]
+    min_interval(string) : "Min. trigger interval (Toggle mode)"
+    max_interval(string) : "Max. trigger interval (Toggle mode)"
+
+    spawnflags(flags) =
+    [
+        1 : "Start on" : 0
+    ]
+]
