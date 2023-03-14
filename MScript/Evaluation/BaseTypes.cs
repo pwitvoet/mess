@@ -95,9 +95,9 @@ namespace MScript.Evaluation
 
 
             // Methods:
-            public static bool equals(string self, string? str, double? mode = null)
+            public static bool equals(string self, string? str, object? ignoreCase = null)
             {
-                var comparisonType = mode is double d && d == 1 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                var comparisonType = Operations.IsTrue(ignoreCase) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                 return self.Equals(str, comparisonType);
             }
 
