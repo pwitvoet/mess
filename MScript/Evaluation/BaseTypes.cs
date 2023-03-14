@@ -298,6 +298,9 @@ namespace MScript.Evaluation
             }
             public static object? reduce(object?[] self, IFunction function, object? startValue = null)
             {
+                if (function.Parameters.Count != 2)
+                    throw new InvalidOperationException($"The function given to {nameof(reduce)} must take 2 (result, value) arguments, not {function.Parameters.Count}.");
+
                 if (self.Length == 0)
                     return startValue;
 
@@ -306,6 +309,29 @@ namespace MScript.Evaluation
                 for (int i = foldBehavior ? 0 : 1; i < self.Length; i++)
                     result = function.Apply(new[] { result, self[i] });
                 return result;
+            }
+            public static object?[] groupby(object?[] self, IFunction keySelector)
+            {
+                if (keySelector.Parameters.Count != 1)
+                    throw new InvalidOperationException($"The function given to {nameof(groupby)} must take 1 (value) argument, not {keySelector.Parameters.Count}.");
+
+                var nullKey = new object();
+                var groups = new Dictionary<object, List<object?>>(MScriptValueEqualityComparer.Instance);
+                for (int i = 0; i < self.Length; i++)
+                {
+                    var key = keySelector.Apply(new[] { self[i] }) ?? nullKey;
+                    if (groups.TryGetValue(key, out var list))
+                        list.Add(self[i]);
+                    else
+                        groups[key] = new List<object?> { self[i] };
+                }
+
+                return groups
+                    .Select(kv => new MObject(new Dictionary<string, object?> {
+                        ["key"] = kv.Key == nullKey ? null : kv.Key,
+                        ["values"] = kv.Value.ToArray(),
+                    }))
+                    .ToArray();
             }
             public static object?[] zip(object?[] self, object?[] other, IFunction function)
             {
