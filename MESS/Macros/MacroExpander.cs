@@ -22,6 +22,8 @@ namespace MESS.Macros
         public static Map ExpandMacros(string path, ExpansionSettings settings, RewriteDirective[] rewriteDirectives, ILogger logger)
         {
             // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
+            logger.Info("");
+            logger.Info($"Expanding macros in '{path}'.");
 
             var expander = new MacroExpander(settings, rewriteDirectives, logger);
             var mainTemplate = expander.GetMapTemplate(path);

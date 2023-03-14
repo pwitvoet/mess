@@ -214,6 +214,7 @@ namespace MESS
             // TODO: Create a backup if the target file already exists! -- how many backups to make? -- make a setting for this behavior?
             using (var file = File.Create(settings.OutputPath))
             {
+                logger.Info("");
                 logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
                 MapFormat.Save(expandedMap, file);
 
@@ -305,6 +306,7 @@ namespace MESS
         private static void UpdateMessFgd(string messFgdFilePath, string newContent, ILogger logger)
         {
             // Finally, see if mess.fgd needs to be updated (or created):
+            logger.Info("");
             logger.Info($"Checking for '{messFgdFilePath}' updates...");
 
             if (!File.Exists(messFgdFilePath))
@@ -400,6 +402,9 @@ namespace MESS
                     }
                     catch (Exception ex)
                     {
+                        if (ex is TargetInvocationException && ex.InnerException != null)
+                            ex = ex.InnerException;
+
                         Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
                     }
                 }
