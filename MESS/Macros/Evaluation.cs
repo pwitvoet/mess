@@ -182,8 +182,6 @@ namespace MESS.Macros
             {
                 if (value is double number)
                     return number;
-                else if (value is object?[] array)
-                    return array.Length > 0 ? num(array[0]) : null;
                 else if (value is string str)
                     return PropertyExtensions.TryParseDouble(str, out number) ? number : null;
                 else
