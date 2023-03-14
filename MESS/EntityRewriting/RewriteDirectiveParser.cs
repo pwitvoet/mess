@@ -48,6 +48,10 @@ namespace MESS.EntityRewriting
                             unassociatedRewriteDirective = null;
                         }
                     }
+                    else
+                    {
+                        throw ParseError(context, $"Unexpected token: {context.Current.Type}.");
+                    }
                 }
 
                 if (unassociatedRewriteDirective != null)
@@ -326,7 +330,13 @@ namespace MESS.EntityRewriting
             return token;
         }
 
-        private static Exception ParseError(Context context, string message) => new InvalidDataException(message);
+        private static Exception ParseError(Context context, string message)
+        {
+            var ex = new InvalidDataException(message + $" At line {context.Current.Line}, offset {context.Current.Offset}.");
+            ex.Data["line number"] = context.Current.Line;
+            ex.Data["offset"] = context.Current.Offset;
+            return ex;
+        }
 
 
         class Context : IDisposable
