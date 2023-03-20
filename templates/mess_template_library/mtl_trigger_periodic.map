@@ -1,0 +1,68 @@
+{
+"classname" "worldspawn"
+"origin" "0 0 0"
+"mapversion" "220"
+"_allow_rewrite_rules" "{}"
+"targetname" "{targetname || '_eb_' + iid()}"
+"interval" "{max(0.01, num(interval) || 1)}"
+"start_on" "{hasflag(0)}"
+}
+{
+"classname" "func_button"
+"spawnflags" "1"
+"unlocked_sentence" "0"
+"locked_sentence" "0"
+"unlocked_sound" "0"
+"locked_sound" "0"
+"health" "1"
+"delay" "0"
+"wait" "0.01"
+"sounds" "0"
+"speed" "5"
+"zhlt_lightflags" "0"
+"zhlt_noclip" "1"
+"angles" "0 0 0"
+"rendercolor" "0 0 0"
+"rendermode" "0"
+"renderfx" "0"
+"targetname" "_fb_{iid()}"
+"target" "{target}"
+{
+( 4 -1 1 ) ( 4 -1 -1 ) ( 4 1 1 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 8 1 1 ) ( 8 1 -1 ) ( 8 -1 1 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 4 1 1 ) ( 4 1 -1 ) ( 8 1 1 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 8 -1 1 ) ( 8 -1 -1 ) ( 4 -1 1 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 4 -1 1 ) ( 4 1 1 ) ( 8 -1 1 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 4 1 -1 ) ( 4 -1 -1 ) ( 8 1 -1 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 4 1 1 ) ( 4 1 -1 ) ( 4 -1 1 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 2 -1 1 ) ( 2 -1 -1 ) ( 2 1 1 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 4 -1 1 ) ( 4 -1 -1 ) ( 2 -1 1 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 2 1 1 ) ( 2 1 -1 ) ( 4 1 1 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 2 1 -1 ) ( 2 -1 -1 ) ( 4 1 -1 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 2 -1 1 ) ( 2 1 1 ) ( 4 -1 1 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "env_beam"
+"texture" "sprites/laserbeam.spr"
+"spawnflags" "2"
+"damage" "2"
+"StrikeTime" "0"
+"framestart" "0"
+"framerate" "0"
+"TextureScroll" "35"
+"NoiseAmplitude" "0"
+"BoltWidth" "20"
+"life" "{interval}"
+"Radius" "256"
+"rendercolor" "0 0 0"
+"renderamt" "0"
+"renderfx" "0"
+"LightningEnd" "_fb_{iid()}"
+"targetname" "{targetname}"
+"LightningStart" "{targetname}"
+"_spawnflag0" "{start_on}"
+"origin" "0 0 0"
+}

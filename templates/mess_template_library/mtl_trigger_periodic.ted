@@ -1,0 +1,19 @@
+// This entity will trigger its target periodically.
+// Triggering this entity will toggle it, but it can also be enabled or disabled by sending it an on or off signal,
+// or by using the '+target' and '-target' patterns.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/mtl_trigger_periodic.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_periodic
+[
+    targetname(target_source) : "Name"
+    target(target_destination) : "Target"
+    interval(string) : "Interval" : "1"
+
+    spawnflags(flags) =
+    [
+        1 : "Start on" : 0
+    ]
+]
