@@ -1,0 +1,31 @@
+// This entity is a multi-target variant of game_counter.
+// It contains a counter that is incremented each time it is triggered.
+// The counter can also be decremented by sending an off signal (or by using the '-target' pattern),
+// and it can be set to a specific value with a game_counter_set (or by using the 'set target value' pattern).
+// Each target will be triggered once the counter reaches its associated count.
+// Targets are added by disabling 'Smart edit' mode. The key should contain the target name and the value should contain the associated count.
+//
+// When 'Clock mode' is enabled, triggering this entity will make it increment its counter at a regular interval.
+// Triggering the entity again will stop it from incrementing. In this mode, the counter cannot be adjusted with on/off signals or game_counter_set entities.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/mtl_trigger_counter.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_counter
+[
+    targetname(target_source) : "Name"
+    trigger_mode(choices) : "Trigger mode" : 0 =
+    [
+        0 : "Increment when triggered"
+        1 : "Keep incrementing until triggered again (Clock mode)"
+    ]
+    initial_value(integer) : "Initial counter value" : 0
+    reset_counter_at(integer) : "Reset counter at (empty = no reset)"
+    interval(string) : "Increment interval (Clock mode)"
+
+    spawnflags(flags) =
+    [
+        1 : "Start on (Clock mode)" : 0
+    ]
+]

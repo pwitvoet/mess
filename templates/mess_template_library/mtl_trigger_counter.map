@@ -1,0 +1,219 @@
+{
+"classname" "worldspawn"
+"origin" "0 0 0"
+"mapversion" "220"
+"_allow_rewrite_rules" "{}"
+"targetname" "{targetname}"
+"targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','initial_value','reset_counter_at','interval'].contains(a.key)).groupby(a => a.value).sort(g => num(g.key))}"
+"reset_counter_at" "{reset_counter_at}"
+"initial_value" "{initial_value || 0}"
+"clock_mode" "{trigger_mode == 1}"
+"interval" "{num(interval) || 1}"
+"start_on" "{hasflag(0)}"
+"counter_name" "{trigger_mode == 1 ? iid() + '_gc' : targetname}"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "game_counter_template"
+"mm_name" "{targets.length > 1 ? iid() + '_mm' : none}"
+{
+( 128 248 128 ) ( 128 248 -0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 256 128 ) ( 256 256 -0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 128 ) ( 128 256 -0 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 248 128 ) ( 256 248 -0 ) ( 128 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 248 128 ) ( 128 256 128 ) ( 256 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 256 0 ) ( 128 248 0 ) ( 256 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 256 136 128 ) ( 256 136 -0 ) ( 256 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 128 128 ) ( 128 128 -0 ) ( 128 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 128 128 ) ( 256 128 -0 ) ( 128 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 128 ) ( 128 136 -0 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 0 ) ( 128 128 0 ) ( 256 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 128 128 ) ( 128 136 128 ) ( 256 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "game_counter"
+"health" "{target_count}"
+"frags" "{initial_value}"
+"delay" "0"
+"target" "{targets.length == 1 ? targets[0].key : mm_name}"
+"targetname" "{targetname}"
+"origin" "192 192 64"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 0"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{targets.length}"
+"template_name" "game_counter_template"
+"targets" "{targets[nth()].values}"
+"target_count" "{targets[nth()].key}"
+"initial_value" "{initial_value}"
+"targetname" "{counter_name}"
+"origin" "0 0 0"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -16"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{targets.length == 1 ? 1 : 0}"
+"template_map" "{map_dir() + '/target_pattern_handler.map'}"
+"target" "{target_name}"
+"origin" "192 192 80"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -16"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{is_num(reset_counter_at) ? 1 : 0}"
+"template_name" "reset_counter_template"
+"initial_value" "{initial_value}"
+"reset_value" "{reset_counter_at}"
+"targetname" "{counter_name}"
+"origin" "0 0 16"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "reset_counter_template"
+{
+( 256 64 128 ) ( 256 64 0 ) ( 256 56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 56 128 ) ( 128 56 0 ) ( 128 64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 56 128 ) ( 256 56 0 ) ( 128 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 128 ) ( 128 64 0 ) ( 256 64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 64 0 ) ( 128 56 0 ) ( 256 64 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 56 128 ) ( 128 64 128 ) ( 256 56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -64 128 ) ( 128 -64 0 ) ( 128 -56 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -56 128 ) ( 256 -56 0 ) ( 256 -64 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -56 128 ) ( 128 -56 0 ) ( 256 -56 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -64 128 ) ( 256 -64 0 ) ( 128 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -64 128 ) ( 128 -56 128 ) ( 256 -64 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -56 0 ) ( 128 -64 0 ) ( 256 -56 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "game_counter"
+"health" "{reset_value}"
+"frags" "{initial_value}"
+"delay" "0"
+"targetname" "{targetname}"
+"target" "{targetname}_reset"
+"origin" "192 0 64"
+}
+{
+"classname" "game_counter_set"
+"frags" "{initial_value}"
+"targetname" "{targetname}_reset"
+"target" "{targetname}"
+"origin" "192 0 64"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -32"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{targets.length > 1 ? 1 : 0}"
+"targets" "{targets}"
+"template_name" "multiple_targets_template"
+"targetname" "{mm_name}"
+"origin" "192 192 96"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "multiple_targets_template"
+{
+( 320 248 128 ) ( 320 248 0 ) ( 320 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 448 256 128 ) ( 448 256 0 ) ( 448 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 320 256 128 ) ( 320 256 0 ) ( 448 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 448 248 128 ) ( 448 248 0 ) ( 320 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 320 248 128 ) ( 320 256 128 ) ( 448 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 320 256 0 ) ( 320 248 0 ) ( 448 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 448 136 128 ) ( 448 136 0 ) ( 448 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 320 128 128 ) ( 320 128 0 ) ( 320 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 448 128 128 ) ( 448 128 0 ) ( 320 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 320 136 128 ) ( 320 136 0 ) ( 448 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 320 136 0 ) ( 320 128 0 ) ( 448 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 320 128 128 ) ( 320 136 128 ) ( 448 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"targetname" "{targetname}"
+"template_map" "{map_dir() + '/multi_manager_expansion.map'}"
+"{targets.map(a => a.key)}" "{targets.map(a => 0)}"
+"origin" "384 192 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "clock_mode_template"
+{
+( 256 -128 128 ) ( 256 -128 0 ) ( 256 -136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -136 0 ) ( 128 -128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -136 128 ) ( 256 -136 0 ) ( 128 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 128 ) ( 128 -128 0 ) ( 256 -128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -128 0 ) ( 128 -136 0 ) ( 256 -128 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -136 128 ) ( 128 -128 128 ) ( 256 -136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 -256 128 ) ( 128 -256 0 ) ( 128 -248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -248 128 ) ( 256 -248 0 ) ( 256 -256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -248 128 ) ( 128 -248 0 ) ( 256 -248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 -256 128 ) ( 256 -256 0 ) ( 128 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 -256 128 ) ( 128 -248 128 ) ( 256 -256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 -248 0 ) ( 128 -256 0 ) ( 256 -248 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 0"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "1"
+"template_map" "{map_dir() + '/mtl_trigger_periodic.map'}"
+"targetname" "{targetname}"
+"target" "{counter_name}"
+"interval" "{interval}"
+"_spawnflag0" "{start_on}"
+"origin" "192 -192 64"
+}
+{
+"classname" "macro_insert"
+"instance_offset" "0 0 -32"
+"instance_geometry_scale" "1 1 1"
+"scale" "1"
+"angles" "0 0 0"
+"instance_orientation" "0"
+"instance_count" "{clock_mode ? 1 : 0}"
+"template_name" "clock_mode_template"
+"targetname" "{targetname}"
+"interval" "{interval}"
+"counter_name" "{counter_name}"
+"start_on" "{start_on}"
+"origin" "0 0 32"
+}
