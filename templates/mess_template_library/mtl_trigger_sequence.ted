@@ -1,3 +1,10 @@
+// This entity will trigger all of its targets, each at its own specified time.
+// When looping is enabled, the sequence will automatically start again after it has finished.
+//
+// By default, triggering a sequence while it's still active won't do anything.
+// In looping mode, triggering it will stop it from looping, but the current sequence will still finish its course.
+// If multi-threading is enabled, triggering a non-looping sequence will start another 'copy' of the sequence.
+//
 // @MESS REWRITE:
 // "classname": "macro_insert"
 // "template_map": "{mtb_dir() + '/mtl_trigger_sequence.map'}"

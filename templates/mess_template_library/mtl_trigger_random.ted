@@ -1,3 +1,9 @@
+// This entity will randomly select one of its targets and trigger it.
+// It has two modes:
+// - in normal mode, it will trigger one of its targets each time it is triggered.
+// - in toggle mode, it will continue to trigger targets until it is triggered again.
+// Toggle mode respects on/off signals, so it's possible to explicitly enable or disable it.
+//
 // @MESS REWRITE:
 // "classname": "macro_insert"
 // "template_map": "{mtb_dir() + '/mtl_trigger_random.map'}"
