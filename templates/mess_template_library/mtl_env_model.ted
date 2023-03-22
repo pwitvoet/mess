@@ -1,0 +1,54 @@
+// mtl_env_model can be used to add decorative models (props) to a level.
+// 
+// HL comes with a few model-related entities, such as monster_generic and monster_furniture, but those come with several drawbacks,
+// such as not being able to place them closely to walls, the model being dropped to the floor, the model being seen as an auto-aim target,
+// bleeding when shot, and so on.
+// 
+// That's why sprite entities are often used instead, such as cycler_sprite and env_sprite. However, cycler_sprites don't show up after
+// loading a savegame, so env_model uses env_sprite instead. The only drawback is that it doesn't support skin and body selection, unlike
+// the other entities. It also sometimes suffers from a rotation bug, if one or more angles are set to 0, but env_model avoids that
+// by automatically adjusting the angles slightly.
+// 
+// Of course, if you're making a mod, you can add a real env_model to your game-code and remove these MESS rewrite rules entirely.
+// 
+// @MESS REWRITE FOR "mtl_env_model":
+// "classname": "env_sprite"
+// "spawnflags": "{setflag(0, hasflag(0) ? 0 : 1)}"
+// @MESS;
+@PointClass size(-16 -16 0, 16 16 32) color(255 127 0) studio() = mtl_env_model : "Prop model"
+[
+    // Targetname:
+    targetname(target_source) : "Name"
+
+    // RenderFields:
+    rendermode(choices) : "Render Mode" : 0 =
+    [
+        0 : "Normal"
+        1 : "Color"
+        2 : "Texture"
+        3 : "Glow"
+        4 : "Solid"
+        5 : "Additive"
+    ]
+    renderamt(integer) : "FX Amount (1 - 255)" : 255
+    //rendercolor(color255) : "FX Color (R G B)" : "0 0 0"  // Has no effect on models
+
+    // Angles:
+    angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
+
+    // env_sprite:
+    framerate(string) : "Framerate" : "1.0"
+    model(studio) : "Model name"
+    //scale(string) : "Scale" : "1.0"                       // Has no effect on models
+    spawnflags(flags) =
+    [
+        1 : "Start invisible (when named)" : 0
+        2 : "Play once" : 0
+    ]
+
+    // Model-specific:
+    sequence(integer) : "Animation sequence (index)"        // Only sequence numbers are supported, not names
+
+    //body(integer) : "Body"                                // Only supported by cycler, cycler_sprite, monster_furniture and monster_generic
+    //skin(integer) : "Skin"                                // Same restrictions as with 'body'.
+]
