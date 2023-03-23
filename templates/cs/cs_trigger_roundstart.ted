@@ -1,0 +1,15 @@
+// This entity will trigger its target when a new round starts.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{mtb_dir() + '/cs_trigger_roundstart.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = cs_trigger_roundstart
+[
+    target(target_destination) : "Target"
+
+    spawnflags(flags) =
+    [
+        1 : "Skip first round" : 0
+    ]
+]

@@ -1,0 +1,61 @@
+{
+"classname" "worldspawn"
+"origin" "0 0 0"
+"mapversion" "220"
+"_allow_rewrite_rules" "mess_template_library/target_pattern_handler.ted"
+"target" "{target}"
+"skip_first_round" "{hasflag(0)}"
+}
+{
+"classname" "func_door"
+"wait" "{delay}"
+"speed" "100"
+"spawnflags" "1"
+"zhlt_noclip" "1"
+"target" "{target}"
+{
+( -0.5 -0.5 0.5 ) ( -0.5 -0.5 -0.5 ) ( -0.5 0.5 0.5 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0.5 0.5 0.5 ) ( 0.5 0.5 -0.5 ) ( 0.5 -0.5 0.5 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( -0.5 0.5 0.5 ) ( -0.5 0.5 -0.5 ) ( 0.5 0.5 0.5 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0.5 -0.5 0.5 ) ( 0.5 -0.5 -0.5 ) ( -0.5 -0.5 0.5 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0.5 -0.5 0.5 ) ( -0.5 -0.5 0.5 ) ( 0.5 0.5 0.5 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( -0.5 0.5 -0.5 ) ( -0.5 -0.5 -0.5 ) ( 0.5 0.5 -0.5 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_count" "{skip_first_round ? 0 : 1}"
+"template_name" "first_round_trigger_template"
+"target" "{target}"
+"origin" "0 0 0"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "first_round_trigger_template"
+{
+( 128 128 128 ) ( 128 128 0 ) ( 128 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 136 128 ) ( 256 136 0 ) ( 256 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 136 128 ) ( 128 136 0 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 128 128 ) ( 256 128 0 ) ( 128 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 128 128 ) ( 128 128 128 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 136 0 ) ( 128 128 0 ) ( 256 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 256 256 128 ) ( 256 256 0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 248 128 ) ( 128 248 0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 256 248 128 ) ( 256 248 0 ) ( 128 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 128 ) ( 128 256 0 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 256 0 ) ( 128 248 0 ) ( 256 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 256 248 128 ) ( 128 248 128 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "trigger_auto"
+"spawnflags" "1"
+"triggerstate" "2"
+"delay" "0"
+"target" "{target}"
+"origin" "192 192 64"
+}
