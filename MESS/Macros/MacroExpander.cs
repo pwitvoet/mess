@@ -1007,7 +1007,7 @@ namespace MESS.Macros
                 context.Transform.Scale,
                 context.Transform.GeometryScale,
                 context.Transform.Rotation,
-                context.Transform.Apply(position));
+                position);
 
             foreach (var template in templates)
             {
