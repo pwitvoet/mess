@@ -88,8 +88,9 @@ namespace MESS.Macros
             Transform transform,
             IDictionary<string, object?> insertionEntityProperties,
             InstantiationContext parentContext,
-            int sequenceNumber = 0)
-            : this(template, logger, transform, insertionEntityProperties, parentContext._baseEvaluationContext, parentContext, null, sequenceNumber)
+            int sequenceNumber = 0,
+            int? id = null)
+            : this(template, logger, transform, insertionEntityProperties, parentContext._baseEvaluationContext, parentContext, null, sequenceNumber, null, id)
         {
         }
 
@@ -102,7 +103,8 @@ namespace MESS.Macros
             InstantiationContext? parentContext = null,
             string? workingDirectory = null,
             int sequenceNumber = 0,
-            Action<IDictionary<string, object?>>? handleTemplateProperties = null)
+            Action<IDictionary<string, object?>>? handleTemplateProperties = null,
+            int? id = null)
         {
             // Every context uses its own PRNG. Seeding is done automatically, but can be done explicitly
             // by adding a 'random_seed' attribute to the inserting entity (or to the map properties, for the root context).
@@ -119,7 +121,7 @@ namespace MESS.Macros
             _baseEvaluationContext = baseEvaluationContext;
             _parentContext = parentContext;
 
-            ID = GetRootContext()._nextID++;
+            ID = id ?? GetRootContext()._nextID++;
             SequenceNumber = sequenceNumber;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;

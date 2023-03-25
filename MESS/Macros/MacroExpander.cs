@@ -854,7 +854,7 @@ namespace MESS.Macros
 
             var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
             var pointContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
-            var brushContext = new InstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, context);
+            var brushContext = new InstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, context, id: pointContext.ID);
 
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
