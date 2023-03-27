@@ -1,0 +1,27 @@
+// A trigger_multiple variant that can trigger specific targets when the player enters, stays in, or leaves the trigger area.
+// Like trigger_multiple, it can also react to monsters and pushables, but it only detects these while they're moving.
+// As soon as a monster or pushable stops moving, the on_leave target is triggered.
+//
+// If the trigger is given a master, disabling the master while the player is inside the trigger area will trigger the on_leave target.
+// Similarly, if the master is enabled while the player is inside the area, the on_enter target will be triggered.
+//
+// @MESS REWRITE:
+// "classname": "macro_brush"
+// "template_map": "{mtb_dir() + '/mtl_trigger_area.map'}"
+// "anchor": "1"
+// @MESS;
+@SolidClass = mtl_trigger_area
+[
+    on_enter(target_destination) : "Target on enter"
+    on_stay(target_destination) : "Target on stay"
+    on_leave(target_destination) : "Target on leave"
+    poll_interval(string) : "Interval" : "0.1"
+    master(string) : "Master"
+
+    spawnflags(flags) =
+    [
+        1 : "React to monster movement" : 0
+        2 : "React to pushables movement" : 0
+        4 : "Ignore players" : 0
+    ]
+]
