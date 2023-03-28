@@ -38,7 +38,7 @@
 "${internal_id}_tr1" "0"
 "${internal_id}_tr1->{on_stay}" "0.05"
 "${internal_id}_tr2->" "0"
-"${internal_id}_mm2" "0.15"
+"${internal_id}_mm2" "{poll_interval - 0.05}"
 "origin" "0 0 0"
 }
 {

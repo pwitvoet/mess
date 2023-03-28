@@ -15,7 +15,7 @@
     on_enter(target_destination) : "Target on enter"
     on_stay(target_destination) : "Target on stay"
     on_leave(target_destination) : "Target on leave"
-    poll_interval(string) : "Interval" : "0.1"
+    poll_interval(string) : "Interval" : "0.2"
     master(string) : "Master"
 
     spawnflags(flags) =
