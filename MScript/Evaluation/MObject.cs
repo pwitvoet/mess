@@ -5,9 +5,31 @@
         public IReadOnlyDictionary<string, object?> Fields { get; }
 
 
-        public MObject(IDictionary<string, object?> fields)
+        public MObject(IEnumerable<KeyValuePair<string, object?>> fields)
         {
-            Fields = fields.ToDictionary(kv => kv.Key, kv => kv.Value);
+            var fieldsDictionary = new Dictionary<string, object?>();
+            foreach (var field in fields)
+                fieldsDictionary[field.Key] = field.Value;
+
+            Fields = fieldsDictionary;
+        }
+
+        public MObject CreateCopy()
+            => new MObject(Fields);
+
+        public MObject CreateCopyWithField(string fieldName, object? value)
+            => new MObject(Fields.Append(KeyValuePair.Create(fieldName, value)));
+
+        public MObject CreateCopyWithFields(IEnumerable<KeyValuePair<string, object?>> fields)
+            => new MObject(Fields.Concat(fields));
+
+        public MObject CreateCopyWithoutField(string fieldName)
+            => new MObject(Fields.Where(field => field.Key != fieldName));
+
+        public MObject CreateCopyWithoutFields(IEnumerable<string> fieldNames)
+        {
+            var fieldNamesSet = fieldNames.ToHashSet();
+            return new MObject(Fields.Where(field => !fieldNamesSet.Contains(field.Key)));
         }
 
 

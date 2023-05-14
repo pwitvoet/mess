@@ -243,6 +243,27 @@ namespace MESS.Macros
                 return result;
             }
 
+            // Objects:
+            public static MObject? add_field(MObject? obj, string field_name, object? value) => obj?.CreateCopyWithField(field_name, value);
+            public static MObject? remove_field(MObject? obj, object? field_name)
+            {
+                if (field_name is string name)
+                    return obj?.CreateCopyWithoutField(name);
+                else if (field_name is object?[] names)
+                    return obj?.CreateCopyWithoutFields(names.Select(Interpreter.Print));
+                else
+                    return obj;
+            }
+            public static MObject? merge_fields(MObject? obj1, MObject? obj2)
+            {
+                if (obj1 == null)
+                    return obj2?.CreateCopy();
+                else if (obj2 == null)
+                    return obj1.CreateCopy();
+                else
+                    return obj1.CreateCopyWithFields(obj2.Fields);
+            }
+
             // Colors:
             /// <summary>
             /// Returns an array with either 3 or 4 values, where the first 3 values are between 0 and 255.
