@@ -358,9 +358,9 @@ namespace MESS.Macros
 
             // Parent entity attributes:
             public double attr_count() => _properties.Count;
-            public object? get_attr(object? indexOrName = null)
+            public object? get_attr(object? index_or_name = null)
             {
-                if (indexOrName is double index)
+                if (index_or_name is double index)
                 {
                     var normalizedIndex = (int)index < 0 ? _properties.Count + (int)index : (int)index;
                     if (normalizedIndex < 0 || normalizedIndex >= _properties.Count)
@@ -372,7 +372,7 @@ namespace MESS.Macros
                         { "value", property.Value },
                     });
                 }
-                else if (indexOrName is string name)
+                else if (index_or_name is string name)
                 {
                     if (!_properties.TryGetValue(name, out var value))
                         return null;
