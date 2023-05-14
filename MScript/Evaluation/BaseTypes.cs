@@ -188,18 +188,18 @@ namespace MScript.Evaluation
             // Properties:
             public static double GET_length(object?[] self) => self.Length;
             // Position:
-            public static object? GET_x(object?[] self) => Operations.Index(self, 0);
-            public static object? GET_y(object?[] self) => Operations.Index(self, 1);
-            public static object? GET_z(object?[] self) => Operations.Index(self, 2);
+            public static double? GET_x(object?[] self) => Operations.Index(self, 0) as double?;
+            public static double? GET_y(object?[] self) => Operations.Index(self, 1) as double?;
+            public static double? GET_z(object?[] self) => Operations.Index(self, 2) as double?;
             // Angles:
-            public static object? GET_pitch(object?[] self) => Operations.Index(self, 0);
-            public static object? GET_yaw(object?[] self) => Operations.Index(self, 1);
-            public static object? GET_roll(object?[] self) => Operations.Index(self, 2);
+            public static double? GET_pitch(object?[] self) => Operations.Index(self, 0) as double?;
+            public static double? GET_yaw(object?[] self) => Operations.Index(self, 1) as double?;
+            public static double? GET_roll(object?[] self) => Operations.Index(self, 2) as double?;
             // Color:
-            public static object? GET_r(object?[] self) => Operations.Index(self, 0);
-            public static object? GET_g(object?[] self) => Operations.Index(self, 1);
-            public static object? GET_b(object?[] self) => Operations.Index(self, 2);
-            public static object? GET_brightness(object?[] self) => Operations.Index(self, 3);
+            public static double? GET_r(object?[] self) => Operations.Index(self, 0) as double?;
+            public static double? GET_g(object?[] self) => Operations.Index(self, 1) as double?;
+            public static double? GET_b(object?[] self) => Operations.Index(self, 2) as double?;
+            public static double? GET_brightness(object?[] self) => Operations.Index(self, 3) as double?;
 
 
             // Methods:
@@ -262,9 +262,20 @@ namespace MScript.Evaluation
             }
 
             public static object? contains(object?[] self, object? value) => self.Any(val => Operations.IsTrue(Operations.Equals(val, value)));
-            public static double? indexof(object?[] self, object? value)
+            public static double? index(object?[] self, object? value, double? offset = null)
             {
-                for (int i = 0; i < self.Length; i++)
+                var startIndex = Math.Max(0, NormalizedIndex(self, offset is null ? 0 : (int)offset));
+                for (int i = startIndex; i < self.Length; i++)
+                {
+                    if (Operations.IsTrue(Operations.Equals(self[i], value)))
+                        return i;
+                }
+                return null;
+            }
+            public static double? lastindex(object?[] self, object? value, double? offset = null)
+            {
+                var startIndex = Math.Min(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), self.Length - 1);
+                for (int i = startIndex; i >= 0; i--)
                 {
                     if (Operations.IsTrue(Operations.Equals(self[i], value)))
                         return i;
@@ -272,21 +283,21 @@ namespace MScript.Evaluation
                 return null;
             }
 
-            public static object?[] map(object?[] self, IFunction function)
+            public static object?[] map(object?[] self, IFunction selector)
             {
-                if (function.Parameters.Count < 1 || function.Parameters.Count > 2)
-                    throw new InvalidOperationException($"The function given to {nameof(map)} must take 1 (value) or 2 (value, index) arguments, not {function.Parameters.Count}.");
+                if (selector.Parameters.Count < 1 || selector.Parameters.Count > 2)
+                    throw new InvalidOperationException($"The function given to {nameof(map)} must take 1 (value) or 2 (value, index) arguments, not {selector.Parameters.Count}.");
 
                 var result = new object?[self.Length];
-                if (function.Parameters.Count == 1)
+                if (selector.Parameters.Count == 1)
                 {
                     for (int i = 0; i < self.Length; i++)
-                        result[i] = function.Apply(new[] { self[i] });
+                        result[i] = selector.Apply(new[] { self[i] });
                 }
                 else
                 {
                     for (int i = 0; i < self.Length; i++)
-                        result[i] = function.Apply(new[] { self[i], (double)i });
+                        result[i] = selector.Apply(new[] { self[i], (double)i });
                 }
                 return result;
             }
@@ -314,30 +325,30 @@ namespace MScript.Evaluation
                 }
                 return result.ToArray();
             }
-            public static object? reduce(object?[] self, IFunction function, object? startValue = null)
+            public static object? reduce(object?[] self, IFunction reducer, object? start_value = null)
             {
-                if (function.Parameters.Count != 2)
-                    throw new InvalidOperationException($"The function given to {nameof(reduce)} must take 2 (result, value) arguments, not {function.Parameters.Count}.");
+                if (reducer.Parameters.Count != 2)
+                    throw new InvalidOperationException($"The function given to {nameof(reduce)} must take 2 (result, value) arguments, not {reducer.Parameters.Count}.");
 
                 if (self.Length == 0)
-                    return startValue;
+                    return start_value;
 
-                var foldBehavior = startValue is not null;
-                var result = foldBehavior ? startValue : self[0];
+                var foldBehavior = start_value is not null;
+                var result = foldBehavior ? start_value : self[0];
                 for (int i = foldBehavior ? 0 : 1; i < self.Length; i++)
-                    result = function.Apply(new[] { result, self[i] });
+                    result = reducer.Apply(new[] { result, self[i] });
                 return result;
             }
-            public static object?[] groupby(object?[] self, IFunction keySelector)
+            public static object?[] groupby(object?[] self, IFunction key_selector)
             {
-                if (keySelector.Parameters.Count != 1)
-                    throw new InvalidOperationException($"The function given to {nameof(groupby)} must take 1 (value) argument, not {keySelector.Parameters.Count}.");
+                if (key_selector.Parameters.Count != 1)
+                    throw new InvalidOperationException($"The function given to {nameof(groupby)} must take 1 (value) argument, not {key_selector.Parameters.Count}.");
 
                 var nullKey = new object();
                 var groups = new Dictionary<object, List<object?>>(MScriptValueEqualityComparer.Instance);
                 for (int i = 0; i < self.Length; i++)
                 {
-                    var key = keySelector.Apply(new[] { self[i] }) ?? nullKey;
+                    var key = key_selector.Apply(new[] { self[i] }) ?? nullKey;
                     if (groups.TryGetValue(key, out var list))
                         list.Add(self[i]);
                     else
@@ -351,17 +362,17 @@ namespace MScript.Evaluation
                     }))
                     .ToArray();
             }
-            public static object?[] zip(object?[] self, object?[] other, IFunction function)
+            public static object?[] zip(object?[] self, object?[] other, IFunction zipper)
             {
-                if (function.Parameters.Count != 2)
-                    throw new InvalidOperationException($"The function given {nameof(zip)} must take 2 arguments, not {function.Parameters.Count}.");
+                if (zipper.Parameters.Count != 2)
+                    throw new InvalidOperationException($"The function given {nameof(zip)} must take 2 arguments, not {zipper.Parameters.Count}.");
 
                 var result = new object?[Math.Min(self.Length, other.Length)];
                 for (int i = 0; i < result.Length; i++)
-                    result[i] = function.Apply(new[] { self[i], other[i] });
+                    result[i] = zipper.Apply(new[] { self[i], other[i] });
                 return result;
             }
-            public static object?[] sort(object?[] self, IFunction sortby) => self.OrderBy(value => sortby.Apply(new[] { value }) is double number ? number : 0.0).ToArray();
+            public static object?[] sort(object?[] self, IFunction sort_by) => self.OrderBy(value => sort_by.Apply(new[] { value }) is double number ? number : 0.0).ToArray();   // TODO: Argument count check!!!
             public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
             public static bool any(object?[] self, IFunction? predicate = null)
             {
@@ -382,25 +393,63 @@ namespace MScript.Evaluation
             }
 
             // Numerical arrays only:
-            public static double? max(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Max, selector);
-            public static double? min(object?[] self, IFunction? selector = null) => ReduceToNumber(self, Math.Min, selector);
-            public static double? sum(object?[] self, IFunction? selector = null) => ReduceToNumber(self, (sum, number) => sum + number, selector);
-
-
-            private static double? ReduceToNumber(object?[] array, Func<double, double, double> aggregate, IFunction? selector = null)
+            public static double? max(object?[] self, IFunction? selector = null)
             {
-                var result = 0.0;
-                for (int i = 0; i < array.Length; i++)
+                var getNumber = CreateNumberSelector(selector);
+                double? max = null;
+                for (int i = 0; i < self.Length; i++)
                 {
-                    var value = selector != null ? selector.Apply(new[] { array[i] }) : array[i];
-                    if (value is null)
-                        result = aggregate(result, 0.0);
-                    else if (value is double number)
-                        result = aggregate(result, number);
-                    else
-                        return null;
+                    var value = getNumber(self, i);
+                    if (value == null)
+                        continue;
+
+                    if (max == null || value.Value > max.Value)
+                        max = value;
                 }
-                return result;
+                return max;
+            }
+            public static double? min(object?[] self, IFunction? selector = null)
+            {
+                var getNumber = CreateNumberSelector(selector);
+                double? min = null;
+                for (int i = 0; i < self.Length; i++)
+                {
+                    var value = getNumber(self, i);
+                    if (value == null)
+                        continue;
+
+                    if (min == null || value.Value < min.Value)
+                        min = value;
+                }
+                return min;
+            }
+            public static double? sum(object?[] self, IFunction? selector = null)
+            {
+                var getNumber = CreateNumberSelector(selector);
+                var sum = 0.0;
+                for (int i = 0; i < self.Length; i++)
+                {
+                    var value = getNumber(self, i);
+                    if (value != null)
+                        sum += value.Value;
+                }
+                return sum;
+            }
+
+
+            private static Func<object?[], int, double?> CreateNumberSelector(IFunction? selector = null)
+            {
+                if (selector == null)
+                {
+                    return (array, index) => array[index] as double?;
+                }
+                else
+                {
+                    if (selector.Parameters.Count != 1)
+                        throw new InvalidOperationException($"A numerical selector must take 1 (value) arguments, not {selector.Parameters.Count}.");
+
+                    return (array, index) => selector.Apply(new[] { array[index] }) as double?;
+                }
             }
 
             private static int NormalizedIndex(object?[] array, int index) => index < 0 ? array.Length + index : index;
