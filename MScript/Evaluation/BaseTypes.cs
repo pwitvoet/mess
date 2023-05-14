@@ -95,12 +95,6 @@ namespace MScript.Evaluation
 
 
             // Methods:
-            public static bool equals(string self, string? str, object? ignoreCase = null)
-            {
-                var comparisonType = Operations.IsTrue(ignoreCase) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-                return self.Equals(str, comparisonType);
-            }
-
             /// <summary>
             /// Returns a substring.
             /// Supports negative indexing.
@@ -137,32 +131,56 @@ namespace MScript.Evaluation
                 return self.Substring((int)offset, (int)length);
             }
 
-            public static bool contains(string self, string? str) => str is not null ? self.Contains(str) : false;
-            public static double? index(string self, string str, double? offset = null)
+            public static bool equals(string self, string? str, object? ignore_case = null)
+                => self.Equals(str, GetStringComparison(ignore_case));
+
+            public static bool contains(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.Contains(str, GetStringComparison(ignore_case)) : false;
+
+            public static double? index(string self, string str, double? offset = null, object? ignore_case = null)
             {
-                var startIndex = NormalizedIndex(self, offset is null ? 0 : (int)offset);
-                var index = self.IndexOf(str, startIndex);
+                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? 0 : (int)offset), 0, self.Length);
+                var index = self.IndexOf(str, startIndex, GetStringComparison(ignore_case));
                 return index != -1 ? index : null;
             }
-            public static double? lastindex(string self, string str, double? offset = null)
+
+            public static double? lastindex(string self, string str, double? offset = null, object? ignore_case = null)
             {
-                var startIndex = NormalizedIndex(self, offset is null ? 0 : (int)offset);
-                var index = self.LastIndexOf(str, startIndex);
+                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), 0, self.Length);
+                var index = self.LastIndexOf(str, startIndex, GetStringComparison(ignore_case));
                 return index != -1 ? index : null;
             }
-            public static bool startswith(string self, string? str) => str is not null ? self.StartsWith(str) : false;
-            public static bool endswith(string self, string? str) => str is not null ? self.EndsWith(str) : false;
-            public static string replace(string self, string? str, string? replacement) => str is not null ? self.Replace(str, replacement) : self;
 
-            public static string trim(string self, string? chars = null) => self.Trim(chars?.ToArray());
-            public static string trimstart(string self, string? chars = null) => self.TrimStart(chars?.ToArray());
-            public static string trimend(string self, string? chars = null) => self.TrimEnd(chars?.ToArray());
+            public static bool startswith(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.StartsWith(str, GetStringComparison(ignore_case)) : false;
 
-            public static object?[] split(string self, string? delimiter = null) => self.Split(delimiter ?? " ", StringSplitOptions.None).Cast<object?>().ToArray();
-            public static string join(string self, object?[] array) => string.Join(self, array.Select(value => Operations.ToString(value)));
+            public static bool endswith(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.EndsWith(str, GetStringComparison(ignore_case)) : false;
+
+            public static string replace(string self, string? str, string? replacement, object? ignore_case = null)
+                => !string.IsNullOrEmpty(str) ? self.Replace(str, replacement, GetStringComparison(ignore_case)) : self;
+
+            public static string trim(string self, string? chars = null)
+                => self.Trim(chars?.ToArray());
+
+            public static string trimstart(string self, string? chars = null)
+                => self.TrimStart(chars?.ToArray());
+
+            public static string trimend(string self, string? chars = null)
+                => self.TrimEnd(chars?.ToArray());
+
+            public static object?[] split(string self, string? delimiter = null, object? ignore_empty = null)
+                => self.Split(delimiter ?? " ", Operations.IsTrue(ignore_empty) ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None).Cast<object?>().ToArray();
+
+            public static string join(string self, object?[] values)
+                => string.Join(self, values.Select(value => Operations.ToString(value)));
 
 
-            private static int NormalizedIndex(string str, int index) => index < 0 ? str.Length + index : index;
+            private static int NormalizedIndex(string str, int index)
+                => index < 0 ? str.Length + index : index;
+
+            private static StringComparison GetStringComparison(object? ignore_case)
+                => Operations.IsTrue(ignore_case) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         }
 
         static class ArrayMembers
