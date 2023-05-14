@@ -46,13 +46,13 @@ namespace MScript.Evaluation
             if (leftOperand is object?[] leftArray && rightOperand is object?[] rightArray)
             {
                 if (leftArray.Length != rightArray.Length)
-                    return false;
+                    return ToBoolean(false);
 
                 for (int i = 0; i < leftArray.Length; i++)
                     if (!IsTrue(Equals(leftArray[i], rightArray[i])))
-                        return false;
+                        return ToBoolean(false);
 
-                return true;
+                return ToBoolean(true);
             }
 
             if (leftOperand is MObject leftObject && rightOperand is MObject rightObject)
