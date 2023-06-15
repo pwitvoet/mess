@@ -46,7 +46,7 @@
     scale(string) : "Instance scale" : "1"
 
     // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
-    instance_geometry_scale(string) : "Instance geometry scale (x y z)" : "1 1 1"
+    instance_geometry_scale(string) : "Instance geometry scale (x y z)"
 
     // Moves an instance along the x, y and z axis. This enables script-based positioning.
     instance_offset(string) : "Instance offset" : "0 0 0"
@@ -59,7 +59,7 @@
     template_map(string) : "Template map path"
     template_name(target_destination) : "Template entity"
     random_seed(integer) : "Random seed"
-    brush_behavior(choices) : "Brush behavior" : 0 =
+    brush_behavior(choices) : "Brush behavior" : 1 =
     [
         0 : "Remove brushes"
         1 : "Leave as world geometry"
@@ -80,7 +80,7 @@
 
     instance_angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
     instance_scale(string) : "Instance scale" : "1"
-    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
+    instance_geometry_scale(string) : "Instance geometry scale"
     instance_offset(string) : "Instance offset" : "0 0 0"
 
     // How much space to leave empty around each instance. This can be used to prevent instances from overlapping each other.
@@ -125,7 +125,7 @@
 
     instance_angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
     instance_scale(string) : "Instance scale" : "1"
-    instance_geometry_scale(string) : "Instance geometry scale" : "1 1 1"
+    instance_geometry_scale(string) : "Instance geometry scale"
     instance_offset(string) : "Instance offset" : "0 0 0"
 
     radius(integer) : "Instance radius" : 32
