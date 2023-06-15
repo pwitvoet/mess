@@ -150,7 +150,11 @@ namespace MESS
                 .Option(
                     "-vars",
                     s => { ParseVariables(s, settings.Variables); },
-                    $"These variables are used when evaluating expressions in the given map's properties and entities. Input format is \"name1 = expression; name2: expression; ...\".")
+                    $"These variables are used when evaluating expressions in the given map's properties and entities. Input format is \"name1 = expression; name2 = expression; ...\".")
+                .Option(
+                    "-globals",
+                    s => { ParseVariables(s, settings.Globals); },
+                    $"Global variables are available in any expressions, via the getglobal, setglobal and useglobal functions. Input format is \"name1 = expression; name2 = expression; ...\".")
                 .Option(
                     "-maxrecursion",
                     s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
@@ -184,6 +188,9 @@ namespace MESS
 
             foreach (var kv in commandLineSettings.Variables)
                 settings.Variables[kv.Key] = kv.Value;
+
+            foreach (var kv in commandLineSettings.Globals)
+                settings.Globals[kv.Key] = kv.Value;
         }
 
         private static void ShowHelp(CommandLine commandLine)

@@ -87,7 +87,7 @@ namespace MESS.Macros
             Settings = settings;
             Logger = logger;
 
-            Globals = new Dictionary<string, object?>();
+            Globals = settings.Globals;
 
             var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplatesDirectory, AppContext.BaseDirectory, Globals);
             BaseEvaluationContext = Evaluation.DefaultContext();

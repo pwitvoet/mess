@@ -6,7 +6,6 @@ using MScript.Evaluation;
 using MScript.Parsing;
 using MScript.Parsing.AST;
 using MScript.Tokenizing;
-using System.Reflection;
 using System.Text;
 
 namespace MESS
@@ -42,6 +41,11 @@ namespace MESS
                                     settings.Variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
                                 break;
 
+                            case "globals":
+                                foreach (var assignment in ParseAssignments(line, evaluationContext))
+                                    settings.Globals[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
+                                break;
+
                             default:
                                 logger.Warning($"Warning: config line #{i + 1} in '{path}' is formatted incorrectly and will be skipped.");
                                 break;
@@ -75,8 +79,8 @@ namespace MESS
                                 settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), ReadString(rest), true);
                                 break;
 
-                            case "rewrite-fgds":
                             case "variables":
+                            case "globals":
                                 currentSegment = name;
                                 break;
 
