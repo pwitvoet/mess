@@ -36,8 +36,7 @@ namespace MScript.Evaluation
                 if (argumentType != BaseTypes.None)
                     throw new InvalidOperationException($"Parameter '{parameter.Name}' is of type {parameter.Type.Name}, but a {argumentType.Name} was given.");
 
-                // 'None' is valid for optional parameters. For non-optional parameters,
-                // we'll convert it to a default value instead (if possible):
+                // 'None' is valid for optional parameters. For non-optional parameters, we'll convert it to a default value instead (if possible):
                 if (!parameter.IsOptional)
                 {
                     if (parameter.Type == BaseTypes.Number)
@@ -46,6 +45,8 @@ namespace MScript.Evaluation
                         arguments[i] = Array.Empty<object?>();
                     else if (parameter.Type == BaseTypes.String)
                         arguments[i] = "";
+                    else if (parameter.Type == BaseTypes.Object)
+                        arguments[i] = null;
                     else
                         throw new InvalidOperationException($"Parameter '{parameter.Name}' is of type {parameter.Type.Name}. {argumentType.Name} cannot be converted to this type.");
                 }

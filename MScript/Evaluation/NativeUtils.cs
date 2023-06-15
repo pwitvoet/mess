@@ -48,9 +48,8 @@ namespace MScript.Evaluation
             if (method.IsStatic)
                 instance = null;
 
-            // TODO: param.DefaultValue may not be an 'MScript-compatible' type!
             var parameters = method.GetParameters()
-                .Select(param => new Parameter(param.Name ?? "", GetTypeDescriptor(param.ParameterType), param.IsOptional, param.DefaultValue))
+                .Select(param => new Parameter(param.Name ?? "", GetTypeDescriptor(param.ParameterType), param.IsOptional, ConvertDefaultValue(param.DefaultValue)))
                 .ToArray();
 
             return new NativeFunction(
@@ -91,6 +90,15 @@ namespace MScript.Evaluation
             true => 1.0,
             false => null,
             _ => result,
+        };
+
+        private static object? ConvertDefaultValue(object? value) => value switch
+        {
+            double number => number,
+            string str => str,
+            object?[] array => array,
+            MObject obj => obj,
+            _ => null,
         };
     }
 }
