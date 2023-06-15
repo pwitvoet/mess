@@ -172,9 +172,13 @@ namespace MESS.Macros
         {
             // Type checks:
             public static bool is_num(object? value) => value is double;
+
             public static bool is_str(object? value) => value is string;
+
             public static bool is_array(object? value) => value is object?[];
+
             public static bool is_obj(object? value) => value is MObject;
+
             public static bool is_func(object? value) => value is IFunction;
 
             // Type conversion:
@@ -187,11 +191,14 @@ namespace MESS.Macros
                 else
                     return null;
             }
+
             public static string str(object? value) => Interpreter.Print(value);
 
             // Mathematics:
             public static double min(double value1, double value2) => Math.Min(value1, value2);
+
             public static double max(double value1, double value2) => Math.Max(value1, value2);
+
             public static double clamp(double value, double min, double max)
             {
                 if (min > max)
@@ -202,22 +209,36 @@ namespace MESS.Macros
                 }
                 return Math.Max(min, Math.Min(value, max));
             }
+
             public static double abs(double value) => Math.Abs(value);
+
             public static double round(double value) => Math.Round(value);
+
             public static double floor(double value) => Math.Floor(value);
+
             public static double ceil(double value) => Math.Ceiling(value);
+
             public static double pow(double value, double power) => Math.Pow(value, power);
+
             public static double sqrt(double value) => Math.Sqrt(value);
 
             // Trigonometry:
             public static double sin(double radians) => Math.Sin(radians);
+
             public static double cos(double radians) => Math.Cos(radians);
+
             public static double tan(double radians) => Math.Tan(radians);
+
             public static double asin(double sine) => Math.Asin(sine);
+
             public static double acos(double cosine) => Math.Acos(cosine);
+
             public static double atan(double tangent) => Math.Atan(tangent);
+
             public static double atan2(double y, double x) => Math.Atan2(y, x);
+
             public static double deg2rad(double degrees) => (degrees / 180.0) * Math.PI;
+
             public static double rad2deg(double radians) => (radians / Math.PI) * 180.0;
 
             // Arrays:
@@ -244,8 +265,15 @@ namespace MESS.Macros
             }
 
             // Objects:
-            public static MObject? add_field(MObject? obj, string field_name, object? value) => obj?.CreateCopyWithField(field_name, value);
-            public static MObject? remove_field(MObject? obj, object? field_name)
+            public static MObject? obj_add(MObject? obj, string field_name, object? value)
+            {
+                if (obj == null)
+                    return new MObject(new[] { KeyValuePair.Create(field_name, value) });
+                else
+                    return obj?.CreateCopyWithField(field_name, value);
+            }
+
+            public static MObject? obj_remove(MObject? obj, object? field_name)
             {
                 if (field_name is string name)
                     return obj?.CreateCopyWithoutField(name);
@@ -254,7 +282,8 @@ namespace MESS.Macros
                 else
                     return obj;
             }
-            public static MObject? merge_fields(MObject? obj1, MObject? obj2)
+
+            public static MObject? obj_merge(MObject? obj1, MObject? obj2)
             {
                 if (obj1 == null)
                     return obj2?.CreateCopy();
@@ -262,6 +291,24 @@ namespace MESS.Macros
                     return obj1.CreateCopy();
                 else
                     return obj1.CreateCopyWithFields(obj2.Fields);
+            }
+
+            public static bool obj_has(MObject? obj, string name) => !string.IsNullOrEmpty(name) && obj?.Fields.ContainsKey(name) == true;
+
+            public static object? obj_value(MObject? obj, string name)
+            {
+                if (obj != null && !string.IsNullOrEmpty(name) && obj.Fields.TryGetValue(name, out var value))
+                    return value;
+                else
+                    return null;
+            }
+
+            public static object?[] obj_fields(MObject? obj)
+            {
+                if (obj == null)
+                    return Array.Empty<object?>();
+                else
+                    return obj.Fields.Keys.Cast<object?>().ToArray();
             }
 
             // Colors:
@@ -331,6 +378,7 @@ namespace MESS.Macros
 
                 return _id.ToString(CultureInfo.InvariantCulture);
             }
+
             public double iid() => _id;
 
             // Randomness:
@@ -343,6 +391,7 @@ namespace MESS.Macros
 
                 return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
             }
+
             public double randi(double? min = null, double? max = null)
             {
                 if (min == null)
@@ -358,6 +407,7 @@ namespace MESS.Macros
 
             // Parent entity attributes:
             public double attr_count() => _properties.Count;
+
             public object? get_attr(object? index_or_name = null)
             {
                 if (index_or_name is double index)
@@ -405,6 +455,7 @@ namespace MESS.Macros
 
                 return (((int)flags >> bit) & 1) == 1;
             }
+
             public double setflag(double flag, double? set = 1, double? flags = null)
             {
                 if (flags == null)
@@ -418,6 +469,7 @@ namespace MESS.Macros
 
             // Current map path:
             public string map_path() => _mapPath;
+
             public string map_dir() => Path.GetDirectoryName(_mapPath) ?? "";
 
             // Debugging:
@@ -429,6 +481,7 @@ namespace MESS.Macros
 
 
             private double GetRandomDouble(double min, double max) => min + _random.NextDouble() * (max - min);
+
             private int GetRandomInteger(int min, int max) => _random.Next(min, max);
         }
     }
