@@ -1,5 +1,6 @@
 ﻿using MScript.Evaluation.Types;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace MScript.Evaluation
 {
@@ -95,12 +96,35 @@ namespace MScript.Evaluation
 
 
             // Methods:
-            /// <summary>
-            /// Returns a substring.
-            /// Supports negative indexing.
-            /// If length is omitted then the rest of the string, starting at offset, is returned.
-            /// The returned substring will be shorter than the requested length if there are less characters available.
-            /// </summary>
+
+            // Comparisons and checks:
+            public static bool equals(string self, string? str, object? ignore_case = null)
+                => self.Equals(str, GetStringComparison(ignore_case));
+
+            public static bool contains(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.Contains(str, GetStringComparison(ignore_case)) : false;
+
+            public static bool startswith(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.StartsWith(str, GetStringComparison(ignore_case)) : false;
+
+            public static bool endswith(string self, string? str, object? ignore_case = null)
+                => str is not null ? self.EndsWith(str, GetStringComparison(ignore_case)) : false;
+
+            public static double? index(string self, string str, double? offset = null, object? ignore_case = null)
+            {
+                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? 0 : (int)offset), 0, self.Length);
+                var index = self.IndexOf(str, startIndex, GetStringComparison(ignore_case));
+                return index != -1 ? index : null;
+            }
+
+            public static double? lastindex(string self, string str, double? offset = null, object? ignore_case = null)
+            {
+                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), 0, self.Length);
+                var index = self.LastIndexOf(str, startIndex, GetStringComparison(ignore_case));
+                return index != -1 ? index : null;
+            }
+
+            // Substrings, trimming and replacing:
             public static string substr(string self, double offset, double? length = null)
             {
                 offset = (int)offset;
@@ -131,35 +155,6 @@ namespace MScript.Evaluation
                 return self.Substring((int)offset, (int)length);
             }
 
-            public static bool equals(string self, string? str, object? ignore_case = null)
-                => self.Equals(str, GetStringComparison(ignore_case));
-
-            public static bool contains(string self, string? str, object? ignore_case = null)
-                => str is not null ? self.Contains(str, GetStringComparison(ignore_case)) : false;
-
-            public static double? index(string self, string str, double? offset = null, object? ignore_case = null)
-            {
-                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? 0 : (int)offset), 0, self.Length);
-                var index = self.IndexOf(str, startIndex, GetStringComparison(ignore_case));
-                return index != -1 ? index : null;
-            }
-
-            public static double? lastindex(string self, string str, double? offset = null, object? ignore_case = null)
-            {
-                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), 0, self.Length);
-                var index = self.LastIndexOf(str, startIndex, GetStringComparison(ignore_case));
-                return index != -1 ? index : null;
-            }
-
-            public static bool startswith(string self, string? str, object? ignore_case = null)
-                => str is not null ? self.StartsWith(str, GetStringComparison(ignore_case)) : false;
-
-            public static bool endswith(string self, string? str, object? ignore_case = null)
-                => str is not null ? self.EndsWith(str, GetStringComparison(ignore_case)) : false;
-
-            public static string replace(string self, string? str, string? replacement, object? ignore_case = null)
-                => !string.IsNullOrEmpty(str) ? self.Replace(str, replacement, GetStringComparison(ignore_case)) : self;
-
             public static string trim(string self, string? chars = null)
                 => self.Trim(chars?.ToArray());
 
@@ -169,11 +164,18 @@ namespace MScript.Evaluation
             public static string trimend(string self, string? chars = null)
                 => self.TrimEnd(chars?.ToArray());
 
+            public static string replace(string self, string? str, string? replacement, object? ignore_case = null)
+                => !string.IsNullOrEmpty(str) ? self.Replace(str, replacement, GetStringComparison(ignore_case)) : self;
+
+            // Splitting and joining:
             public static object?[] split(string self, string? delimiter = null, object? ignore_empty = null)
                 => self.Split(delimiter ?? " ", Operations.IsTrue(ignore_empty) ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None).Cast<object?>().ToArray();
 
             public static string join(string self, object?[] values)
                 => string.Join(self, values.Select(value => Operations.ToString(value)));
+
+            // Regular expressions:
+            public static bool match(string self, string? pattern) => !string.IsNullOrEmpty(pattern) && Regex.IsMatch(self, pattern);
 
 
             private static int NormalizedIndex(string str, int index)
@@ -187,14 +189,17 @@ namespace MScript.Evaluation
         {
             // Properties:
             public static double GET_length(object?[] self) => self.Length;
+
             // Position:
             public static double? GET_x(object?[] self) => Operations.Index(self, 0) as double?;
             public static double? GET_y(object?[] self) => Operations.Index(self, 1) as double?;
             public static double? GET_z(object?[] self) => Operations.Index(self, 2) as double?;
+
             // Angles:
             public static double? GET_pitch(object?[] self) => Operations.Index(self, 0) as double?;
             public static double? GET_yaw(object?[] self) => Operations.Index(self, 1) as double?;
             public static double? GET_roll(object?[] self) => Operations.Index(self, 2) as double?;
+
             // Color:
             public static double? GET_r(object?[] self) => Operations.Index(self, 0) as double?;
             public static double? GET_g(object?[] self) => Operations.Index(self, 1) as double?;
@@ -203,6 +208,8 @@ namespace MScript.Evaluation
 
 
             // Methods:
+
+            // Cutting and combining:
             public static object?[] slice(object?[] self, double start, double? end = null, double? step = null)
             {
                 // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
@@ -238,10 +245,15 @@ namespace MScript.Evaluation
             }
 
             public static object?[] skip(object?[] self, double count) => self.Skip((int)count).ToArray();
+
             public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
+
             public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
+
             public static object?[] prepend(object?[] self, object? value) => self.Prepend(value).ToArray();
+
             public static object?[] append(object?[] self, object? value) => self.Append(value).ToArray();
+
             public static object?[] insert(object?[] self, double index, object? value)
             {
                 var insertIndex = NormalizedIndex(self, (int)index);
@@ -261,7 +273,9 @@ namespace MScript.Evaluation
                 return result;
             }
 
+            // Searching:
             public static object? contains(object?[] self, object? value) => self.Any(val => Operations.IsTrue(Operations.Equals(val, value)));
+
             public static double? index(object?[] self, object? value, double? offset = null)
             {
                 var startIndex = Math.Max(0, NormalizedIndex(self, offset is null ? 0 : (int)offset));
@@ -272,6 +286,7 @@ namespace MScript.Evaluation
                 }
                 return null;
             }
+
             public static double? lastindex(object?[] self, object? value, double? offset = null)
             {
                 var startIndex = Math.Min(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), self.Length - 1);
@@ -283,6 +298,7 @@ namespace MScript.Evaluation
                 return null;
             }
 
+            // Functional programming:
             public static object?[] map(object?[] self, IFunction selector)
             {
                 if (selector.Parameters.Count < 1 || selector.Parameters.Count > 2)
@@ -301,6 +317,7 @@ namespace MScript.Evaluation
                 }
                 return result;
             }
+
             public static object?[] filter(object?[] self, IFunction predicate)
             {
                 if (predicate.Parameters.Count < 1 || predicate.Parameters.Count > 2)
@@ -325,6 +342,7 @@ namespace MScript.Evaluation
                 }
                 return result.ToArray();
             }
+
             public static object? reduce(object?[] self, IFunction reducer, object? start_value = null)
             {
                 if (reducer.Parameters.Count != 2)
@@ -339,6 +357,7 @@ namespace MScript.Evaluation
                     result = reducer.Apply(new[] { result, self[i] });
                 return result;
             }
+
             public static object?[] groupby(object?[] self, IFunction key_selector)
             {
                 if (key_selector.Parameters.Count != 1)
@@ -362,6 +381,7 @@ namespace MScript.Evaluation
                     }))
                     .ToArray();
             }
+
             public static object?[] zip(object?[] self, object?[] other, IFunction zipper)
             {
                 if (zipper.Parameters.Count != 2)
@@ -372,8 +392,11 @@ namespace MScript.Evaluation
                     result[i] = zipper.Apply(new[] { self[i], other[i] });
                 return result;
             }
+
             public static object?[] sort(object?[] self, IFunction sort_by) => self.OrderBy(value => sort_by.Apply(new[] { value }) is double number ? number : 0.0).ToArray();   // TODO: Argument count check!!!
+
             public static object?[] reverse(object?[] self) => self.Reverse().ToArray();
+
             public static bool any(object?[] self, IFunction? predicate = null)
             {
                 if (predicate == null)
@@ -384,6 +407,7 @@ namespace MScript.Evaluation
 
                 return self.Any(value => Operations.IsTrue(predicate.Apply(new[] { value })));
             }
+
             public static bool all(object?[] self, IFunction predicate)
             {
                 if (predicate.Parameters.Count != 1)
@@ -392,7 +416,7 @@ namespace MScript.Evaluation
                 return self.All(value => Operations.IsTrue(predicate.Apply(new[] { value })));
             }
 
-            // Numerical arrays only:
+            // Numerical:
             public static double? max(object?[] self, IFunction? selector = null)
             {
                 var getNumber = CreateNumberSelector(selector);
@@ -408,6 +432,7 @@ namespace MScript.Evaluation
                 }
                 return max;
             }
+
             public static double? min(object?[] self, IFunction? selector = null)
             {
                 var getNumber = CreateNumberSelector(selector);
@@ -423,6 +448,7 @@ namespace MScript.Evaluation
                 }
                 return min;
             }
+
             public static double? sum(object?[] self, IFunction? selector = null)
             {
                 var getNumber = CreateNumberSelector(selector);
