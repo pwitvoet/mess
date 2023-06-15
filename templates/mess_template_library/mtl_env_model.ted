@@ -30,14 +30,14 @@
         4 : "Solid"
         5 : "Additive"
     ]
-    renderamt(integer) : "FX Amount (1 - 255)" : 255
+    renderamt(integer) : "FX Amount (0 - 255)" : 255
     //rendercolor(color255) : "FX Color (R G B)" : "0 0 0"  // Has no effect on models
 
     // Angles:
     angles(string) : "Pitch Yaw Roll (Y Z X)" : "0 0 0"
 
     // env_sprite:
-    framerate(string) : "Framerate" : "1.0"
+    framerate(string) : "Animation speed" : "1.0"
     model(studio) : "Model name"
     //scale(string) : "Scale" : "1.0"                       // Has no effect on models
     spawnflags(flags) =

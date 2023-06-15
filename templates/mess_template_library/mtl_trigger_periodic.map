@@ -48,7 +48,7 @@
 "classname" "env_beam"
 "texture" "sprites/laserbeam.spr"
 "spawnflags" "2"
-"damage" "2"
+"damage" "0.1"
 "StrikeTime" "0"
 "framestart" "0"
 "framerate" "0"
