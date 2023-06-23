@@ -1,0 +1,15 @@
+// Linked groups in TrenchBroom contain a group ID. This ID is surrounded by curly braces,
+// which causes problems when MESS tries to interpret it as an MScript expression.
+// This behavior removes the curly braces up-front and adds them again once MESS is done.
+
+// @MESS REWRITE FOR "func_group":
+// @IF "{_tb_linked_group_id}":
+//     "_tb_linked_group_id": "{_tb_linked_group_id.trim('{}')}"
+// @ENDIF;
+// @MESS;
+
+// @MESS REWRITE AFTER_MACRO_EXPANSION FOR "func_group":
+// @IF "{_tb_linked_group_id}":
+//     "_tb_linked_group_id": "{'{' + _tb_linked_group_id + '}'}"
+// @ENDIF;
+// @MESS;
