@@ -405,36 +405,55 @@ namespace MESS.Macros
 
         private void HandleEntity(InstantiationContext context, Entity entity, bool transformBrushes = true)
         {
-            var transform = transformBrushes ? context.Transform : Transform.Identity;
+            // NOTE: HandleMacroBrushEntity takes care of brush rotation itself:
+            var ignoreTransform = entity.ClassName == MacroEntity.Brush;
+            var transform = transformBrushes && !ignoreTransform ? context.Transform : Transform.Identity;
 
             try
             {
-                switch (entity.ClassName)
+                var entityCopy = entity.Copy(transform);
+                if (Settings.LiftedProperties.Any())
+                {
+                    var liftedProperties = new Dictionary<string, object?>();
+                    foreach (var propertyName in Settings.LiftedProperties)
+                    {
+                        if (entityCopy.Properties.TryGetValue(propertyName, out var value))
+                        {
+                            var valueObject = Evaluation.EvaluateInterpolatedStringOrExpression(value, context.EvaluationContext);
+                            liftedProperties[propertyName] = valueObject;
+                            entityCopy.Properties[propertyName] = Interpreter.Print(valueObject);
+                        }
+                    }
+
+                    context = context.GetChildContextWithLiftedProperties(liftedProperties);
+                }
+
+                switch (entityCopy.ClassName)
                 {
                     case MacroEntity.Insert:
                         // TODO: Insert 'angles' and 'scale' properties here if the entity doesn't contain them,
                         //       to ensure that transformation always works correctly?
-                        HandleMacroInsertEntity(context, entity.Copy(transform));
+                        HandleMacroInsertEntity(context, entityCopy);
                         break;
 
                     case MacroEntity.Cover:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_cover doesn't have any flags, so...)
-                        HandleMacroCoverEntity(context, entity.Copy(transform));
+                        HandleMacroCoverEntity(context, entityCopy);
                         break;
 
                     case MacroEntity.Fill:
                         // TODO: 'spawnflags' won't be updated here! (however, macro_fill doesn't have any flags, so...)
-                        HandleMacroFillEntity(context, entity.Copy(transform));
+                        HandleMacroFillEntity(context, entityCopy);
                         break;
 
                     case MacroEntity.Brush:
                         // NOTE: Brush rotation is taken care of within HandleMacroBrushEntity itself:
-                        HandleMacroBrushEntity(context, entity.Copy(Transform.Identity));
+                        HandleMacroBrushEntity(context, entityCopy);
                         break;
 
                     default:
                         // Other entities are copied directly, with expressions in their property keys/values being evaluated:
-                        HandleNormalEntity(context, entity.Copy(transform));
+                        HandleNormalEntity(context, entityCopy);
                         break;
                 }
             }

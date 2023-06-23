@@ -46,6 +46,10 @@ namespace MESS
                                     settings.Globals[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
                                 break;
 
+                            case "lifted-properties":
+                                settings.LiftedProperties.Add(line);
+                                break;
+
                             default:
                                 logger.Warning($"Warning: config line #{i + 1} in '{path}' is formatted incorrectly and will be skipped.");
                                 break;
@@ -81,6 +85,7 @@ namespace MESS
 
                             case "variables":
                             case "globals":
+                            case "lifted-properties":
                                 currentSegment = name;
                                 break;
 

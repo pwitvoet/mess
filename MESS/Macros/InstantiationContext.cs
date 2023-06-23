@@ -172,6 +172,29 @@ namespace MESS.Macros
             EvaluationContext = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
         }
 
+        private InstantiationContext(InstantiationContext parentContext, IDictionary<string, object?> liftedProperties)
+        {
+            _random = parentContext._random;
+            _logger = parentContext._logger;
+            _insertionEntityProperties = parentContext._insertionEntityProperties;
+            _baseEvaluationContext = parentContext._baseEvaluationContext;
+            _parentContext = parentContext;
+
+            ID = parentContext.ID;
+            SequenceNumber = parentContext.SequenceNumber;
+            RecursionDepth = parentContext.RecursionDepth;
+            Template = parentContext.Template;
+            CurrentWorkingDirectory = parentContext.CurrentWorkingDirectory;
+            SubTemplates = parentContext.SubTemplates;
+
+            Transform = parentContext.Transform;
+
+            OutputMap = parentContext.OutputMap;
+
+            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
+            EvaluationContext = Evaluation.ContextWithBindings(liftedProperties, ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+        }
+
 
         /// <summary>
         /// Returns a random double. Min is inclusive, max is exclusive.
@@ -179,6 +202,8 @@ namespace MESS.Macros
         public double GetRandomDouble(double min, double max) => (min + _random.NextDouble() * (max - min));
 
         public InstantiationContext GetChildContextWithSequenceNumber(int sequenceNumber) => new InstantiationContext(this, sequenceNumber);
+
+        public InstantiationContext GetChildContextWithLiftedProperties(IDictionary<string, object?> liftedProperties) => new InstantiationContext(this, liftedProperties);
 
 
         private InstantiationContext GetRootContext() => _parentContext?.GetRootContext() ?? this;
