@@ -200,13 +200,13 @@ namespace MESS.Formats
         private static void WriteFace(TextWriter writer, Face face)
         {
             foreach (var point in face.PlanePoints)
-                writer.Write(FormattableString.Invariant($"( {point.X} {point.Y} {point.Z} ) "));
+                writer.Write(FormattableString.Invariant($"( {point.X:g} {point.Y:g} {point.Z:g} ) "));
 
             writer.Write(face.TextureName);
             writer.Write(" ");
-            writer.Write(FormattableString.Invariant($"[ {face.TextureRightAxis.X} {face.TextureRightAxis.Y} {face.TextureRightAxis.Z} {face.TextureShift.X} ] "));
-            writer.Write(FormattableString.Invariant($"[ {face.TextureDownAxis.X} {face.TextureDownAxis.Y} {face.TextureDownAxis.Z} {face.TextureShift.Y} ] "));
-            writer.WriteLine(FormattableString.Invariant($"{face.TextureAngle} {face.TextureScale.X} {face.TextureScale.Y} "));
+            writer.Write(FormattableString.Invariant($"[ {face.TextureRightAxis.X:g} {face.TextureRightAxis.Y:g} {face.TextureRightAxis.Z:g} {face.TextureShift.X:g} ] "));
+            writer.Write(FormattableString.Invariant($"[ {face.TextureDownAxis.X:g} {face.TextureDownAxis.Y:g} {face.TextureDownAxis.Z:g} {face.TextureShift.Y:g} ] "));
+            writer.WriteLine(FormattableString.Invariant($"{face.TextureAngle:g} {face.TextureScale.X:g} {face.TextureScale.Y:g} "));
         }
 
         private static void WriteEntityPath(TextWriter writer, EntityPath entityPath)
