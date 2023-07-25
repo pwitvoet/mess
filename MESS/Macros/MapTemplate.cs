@@ -88,6 +88,8 @@ namespace MESS.Macros
                 // Copy custom properties into the template map properties - these will serve as local variables that will be evaluated whenever the template is instantiated:
                 foreach (var property in templateEntity.Properties)
                     templateMap.Properties[property.Key] = property.Value;
+
+                templateMap.Properties.Remove(Attributes.Classname);
                 templateMap.Properties.Remove(Attributes.Targetname);
                 templateMap.Properties.Remove(Attributes.SelectionWeight);
                 templateMap.Properties.Remove(Attributes.Anchor);
@@ -149,7 +151,7 @@ namespace MESS.Macros
             foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf))
             {
                 var removeIfArea = removeIfEntity.BoundingBox.ExpandBy(0.5f);
-                var condition = removeIfEntity.Properties.GetString(Attributes.Condition) ?? "";  // TODO: Validate the expression somehow?
+                var condition = removeIfEntity.Properties.GetString(Attributes.Condition) ?? "";
                 var removableContent = new HashSet<object>();
 
                 // Reference all entities that are fully inside this remove-if area (except for other macro_remove_if entities):
