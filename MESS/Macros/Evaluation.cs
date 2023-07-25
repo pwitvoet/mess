@@ -264,6 +264,15 @@ namespace MESS.Macros
                 return result;
             }
 
+            public static object?[] repeat(object? value, double count)
+            {
+                var intCount = (int)count;
+                if (intCount <= 0)
+                    return Array.Empty<object?>();
+
+                return Enumerable.Repeat(value, intCount).ToArray();
+            }
+
             // Objects:
             public static MObject? obj_add(MObject? obj, string field_name, object? value)
             {
@@ -382,14 +391,18 @@ namespace MESS.Macros
             public double iid() => _id;
 
             // Randomness:
-            public double rand(double? min = null, double? max = null)
+            public object? rand(object? min = null, double? max = null)
             {
-                if (min == null)        // rand():
-                    return GetRandomDouble(0, 1);
-                else if (max == null)   // rand(max):
-                    max = 0;
+                if (min is object?[] array)
+                    return array[GetRandomInteger(0, array.Length)];
+                else if (min is string str)
+                    return str.Substring(GetRandomInteger(0, str.Length), 1);
+                else if (min is not null && min is not double)
+                    throw new InvalidOperationException($"Parameter '{nameof(min)}' must be an array, a string or a number."); // TODO: Generalize exceptions like this, or create a parameter-type based dispatch system!
 
-                return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
+                var minValue = min is double number ? number : 0.0;
+                var maxValue = max ?? (min is null ? 1.0 : 0.0);
+                return GetRandomDouble(Math.Min(minValue, maxValue), Math.Max(minValue, maxValue));
             }
 
             public double randi(double? min = null, double? max = null)
