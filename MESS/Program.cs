@@ -369,11 +369,13 @@ namespace MESS
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
 
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"MScript interpreter v{MessVersion}.");
             Console.WriteLine("Enter 'quit' to quit the interpreter.");
             Console.WriteLine("Bindings can be created with 'name = expression'.");
             Console.WriteLine("============================================================");
             Console.WriteLine();
+            Console.ResetColor();
 
             using (var logger = new ConsoleLogger(LogLevel.Verbose))
             {
@@ -404,7 +406,9 @@ namespace MESS
                         else
                         {
                             var result = Interpreter.Evaluate(input, context);
+                            Console.ForegroundColor = ConsoleColor.Cyan;
                             Console.WriteLine($"< {(result != null ? Interpreter.Print(result) : "NONE")}");
+                            Console.ResetColor();
                         }
                     }
                     catch (Exception ex)
@@ -412,7 +416,9 @@ namespace MESS
                         if (ex is TargetInvocationException && ex.InnerException != null)
                             ex = ex.InnerException;
 
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
+                        Console.ResetColor();
                     }
                 }
             }
