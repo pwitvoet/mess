@@ -50,6 +50,8 @@ namespace MESS.Macros
 
             expander.ApplyRewriteDirectives(context.OutputMap, path, ProcessingStage.AfterMacroExpansion, null, null);
 
+            expander.MergeEntities(context);
+
             return context.OutputMap;
         }
 
@@ -244,6 +246,49 @@ namespace MESS.Macros
                 var value = Evaluation.EvaluateInterpolatedString(rule.NewValue, context);
                 entityProperties[attributeName] = value;
                 context.Bind(attributeName, value);
+            }
+        }
+
+
+        /// <summary>
+        /// Modifies the output map by merging entities with the same <see cref="Attributes.MergeEntityID"/> together.
+        /// The <see cref="Attributes.MergeEntityID"/> and <see cref="Attributes.MergeEntityMaster"/> properties are removed afterwards.
+        /// </summary>
+        private void MergeEntities(InstantiationContext context)
+        {
+            var mergeGroups = new Dictionary<string, List<Entity>>();
+            foreach (var entity in context.OutputMap.Entities)
+            {
+                var mergeID = entity.Properties.GetString(Attributes.MergeEntityID);
+                if (mergeID == null)
+                    continue;
+
+                if (!mergeGroups.TryGetValue(mergeID, out var group))
+                {
+                    group = new List<Entity>();
+                    mergeGroups[mergeID] = group;
+                }
+                group.Add(entity);
+            }
+
+            foreach ((var mergeID, var group) in mergeGroups)
+            {
+                var master = group.FirstOrDefault(entity => entity.Properties.ContainsKey(Attributes.MergeEntityMaster)) ?? group.FirstOrDefault();
+                if (master == null)
+                    continue;
+
+                foreach (var entity in group)
+                {
+                    if (entity == master)
+                        continue;
+
+                    if (entity.Brushes.Any())
+                        master.AddBrushes(entity.Brushes);
+                    context.OutputMap.Entities.Remove(entity);
+                }
+
+                master.Properties.Remove(Attributes.MergeEntityID);
+                master.Properties.Remove(Attributes.MergeEntityMaster);
             }
         }
 

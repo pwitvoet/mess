@@ -217,5 +217,19 @@
         /// The first spawnflag has number 0, the last has number 31.
         /// </summary>
         public const string SpawnflagN = "_spawnflag{0}";
+
+        /// <summary>
+        /// Brush entities with the same merge ID are merged together into a single brush entity. The type and properties
+        /// of the merged entity are determined by the first entity that is marked as a master. If no entity is marked as master,
+        /// then the type and properties of the first entity with the same merge ID are used.
+        /// </summary>
+        public const string MergeEntityID = "_merge_entity_id";
+
+        /// <summary>
+        /// When merging brush entities, the entity marked as master determines the type and properties of the merged entity.
+        /// If multiple entities are marked as master, then the first master wins. If no entities are marked as master,
+        /// then the first entity becomes the master.
+        /// </summary>
+        public const string MergeEntityMaster = "_merge_entity_master";
     }
 }
