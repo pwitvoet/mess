@@ -73,7 +73,7 @@ namespace MESS.Macros
             var evaluatedMapProperties = map.Properties.EvaluateToMScriptValues(context);
             var randomSeed = evaluatedMapProperties.GetInteger(Attributes.RandomSeed) ?? 0;
 
-            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, new Random(randomSeed), path, logger, context);
+            var mapContext = Evaluation.ContextWithBindings(evaluatedMapProperties, 0, 0, 0, new Random(randomSeed), path, logger, context);
 
             // Create a MapTemplate for each macro_template entity. These 'sub-templates' can only be used within the current map:
             var subTemplates = new List<MapTemplate>();

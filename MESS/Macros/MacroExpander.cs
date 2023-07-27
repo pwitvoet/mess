@@ -32,7 +32,7 @@ namespace MESS.Macros
             var templateNames = Array.Empty<string>();
             IDictionary<string, object?>? evaluatedMapProperties = null;
 
-            var context = new InstantiationContext(
+            var context = InstantiationContext.CreateRootContext(
                 mainTemplate,
                 logger,
                 settings.Variables ?? new(),
@@ -95,7 +95,7 @@ namespace MESS.Macros
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
-            TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, new Random(0), "", Logger, BaseEvaluationContext);
+            TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, 0, new Random(0), "", Logger, BaseEvaluationContext);
 
 
             RewriteDirectives = rewriteDirectives;
@@ -198,7 +198,7 @@ namespace MESS.Macros
             var unevaluatedProperties = entityProperties.ToDictionary(
                 property => property.Key,
                 property => Evaluation.ParseMScriptValue(property.Value));
-            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, entityID, random, mapPath, Logger, TopLevelEvaluationContext);
+            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, 0, entityID, random, mapPath, Logger, TopLevelEvaluationContext);
 
             if (rewriteDirective.Condition != null)
             {
@@ -519,6 +519,7 @@ namespace MESS.Macros
             // but there are a few that are needed up-front, so these will only be evaluated once:
             EvaluateAndUpdateProperties(context, insertEntity, Attributes.InstanceCount, Attributes.RandomSeed);
 
+            var parentID = context.GetNextParentID();
             var instanceCount = insertEntity.Properties.GetInteger(Attributes.InstanceCount) ?? 1;
             var randomSeed = insertEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
 
@@ -556,7 +557,7 @@ namespace MESS.Macros
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
                 evaluatedProperties.UpdateTransformProperties(context.Transform);
-                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: i);
+                var insertionContext = sequenceContext.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID, sequenceNumber: i);
 
                 CreateInstance(insertionContext);
             }
@@ -590,6 +591,7 @@ namespace MESS.Macros
             EvaluateAndUpdateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
             SetBrushEntityOriginProperty(coverEntity);
 
+            var parentID = context.GetNextParentID();
             var maxInstances = coverEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
             var radius = (float)(coverEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
             var randomSeed = coverEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
@@ -631,7 +633,7 @@ namespace MESS.Macros
 
                 var orientation = (Orientation)(evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, selection.Face, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
+                var insertionContext = sequenceContext.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
                 sequenceNumber += 1;
@@ -728,6 +730,7 @@ namespace MESS.Macros
             EvaluateAndUpdateProperties(context, fillEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.FillMode, Attributes.GridOrientation, Attributes.GridGranularity);
             SetBrushEntityOriginProperty(fillEntity);
 
+            var parentID = context.GetNextParentID();
             var maxInstances = fillEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
             var radius = (float)(fillEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
             var randomSeed = fillEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
@@ -835,7 +838,7 @@ namespace MESS.Macros
 
                 var orientation = (Orientation)(evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0);
                 var transform = GetTransform(insertionPoint, orientation, evaluatedProperties);
-                var insertionContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, sequenceContext, sequenceNumber: sequenceNumber);
+                var insertionContext = sequenceContext.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID, sequenceNumber: sequenceNumber);
                 CreateInstance(insertionContext);
 
                 sequenceNumber += 1;
@@ -913,12 +916,13 @@ namespace MESS.Macros
 
             // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
             //       Verify that this works correctly now!!!
+            var parentID = context.GetNextParentID();
             var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
             var anchorOffset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
             var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
-            var pointContext = new InstantiationContext(template, Logger, transform, evaluatedProperties, context);
-            var brushContext = new InstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, context, id: pointContext.ID);
+            var pointContext = context.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID);
+            var brushContext = context.GetTemplateInstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, parentID, instanceID: pointContext.ID);
 
             var excludedObjects = GetExcludedObjects(brushContext, Logger);
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
@@ -1011,7 +1015,7 @@ namespace MESS.Macros
             var invertedPitch = false;
             if (Settings.InvertedPitchPredicate != null)
             {
-                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, new Random(), "", Logger, BaseEvaluationContext);
+                var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, 0, new Random(), "", Logger, BaseEvaluationContext);
                 var predicateResult = Evaluation.EvaluateInterpolatedStringOrExpression(Settings.InvertedPitchPredicate, evaluationContext);
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }
@@ -1073,9 +1077,10 @@ namespace MESS.Macros
                 context.Transform.Rotation,
                 position);
 
+            var parentID = context.GetNextParentID();
             foreach (var template in templates)
             {
-                var instantiationContext = new InstantiationContext(template!, Logger, transform, evaluatedProperties, context);
+                var instantiationContext = context.GetTemplateInstantiationContext(template!, Logger, transform, evaluatedProperties, parentID);
                 CreateInstance(instantiationContext);
             }
         }

@@ -13,10 +13,39 @@ namespace MESS.Macros
     /// </summary>
     public class InstantiationContext
     {
+        public static InstantiationContext CreateRootContext(
+            MapTemplate template,
+            ILogger logger,
+            IDictionary<string, object?> baseVariables,
+            EvaluationContext baseEvaluationContext,
+            string workingDirectory,
+            Action<IDictionary<string, object?>>? handleTemplateProperties = null)
+        {
+            return new InstantiationContext(
+                template,
+                logger,
+                Transform.Identity,
+                baseVariables,
+                baseEvaluationContext,
+                null,
+                workingDirectory,
+                0,
+                0,
+                handleTemplateProperties);
+        }
+
+
         /// <summary>
-        /// Each template instantiation is given a unique ID. This is available to MScript expressions via the 'id()' function.
+        /// Each template instantiation is given a unique ID.
+        /// This is available to MScript expressions via the 'id()' function.
         /// </summary>
         public int ID { get; }
+
+        /// <summary>
+        /// The unique ID of the macro entity that is creating the current instance.
+        /// This is available to MScript expressions via the 'parentid()' function.
+        /// </summary>
+        public int ParentID { get; }
 
         /// <summary>
         /// The number of instances that have already been created by the macro entity that is creating this instance.
@@ -69,30 +98,8 @@ namespace MESS.Macros
         private InstantiationContext? _parentContext;
 
         private int _nextID = 1;
+        private int _nextParentID = 1;
 
-
-        public InstantiationContext(
-            MapTemplate template,
-            ILogger logger,
-            IDictionary<string, object?> insertionEntityProperties,
-            EvaluationContext baseEvaluationContext,
-            string workingDirectory,
-            Action<IDictionary<string, object?>>? handleTemplateProperties = null)
-            : this(template, logger, Transform.Identity, insertionEntityProperties, baseEvaluationContext, null, workingDirectory, 0, handleTemplateProperties)
-        {
-        }
-
-        public InstantiationContext(
-            MapTemplate template,
-            ILogger logger,
-            Transform transform,
-            IDictionary<string, object?> insertionEntityProperties,
-            InstantiationContext parentContext,
-            int sequenceNumber = 0,
-            int? id = null)
-            : this(template, logger, transform, insertionEntityProperties, parentContext._baseEvaluationContext, parentContext, null, sequenceNumber, null, id)
-        {
-        }
 
         private InstantiationContext(
             MapTemplate template,
@@ -102,6 +109,7 @@ namespace MESS.Macros
             EvaluationContext baseEvaluationContext,
             InstantiationContext? parentContext = null,
             string? workingDirectory = null,
+            int parentID = 0,
             int sequenceNumber = 0,
             Action<IDictionary<string, object?>>? handleTemplateProperties = null,
             int? id = null)
@@ -122,6 +130,7 @@ namespace MESS.Macros
             _parentContext = parentContext;
 
             ID = id ?? GetRootContext()._nextID++;
+            ParentID = parentID;
             SequenceNumber = sequenceNumber;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
@@ -131,7 +140,7 @@ namespace MESS.Macros
             Transform = transform ?? Transform.Identity;
 
             var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, SequenceNumber, _random, mapPath, _logger, baseEvaluationContext);
+            var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, parentID, SequenceNumber, _random, mapPath, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
             handleTemplateProperties?.Invoke(evaluatedTemplateProperties);
 
@@ -158,6 +167,7 @@ namespace MESS.Macros
             _parentContext = parentContext;
 
             ID = parentContext.ID;
+            ParentID = parentContext.ParentID;
             SequenceNumber = sequenceNumber;
             RecursionDepth = parentContext.RecursionDepth;
             Template = parentContext.Template;
@@ -169,7 +179,7 @@ namespace MESS.Macros
             OutputMap = parentContext.OutputMap;
 
             var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            EvaluationContext = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+            EvaluationContext = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), ID, ParentID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
         }
 
         private InstantiationContext(InstantiationContext parentContext, IDictionary<string, object?> liftedProperties)
@@ -181,6 +191,7 @@ namespace MESS.Macros
             _parentContext = parentContext;
 
             ID = parentContext.ID;
+            ParentID = parentContext.ParentID;
             SequenceNumber = parentContext.SequenceNumber;
             RecursionDepth = parentContext.RecursionDepth;
             Template = parentContext.Template;
@@ -192,7 +203,7 @@ namespace MESS.Macros
             OutputMap = parentContext.OutputMap;
 
             var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            EvaluationContext = Evaluation.ContextWithBindings(liftedProperties, ID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+            EvaluationContext = Evaluation.ContextWithBindings(liftedProperties, ID, ParentID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
         }
 
 
@@ -201,9 +212,34 @@ namespace MESS.Macros
         /// </summary>
         public double GetRandomDouble(double min, double max) => (min + _random.NextDouble() * (max - min));
 
+        public InstantiationContext GetTemplateInstantiationContext(
+            MapTemplate template,
+            ILogger logger,
+            Transform transform,
+            IDictionary<string, object?> parentEntityProperties,
+            int parentID,
+            int sequenceNumber = 0,
+            int? instanceID = null)
+        {
+            return new InstantiationContext(
+                template,
+                logger,
+                transform,
+                parentEntityProperties,
+                _baseEvaluationContext,
+                this,
+                null,
+                parentID,
+                sequenceNumber,
+                null,
+                instanceID);
+        }
+
         public InstantiationContext GetChildContextWithSequenceNumber(int sequenceNumber) => new InstantiationContext(this, sequenceNumber);
 
         public InstantiationContext GetChildContextWithLiftedProperties(IDictionary<string, object?> liftedProperties) => new InstantiationContext(this, liftedProperties);
+
+        public int GetNextParentID() => GetRootContext()._nextParentID++;
 
 
         private InstantiationContext GetRootContext() => _parentContext?.GetRootContext() ?? this;

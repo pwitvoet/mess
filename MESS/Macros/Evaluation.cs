@@ -21,6 +21,7 @@ namespace MESS.Macros
         public static EvaluationContext ContextWithBindings(
             IDictionary<string, object?> bindings,
             double id,
+            double parentID,
             double sequenceNumber,
             Random random,
             string mapPath,
@@ -28,7 +29,7 @@ namespace MESS.Macros
             EvaluationContext? parentContext)
         {
             var evaluationContext = new EvaluationContext(bindings, parentContext ?? _standardLibraryContext);
-            var instanceFunctions = new InstanceFunctions(id, sequenceNumber, random, bindings, mapPath, logger);
+            var instanceFunctions = new InstanceFunctions(id, parentID, sequenceNumber, random, bindings, mapPath, logger);
             NativeUtils.RegisterInstanceMethods(evaluationContext, instanceFunctions);
 
             return evaluationContext;
@@ -357,6 +358,7 @@ namespace MESS.Macros
         class InstanceFunctions
         {
             private double _id;
+            private double _parentID;
             private double _sequenceNumber;
             private Random _random;
             private IDictionary<string, object?> _properties;
@@ -364,9 +366,10 @@ namespace MESS.Macros
             private ILogger _logger;
 
 
-            public InstanceFunctions(double id, double sequenceNumber, Random random, IDictionary<string, object?> properties, string mapPath, ILogger logger)
+            public InstanceFunctions(double id, double parentID, double sequenceNumber, Random random, IDictionary<string, object?> properties, string mapPath, ILogger logger)
             {
                 _id = id;
+                _parentID = parentID;
                 _sequenceNumber = sequenceNumber;
                 _random = random;
                 _properties = properties;
@@ -389,6 +392,8 @@ namespace MESS.Macros
             }
 
             public double iid() => _id;
+
+            public double parentid() => _parentID;
 
             // Randomness:
             public object? rand(object? min = null, double? max = null)

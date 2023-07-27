@@ -381,7 +381,7 @@ namespace MESS
             {
                 var globals = new Dictionary<string, object?>();
                 var stdLibContext = Evaluation.DefaultContext();
-                var context = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), 0, 0, new Random(), "", logger, stdLibContext);
+                var context = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), 0, 0, 0, new Random(), "", logger, stdLibContext);
 
                 while (true)
                 {
