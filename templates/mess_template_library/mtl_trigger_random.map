@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "{}"
+"_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname}"
 "targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','min_interval','max_interval'].contains(a.key))}"
 "min_interval" "{max(0, num(min_interval) || 1)}"
@@ -66,8 +66,8 @@
 "targetname" "{beamname}"
 "LightningStart" "{beamname}"
 "LightningEnd" "{random_buttons_name}"
-"_spawnflag0" "{start_on && loop_until_triggered}"
-"_spawnflag2" "{loop_until_triggered}"
+"_mess_spawnflag0" "{start_on && loop_until_triggered}"
+"_mess_spawnflag2" "{loop_until_triggered}"
 "origin" "0 0 0"
 }
 {

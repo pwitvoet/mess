@@ -190,46 +190,46 @@
         /// Paths can cover specific files or entire directories, and do not need to contain a .ted extension.
         /// This attribute is removed afterwards.
         /// </summary>
-        public const string AllowRewriteRules = "_allow_rewrite_rules";
+        public const string AllowRewriteRules = "_mess_allow_rewrite_rules";
 
         /// <summary>
         /// Adding this attribute to a (template) map will block rewrite directives from the .ted file paths listed in this attribute.
         /// Paths can cover specific files or entire directories, and do not need to contain a .ted extension.
         /// This attribute is removed afterwards.
         /// </summary>
-        public const string DenyRewriteRules = "_deny_rewrite_rules";
+        public const string DenyRewriteRules = "_mess_deny_rewrite_rules";
 
         /// <summary>
         /// Adding this attribute to a normal (non-macro) entity will insert the specified template map (or maps) at the entity's position.
         /// The attribute is then removed from the entity.
         /// </summary>
-        public const string AttachedTemplateMap = "_attached_template_map";
+        public const string AttachedTemplateMap = "_mess_attached_template_map";
 
         /// <summary>
         /// Adding this attribute to a normal (non-macro) entity will insert the specified template (or templates) at the entity's position.
         /// The attribute is then removed from the entity.
         /// </summary>
-        public const string AttachedTemplateName = "_attached_template_name";
+        public const string AttachedTemplateName = "_mess_attached_template_name";
 
         /// <summary>
         /// This set of attributes can be used to enable or disable a specific spawn flag with MScript.
         /// These attributes are removed from the entity after the <see cref="Spawnflags"/> attribute has been updated.
         /// The first spawnflag has number 0, the last has number 31.
         /// </summary>
-        public const string SpawnflagN = "_spawnflag{0}";
+        public const string SpawnflagN = "_mess_spawnflag{0}";
 
         /// <summary>
         /// Brush entities with the same merge ID are merged together into a single brush entity. The type and properties
         /// of the merged entity are determined by the first entity that is marked as a master. If no entity is marked as master,
         /// then the type and properties of the first entity with the same merge ID are used.
         /// </summary>
-        public const string MergeEntityID = "_merge_entity_id";
+        public const string MergeEntityID = "_mess_merge_entity_id";
 
         /// <summary>
         /// When merging brush entities, the entity marked as master determines the type and properties of the merged entity.
         /// If multiple entities are marked as master, then the first master wins. If no entities are marked as master,
         /// then the first entity becomes the master.
         /// </summary>
-        public const string MergeEntityMaster = "_merge_entity_master";
+        public const string MergeEntityMaster = "_mess_merge_entity_master";
     }
 }

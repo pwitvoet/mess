@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "{}"
+"_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname}"
 "targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','initial_value','reset_counter_at','interval'].contains(a.key)).groupby(a => a.value).sort(g => num(g.key))}"
 "reset_counter_at" "{reset_counter_at}"
@@ -199,7 +199,7 @@
 "targetname" "{targetname}"
 "target" "{counter_name}"
 "interval" "{interval}"
-"_spawnflag0" "{start_on}"
+"_mess_spawnflag0" "{start_on}"
 "origin" "192 -192 64"
 }
 {

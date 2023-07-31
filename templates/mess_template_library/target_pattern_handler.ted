@@ -1,3 +1,3 @@
 // @MESS REWRITE WHEN "{target}":
-// "_attached_template_map": "{_attached_template_map + ';' + mtb_dir() + '/target_pattern_handler.map'}"
+// "_mess_attached_template_map": "{_mess_attached_template_map + ';' + mtb_dir() + '/target_pattern_handler.map'}"
 // @MESS;

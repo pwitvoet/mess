@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "mess_template_library/target_pattern_handler.ted"
+"_mess_allow_rewrite_rules" "mess_template_library/target_pattern_handler.ted"
 "target" "{target}"
 "skip_first_round" "{hasflag(0)}"
 }

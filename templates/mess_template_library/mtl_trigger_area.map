@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "{}"
+"_mess_allow_rewrite_rules" "{}"
 "on_enter" "{on_enter}"
 "on_stay" "{on_stay}"
 "on_leave" "{on_leave}"
@@ -20,9 +20,9 @@
 "sounds" "0"
 "master" "{master}"
 "target" "${internal_id}_mm1"
-"_spawnflag0" "{react_to_monsters}"
-"_spawnflag1" "{ignore_players}"
-"_spawnflag2" "{react_to_pushables}"
+"_mess_spawnflag0" "{react_to_monsters}"
+"_mess_spawnflag1" "{ignore_players}"
+"_mess_spawnflag2" "{react_to_pushables}"
 {
 ( 32 32 64 ) ( 32 32 0 ) ( 32 96 64 ) AAATRIGGER [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 96 96 64 ) ( 96 96 0 ) ( 96 32 64 ) AAATRIGGER [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1

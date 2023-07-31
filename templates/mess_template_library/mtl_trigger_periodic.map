@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "{}"
+"_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname || '_eb_' + iid()}"
 "interval" "{max(0.01, num(interval) || 1)}"
 "start_on" "{hasflag(0)}"
@@ -63,6 +63,6 @@
 "LightningEnd" "_fb_{iid()}"
 "targetname" "{targetname}"
 "LightningStart" "{targetname}"
-"_spawnflag0" "{start_on}"
+"_mess_spawnflag0" "{start_on}"
 "origin" "0 0 0"
 }

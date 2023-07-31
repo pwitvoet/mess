@@ -2,7 +2,7 @@
 "classname" "worldspawn"
 "origin" "0 0 0"
 "mapversion" "220"
-"_allow_rewrite_rules" "{}"
+"_mess_allow_rewrite_rules" "{}"
 "targets" "{get_attr().filter(a => !['classname','targetname','origin','spawnflags','template_map'].contains(a.key)).sort(a => num(a.value))}"
 "mm_is_multithreaded" "{hasflag(0)}"
 }
@@ -46,7 +46,7 @@
 "classname" "multi_manager"
 "targetname" "{mm_name}"
 "{mm_targets.map(t => t.key)}" "{mm_targets.map(t => t.value)}"
-"_spawnflag0" "{mm_is_multithreaded}"
+"_mess_spawnflag0" "{mm_is_multithreaded}"
 "origin" "192 192 64"
 }
 {
