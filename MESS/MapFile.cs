@@ -1,8 +1,5 @@
 ﻿using MESS.Formats;
 using MESS.Mapping;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
 
 namespace MESS
 {
@@ -33,14 +30,14 @@ namespace MESS
         }
 
 
-        private static Func<Stream, Map> GetMapLoadFunction(string extension) => extension switch { 
+        private static Func<Stream, Map> GetMapLoadFunction(string extension) => extension.ToLowerInvariant() switch { 
             ".jmf" => JmfFormat.Load,
             ".rmf" => RmfFormat.Load,
             ".map" => MapFormat.Load,
             _ => throw new InvalidDataException("Unknown map file format.")
         };
 
-        private static Action<Map, Stream> GetMapSaveFunction(string extension) => extension switch { 
+        private static Action<Map, Stream> GetMapSaveFunction(string extension) => extension.ToLowerInvariant() switch { 
             ".jmf" => JmfFormat.Save,
             ".rmf" => RmfFormat.Save,
             ".map" => MapFormat.Save,
