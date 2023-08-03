@@ -44,13 +44,13 @@ namespace MScript.Evaluation
 
         static BaseTypes()
         {
-            None = new TypeDescriptor(nameof(None));
-            Number = new TypeDescriptor(nameof(Number));
-            String = new TypeDescriptor(nameof(String));
-            Array = new TypeDescriptor(nameof(Array));
-            Object = new TypeDescriptor(nameof(Object));
-            Function = new TypeDescriptor(nameof(Function));
-            Any = new TypeDescriptor(nameof(Any));
+            None = new TypeDescriptor("none");
+            Number = new TypeDescriptor("number");
+            String = new TypeDescriptor("string");
+            Array = new TypeDescriptor("array");
+            Object = new TypeDescriptor("object");
+            Function = new TypeDescriptor("function");
+            Any = new TypeDescriptor("any");
 
             RegisterMembers(typeof(StringMembers));
             RegisterMembers(typeof(ArrayMembers));
