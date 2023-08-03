@@ -321,6 +321,31 @@ namespace MESS.Macros
                     return obj.Fields.Keys.Cast<object?>().ToArray();
             }
 
+            // Functions:
+            public static string? func_name(IFunction? func)
+                => func?.Name;
+
+            public static object?[]? func_args(IFunction? func)
+                => func?.Parameters.Select(param => (object?)param.Name).ToArray();
+
+            public static MObject? func_arg(IFunction? func, string name)
+            {
+                var parameter = func?.Parameters.FirstOrDefault(param => param.Name == name);
+                if (parameter == null)
+                    return null;
+
+                return new MObject(new[] {
+                    KeyValuePair.Create("name", (object?)parameter.Name),
+                    KeyValuePair.Create("type", (object?)parameter.Type.Name),
+                    KeyValuePair.Create("optional", (object?)(parameter.IsOptional ? 1.0 : null)),
+                    KeyValuePair.Create("default_value", parameter.DefaultValue),
+                });
+            }
+
+            public static object? func_apply(IFunction? func, object?[]? arguments)
+                => func?.Apply(arguments ?? Array.Empty<object?>());
+
+
             // Colors:
             /// <summary>
             /// Returns an array with either 3 or 4 values, where the first 3 values are between 0 and 255.
