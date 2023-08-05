@@ -195,6 +195,18 @@ namespace MESS.Macros
 
             public static string str(object? value) => Interpreter.Print(value);
 
+            public static object?[] array(object? value)
+            {
+                if (value is object?[] array)
+                    return array;
+                else if (value is string str)
+                    return str.Select(c => (object?)c.ToString()).ToArray();
+                else if (value is null)
+                    return Array.Empty<object?>();
+                else
+                    return new object?[] { value };
+            }
+
             // Mathematics:
             public static double min(double value1, double value2) => Math.Min(value1, value2);
 
@@ -421,28 +433,51 @@ namespace MESS.Macros
             public double parentid() => _parentID;
 
             // Randomness:
-            public object? rand(object? min = null, double? max = null)
+            public double rand(double? min = null, double? max = null)
             {
-                if (min is object?[] array)
-                    return array[GetRandomInteger(0, array.Length)];
-                else if (min is string str)
-                    return str.Substring(GetRandomInteger(0, str.Length), 1);
-                else if (min is not null && min is not double)
-                    throw new InvalidOperationException($"Parameter '{nameof(min)}' must be an array, a string or a number."); // TODO: Generalize exceptions like this, or create a parameter-type based dispatch system!
+                if (min == null && max == null)     // rand()
+                    return GetRandomDouble(0, 1);
 
-                var minValue = min is double number ? number : 0.0;
-                var maxValue = max ?? (min is null ? 1.0 : 0.0);
-                return GetRandomDouble(Math.Min(minValue, maxValue), Math.Max(minValue, maxValue));
+                min = min ?? 0.0;
+                max = max ?? 0.0;
+                return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
             }
 
             public double randi(double? min = null, double? max = null)
             {
-                if (min == null)
+                if (min == null && max == null)     // randi()
                     return GetRandomInteger(0, 2);
-                else if (max == null)
-                    max = 0;
 
+                min = min ?? 0.0;
+                max = max ?? 0.0;
                 return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
+            }
+
+            public object? randitem(object?[] array, object?[]? weights = null)
+            {
+                if (weights == null || !weights.Any())
+                    return array[GetRandomInteger(0, array.Length)];
+
+                var numericalWeights = weights
+                    .Take(array.Length)
+                    .Select(weight => weight is double number && number >= 0.0 ? number : 0.0)
+                    .ToArray();
+                var totalWeight = numericalWeights.Sum();
+                if (totalWeight == 0)
+                    return null;
+
+                var value = GetRandomDouble(0, totalWeight);
+                var index = 0;
+                for (; index < numericalWeights.Length; index++)
+                {
+                    if (numericalWeights[index] == 0)
+                        continue;
+
+                    value -= numericalWeights[index];
+                    if (value < 0)
+                        break;
+                }
+                return array[index];
             }
 
             // Enumeration:
