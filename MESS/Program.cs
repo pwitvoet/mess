@@ -168,10 +168,10 @@ namespace MESS
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                     $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
                 .Argument(
-                    s => { settings.InputPath = FileSystem.GetFullPath(s); },
+                    s => { settings.InputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
                     "Input map file.")
                 .OptionalArgument(
-                    s => { settings.OutputPath = FileSystem.GetFullPath(s); },
+                    s => { settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
                     "Output map file. If not specified, the input map file will be overwritten.");
         }
 
