@@ -231,5 +231,11 @@
         /// then the first entity becomes the master.
         /// </summary>
         public const string MergeEntityMaster = "_mess_merge_entity_master";
+
+        /// <summary>
+        /// Removes the entity that contains this attribute, if the value of this attribute is true.
+        /// An empty value or a 0 are treated as false, any other value is treated as true.
+        /// </summary>
+        public const string RemoveIf = "_mess_remove_if";
     }
 }
