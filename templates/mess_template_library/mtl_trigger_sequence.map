@@ -4,7 +4,7 @@
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname || 'mm_' + iid()}"
-"targets" "{get_attr().filter(a => !['classname','targetname','origin','spawnflags','template_map','loop_mode','initial_delay','loop_delay'].contains(a.key)).sort(a => num(a.value))}"
+"targets" "{get_attr().filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map|loop_mode|initial_delay|loop_delay)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(a.key)).sort(a => num(a.value))}"
 "initial_delay" "{max(0, num(initial_delay) || 0)}"
 "loop_delay" "{max(0, num(loop_delay) || 0)}"
 "multithreaded" "{hasflag(0)}"
