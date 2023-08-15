@@ -8,8 +8,9 @@
 {
 "classname" "macro_insert"
 "instance_count" "1"
-"template_name" "{(['+','-','kill ','show ','hide '].filter(prefix => name.trim().startswith(prefix))[0] || (name.contains('->') ? '->' : (name.trim().startswith('set ') && name.trim().split().length == 3) ? 'set' : '')).trim()}_template"
+"template_name" "{(name.contains(',') ? 'multi' : ['+','-','kill ','show ','hide '].filter(prefix => name.trim().startswith(prefix))[0] || (name.contains('->') ? '->' : (name.trim().startswith('set ') && name.trim().split().length == 3) ? 'set' : '')).trim()}_template"
 "name" "{name.split('#')[0].trim()}"
+"original_name" "{name}"
 "origin" "0 0 0"
 }
 {
@@ -82,7 +83,8 @@
 "classname" "macro_template"
 "selection_weight" "1"
 "anchor" "1"
-"targetname" "_template"
+"targetname" "multi_template"
+"targets" "{original_name.split(',').map(t => t.trim())}"
 {
 ( 640 -4 64 ) ( 640 -4 0 ) ( 640 0 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 704 0 64 ) ( 704 0 0 ) ( 704 -4 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
@@ -388,4 +390,53 @@
 "targetname" "{name}"
 "target" "{name.split()[1].trim()}"
 "origin" "672 224 32"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "_template"
+{
+( 704 -256 64 ) ( 704 -256 0 ) ( 704 -260 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -260 64 ) ( 640 -260 0 ) ( 640 -256 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 704 -260 64 ) ( 704 -260 0 ) ( 640 -260 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -256 64 ) ( 640 -256 0 ) ( 704 -256 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -256 0 ) ( 640 -260 0 ) ( 704 -256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+( 640 -260 64 ) ( 640 -256 64 ) ( 704 -260 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+}
+{
+( 704 -316 64 ) ( 704 -316 0 ) ( 704 -320 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -320 64 ) ( 640 -320 0 ) ( 640 -316 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 704 -320 64 ) ( 704 -320 0 ) ( 640 -320 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -316 64 ) ( 640 -316 0 ) ( 704 -316 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -316 0 ) ( 640 -320 0 ) ( 704 -316 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+( 640 -320 64 ) ( 640 -316 64 ) ( 704 -320 64 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+}
+}
+{
+"classname" "macro_remove_if"
+"condition" "{useglobal('generated_' + name)}"
+{
+( 704 -4 64 ) ( 704 -4 0 ) ( 704 -8 64 ) C3A2A_TNK3B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -8 64 ) ( 640 -8 0 ) ( 640 -4 64 ) C3A2A_TNK3B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 704 -8 64 ) ( 704 -8 0 ) ( 640 -8 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -4 64 ) ( 640 -4 0 ) ( 704 -4 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -4 0 ) ( 640 -8 0 ) ( 704 -4 0 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+( 640 -8 64 ) ( 640 -4 64 ) ( 704 -8 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+}
+{
+( 704 -56 64 ) ( 704 -56 0 ) ( 704 -60 64 ) C3A2A_TNK3B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -60 64 ) ( 640 -60 0 ) ( 640 -56 64 ) C3A2A_TNK3B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 704 -60 64 ) ( 704 -60 0 ) ( 640 -60 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -56 64 ) ( 640 -56 0 ) ( 704 -56 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 640 -56 0 ) ( 640 -60 0 ) ( 704 -56 0 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+( 640 -60 64 ) ( 640 -56 64 ) ( 704 -60 64 ) C3A2A_TNK3B [ 1 0 0 0 ] [ 0 -1 0 -0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"template_map" "{map_dir() + '/multi_manager_expansion.map'}"
+"targetname" "{name}"
+"{targets}" "{targets.map(t => 0)}"
+"origin" "672 -32 32"
 }

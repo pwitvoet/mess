@@ -3,7 +3,7 @@
 "origin" "0 0 0"
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
-"targets" "{get_attr().filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(a.key)).sort(a => num(a.value))}"
+"targets" "{get_attr().reduce((result, attr) => result.concat(attr.key.split(',').map(part => {key: part, value: attr.value})), []).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(a.key)).sort(a => num(a.value))}"
 "mm_is_multithreaded" "{hasflag(0)}"
 "max_targets" "{max(2, floor(num(getglobal('MTL_MULTIMANAGER_MAX_TARGETS')) || 16))}"
 }
@@ -19,6 +19,7 @@
 "mm_name" "{nth() == 0 ? targetname : targetname + '_' + iid()}"
 "mm_targets" "{targets.length <= max_targets ? targets : nth() == 0 ? targets.skip(targets.length - (max_targets - 1)).insert(0, { key: targetname + '_' + iid(), value: '0' }) : targets.skip((nth() - 1) * max_targets).take(min(max_targets, targets.length - (max_targets - 1) - ((nth() - 1) * max_targets)))}"
 "mm_is_multithreaded" "{mm_is_multithreaded}"
+"pattern_handler_skip_count" "{targets.length > max_targets && nth() == 0 ? 1 : 0}"
 "origin" "0 0 0"
 }
 {
@@ -57,8 +58,8 @@
 "scale" "1"
 "angles" "0 0 0"
 "instance_orientation" "0"
-"instance_count" "{mm_targets.length}"
+"instance_count" "{mm_targets.length - pattern_handler_skip_count}"
 "template_map" "{map_dir() + '/target_pattern_handler.map'}"
-"target" "{mm_targets[nth()].key}"
+"target" "{mm_targets[pattern_handler_skip_count + nth()].key}"
 "origin" "192 192 64"
 }
