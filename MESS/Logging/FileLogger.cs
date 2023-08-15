@@ -45,24 +45,14 @@ namespace MESS.Logging
 
         public void Log(LogLevel level, string message, Exception? exception)
         {
-            if (exception == null)
-            {
-                Log(level, message);
-                return;
-            }
-
             if (level > LogLevel)
                 return;
 
-            _writer.WriteLine(FormatMessage(level, $"{message}: {exception.GetType().Name}: '{exception.Message}'."));
-            if (LogLevel >= LogLevel.Verbose)
-            {
-                _writer.WriteLine(exception.StackTrace);
-                // TODO: Inner exceptions!
-            }
 
-            foreach (var key in exception.Data.Keys)
-                _writer.WriteLine($"  {key}: \"{exception.Data[key]}\"");
+            if (exception != null)
+                message = $"{message}: {Formatting.FormatException(exception, stacktrace: LogLevel >= LogLevel.Verbose)}";
+
+            Log(level, message);
         }
 
 
