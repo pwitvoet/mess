@@ -3,14 +3,14 @@
 "origin" "0 0 0"
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
-"targetname" "{targetname}"
+"targetname" "{targetname || '_eb_' + iid()}"
 "targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','min_interval','max_interval'].contains(a.key))}"
 "min_interval" "{max(0, num(min_interval) || 1)}"
 "max_interval" "{max(0, num(max_interval) || 1)}"
 "start_on" "{hasflag(0)}"
 "loop_until_triggered" "{trigger_mode == 1}"
 "random_buttons_name" "rnd_{iid()}"
-"beamname" "{trigger_mode == 1 ? targetname : targetname + '_beam'}"
+"beamname" "{(targetname || '_eb_' + iid()) + (trigger_mode == 1 ? '' : '_beam')}"
 }
 {
 "classname" "macro_template"
