@@ -4,7 +4,7 @@
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname}"
-"targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','initial_value','reset_counter_at','interval'].contains(a.key)).groupby(a => a.value).sort(g => num(g.key))}"
+"targets" "{get_attr().reduce((result, attr) => result.concat(attr.key.split('#')[0].split(',').map(part => {key: part, value: attr.value})), []).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map|trigger_mode|initial_value|reset_counter_at|interval)$')).groupby(a => a.value).sort(g => num(g.key))}"
 "reset_counter_at" "{reset_counter_at}"
 "initial_value" "{initial_value || 0}"
 "clock_mode" "{trigger_mode == 1}"
