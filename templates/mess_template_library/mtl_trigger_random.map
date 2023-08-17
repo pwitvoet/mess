@@ -4,7 +4,7 @@
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname || '_eb_' + iid()}"
-"targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !['classname','spawnflags','targetname','origin','template_map','trigger_mode','min_interval','max_interval'].contains(a.key))}"
+"targets" "{get_attr().map(a => { key: a.key.split('#')[0], value: a.value }).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map|trigger_mode|min_interval|max_interval)$'))}"
 "min_interval" "{max(0, num(min_interval) || 1)}"
 "max_interval" "{max(0, num(max_interval) || 1)}"
 "start_on" "{hasflag(0)}"
@@ -36,7 +36,7 @@
 }
 {
 "classname" "macro_insert"
-"instance_offset" "0 0 -32"
+"instance_offset" "{[{rad: (nth() / targets.length) * 2 * PI, radius: max(5, targets.length) / PI}].map(o => [cos(o.rad) * o.radius, sin(o.rad) * o.radius, -32])[0]}"
 "instance_geometry_scale" "1 1 1"
 "scale" "1"
 "angles" "0 {(nth() / targets.length) * 360} 0"
@@ -91,20 +91,20 @@
 "targetname" "{targetname}"
 "target" "{target}"
 {
-( 204 193 65 ) ( 204 193 63 ) ( 204 191 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 200 191 65 ) ( 200 191 63 ) ( 200 193 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 204 191 65 ) ( 204 191 63 ) ( 200 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 200 193 65 ) ( 200 193 63 ) ( 204 193 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 200 193 63 ) ( 200 191 63 ) ( 204 193 63 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 200 191 65 ) ( 200 193 65 ) ( 204 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 200 193 65 ) ( 200 193 63 ) ( 200 191 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 191 65 ) ( 196 191 63 ) ( 196 193 65 ) ORIGIN [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 200 191 65 ) ( 200 191 63 ) ( 196 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 193 65 ) ( 196 193 63 ) ( 200 193 65 ) ORIGIN [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 193 63 ) ( 196 191 63 ) ( 200 193 63 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 196 191 65 ) ( 196 193 65 ) ( 200 191 65 ) ORIGIN [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
 }
 {
-( 200 193 65 ) ( 200 193 63 ) ( 200 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 196 191 65 ) ( 196 191 63 ) ( 196 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 200 191 65 ) ( 200 191 63 ) ( 196 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 196 193 65 ) ( 196 193 63 ) ( 200 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 196 193 63 ) ( 196 191 63 ) ( 200 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 196 191 65 ) ( 196 193 65 ) ( 200 191 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 196 193 65 ) ( 196 193 63 ) ( 196 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 192 191 65 ) ( 192 191 63 ) ( 192 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 196 191 65 ) ( 196 191 63 ) ( 192 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 192 193 65 ) ( 192 193 63 ) ( 196 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 192 193 63 ) ( 192 191 63 ) ( 196 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 192 191 65 ) ( 192 193 65 ) ( 196 191 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
 }
 }
 {
