@@ -21,7 +21,6 @@ namespace MESS.Macros
         /// </summary>
         public static Map ExpandMacros(string path, ExpansionSettings settings, RewriteDirective[] rewriteDirectives, ILogger logger)
         {
-            // TODO: Verify that 'path' is absolute! Either that, or document the behavior for relative paths! (relative to cwd?)
             logger.Info("");
             logger.Info($"Expanding macros in '{path}'.");
 
@@ -37,7 +36,7 @@ namespace MESS.Macros
                 logger,
                 settings.Variables ?? new(),
                 expander.BaseEvaluationContext,
-                settings.TemplatesDirectory,
+                settings.TemplateMapsDirectory,
                 evaluatedProperties =>
                 {
                     expander.GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out templateMapPaths, out templateNames);
@@ -91,7 +90,7 @@ namespace MESS.Macros
 
             Globals = settings.Globals;
 
-            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplatesDirectory, AppContext.BaseDirectory, Globals);
+            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateMapsDirectory, AppContext.BaseDirectory, Globals);
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
@@ -298,7 +297,7 @@ namespace MESS.Macros
         /// </summary>
         private MapTemplate GetMapTemplate(string path)
         {
-            path = FileSystem.GetFullPath(path, Settings.TemplatesDirectory);
+            path = FileSystem.GetFullPath(path, Settings.TemplateMapsDirectory);
             if (!_mapTemplateCache.TryGetValue(path, out var template))
             {
                 Logger.Info($"Loading map template '{path}' from file.");
@@ -308,8 +307,9 @@ namespace MESS.Macros
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
 
-                var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules);
-                var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules);
+                var mapDirectory = Path.GetDirectoryName(path)!;
+                var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules, mapDirectory);
+                var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules, mapDirectory);
                 ApplyRewriteDirectives(map, path, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
@@ -325,14 +325,14 @@ namespace MESS.Macros
             }
             return template;
 
-            string[]? GetTedPathList(IDictionary<string, string> properties, string propertyName)
+            string[]? GetTedPathList(IDictionary<string, string> properties, string propertyName, string mapDirectory)
             {
                 var value = properties.EvaluateToMScriptValue(propertyName, TopLevelEvaluationContext);
                 if (value == null)
                     return properties.ContainsKey(propertyName) ? Array.Empty<string>() : null;
 
                 return Interpreter.Print(value).Split(';')
-                    .Select(path => FileSystem.GetFullPath(path, Settings.TemplatesDirectory))
+                    .Select(path => FileSystem.GetFullPath(path, mapDirectory))
                     .ToArray();
             }
         }

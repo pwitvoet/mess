@@ -10,7 +10,8 @@ namespace MESS.Macros
 
         public string InputPath { get; set; } = "";
         public string? OutputPath { get; set; }
-        public string TemplatesDirectory { get; set; } = "";
+        public string TemplateMapsDirectory { get; set; } = "";
+        public List<string> TemplateEntityDirectories { get; } = new();
         public string MessFgdFilePath { get; set; } = "";
         public Dictionary<string, object?> Variables { get; } = new();
         public Dictionary<string, object?> Globals { get; } = new();

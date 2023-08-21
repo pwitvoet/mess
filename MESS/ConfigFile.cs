@@ -7,6 +7,7 @@ using MScript.Parsing;
 using MScript.Parsing.AST;
 using MScript.Tokenizing;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MESS
 {
@@ -25,87 +26,104 @@ namespace MESS
             var lines = File.ReadLines(path, Encoding.UTF8).ToArray();
             for (int i = 0; i < lines.Length; i++)
             {
+                var lineNumber = i + 1;
+
                 try
                 {
                     var line = lines[i].Trim();
                     if (line.StartsWith("//") || line == "")
                         continue;
 
-                    var nameValueSeparatorIndex = line.IndexOf(':');
-                    if (nameValueSeparatorIndex == -1)
+                    var segmentNameMatch = Regex.Match(line, @"^\s*(?<name>[\w-]+)\s*:(?<rest>\s*(?<value>.*?)?(?://.*)?)$");
+                    if (segmentNameMatch.Success)
                     {
-                        switch (currentSegment)
-                        {
-                            case "variables":
-                                foreach (var assignment in ParseAssignments(line, evaluationContext))
-                                    settings.Variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
-                                break;
+                        var name = segmentNameMatch.Groups["name"].Value;
+                        var value = segmentNameMatch.Groups["value"].Value;
+                        var rest = segmentNameMatch.Groups["rest"].Value;
 
-                            case "globals":
-                                foreach (var assignment in ParseAssignments(line, evaluationContext))
-                                    settings.Globals[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
-                                break;
-
-                            case "lifted-properties":
-                                settings.LiftedProperties.Add(line);
-                                break;
-
-                            default:
-                                logger.Warning($"Warning: config line #{i + 1} in '{path}' is formatted incorrectly and will be skipped.");
-                                break;
-                        }
+                        if (HandleSegment(name, value, rest, lineNumber, ref currentSegment))
+                            continue;
                     }
-                    else
-                    {
-                        currentSegment = null;
 
-                        var name = line.Substring(0, nameValueSeparatorIndex).Trim();
-                        var rest = RemoveTrailingComments(line.Substring(nameValueSeparatorIndex + 1));
-                        switch (name)
-                        {
-                            case "templates-directory":
-                                settings.TemplatesDirectory = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
-                                break;
+                    if (HandleMultilineSegment(currentSegment, line, lineNumber))
+                        continue;
 
-                            case "fgd-path":
-                                settings.MessFgdFilePath = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest), evaluationContext));
-                                break;
-
-                            case "max-recursion":
-                                settings.RecursionLimit = ReadInteger(rest);
-                                break;
-
-                            case "max-instances":
-                                settings.InstanceLimit = ReadInteger(rest);
-                                break;
-
-                            case "log-level":
-                                settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), ReadString(rest), true);
-                                break;
-
-                            case "variables":
-                            case "globals":
-                            case "lifted-properties":
-                                currentSegment = name;
-                                break;
-
-                            case "inverted-pitch-predicate":
-                                settings.InvertedPitchPredicate = ReadString(rest);
-                                break;
-
-                            default:
-                                logger.Warning($"Unknown setting on config line #{i + 1}: '{name}'.");
-                                break;
-                        }
-                    }
+                    logger.Warning($"Warning: config line #{lineNumber} in '{path}' is formatted incorrectly and will be skipped.");
                 }
                 catch (Exception ex)
                 {
-                    logger.Warning($"Failed to read config line #{i + 1} in '{path}':", ex);
+                    logger.Warning($"Failed to read config line #{lineNumber} in '{path}':", ex);
                     continue;
                 }
             }
 
+
+            bool HandleSegment(string name, string value, string rest, int lineNumber, ref string? segment)
+            {
+                switch (name)
+                {
+                    case "fgd-path":
+                        settings.MessFgdFilePath = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(value), evaluationContext));
+                        return true;
+
+                    case "max-recursion":
+                        settings.RecursionLimit = ReadInteger(value);
+                        return true;
+
+                    case "max-instances":
+                        settings.InstanceLimit = ReadInteger(value);
+                        return true;
+
+                    case "log-level":
+                        settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), ReadString(value), true);
+                        return true;
+
+                    case "inverted-pitch-predicate":
+                        settings.InvertedPitchPredicate = ReadString(rest.Trim());
+                        return true;
+
+                    case "template-maps-directory":
+                        settings.TemplateMapsDirectory = ReadString(rest.Trim());
+                        return true;
+
+                    case "template-entity-directories":
+                    case "variables":
+                    case "globals":
+                    case "lifted-properties":
+                        segment = name;
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
+
+            bool HandleMultilineSegment(string? segment, string line, int lineNumber)
+            {
+                switch (segment)
+                {
+                    case "template-entity-directories":
+                        settings.TemplateEntityDirectories.Add(RemoveTrailingComments(line));
+                        return true;
+
+                    case "variables":
+                        foreach (var assignment in ParseAssignments(line, evaluationContext))
+                            settings.Variables[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
+                        return true;
+
+                    case "globals":
+                        foreach (var assignment in ParseAssignments(line, evaluationContext))
+                            settings.Globals[assignment.Identifier] = Evaluator.Evaluate(assignment.Value, evaluationContext);
+                        return true;
+
+                    case "lifted-properties":
+                        settings.LiftedProperties.Add(line);
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
 
             string ReadString(string part) => part;
 

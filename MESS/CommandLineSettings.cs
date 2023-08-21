@@ -12,7 +12,7 @@ namespace MESS
         public string? OutputPath { get; set; }
         public string? ConfigFilePath { get; set; }
         public string? MessFgdFilePath { get; set; }
-        public string? TemplatesDirectory { get; set; }
+        public string? TemplateMapsDirectory { get; set; }
         public Dictionary<string, object?> Variables { get; } = new();
         public Dictionary<string, object?> Globals { get; } = new();
     }
