@@ -124,6 +124,23 @@ namespace MScript.Evaluation
                 return index != -1 ? index : null;
             }
 
+            public static double? count(string self, string str, double? offset = null, object? ignore_case = null)
+            {
+                var index = NormalizedIndex(self, offset is null ? 0 : (int)offset);
+                var stringComparison = GetStringComparison(ignore_case);
+                var count = 0;
+                while (index != -1)
+                {
+                    index = self.IndexOf(str, index, stringComparison);
+                    if (index == -1)
+                        break;
+
+                    count += 1;
+                    index += str.Length;
+                }
+                return count;
+            }
+
             // Substrings, trimming and replacing:
             public static string substr(string self, double offset, double? length = null)
             {
@@ -168,8 +185,18 @@ namespace MScript.Evaluation
                 => !string.IsNullOrEmpty(str) ? self.Replace(str, replacement, GetStringComparison(ignore_case)) : self;
 
             // Splitting and joining:
-            public static object?[] split(string self, string? delimiter = null, object? ignore_empty = null)
-                => self.Split(delimiter ?? " ", Operations.IsTrue(ignore_empty) ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None).Cast<object?>().ToArray();
+            public static object?[] split(string self, object? delimiters = null, double? count = null)
+            {
+                var splitPattern = @"\s+";
+                if (delimiters is string delimiter)
+                    splitPattern = Regex.Escape(delimiter);
+                else if (delimiters is object?[] delimitersArray)
+                    splitPattern = string.Join("|", delimitersArray.Select(Operations.ToString));
+
+                return Split(self, splitPattern, count);
+            }
+
+            public static object?[] splitr(string self, string? pattern, double? count = null) => Split(self, pattern ?? @"\s+", count);
 
             public static string join(string self, object?[] values)
                 => string.Join(self, values.Select(value => Operations.ToString(value)));
@@ -183,6 +210,31 @@ namespace MScript.Evaluation
 
             private static StringComparison GetStringComparison(object? ignore_case)
                 => Operations.IsTrue(ignore_case) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            private static object?[] Split(string str, string pattern, double? count)
+            {
+                var maxParts = count is null ? int.MaxValue : (int)count.Value;
+                if (Math.Abs(maxParts) <= 1)
+                    return new object?[] { str };
+
+                var splitMatches = Regex.Matches(str, pattern);
+                if (splitMatches.Count == 0)
+                    return new object?[] { str };
+
+                var partCount = Math.Min(splitMatches.Count + 1, Math.Abs(maxParts));
+                var startIndex = maxParts < 0 ? Math.Max(splitMatches.Count + 1 - -maxParts, 0) : 0;
+
+                var parts = new object?[partCount];
+                var offset = 0;
+                for (int i = 0; i < partCount - 1; i++)
+                {
+                    var match = splitMatches[startIndex + i];
+                    parts[i] = str.Substring(offset, match.Index - offset);
+                    offset = match.Index + match.Length;
+                }
+                parts[parts.Length - 1] = str.Substring(offset);
+                return parts;
+            }
         }
 
         static class ArrayMembers
