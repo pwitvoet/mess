@@ -407,10 +407,13 @@ namespace MESS
 
                             var value = Evaluator.Evaluate(assignment.Value, context);
                             context.Bind(assignment.Identifier, value);
+                            context.Bind("_", value);
                         }
                         else
                         {
                             var result = Interpreter.Evaluate(input, context);
+                            context.Bind("_", result);
+
                             Console.ForegroundColor = ConsoleColor.Cyan;
                             Console.WriteLine($"< {(result != null ? Interpreter.Print(result) : "NONE")}");
                             Console.ResetColor();
