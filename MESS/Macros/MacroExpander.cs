@@ -7,6 +7,7 @@ using MESS.Mathematics.Spatial;
 using MESS.Util;
 using MScript;
 using MScript.Evaluation;
+using System.Text.RegularExpressions;
 
 namespace MESS.Macros
 {
@@ -346,8 +347,12 @@ namespace MESS.Macros
             if (!string.IsNullOrEmpty(mapPath))
             {
                 Logger.Verbose($"Resolving map template '{mapPath}'.");
+                mapPath = SelectTemplateFromCommaSeparatedWeightedList(context, mapPath);
 
-                // We support both absolute and relative paths. Relative paths are relative to the map that a template is being inserted into.
+                Logger.Verbose($"Selected map template: '{mapPath}'.");
+
+                // We support both absolute and relative paths. Relative paths in the main map are relative to the template maps directory,
+                // and relative paths in other maps are relative to that map's parent directory.
                 if (!Path.IsPathRooted(mapPath))
                     mapPath = Path.Combine(context.CurrentWorkingDirectory, mapPath);
 
@@ -365,6 +370,9 @@ namespace MESS.Macros
             else if (!string.IsNullOrEmpty(templateName))
             {
                 Logger.Verbose($"Resolving sub-template '{templateName}'.");
+                templateName = SelectTemplateFromCommaSeparatedWeightedList(context, templateName);
+
+                Logger.Verbose($"Selected sub-template: '{templateName}'.");
 
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
@@ -394,12 +402,7 @@ namespace MESS.Macros
 
                 // TODO: Check whether this can make randomness too 'unstable' (e.g. a single change in one entity affecting random seeding/behavior of others)!
                 var selection = context.GetRandomDouble(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
-                foreach (var weightedSubtemplate in matchingSubTemplates)
-                {
-                    selection -= weightedSubtemplate.Weight;
-                    if (selection <= 0f)
-                        return weightedSubtemplate.SubTemplate;
-                }
+                return TakeFromWeightedList(matchingSubTemplates, selection, weightedSubTemplate => weightedSubTemplate.Weight)?.SubTemplate;
             }
 
             return null;
@@ -1125,6 +1128,61 @@ namespace MESS.Macros
             {
                 if (entity.Properties.TryGetValue(name, out var value))
                     entity.Properties[name] = Evaluation.EvaluateInterpolatedString(value, context);
+            }
+        }
+
+        private static string SelectTemplateFromCommaSeparatedWeightedList(InstantiationContext context, string commaSeparatedList)
+        {
+            var weightedNames = ParseCommaSeparatedWeightedList(commaSeparatedList)
+                .Where(weightedName => weightedName.weight > 0)
+                .ToArray();
+            var totalWeight = weightedNames.Sum(wn => wn.weight);
+            var selection = context.GetRandomDouble(0, totalWeight);
+
+            return TakeFromWeightedList(weightedNames, selection, weightedName => weightedName.weight).name;
+
+
+            IEnumerable<(string name, double weight)> ParseCommaSeparatedWeightedList(string input)
+            {
+                var parts = new List<string>();
+                var weights = new List<double>();
+
+                var startIndex = 0;
+                var searchIndex = 0;
+                while (searchIndex < input.Length)
+                {
+                    var nextCommaIndex = input.IndexOf(',', searchIndex);
+                    if (nextCommaIndex == -1)
+                        break;
+
+                    if (nextCommaIndex + 1 < input.Length && input[nextCommaIndex + 1] == ',')
+                    {
+                        searchIndex = nextCommaIndex + 2;
+                    }
+                    else
+                    {
+                        parts.Add(input.Substring(startIndex, nextCommaIndex - startIndex).Replace(",,", ","));
+                        startIndex = searchIndex = nextCommaIndex + 1;
+                    }
+                }
+                if (startIndex < input.Length)
+                    parts.Add(input.Substring(startIndex).Replace(",,", ","));
+
+                foreach (var part in parts)
+                {
+                    var colonIndex = part.LastIndexOf(':');
+                    var name = part;
+                    if (colonIndex != -1 && double.TryParse(part.Substring(colonIndex + 1), out var weight))
+                    {
+                        name = part.Substring(0, colonIndex);
+                    }
+                    else
+                    {
+                        weight = 1;
+                    }
+
+                    yield return (name, weight);
+                }
             }
         }
 
