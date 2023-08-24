@@ -1065,8 +1065,8 @@ namespace MESS.Macros
                 if (!evaluatedProperties.TryGetValue(attributeName, out var value))
                     return Array.Empty<string>();
 
-                return Interpreter.Print(value)
-                    .Split(';')
+                var str = Interpreter.Print(value);
+                return ParseCommaSeparatedList(str)
                     .Select(part => part.Trim())
                     .Where(part => part != "")
                     .ToArray();
@@ -1131,6 +1131,55 @@ namespace MESS.Macros
             }
         }
 
+        /// <summary>
+        /// Parses a list of comma-separated items. A double comma (,,) acts as an escape sequence.
+        /// </summary>
+        private static IEnumerable<string> ParseCommaSeparatedList(string input)
+        {
+            var startIndex = 0;
+            var searchIndex = 0;
+            while (searchIndex < input.Length)
+            {
+                var nextCommaIndex = input.IndexOf(',', searchIndex);
+                if (nextCommaIndex == -1)
+                    break;
+
+                if (nextCommaIndex + 1 < input.Length && input[nextCommaIndex + 1] == ',')
+                {
+                    searchIndex = nextCommaIndex + 2;
+                }
+                else
+                {
+                    yield return input.Substring(startIndex, nextCommaIndex - startIndex).Replace(",,", ",");
+                    startIndex = searchIndex = nextCommaIndex + 1;
+                }
+            }
+            if (startIndex < input.Length)
+                yield return input.Substring(startIndex).Replace(",,", ",");
+        }
+
+        /// <summary>
+        /// Parses a list of comma-separated items, with optional weights (a colon followed by a number).
+        /// </summary>
+        private static IEnumerable<(string name, double weight)> ParseCommaSeparatedWeightedList(string input, double defaultWeight = 1)
+        {
+            foreach (var part in ParseCommaSeparatedList(input))
+            {
+                var colonIndex = part.LastIndexOf(':');
+                var name = part;
+                if (colonIndex != -1 && double.TryParse(part.Substring(colonIndex + 1), out var weight))
+                {
+                    name = part.Substring(0, colonIndex);
+                }
+                else
+                {
+                    weight = defaultWeight;
+                }
+
+                yield return (name, weight);
+            }
+        }
+
         private static string SelectTemplateFromCommaSeparatedWeightedList(InstantiationContext context, string commaSeparatedList)
         {
             var weightedNames = ParseCommaSeparatedWeightedList(commaSeparatedList)
@@ -1140,50 +1189,6 @@ namespace MESS.Macros
             var selection = context.GetRandomDouble(0, totalWeight);
 
             return TakeFromWeightedList(weightedNames, selection, weightedName => weightedName.weight).name;
-
-
-            IEnumerable<(string name, double weight)> ParseCommaSeparatedWeightedList(string input)
-            {
-                var parts = new List<string>();
-                var weights = new List<double>();
-
-                var startIndex = 0;
-                var searchIndex = 0;
-                while (searchIndex < input.Length)
-                {
-                    var nextCommaIndex = input.IndexOf(',', searchIndex);
-                    if (nextCommaIndex == -1)
-                        break;
-
-                    if (nextCommaIndex + 1 < input.Length && input[nextCommaIndex + 1] == ',')
-                    {
-                        searchIndex = nextCommaIndex + 2;
-                    }
-                    else
-                    {
-                        parts.Add(input.Substring(startIndex, nextCommaIndex - startIndex).Replace(",,", ","));
-                        startIndex = searchIndex = nextCommaIndex + 1;
-                    }
-                }
-                if (startIndex < input.Length)
-                    parts.Add(input.Substring(startIndex).Replace(",,", ","));
-
-                foreach (var part in parts)
-                {
-                    var colonIndex = part.LastIndexOf(':');
-                    var name = part;
-                    if (colonIndex != -1 && double.TryParse(part.Substring(colonIndex + 1), out var weight))
-                    {
-                        name = part.Substring(0, colonIndex);
-                    }
-                    else
-                    {
-                        weight = 1;
-                    }
-
-                    yield return (name, weight);
-                }
-            }
         }
 
         private static TElement? TakeFromWeightedList<TElement>(IEnumerable<TElement> elements, double selection, Func<TElement, double> getWeight)
