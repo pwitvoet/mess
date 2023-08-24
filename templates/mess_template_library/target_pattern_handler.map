@@ -84,7 +84,7 @@
 "selection_weight" "1"
 "anchor" "1"
 "targetname" "multi_template"
-"targets" "{original_name.split(',').map(t => t.trim())}"
+"targets" "{original_name.split(',').map(t => t.trim()).map(t => num(t.split(':', -2)[1]) ? {key: t.split(':', -2)[0], value: num(t.split(':', -2)[1])} : {key: t, value: 0})}"
 {
 ( 640 -4 64 ) ( 640 -4 0 ) ( 640 0 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 704 0 64 ) ( 704 0 0 ) ( 704 -4 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
@@ -437,6 +437,7 @@
 "classname" "macro_insert"
 "template_map" "{map_dir() + '/multi_manager_expansion.map'}"
 "targetname" "{name}"
-"{targets}" "{targets.map(t => 0)}"
+"{targets.map(t => t.key)}" "{targets.map(t => t.value)}"
+"_mess_spawnflag0" "{targets.any(t => t.value > 0)}"
 "origin" "672 -32 32"
 }

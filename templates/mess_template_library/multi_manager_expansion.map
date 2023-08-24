@@ -3,7 +3,7 @@
 "origin" "0 0 0"
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
-"targets" "{get_attr().reduce((result, attr) => result.concat(attr.key.split(',').map(part => {key: part, value: attr.value})), []).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(a.key)).sort(a => num(a.value))}"
+"targets" "{get_attr().reduce((result, attr) => result.concat(attr.key.split(',').map(part => num(part.split(':', -2)[1]) ? {key: part.split(':', -2)[0], value: attr.value + num(part.split(':', -2)[1])} : {key: part, value: attr.value})), []).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(a.key)).sort(a => num(a.value))}"
 "mm_is_multithreaded" "{hasflag(0)}"
 "max_targets" "{max(2, floor(num(getglobal('MTL_MULTIMANAGER_MAX_TARGETS')) || 16))}"
 }
