@@ -7,7 +7,6 @@ using MESS.Mathematics.Spatial;
 using MESS.Util;
 using MScript;
 using MScript.Evaluation;
-using System.Text.RegularExpressions;
 
 namespace MESS.Macros
 {
@@ -377,7 +376,7 @@ namespace MESS.Macros
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
                 var matchingSubTemplates = context.SubTemplates
-                    .Where(subTemplate => Evaluation.EvaluateInterpolatedString(subTemplate.Name, context) == templateName)
+                    .Where(subTemplate => subTemplate.Names.Contains(templateName))
                     .Select(subTemplate => new {
                         SubTemplate = subTemplate,
                         Weight = PropertyExtensions.TryParseDouble(Evaluation.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression, context), out var weight) ? weight : 0
@@ -1066,7 +1065,7 @@ namespace MESS.Macros
                     return Array.Empty<string>();
 
                 var str = Interpreter.Print(value);
-                return ParseCommaSeparatedList(str)
+                return Util.ParseCommaSeparatedList(str)
                     .Select(part => part.Trim())
                     .Where(part => part != "")
                     .ToArray();
@@ -1131,58 +1130,9 @@ namespace MESS.Macros
             }
         }
 
-        /// <summary>
-        /// Parses a list of comma-separated items. A double comma (,,) acts as an escape sequence.
-        /// </summary>
-        private static IEnumerable<string> ParseCommaSeparatedList(string input)
-        {
-            var startIndex = 0;
-            var searchIndex = 0;
-            while (searchIndex < input.Length)
-            {
-                var nextCommaIndex = input.IndexOf(',', searchIndex);
-                if (nextCommaIndex == -1)
-                    break;
-
-                if (nextCommaIndex + 1 < input.Length && input[nextCommaIndex + 1] == ',')
-                {
-                    searchIndex = nextCommaIndex + 2;
-                }
-                else
-                {
-                    yield return input.Substring(startIndex, nextCommaIndex - startIndex).Replace(",,", ",");
-                    startIndex = searchIndex = nextCommaIndex + 1;
-                }
-            }
-            if (startIndex < input.Length)
-                yield return input.Substring(startIndex).Replace(",,", ",");
-        }
-
-        /// <summary>
-        /// Parses a list of comma-separated items, with optional weights (a colon followed by a number).
-        /// </summary>
-        private static IEnumerable<(string name, double weight)> ParseCommaSeparatedWeightedList(string input, double defaultWeight = 1)
-        {
-            foreach (var part in ParseCommaSeparatedList(input))
-            {
-                var colonIndex = part.LastIndexOf(':');
-                var name = part;
-                if (colonIndex != -1 && double.TryParse(part.Substring(colonIndex + 1), out var weight))
-                {
-                    name = part.Substring(0, colonIndex);
-                }
-                else
-                {
-                    weight = defaultWeight;
-                }
-
-                yield return (name, weight);
-            }
-        }
-
         private static string SelectTemplateFromCommaSeparatedWeightedList(InstantiationContext context, string commaSeparatedList)
         {
-            var weightedNames = ParseCommaSeparatedWeightedList(commaSeparatedList)
+            var weightedNames = Util.ParseCommaSeparatedWeightedList(commaSeparatedList)
                 .Where(weightedName => weightedName.weight > 0)
                 .ToArray();
             var totalWeight = weightedNames.Sum(wn => wn.weight);

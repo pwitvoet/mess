@@ -32,9 +32,16 @@ namespace MESS.Macros
 
         /// <summary>
         /// For map files, this is their absolute path.
-        /// For sub-templates (<see cref="MacroEntity.Template"/>), this is their name property (which may contain expressions).
+        /// For sub-templates (<see cref="MacroEntity.Template"/>), this is their name property.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Sub-templates can have multiple names (comma-separated list).
+        /// For map files, this is empty.
+        /// </summary>
+        public HashSet<string> Names { get; } = new();
+
         public Map Map { get; }
         public bool IsSubTemplate { get; }
         public string SelectionWeightExpression { get; }
@@ -55,6 +62,12 @@ namespace MESS.Macros
             Map = map;
             SelectionWeightExpression = selectionWeightExpression;
             IsSubTemplate = isSubTemplate;
+
+            if (isSubTemplate)
+            {
+                foreach (var subName in Util.ParseCommaSeparatedList(name))
+                    Names.Add(subName);
+            }
 
             SubTemplates = subTemplates?.ToArray() ?? Array.Empty<MapTemplate>();
             ConditionalContents = conditionalContent?.ToArray() ?? Array.Empty<RemovableContent>();
