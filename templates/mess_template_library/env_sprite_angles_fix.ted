@@ -1,3 +1,5 @@
 // @MESS REWRITE AFTER_MACRO_EXPANSION FOR "env_sprite":
-// "angles": "{is_array(angles) ? angles.map((angle, i) => i == 2 && angle == 0 ? 360 : angle) : angles}"
+// @IF "{!getglobal('MTL_DISABLE_SPRITE_ANGLES_FIX')}":
+//   "angles": "{is_array(angles) ? angles.map((angle, i) => i == 2 && angle == 0 ? 360 : angle) : angles}"
+// @ENDIF;
 // @MESS;
