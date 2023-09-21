@@ -11,7 +11,10 @@ namespace MScript.Tokenizing
             {
                 SkipWhitespace(context);
                 if (context.IsExhausted)
+                {
+                    yield return new Token(TokenType.EndOfInput, context.GetPosition());
                     yield break;
+                }
 
                 yield return ReadToken(context);
             }
@@ -47,10 +50,20 @@ namespace MScript.Tokenizing
                 case '%': context.MoveNext(); return new Token(TokenType.PercentageSign, position);
 
                 case '/':
-                    if (!context.MoveNext() || context.Current != '/')
-                        return new Token(TokenType.Slash, position);
-                    context.MoveNext();
-                    return new Token(TokenType.Comment, position);
+                    if (context.MoveNext())
+                    {
+                        if (context.Current == '/')
+                        {
+                            context.MoveNext();
+                            return ReadLineComment(context, position);
+                        }
+                        else if (context.Current == '*')
+                        {
+                            context.MoveNext();
+                            return ReadBlockComment(context, position);
+                        }
+                    }
+                    return new Token(TokenType.Slash, position);
 
                 case '=':
                     if (!context.MoveNext() || (context.Current != '=' && context.Current != '>'))
@@ -238,6 +251,40 @@ namespace MScript.Tokenizing
                 context.MoveNext();
             }
             return (char)hexValue;
+        }
+
+        private static Token ReadLineComment(Context context, Position position)
+        {
+            var buffer = new StringBuilder();
+            while (!context.IsExhausted)
+            {
+                if (context.Current == '\r' || context.Current == '\n')
+                    break;
+
+                buffer.Append(context.Current);
+                context.MoveNext();
+            }
+            return new Token(TokenType.Comment, buffer.ToString(), position);
+        }
+
+        private static Token ReadBlockComment(Context context, Position position)
+        {
+            var buffer = new StringBuilder();
+            var previousWasStar = false;
+            while (!context.IsExhausted)
+            {
+                if (context.Current == '/' && previousWasStar)
+                {
+                    buffer.Length -= 1;
+                    context.MoveNext();
+                    break;
+                }
+
+                buffer.Append(context.Current);
+                previousWasStar = context.Current == '*';
+                context.MoveNext();
+            }
+            return new Token(TokenType.Comment, buffer.ToString(), position);
         }
 
 

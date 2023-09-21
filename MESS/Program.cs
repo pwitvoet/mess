@@ -232,7 +232,7 @@ namespace MESS
         private static void ParseVariables(string s, IDictionary<string, object?> variables)
         {
             var tokens = Tokenizer.Tokenize(s);
-            var assignments = Parser.ParseAssignments(tokens);
+            var assignments = Parser.ParseAssignments(tokens, lastSemicolonRequired: false);
 
             var context = Evaluation.DefaultContext();
             foreach (var assignment in assignments)
@@ -394,29 +394,40 @@ namespace MESS
                     {
                         Console.Write("> ");
                         var input = Console.ReadLine();
-                        if (input is null)
-                            continue;
-                        else if (input == "quit")
-                            break;
-
-
-                        if (Regex.IsMatch(input, @"^\s*\w+\s*=[^=]"))
+                        if (string.IsNullOrWhiteSpace(input))
                         {
-                            var tokens = Tokenizer.Tokenize(input).Append(new Token(TokenType.Semicolon));
-                            var assignment = Parser.ParseAssignments(tokens).First();
-
-                            var value = Evaluator.Evaluate(assignment.Value, context);
-                            context.Bind(assignment.Identifier, value);
-                            context.Bind("_", value);
+                            continue;
+                        }
+                        else if (input == "quit")
+                        {
+                            break;
+                        }
+                        else if (input.StartsWith("load "))
+                        {
+                            var path = input.Substring(4).Trim();
+                            Interpreter.LoadAssignmentsFile(path, context);
+                            continue;
                         }
                         else
                         {
-                            var result = Interpreter.Evaluate(input, context);
-                            context.Bind("_", result);
+                            if (Regex.IsMatch(input, @"^\s*\w+\s*=[^=]"))
+                            {
+                                var tokens = Tokenizer.Tokenize(input);
+                                var assignment = Parser.ParseAssignments(tokens, lastSemicolonRequired: false).First();
 
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.WriteLine($"< {(result != null ? Interpreter.Print(result) : "NONE")}");
-                            Console.ResetColor();
+                                var value = Evaluator.Evaluate(assignment.Value, context);
+                                context.Bind(assignment.Identifier, value);
+                                context.Bind("_", value);
+                            }
+                            else
+                            {
+                                var result = Interpreter.Evaluate(input, context);
+                                context.Bind("_", result);
+
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                Console.WriteLine($"< {(result != null ? Interpreter.Print(result) : "NONE")}");
+                                Console.ResetColor();
+                            }
                         }
                     }
                     catch (Exception ex)

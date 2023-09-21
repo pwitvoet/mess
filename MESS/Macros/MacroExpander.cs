@@ -25,6 +25,8 @@ namespace MESS.Macros
             logger.Info($"Expanding macros in '{path}'.");
 
             var expander = new MacroExpander(settings, rewriteDirectives, logger);
+            expander.LoadMScriptFiles(settings.TemplateEntityDirectories, expander.BaseEvaluationContext);
+
             var mainTemplate = expander.GetMapTemplate(path);
 
             var templateMapPaths = Array.Empty<string>();
@@ -98,6 +100,37 @@ namespace MESS.Macros
 
 
             RewriteDirectives = rewriteDirectives;
+        }
+
+
+        /// <summary>
+        /// Loads and executes all .mscript files in the given directories, creating or updating bindings in the given context.
+        /// This can be used to create MScript utility functions for use in template entities and behaviors.
+        /// </summary>
+        private void LoadMScriptFiles(IEnumerable<string> templateDirectories, EvaluationContext context)
+        {
+            foreach (var templatesDirectory in templateDirectories)
+            {
+                Logger.Info($"Loading .mscript files from '{templatesDirectory}'.");
+
+                if (!Directory.Exists(templatesDirectory))
+                    continue;
+
+                MtbFileSystem.ReadFiles(templatesDirectory, ".mscript", (file, path) =>
+                {
+                    try
+                    {
+                        Interpreter.LoadAssignmentsFile(file, context);
+                        Logger.Info($"Successfully loaded '{path}'.");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning($"Failed to load '{path}':", ex);
+                        return false;
+                    }
+                });
+            }
         }
 
 

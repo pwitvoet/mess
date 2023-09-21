@@ -18,8 +18,6 @@ namespace MScript.Parsing
                 while (Reduce(context)) ;
             }
 
-            context.ParseStack.Add(new Token(TokenType.EndOfInput));
-            while (Reduce(context)) ;
             context.ParseStack.RemoveAt(context.ParseStack.Count - 1);  // Remove end-of-input
 
             if (context.ParseStack.Count != 1 || context.ParseStack[0] is not Expression expression)
@@ -31,14 +29,28 @@ namespace MScript.Parsing
         /// <summary>
         /// Parses a sequence of MScript variable assignments.
         /// </summary>
-        public static IEnumerable<Assignment> ParseAssignments(IEnumerable<Token> tokens)
+        public static IEnumerable<Assignment> ParseAssignments(IEnumerable<Token> tokens, bool lastSemicolonRequired = true)
         {
+            if (!lastSemicolonRequired)
+            {
+                // Insert a semicolon just before the end:
+                var tokensList = tokens.ToList();
+                if (tokensList.Count > 0)
+                {
+                    var endOfInputToken = tokensList.Last();
+                    tokensList.Insert(tokensList.Count - 1, new Token(TokenType.Semicolon, endOfInputToken.Position));
+                }
+                tokens = tokensList;
+            }
+
             var context = new Context(tokens);
             while (!context.IsExhausted)
             {
                 Shift(context);
                 while (ReduceVariables()) ;
             }
+
+            context.ParseStack.RemoveAt(context.ParseStack.Count - 1);  // Remove end-of-input
 
             if (context.ParseStack.Count != 1 || !(context.ParseStack[0] is Assignment[] assignments))
                 throw ParseError("Invalid assignments sequence.", context);
@@ -65,6 +77,13 @@ namespace MScript.Parsing
                 {
                     // assignments: assignments assignments
                     context.ReplaceLast(2, headAssignments.Concat(tailAssignments).ToArray());
+                    return true;
+                }
+                else if (context.Stack(-2) is Assignment[] assignments &&
+                    context.IsToken(-1, TokenType.Semicolon))
+                {
+                    // assignments: assignments ';'
+                    context.ReplaceLast(2, assignments);
                     return true;
                 }
 
@@ -149,7 +168,9 @@ namespace MScript.Parsing
 
         private static void Shift(Context context)
         {
-            context.ParseStack.Add(context.NextToken);
+            if (context.NextToken.Type != TokenType.Comment)
+                context.ParseStack.Add(context.NextToken);
+
             context.MoveNext();
         }
 

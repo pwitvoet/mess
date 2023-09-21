@@ -44,6 +44,6 @@
         If,                 // if
         Else,               // else
 
-        Comment,            // //
+        Comment,            // //, /* */
     }
 }
