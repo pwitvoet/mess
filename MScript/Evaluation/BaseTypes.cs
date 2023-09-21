@@ -127,6 +127,9 @@ namespace MScript.Evaluation
             public static double? count(string self, string str, double? offset = null, object? ignore_case = null)
             {
                 var index = NormalizedIndex(self, offset is null ? 0 : (int)offset);
+                if (string.IsNullOrEmpty(str))
+                    return Math.Max(0, self.Length + 1 - index);
+
                 var stringComparison = GetStringComparison(ignore_case);
                 var count = 0;
                 while (index != -1)
@@ -203,6 +206,17 @@ namespace MScript.Evaluation
 
             // Regular expressions:
             public static bool match(string self, string? pattern) => !string.IsNullOrEmpty(pattern) && Regex.IsMatch(self, pattern);
+
+            public static object?[] matches(string self, string? pattern)
+            {
+                if (string.IsNullOrEmpty(pattern))
+                    return System.Array.Empty<object?>();
+
+                return Regex.Matches(self, pattern)
+                    .Select(match => match.Value)
+                    .Cast<object?>()
+                    .ToArray();
+            }
 
 
             private static int NormalizedIndex(string str, int index)

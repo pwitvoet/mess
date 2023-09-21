@@ -3,6 +3,7 @@ using MESS.Logging;
 using MESS.Mapping;
 using MScript;
 using MScript.Evaluation;
+using MScript.Evaluation.Types;
 using MScript.Parsing;
 using System.Globalization;
 using System.Text;
@@ -181,6 +182,8 @@ namespace MESS.Macros
             public static bool is_obj(object? value) => value is MObject;
 
             public static bool is_func(object? value) => value is IFunction;
+
+            public static string @typeof(object? value) => TypeDescriptor.GetType(value).Name;
 
             // Type conversion:
             public static double? num(object? value)
