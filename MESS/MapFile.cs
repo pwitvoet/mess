@@ -13,6 +13,7 @@ namespace MESS
         /// If that .mtb file does not exist, or if it does not contain the specified file, "C:\modding.mtb" is checked for a "maps\mymap.map" file, and so on.
         /// </para>
         /// </summary>
+        /// <exception cref="FileNotFoundException"/>
         public static Map Load(string path)
         {
             var mapLoadFunction = GetMapLoadFunction(Path.GetExtension(path));

@@ -328,6 +328,7 @@ namespace MESS.Macros
         /// <summary>
         /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
         /// </summary>
+        /// <exception cref="FileNotFoundException"/>
         private MapTemplate GetMapTemplate(string path)
         {
             path = FileSystem.GetFullPath(path, Settings.TemplateMapsDirectory);

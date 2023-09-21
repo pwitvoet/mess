@@ -19,6 +19,7 @@ namespace MESS
         /// An exception will be thrown if the .mtb file does not exist or if it does not contain the specified file. No .mtb fallback search will be performed.
         /// </para>
         /// </summary>
+        /// <exception cref="FileNotFoundException"/>
         public static TResult ReadFile<TResult>(string path, Func<Stream, TResult> readFile)
         {
             if (File.Exists(path))
