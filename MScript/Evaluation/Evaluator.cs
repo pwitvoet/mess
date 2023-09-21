@@ -24,7 +24,7 @@ namespace MScript.Evaluation
                 UnaryOperation unaryOperation => EvaluateUnaryOperation(unaryOperation, context),
                 ConditionalOperation conditionalOperation => EvaluateConditionalOperation(conditionalOperation, context),
 
-                _ => throw new InvalidOperationException($"Unknown expression type: {expression}."),
+                _ => throw EvaluationError($"Unknown expression type: {expression}.", expression),
             };
         }
 
@@ -56,7 +56,7 @@ namespace MScript.Evaluation
         {
             var functionResult = Evaluate(functionCall.Function, context);
             if (!(functionResult is IFunction function))
-                throw new InvalidOperationException($"A function call requires a {BaseTypes.Function}, not a {TypeDescriptor.GetType(functionResult)}.");
+                throw EvaluationError($"A function call requires a {BaseTypes.Function}, not a {TypeDescriptor.GetType(functionResult)}.", functionCall);
 
             var arguments = functionCall.Arguments
                 .Select(argument => Evaluate(argument, context))
@@ -64,7 +64,7 @@ namespace MScript.Evaluation
             if (arguments.Length < function.Parameters.Count)
             {
                 if (!function.Parameters[arguments.Length].IsOptional)
-                    throw new InvalidOperationException($"The function '{function.Name}' requires at least {function.Parameters.TakeWhile(parameter => !parameter.IsOptional).Count()} arguments, but only {arguments.Length} were provided.");
+                    throw EvaluationError($"The function '{function.Name}' requires at least {function.Parameters.TakeWhile(parameter => !parameter.IsOptional).Count()} arguments, but only {arguments.Length} were provided.", functionCall);
 
                 arguments = arguments
                     .Concat(function.Parameters
@@ -83,7 +83,7 @@ namespace MScript.Evaluation
             {
                 var indexResult = Evaluate(indexing.Index, context) ?? 0.0;
                 if (!(indexResult is double index))
-                    throw new InvalidOperationException($"An index must be a {BaseTypes.Number}, not a {TypeDescriptor.GetType(indexResult)}.");
+                    throw EvaluationError($"An index must be a {BaseTypes.Number}, not a {TypeDescriptor.GetType(indexResult)}.", indexing);
 
                 if (indexable is object?[] array)
                     return Operations.Index(array, (int)index);
@@ -91,7 +91,7 @@ namespace MScript.Evaluation
                     return Operations.Index(@string, (int)index);
             }
 
-            throw new InvalidOperationException($"A {TypeDescriptor.GetType(indexable)} cannot be indexed.");
+            throw EvaluationError($"A {TypeDescriptor.GetType(indexable)} cannot be indexed.", indexing);
         }
 
         private static object? EvaluateMemberAccess(MemberAccess memberAccess, EvaluationContext context)
@@ -110,7 +110,7 @@ namespace MScript.Evaluation
                     return member.GetValue(owner);
             }
 
-            throw new InvalidOperationException($"{type} does not have a member named '{memberAccess.MemberName}'.");
+            throw EvaluationError($"{type} does not have a member named '{memberAccess.MemberName}'.", memberAccess);
         }
 
         private static object? EvaluateBinaryOperation(BinaryOperation binaryOperation, EvaluationContext context)
@@ -136,7 +136,7 @@ namespace MScript.Evaluation
                 case BinaryOperator.GreaterThanOrEqual: return Operations.GreaterThanOrEqual(leftOperand, rightOperand);
                 case BinaryOperator.LessThan: return Operations.LessThan(leftOperand, rightOperand);
                 case BinaryOperator.LessThanOrEqual: return Operations.LessThanOrEqual(leftOperand, rightOperand);
-                default: throw new InvalidOperationException($"Unknown operator: {binaryOperation.Operator}.");
+                default: throw EvaluationError($"Unknown operator: {binaryOperation.Operator}.", binaryOperation);
             }
         }
 
@@ -147,7 +147,7 @@ namespace MScript.Evaluation
             {
                 case UnaryOperator.Negate: return Operations.Negate(operand);
                 case UnaryOperator.LogicalNegate: return Operations.LogicalNegate(operand);
-                default: throw new InvalidOperationException($"Unknown operator: {unaryOperation.Operator}.");
+                default: throw EvaluationError($"Unknown operator: {unaryOperation.Operator}.", unaryOperation);
             }
         }
 
@@ -158,6 +158,17 @@ namespace MScript.Evaluation
                 conditionalOperation.TrueExpression,
                 conditionalOperation.FalseExpression,
                 context);
+        }
+
+
+        internal static EvaluationException EvaluationError(string message, Expression expression)
+        {
+            var exception = new EvaluationException(message, expression.Position);
+
+            exception.Data["Expression"] = expression;
+            exception.Data["Position"] = expression.Position;
+
+            return exception;
         }
     }
 }

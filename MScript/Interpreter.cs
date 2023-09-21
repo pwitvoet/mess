@@ -10,6 +10,7 @@ namespace MScript
         /// Parses and evaluates the given expression.
         /// </summary>
         /// <exception cref="ParseException" />
+        /// <exception cref="EvaluationException" />
         /// <exception cref="InvalidOperationException" />
         public static object? Evaluate(string input, EvaluationContext context)
         {

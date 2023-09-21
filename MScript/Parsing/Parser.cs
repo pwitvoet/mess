@@ -613,7 +613,21 @@ namespace MScript.Parsing
 
         private static ParseException ParseError(string message, Context context)
         {
-            return new ParseException(message, context.NextToken.Position);
+            var exception = new ParseException(message, context.NextToken.Position);
+
+            var topItem = context.Stack(-1);
+            if (topItem is Token token)
+            {
+                exception.Data["Token"] = token.Type;
+                exception.Data["Position"] = token.Position;
+            }
+            else if (topItem is Expression expression)
+            {
+                exception.Data["Expression"] = expression;
+                exception.Data["Position"] = expression.Position;
+            }
+
+            return exception;
         }
 
         private static void AssertTokenType(Token token, TokenType expectedType)

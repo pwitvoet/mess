@@ -1,13 +1,10 @@
 ﻿namespace MScript
 {
-    public class ParseException : Exception
+    public class ParseException : MScriptException
     {
-        public Position Position { get; }
-
         public ParseException(string message, Position position)
-            : base(message)
+            : base(message, position)
         {
-            Position = position;
         }
     }
 }
