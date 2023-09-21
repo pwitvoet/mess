@@ -437,6 +437,14 @@ namespace MESS
 
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"{ex.GetType().Name}: '{ex.Message}'.");
+
+                        if (ex.Data.Count > 0)
+                        {
+                            Console.WriteLine("Data:");
+                            foreach (var key in ex.Data.Keys)
+                                Console.WriteLine($"   {key}: {ex.Data[key]}");
+                        }
+
                         Console.ResetColor();
                     }
                 }
