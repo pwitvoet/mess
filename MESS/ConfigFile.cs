@@ -142,10 +142,8 @@ namespace MESS
 
         private static IEnumerable<Assignment> ParseAssignments(string line, EvaluationContext evaluationContext)
         {
-            var tokens = Tokenizer.Tokenize(line)
-                .TakeWhile(token => token.Type != TokenType.Comment)
-                .Append(new Token(TokenType.Semicolon));
-            return Parser.ParseAssignments(tokens);
+            var tokens = Tokenizer.Tokenize(line);
+            return Parser.ParseAssignments(tokens, lastSemicolonRequired: false);
         }
     }
 }
