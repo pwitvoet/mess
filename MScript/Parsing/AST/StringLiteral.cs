@@ -9,6 +9,6 @@
             => Value = value;
 
 
-        public override string ToString() => $"\"{Value}\"";
+        public override string ToString() => $"'{Value}'";
     }
 }
