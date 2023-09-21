@@ -2,9 +2,9 @@
 {
     public class ParseException : Exception
     {
-        public int Position { get; }
+        public Position Position { get; }
 
-        public ParseException(string message, int position)
+        public ParseException(string message, Position position)
             : base(message)
         {
             Position = position;

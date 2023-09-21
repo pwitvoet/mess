@@ -5,7 +5,8 @@
         public UnaryOperator Operator { get; }
         public Expression Operand { get; }
 
-        public UnaryOperation(UnaryOperator @operator, Expression operand)
+        public UnaryOperation(UnaryOperator @operator, Expression operand, Position position)
+            : base(position)
         {
             Operator = @operator;
             Operand = operand;

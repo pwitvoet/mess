@@ -6,7 +6,8 @@
         public Expression LeftOperand { get; }
         public Expression RightOperand { get; }
 
-        public BinaryOperation(BinaryOperator @operator, Expression leftOperand, Expression rightOperand)
+        public BinaryOperation(BinaryOperator @operator, Expression leftOperand, Expression rightOperand, Position position)
+            : base(position)
         {
             Operator = @operator;
             LeftOperand = leftOperand;

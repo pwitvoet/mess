@@ -5,7 +5,8 @@
         public IReadOnlyList<Expression> Elements { get; }
 
 
-        public ArrayLiteral(IEnumerable<Expression> elements)
+        public ArrayLiteral(IEnumerable<Expression> elements, Position position)
+            : base(position)
         {
             Elements = elements.ToArray();
         }

@@ -26,80 +26,82 @@ namespace MScript.Tokenizing
 
         private static Token ReadToken(Context context)
         {
+            var position = context.GetPosition();
+
             switch (context.Current)
             {
-                case '(': context.MoveNext(); return new Token(TokenType.ParensOpen);
-                case ')': context.MoveNext(); return new Token(TokenType.ParensClose);
-                case '[': context.MoveNext(); return new Token(TokenType.BracketOpen);
-                case ']': context.MoveNext(); return new Token(TokenType.BracketClose);
-                case '{': context.MoveNext(); return new Token(TokenType.BraceOpen);
-                case '}': context.MoveNext(); return new Token(TokenType.BraceClose);
-                case '.': context.MoveNext(); return new Token(TokenType.Period);
-                case ',': context.MoveNext(); return new Token(TokenType.Comma);
-                case '?': context.MoveNext(); return new Token(TokenType.QuestionMark);
-                case ':': context.MoveNext(); return new Token(TokenType.Colon);
-                case ';': context.MoveNext(); return new Token(TokenType.Semicolon);
-                case '+': context.MoveNext(); return new Token(TokenType.Plus);
-                case '-': context.MoveNext(); return new Token(TokenType.Minus);
-                case '*': context.MoveNext(); return new Token(TokenType.Asterisk);
-                case '%': context.MoveNext(); return new Token(TokenType.PercentageSign);
+                case '(': context.MoveNext(); return new Token(TokenType.ParensOpen, position);
+                case ')': context.MoveNext(); return new Token(TokenType.ParensClose, position);
+                case '[': context.MoveNext(); return new Token(TokenType.BracketOpen, position);
+                case ']': context.MoveNext(); return new Token(TokenType.BracketClose, position);
+                case '{': context.MoveNext(); return new Token(TokenType.BraceOpen, position);
+                case '}': context.MoveNext(); return new Token(TokenType.BraceClose, position);
+                case '.': context.MoveNext(); return new Token(TokenType.Period, position);
+                case ',': context.MoveNext(); return new Token(TokenType.Comma, position);
+                case '?': context.MoveNext(); return new Token(TokenType.QuestionMark, position);
+                case ':': context.MoveNext(); return new Token(TokenType.Colon, position);
+                case ';': context.MoveNext(); return new Token(TokenType.Semicolon, position);
+                case '+': context.MoveNext(); return new Token(TokenType.Plus, position);
+                case '-': context.MoveNext(); return new Token(TokenType.Minus, position);
+                case '*': context.MoveNext(); return new Token(TokenType.Asterisk, position);
+                case '%': context.MoveNext(); return new Token(TokenType.PercentageSign, position);
 
                 case '/':
                     if (!context.MoveNext() || context.Current != '/')
-                        return new Token(TokenType.Slash);
+                        return new Token(TokenType.Slash, position);
                     context.MoveNext();
-                    return new Token(TokenType.Comment);
+                    return new Token(TokenType.Comment, position);
 
                 case '=':
                     if (!context.MoveNext() || (context.Current != '=' && context.Current != '>'))
-                        return new Token(TokenType.SingleEquals);
+                        return new Token(TokenType.SingleEquals, position);
                     var tokenType = context.Current == '=' ? TokenType.Equals : TokenType.FatArrow;
                     context.MoveNext();
-                    return new Token(tokenType);
+                    return new Token(tokenType, position);
 
                 case '!':
                     if (!context.MoveNext() || context.Current != '=')
-                        return new Token(TokenType.ExclamationMark);
+                        return new Token(TokenType.ExclamationMark, position);
                     context.MoveNext();
-                    return new Token(TokenType.NotEquals);
+                    return new Token(TokenType.NotEquals, position);
 
                 case '>':
                     if (!context.MoveNext() || context.Current != '=')
-                        return new Token(TokenType.GreaterThan);
+                        return new Token(TokenType.GreaterThan, position);
                     context.MoveNext();
-                    return new Token(TokenType.GreaterThanOrEqual);
+                    return new Token(TokenType.GreaterThanOrEqual, position);
 
                 case '<':
                     if (!context.MoveNext() || context.Current != '=')
-                        return new Token(TokenType.LessThan);
+                        return new Token(TokenType.LessThan, position);
                     context.MoveNext();
-                    return new Token(TokenType.LessThanOrEqual);
+                    return new Token(TokenType.LessThanOrEqual, position);
 
                 case '&':
                     if (!context.MoveNext() || context.Current != '&')
                         throw ParseError(context, $"Expected '&&' but found '&{context.Current}'.");
                     context.MoveNext();
-                    return new Token(TokenType.DoubleAmpersand);
+                    return new Token(TokenType.DoubleAmpersand, position);
 
                 case '|':
                     if (!context.MoveNext() || context.Current != '|')
                         throw ParseError(context, $"Expected '||' but found '|{context.Current}'.");
                     context.MoveNext();
-                    return new Token(TokenType.DoubleBar);
+                    return new Token(TokenType.DoubleBar, position);
 
                 case '\'':
-                    return ReadString(context);
+                    return ReadString(context, position);
             }
 
             if (char.IsDigit(context.Current))
-                return ReadNumber(context);
+                return ReadNumber(context, position);
             else if (char.IsLetter(context.Current) || context.Current == '_')
-                return ReadIdentifier(context);
+                return ReadIdentifier(context, position);
 
             throw ParseError(context, $"Unexpected '{context.Current}'.");
         }
 
-        private static Token ReadNumber(Context context)
+        private static Token ReadNumber(Context context, Position position)
         {
             if (context.IsExhausted || !char.IsDigit(context.Current))
                 throw ParseError(context, $"Expected the start of a number but found '{context.Current}'.");
@@ -123,10 +125,10 @@ namespace MScript.Tokenizing
                     context.MoveNext();
                 }
             }
-            return new Token(TokenType.Number, buffer.ToString());
+            return new Token(TokenType.Number, buffer.ToString(), position);
         }
 
-        private static Token ReadString(Context context)
+        private static Token ReadString(Context context, Position position)
         {
             if (context.IsExhausted || context.Current != '\'')
                 throw ParseError(context, $"Expected an opening ' but found '{context.Current}'.");
@@ -190,10 +192,10 @@ namespace MScript.Tokenizing
                 throw ParseError(context, $"Expected a closing ' but found end of input.");
 
             context.MoveNext(); // Consume the closing '
-            return new Token(TokenType.String, buffer.ToString());
+            return new Token(TokenType.String, buffer.ToString(), position);
         }
 
-        private static Token ReadIdentifier(Context context)
+        private static Token ReadIdentifier(Context context, Position position)
         {
             if (context.IsExhausted || (!char.IsLetter(context.Current) && context.Current != '_'))
                 throw ParseError(context, $"Expected a letter or an underscore but found '{context.Current}'.");
@@ -207,9 +209,9 @@ namespace MScript.Tokenizing
 
             var name = buffer.ToString();
             if (GetKeyword(name) is TokenType keyword)
-                return new Token(keyword);
+                return new Token(keyword, position);
 
-            return new Token(TokenType.Identifier, name);
+            return new Token(TokenType.Identifier, name, position);
         }
 
         // TODO: 8-digit escape sequences require surrogate pair handling!
@@ -239,7 +241,7 @@ namespace MScript.Tokenizing
         }
 
 
-        private static ParseException ParseError(Context context, string message) => new ParseException(message, context.Position);
+        private static ParseException ParseError(Context context, string message) => new ParseException(message, context.GetPosition());
 
         private static TokenType? GetKeyword(string name)
         {
@@ -264,11 +266,17 @@ namespace MScript.Tokenizing
             public char Current { get; private set; }
             public bool IsExhausted { get; private set; }
 
+            public int LineNumber { get; private set; }
+            public int LineOffset { get; private set; }
+
+            private char Previous { get; set; }
+
 
             public Context(string input)
             {
                 Input = input;
                 Position = -1;
+                LineNumber = 1;
                 MoveNext();
             }
 
@@ -277,14 +285,32 @@ namespace MScript.Tokenizing
                 if (Position + 1 >= Input.Length)
                 {
                     Position = Input.Length;
-                    IsExhausted = true;
+                    Previous = Current;
                     Current = '\0';
+
+                    if (!IsExhausted)
+                        LineOffset += 1;
+
+                    IsExhausted = true;
+
                     return false;
                 }
                 else
                 {
                     Position += 1;
+                    Previous = Current;
                     Current = Input[Position];
+
+                    if ((Previous == '\r' && Current != '\n') || Previous == '\n')
+                    {
+                        LineNumber += 1;
+                        LineOffset = 0;
+                    }
+                    else
+                    {
+                        LineOffset += 1;
+                    }
+
                     return true;
                 }
             }
@@ -297,6 +323,8 @@ namespace MScript.Tokenizing
                 var pos = Position + offset;
                 return (pos < Input.Length) ? Input[pos] : (char?)null;
             }
+
+            public Position GetPosition() => new Position(LineNumber, LineOffset);
         }
     }
 }

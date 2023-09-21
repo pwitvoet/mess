@@ -6,7 +6,8 @@
         public Expression TrueExpression { get; }
         public Expression FalseExpression { get; }
 
-        public ConditionalOperation(Expression condition, Expression trueExpression, Expression falseExpression)
+        public ConditionalOperation(Expression condition, Expression trueExpression, Expression falseExpression, Position position)
+            : base(position)
         {
             Condition = condition;
             TrueExpression = trueExpression;

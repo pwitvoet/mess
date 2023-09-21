@@ -207,46 +207,46 @@ namespace MScript.Parsing
 
         private static bool ReduceNumber(Context context, Token token)
         {
-            Assert(token.Type == TokenType.Number);
+            AssertTokenType(token, TokenType.Number);
 
             // literal: <number>
-            return context.ReplaceLast(1, new NumberLiteral(double.Parse(token.Value, CultureInfo.InvariantCulture)));
+            return context.ReplaceLast(1, new NumberLiteral(double.Parse(token.Value, CultureInfo.InvariantCulture), token.Position));
         }
 
         private static bool ReduceString(Context context, Token token)
         {
-            Assert(token.Type == TokenType.String);
+            AssertTokenType(token, TokenType.String);
 
             // literal: <string>
-            return context.ReplaceLast(1, new StringLiteral(token.Value));
+            return context.ReplaceLast(1, new StringLiteral(token.Value, token.Position));
         }
 
         private static bool ReduceIdentifier(Context context, Token token)
         {
-            Assert(token.Type == TokenType.Identifier);
+            AssertTokenType(token, TokenType.Identifier);
 
             // member-access
             if (context.Stack(-3) is Expression expression &&
                 context.IsToken(-2, TokenType.Period))
             {
                 // expression . <identifier>
-                return context.ReplaceLast(3, new MemberAccess(expression, token.Value));
+                return context.ReplaceLast(3, new MemberAccess(expression, token.Value, token.Position));
             }
 
             // parameter-name-list
             if (context.NextToken.Type == TokenType.FatArrow)
             {
                 // <identifier> =>
-                return context.ReplaceLast(1, new ParameterNameList(token.Value));
+                return context.ReplaceLast(1, new ParameterNameList(token.Value, token.Position));
             }
 
             // variable:
-            return context.ReplaceLast(1, new Variable(token.Value));   // TODO: Other code still checks for <identifier>s instead of variables!!!
+            return context.ReplaceLast(1, new Variable(token.Value, token.Position));   // TODO: Other code still checks for <identifier>s instead of variables!!!
         }
 
         private static bool ReduceParensClose(Context context, Token token)
         {
-            Assert(token.Type == TokenType.ParensClose);
+            AssertTokenType(token, TokenType.ParensClose);
 
             if (context.NextToken.Type == TokenType.FatArrow)
             {
@@ -268,22 +268,22 @@ namespace MScript.Parsing
                 }
 
                 // parameter-name-list =>
-                if (context.IsToken(-2, TokenType.ParensOpen))
+                if (context.IsToken(-2, TokenType.ParensOpen, out var parensOpenToken))
                 {
                     // ( ) =>
-                    return context.ReplaceLast(2, new ParameterNameList());
+                    return context.ReplaceLast(2, new ParameterNameList(parensOpenToken.Position));
                 }
-                else if (context.IsToken(-3, TokenType.ParensOpen))
+                else if (context.IsToken(-3, TokenType.ParensOpen, out var parensOpenToken2))
                 {
                     if (context.Stack(-2) is Variable parameter)
                     {
                         // ( <identifier> ) =>
-                        return context.ReplaceLast(3, new ParameterNameList(parameter.Name));
+                        return context.ReplaceLast(3, new ParameterNameList(parameter.Name, parensOpenToken2.Position));
                     }
                     else if (context.Stack(-2) is IdentifierList identifierList)
                     {
                         // ( identifier-list ) =>
-                        return context.ReplaceLast(3, new ParameterNameList(identifierList.Identifiers.ToArray()));
+                        return context.ReplaceLast(3, new ParameterNameList(identifierList.Identifiers.ToArray(), parensOpenToken2.Position));
                     }
                 }
             }
@@ -310,7 +310,7 @@ namespace MScript.Parsing
                 context.IsToken(-2, TokenType.ParensOpen))
             {
                 // expression ( )
-                return context.ReplaceLast(3, new FunctionCall(functionExpression, Array.Empty<Expression>()));
+                return context.ReplaceLast(3, new FunctionCall(functionExpression, Array.Empty<Expression>(), functionExpression.Position));
             }
             else if (context.Stack(-4) is Expression functionExpression2 &&
                 context.IsToken(-3, TokenType.ParensOpen))
@@ -318,12 +318,12 @@ namespace MScript.Parsing
                 if (context.Stack(-2) is Expression argumentExpression)
                 {
                     // expression ( expression )
-                    return context.ReplaceLast(4, new FunctionCall(functionExpression2, new[] { argumentExpression }));
+                    return context.ReplaceLast(4, new FunctionCall(functionExpression2, new[] { argumentExpression }, functionExpression2.Position));
                 }
                 else if (context.Stack(-2) is ExpressionList argumentsExpressionList)
                 {
                     // expression ( expression-list )
-                    return context.ReplaceLast(4, new FunctionCall(functionExpression2, argumentsExpressionList.Expressions));
+                    return context.ReplaceLast(4, new FunctionCall(functionExpression2, argumentsExpressionList.Expressions, functionExpression2.Position));
                 }
             }
 
@@ -340,7 +340,7 @@ namespace MScript.Parsing
 
         private static bool ReduceBracketClose(Context context, Token token)
         {
-            Assert(token.Type == TokenType.BracketClose);
+            AssertTokenType(token, TokenType.BracketClose);
 
             // expression-list ]
             if (context.Stack(-4) is Expression firstExpression &&
@@ -365,26 +365,26 @@ namespace MScript.Parsing
                 context.Stack(-2) is Expression indexExpression)
             {
                 // expression [ expression ]
-                return context.ReplaceLast(4, new Indexing(indexableExpression, indexExpression));
+                return context.ReplaceLast(4, new Indexing(indexableExpression, indexExpression, indexableExpression.Position));
             }
 
             // array-literal
-            if (context.IsToken(-2, TokenType.BracketOpen))
+            if (context.IsToken(-2, TokenType.BracketOpen, out var bracketOpenToken))
             {
                 // [ ]
-                return context.ReplaceLast(2, new ArrayLiteral(Array.Empty<Expression>()));
+                return context.ReplaceLast(2, new ArrayLiteral(Array.Empty<Expression>(), bracketOpenToken.Position));
             }
-            else if (context.IsToken(-3, TokenType.BracketOpen))
+            else if (context.IsToken(-3, TokenType.BracketOpen, out var bracketOpenToken2))
             {
                 if (context.Stack(-2) is Expression expression)
                 {
                     // [ expression ]
-                    return context.ReplaceLast(3, new ArrayLiteral(new[] { expression }));
+                    return context.ReplaceLast(3, new ArrayLiteral(new[] { expression }, bracketOpenToken2.Position));
                 }
                 else if (context.Stack(-2) is ExpressionList expressionList)
                 {
                     // [ expression-list ]
-                    return context.ReplaceLast(3, new ArrayLiteral(expressionList.Expressions));
+                    return context.ReplaceLast(3, new ArrayLiteral(expressionList.Expressions, bracketOpenToken2.Position));
                 }
             }
 
@@ -393,7 +393,7 @@ namespace MScript.Parsing
 
         private static bool ReduceBraceClose(Context context, Token token)
         {
-            Assert(token.Type == TokenType.BraceClose);
+            AssertTokenType(token, TokenType.BraceClose);
 
             // key-value-pair-list }
             if (context.Stack(-4) is Variable key &&
@@ -415,16 +415,16 @@ namespace MScript.Parsing
             }
 
             // object-literal
-            if (context.IsToken(-2, TokenType.BraceOpen))
+            if (context.IsToken(-2, TokenType.BraceOpen, out var braceOpenToken))
             {
                 // { }
-                return context.ReplaceLast(2, new ObjectLiteral(Array.Empty<(string, Expression)>()));
+                return context.ReplaceLast(2, new ObjectLiteral(Array.Empty<(string, Expression)>(), braceOpenToken.Position));
             }
-            else if (context.IsToken(-3, TokenType.BraceOpen) &&
+            else if (context.IsToken(-3, TokenType.BraceOpen, out var braceOpenToken2) &&
                 context.Stack(-2) is KeyValuePairList keyValuePairList2)
             {
                 // { key-value-pair-list }
-                return context.ReplaceLast(3, new ObjectLiteral(keyValuePairList2.KeyValuePairs));
+                return context.ReplaceLast(3, new ObjectLiteral(keyValuePairList2.KeyValuePairs, braceOpenToken2.Position));
             }
 
             return ReducePrecedingExpressions(context, token);
@@ -432,10 +432,10 @@ namespace MScript.Parsing
 
         private static bool ReduceNone(Context context, Token token)
         {
-            Assert(token.Type == TokenType.None);
+            AssertTokenType(token, TokenType.None);
 
             // literal: none
-            return context.ReplaceLast(1, new NoneLiteral());
+            return context.ReplaceLast(1, new NoneLiteral(token.Position));
         }
 
         private static bool ReducePrecedingExpressions(Context context, Token token)
@@ -451,7 +451,7 @@ namespace MScript.Parsing
                     return false;
 
                 // expression binary-operator expression <?>
-                return context.ReplaceBeforeLast(3, new BinaryOperation(binaryOperator, leftExpression, rightExpression));
+                return context.ReplaceBeforeLast(3, new BinaryOperation(binaryOperator, leftExpression, rightExpression, leftExpression.Position));
             }
 
             // unary-operation <?>
@@ -462,7 +462,7 @@ namespace MScript.Parsing
                     return false;
 
                 // unary-operator expression <?>
-                return context.ReplaceBeforeLast(2, new UnaryOperation(unaryOperator, expression));
+                return context.ReplaceBeforeLast(2, new UnaryOperation(unaryOperator, expression, expression.Position));
             }
 
             // conditional-operation <?>
@@ -477,16 +477,16 @@ namespace MScript.Parsing
                         return false;
 
                     // expression ? expression : expression <?>
-                    return context.ReplaceBeforeLast(5, new ConditionalOperation(firstExpression, secondExpression, thirdExpression));
+                    return context.ReplaceBeforeLast(5, new ConditionalOperation(firstExpression, secondExpression, thirdExpression, firstExpression.Position));
                 }
-                else if (context.IsToken(-5, TokenType.If) &&
+                else if (context.IsToken(-5, TokenType.If, out var ifToken) &&
                     context.IsToken(-3, TokenType.Else))
                 {
                     if (nextTokenPrecedence >= GetPrecedence(TokenType.Else))
                         return false;
 
                     // expression if expression else expression <?>
-                    return context.ReplaceBeforeLast(5, new ConditionalOperation(secondExpression, firstExpression, thirdExpression));
+                    return context.ReplaceBeforeLast(5, new ConditionalOperation(secondExpression, firstExpression, thirdExpression, ifToken.Position));
                 }
             }
 
@@ -499,7 +499,7 @@ namespace MScript.Parsing
                     return false;
 
                 // parameter-list => expression <?>
-                return context.ReplaceBeforeLast(3, new AnonymousFunctionDefinition(parameterNameList.ParameterNames, bodyExpression));
+                return context.ReplaceBeforeLast(3, new AnonymousFunctionDefinition(parameterNameList.ParameterNames, bodyExpression, parameterNameList.Position));
             }
 
             return false;
@@ -613,13 +613,13 @@ namespace MScript.Parsing
 
         private static ParseException ParseError(string message, Context context)
         {
-            return new ParseException(message, 0);  // TODO: Maybe possible to extract position from context?
+            return new ParseException(message, context.NextToken.Position);
         }
 
-        private static void Assert(bool condition)
+        private static void AssertTokenType(Token token, TokenType expectedType)
         {
-            if (!condition)
-                throw new InvalidOperationException();
+            if (token.Type != expectedType)
+                throw new ParseException($"Expected a {expectedType} token but found a {token.Type}.", token.Position);
         }
 
 
@@ -662,12 +662,25 @@ namespace MScript.Parsing
                 return ParseStack[index];
             }
 
+            /// <inheritdoc cref="IsToken(int, TokenType, out Token?)"/>
+            public bool IsToken(int index, TokenType type) => IsToken(index, type, out _);
+
             /// <summary>
             /// Returns true if the nth element in the parse stack is a token of the specified type.
             /// Negative indexes start from the end, where -1 is the last element, -2 the next-to-last, and so on.
             /// Returns false if the index is out of range.
             /// </summary>
-            public bool IsToken(int index, TokenType type) => Stack(index) is Token token && token.Type == type;
+            public bool IsToken(int index, TokenType type, out Token token)
+            {
+                if (Stack(index) is Token stackToken && stackToken.Type == type)
+                {
+                    token = stackToken;
+                    return true;
+                }
+
+                token = default;
+                return false;
+            }
 
             /// <summary>
             /// Returns the token value of the nth element in the parse stack, if it is a token. Returns an empty string otherwise.

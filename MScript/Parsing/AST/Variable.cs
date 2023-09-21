@@ -4,7 +4,9 @@
     {
         public string Name { get; }
 
-        public Variable(string name) => Name = name;
+        public Variable(string name, Position position)
+            : base(position)
+            => Name = name;
 
 
         public override string ToString() => Name;

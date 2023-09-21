@@ -5,10 +5,21 @@
         public TokenType Type { get; }
         public string Value { get; }
 
-        public Token(TokenType type, string? value = null)
+        public Position Position { get; }
+
+        public Token(TokenType type, Position position)
+            : this(type, "", position)
+        {
+        }
+
+        public Token(TokenType type, string value, Position position)
         {
             Type = type;
-            Value = value ?? "";
+            Value = value;
+
+            Position = position;
         }
+
+        public override string ToString() => $"(Type: {Type}, Value: '{Value}')";
     }
 }

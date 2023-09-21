@@ -2,5 +2,9 @@
 {
     abstract class Literal : Expression
     {
+        public Literal(Position position)
+            : base(position)
+        {
+        }
     }
 }

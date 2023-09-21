@@ -5,7 +5,8 @@
         public List<(string, Expression)> Fields { get; }
 
 
-        public ObjectLiteral(IEnumerable<(string, Expression)> fields)
+        public ObjectLiteral(IEnumerable<(string, Expression)> fields, Position position)
+            : base(position)
         {
             Fields = fields.ToList();
         }

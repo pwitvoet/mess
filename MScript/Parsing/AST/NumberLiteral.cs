@@ -4,7 +4,9 @@
     {
         public double Value { get; }
 
-        public NumberLiteral(double value) => Value = value;
+        public NumberLiteral(double value, Position position)
+            : base(position)
+            => Value = value;
 
 
         public override string ToString() => Value.ToString();

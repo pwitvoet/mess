@@ -5,7 +5,8 @@
         public Expression Indexable { get; }
         public Expression Index { get; }
 
-        public Indexing(Expression indexable, Expression index)
+        public Indexing(Expression indexable, Expression index, Position position)
+            : base(position)
         {
             Indexable = indexable;
             Index = index;

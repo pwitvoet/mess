@@ -5,7 +5,8 @@
         public IReadOnlyCollection<string> ArgumentNames { get; }
         public Expression Body { get; }
 
-        public AnonymousFunctionDefinition(IEnumerable<string> argumentNames, Expression body)
+        public AnonymousFunctionDefinition(IEnumerable<string> argumentNames, Expression body, Position position)
+            : base(position)
         {
             ArgumentNames = argumentNames.ToArray();
             Body = body;
