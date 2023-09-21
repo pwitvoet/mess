@@ -41,7 +41,7 @@
 
 
             if (exception != null)
-                message = $"{message}: {Formatting.FormatException(exception, stacktrace: LogLevel >= LogLevel.Verbose)}";
+                message = $"{message}{(message.EndsWith(':') ? "" : ":")} {Formatting.FormatException(exception, stacktrace: LogLevel >= LogLevel.Verbose)}";
 
             Log(level, message);
         }
