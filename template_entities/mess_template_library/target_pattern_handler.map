@@ -8,7 +8,7 @@
 {
 "classname" "macro_insert"
 "instance_count" "1"
-"template_name" "{(name.contains(',') ? 'multi' : ['+','-','kill ','show ','hide '].filter(prefix => name.trim().startswith(prefix))[0] || (name.contains('->') ? '->' : (name.trim().startswith('set ') && name.trim().split().length == 3) ? 'set' : '')).trim()}_template"
+"template_name" "{_mtl_get_target_pattern_template_name(name)}"
 "name" "{name.split('#')[0].trim()}"
 "original_name" "{name}"
 "origin" "0 0 0"

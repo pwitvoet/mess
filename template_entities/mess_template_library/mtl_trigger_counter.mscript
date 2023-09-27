@@ -1,0 +1,52 @@
+// Takes an array of strings, and returns an array of unique strings, by appending a #N suffix to duplicate strings.
+_mtl_apply_hash_suffixes_to_names_array = names =>
+    names
+        .groupby(name => name)
+        .reduce((result, group) => result.concat(group.values.map((name, i) => i == 0 ? name : name + '#' + i)), []);
+
+
+// This function takes an array of properties ({key, value} objects).
+// It removes any unwanted properties, optionally splits multi-target keys into multiple properties,
+// and returns an array of {counter_value, targetnames} objects,
+// where 'counter_value' is an integer number, and 'targetnames' is an array of targetname strings.
+// #N suffixes are added to duplicate targetnames within a group.
+_mtl_get_trigger_counter_target_groups = (properties, is_target_property, use_multitarget_pattern) =>
+    properties
+        // Certain properties, like 'classname', 'origin', etc. must be ignored:
+        .filter(is_target_property)
+        
+        // Remove #N suffixes and ensure that counter values are numeric, defaulting to 0 otherwise:
+        .map(property => {key: property.key.split('#')[0], value: round(num(property.value)) || 0})
+        
+        // Split up multi-target patterns, if enabled:
+        .reduce(
+            use_multitarget_pattern ?
+                
+                // Split up multi-target patterns:
+                ((result, property) => result.concat(property.key.split(',')
+                    .map(targetname => {key: targetname.trim(), value: property.value}))) :
+                
+                // No multi-target pattern handling:
+                (result, property) => result.append(property),
+        [])
+        
+        // Group by counter value and sort in ascending order:
+        .groupby(target => target.value)
+        .sort(group => group.key)
+        
+        // Convert to an array of {counter_value, targetnames} objects:
+        .map(group => {counter_value: group.key, targetnames: _mtl_apply_hash_suffixes_to_names_array(group.values.map(target => target.key))})
+        
+        // Sort by counter value:
+        .sort(targets_group => num(targets_group.counter_value));
+
+
+// mtl_trigger_counter:
+// Takes an array of parent entity properties ({key, value} objects), removes properties that aren't meant to be targets, handles multi-target patterns (if enabled),
+// groups targets by counter value, and adds #N suffixes to reoccurring targets within a group.
+// Returns an array of counter-value/targetnames ({counter-value, targetnames}) objects.
+// The behavior of this function depends on the globals MTL_IGNORE_TARGET_PREDICATE and MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN.
+_mtl_get_trigger_counter_targets = (properties) => _mtl_get_trigger_counter_target_groups(
+        properties,
+        property => !property.key.match('^(?:classname|targetname|origin|spawnflags|template_map|trigger_mode|initial_value|reset_counter_at|interval)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(property.key),
+        !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN'));

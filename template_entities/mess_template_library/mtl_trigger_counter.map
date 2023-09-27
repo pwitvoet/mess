@@ -4,7 +4,7 @@
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname}"
-"targets" "{get_attr().reduce((result, attr) => result.concat(attr.key.split('#')[0].split(',').map(part => {key: part, value: attr.value})), []).filter(a => !a.key.match('^(?:classname|targetname|origin|spawnflags|template_map|trigger_mode|initial_value|reset_counter_at|interval)$')).groupby(a => a.value).sort(g => num(g.key))}"
+"targets" "{_mtl_get_trigger_counter_targets(get_attr())}"
 "reset_counter_at" "{reset_counter_at}"
 "initial_value" "{initial_value || 0}"
 "clock_mode" "{trigger_mode == 1}"
@@ -17,7 +17,7 @@
 "selection_weight" "1"
 "anchor" "1"
 "targetname" "game_counter_template"
-"mm_name" "{targets.length > 1 ? iid() + '_mm' : none}"
+"mm_name" "{targetnames.length > 1 ? iid() + '_mm' : none}"
 {
 ( 128 248 128 ) ( 128 248 -0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 256 256 128 ) ( 256 256 -0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
@@ -40,7 +40,7 @@
 "health" "{target_count}"
 "frags" "{initial_value}"
 "delay" "0"
-"target" "{targets.length == 1 ? targets[0].key : mm_name}"
+"target" "{targetnames.length == 1 ? targetnames[0] : mm_name}"
 "targetname" "{targetname}"
 "origin" "192 192 64"
 }
@@ -53,8 +53,8 @@
 "instance_orientation" "0"
 "instance_count" "{targets.length}"
 "template_name" "game_counter_template"
-"targets" "{targets[nth()].values}"
-"target_count" "{targets[nth()].key}"
+"targetnames" "{targets[nth()].targetnames}"
+"target_count" "{targets[nth()].counter_value}"
 "initial_value" "{initial_value}"
 "targetname" "{counter_name}"
 "origin" "0 0 0"
@@ -66,9 +66,9 @@
 "scale" "1"
 "angles" "0 0 0"
 "instance_orientation" "0"
-"instance_count" "{targets.length == 1 ? 1 : 0}"
+"instance_count" "{targetnames.length == 1 ? 1 : 0}"
 "template_map" "{map_dir() + '/target_pattern_handler.map'}"
-"target" "{target_name}"
+"target" "{targetnames[0]}"
 "origin" "192 192 80"
 }
 {
@@ -130,8 +130,8 @@
 "scale" "1"
 "angles" "0 0 0"
 "instance_orientation" "0"
-"instance_count" "{targets.length > 1 ? 1 : 0}"
-"targets" "{targets}"
+"instance_count" "{targetnames.length > 1 ? 1 : 0}"
+"targetnames" "{targetnames}"
 "template_name" "multiple_targets_template"
 "targetname" "{mm_name}"
 "origin" "192 192 96"
@@ -162,7 +162,7 @@
 "classname" "macro_insert"
 "targetname" "{targetname}"
 "template_map" "{map_dir() + '/multi_manager_expansion.map'}"
-"{targets.map(a => a.key)}" "{targets.map(a => 0)}"
+"{targetnames}" "{targetnames.map(a => 0)}"
 "origin" "384 192 64"
 }
 {

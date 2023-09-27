@@ -1,0 +1,47 @@
+// This function takes an array of properties ({key, value} objects).
+// It removes any unwanted properties, optionally splits multi-target keys into multiple properties,
+// and adds #N suffixes to properties with duplicate keys:
+_mtl_get_multi_manager_targets_array = (properties, is_target_property, use_multitarget_pattern) =>
+    properties
+        // Certain properties, like 'classname', 'origin', etc. must be ignored:
+        .filter(is_target_property)
+        
+        // Remove #N suffixes:
+        .map(property => {key: property.key.split('#')[0], value: property.value})
+        
+        // Look for multi-target pattern usage (if enabled):
+        .reduce(
+            use_multitarget_pattern ?
+                
+                // Split up multi-target patterns into multiple targets:
+                ((result, property) => result.concat(property.key
+                    .split(',')
+                    .map(part => num(part.split(':', -2)[1]) ?
+                        {key: part.split(':', -2)[0], value: num(property.value) + num(part.split(':', -2)[1])} :
+                        {key: part, value: property.value}))) :
+                
+                // No multi-target pattern handling:
+                ((result, property) => result.append(property)),
+            [])
+        
+        // Add #N suffixes to targets that occur multiple times:
+        .groupby(property => property.key)
+        .reduce((result, group) => result.concat(group.values
+            .map((property, i) => i == 0 ?
+                property :
+                {key: property.key + '#' + i, value: property.value})),
+            [])
+        
+        // Sort by trigger delay (value):
+        .sort(property => num(property.value));
+
+
+// multi_manager_expansion:
+// Takes an array of parent entity properties ({key, value} objects), removes properties that aren't meant to be targets, handles multi-target patterns (if enabled),
+// adds #N suffixes to reoccurring targets, and sorts the targets by their value (delay).
+// Returns an array of targetname/delay ({key, value}) objects.
+// The behavior of this function depends on the globals MTL_IGNORE_TARGET_PREDICATE and MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN.
+_mtl_get_multi_manager_targets = (properties) => _mtl_get_multi_manager_targets_array(
+        properties,
+        property => !property.key.match('^(?:classname|targetname|origin|spawnflags|template_map)$') && !(getglobal('MTL_IGNORE_TARGET_PREDICATE') || name => none)(property.key),
+        !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN'));

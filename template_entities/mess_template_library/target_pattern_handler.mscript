@@ -1,0 +1,12 @@
+// Returns the name of the template that should be used for the given targetname.
+// This takes the various MTL_TRIGGER_PATTERNS_DISABLE_* globals into account.
+_mtl_get_target_pattern_template_name = targetname =>
+    (targetname.contains(',') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN')) ? 'multi_template' :
+    (targetname.startswith('+') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_ON_PATTERN')) ? '+_template' :
+    (targetname.startswith('-') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_OFF_PATTERN')) ? '-_template' :
+    (targetname.startswith('kill') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_KILL_PATTERN')) ? 'kill_template' :
+    (targetname.startswith('show') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_SHOW_PATTERN')) ? 'show_template' :
+    (targetname.startswith('hide') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_HIDE_PATTERN')) ? 'hide_template' :
+    (targetname.contains('->') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_CHANGETARGET_PATTERN')) ? '->_template' :
+    (targetname.trim().startswith('set ') && targetname.trim().split().length == 3 && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_SET_PATTERN')) ? 'set_template' :
+    '_template';
