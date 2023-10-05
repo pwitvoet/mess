@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace MScript.Evaluation
 {
-    static class Operations
+    public static class Operations
     {
         // Arithmetic:
         public static object? Add(object? leftOperand, object? rightOperand)
@@ -129,7 +129,7 @@ namespace MScript.Evaluation
         // Indexing:
         public static object? Index(object?[] array, int index)
         {
-            index = GetIndex(array.Length, index);
+            index = GetNormalizedIndex(array.Length, index);
             if (index < 0 || index >= array.Length)
                 return null;
 
@@ -138,7 +138,7 @@ namespace MScript.Evaluation
 
         public static string? Index(string @string, int index)
         {
-            index = GetIndex(@string.Length, index);
+            index = GetNormalizedIndex(@string.Length, index);
             if (index < 0 || index >= @string.Length)
                 return null;
 
@@ -156,6 +156,11 @@ namespace MScript.Evaluation
             object?[] array => string.Join(" ", array.Select(ToString)),
             _ => value.ToString() ?? "",
         };
+
+
+        // Utility:
+        public static int GetNormalizedIndex(int length, int index)
+            => index < 0 ? length + index : index;
 
 
         private static object? RecursiveOperation(object? leftOperand, object? rightOperand, Func<object?, object?, object?> operation)
@@ -211,8 +216,6 @@ namespace MScript.Evaluation
             null => 0.0,
             _ => null,
         };
-
-        private static int GetIndex(int length, int index) => index < 0 ? length + index : index;
 
         private static object? ToBoolean(bool boolean) => boolean ? 1.0 : null;
     }

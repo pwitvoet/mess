@@ -257,6 +257,22 @@ namespace MESS.Macros
 
             public static double rad2deg(double radians) => (radians / Math.PI) * 180.0;
 
+            // Text:
+            public static double? ord(string? str, double? index = null)
+            {
+                if (str is null)
+                    return null;
+
+                var charString = Operations.Index(str, (int)(index ?? 0));
+                if (string.IsNullOrEmpty(charString))
+                    return null;
+
+                return charString[0];
+            }
+
+            public static string chr(double value)
+                => new string((char)value, 1);
+
             // Arrays:
             public static object?[] range(double start, double? stop = null, double? step = null)
             {

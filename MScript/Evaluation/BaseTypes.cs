@@ -112,21 +112,21 @@ namespace MScript.Evaluation
 
             public static double? index(string self, string str, double? offset = null, object? ignore_case = null)
             {
-                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? 0 : (int)offset), 0, self.Length);
+                var startIndex = Math.Clamp(Operations.GetNormalizedIndex(self.Length, offset is null ? 0 : (int)offset), 0, self.Length);
                 var index = self.IndexOf(str, startIndex, GetStringComparison(ignore_case));
                 return index != -1 ? index : null;
             }
 
             public static double? lastindex(string self, string str, double? offset = null, object? ignore_case = null)
             {
-                var startIndex = Math.Clamp(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), 0, self.Length);
+                var startIndex = Math.Clamp(Operations.GetNormalizedIndex(self.Length, offset is null ? self.Length - 1 : (int)offset), 0, self.Length);
                 var index = self.LastIndexOf(str, startIndex, GetStringComparison(ignore_case));
                 return index != -1 ? index : null;
             }
 
             public static double? count(string self, string str, double? offset = null, object? ignore_case = null)
             {
-                var index = NormalizedIndex(self, offset is null ? 0 : (int)offset);
+                var index = Operations.GetNormalizedIndex(self.Length, offset is null ? 0 : (int)offset);
                 if (string.IsNullOrEmpty(str))
                     return Math.Max(0, self.Length + 1 - index);
 
@@ -219,9 +219,6 @@ namespace MScript.Evaluation
             }
 
 
-            private static int NormalizedIndex(string str, int index)
-                => index < 0 ? str.Length + index : index;
-
             private static StringComparison GetStringComparison(object? ignore_case)
                 => Operations.IsTrue(ignore_case) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
@@ -279,11 +276,11 @@ namespace MScript.Evaluation
             public static object?[] slice(object?[] self, double start, double? end = null, double? step = null)
             {
                 // NOTE: If no end index is specified, the rest of the vector is taken (depending on step direction).
-                var startIndex = NormalizedIndex(self, (int)start);
+                var startIndex = Operations.GetNormalizedIndex(self.Length, (int)start);
                 var stepValue = (int)(step ?? 1);
                 if (stepValue > 0)
                 {
-                    var endIndex = NormalizedIndex(self, (int)(end ?? self.Length));
+                    var endIndex = Operations.GetNormalizedIndex(self.Length, (int)(end ?? self.Length));
                     if (endIndex <= startIndex || startIndex >= self.Length)
                         return System.Array.Empty<object?>();
 
@@ -294,7 +291,7 @@ namespace MScript.Evaluation
                 }
                 else if (stepValue < 0)
                 {
-                    var endIndex = end is null ? -1 : NormalizedIndex(self, (int)end);
+                    var endIndex = end is null ? -1 : Operations.GetNormalizedIndex(self.Length, (int)end);
                     if (startIndex <= endIndex || endIndex >= self.Length)
                         return System.Array.Empty<object?>();
 
@@ -322,7 +319,7 @@ namespace MScript.Evaluation
 
             public static object?[] insert(object?[] self, double index, object? value)
             {
-                var insertIndex = NormalizedIndex(self, (int)index);
+                var insertIndex = Operations.GetNormalizedIndex(self.Length, (int)index);
                 if (insertIndex < 0)
                     insertIndex = 0;
                 else if (insertIndex > self.Length)
@@ -344,7 +341,7 @@ namespace MScript.Evaluation
 
             public static double? index(object?[] self, object? value, double? offset = null)
             {
-                var startIndex = Math.Max(0, NormalizedIndex(self, offset is null ? 0 : (int)offset));
+                var startIndex = Math.Max(0, Operations.GetNormalizedIndex(self.Length, offset is null ? 0 : (int)offset));
                 for (int i = startIndex; i < self.Length; i++)
                 {
                     if (Operations.IsTrue(Operations.Equals(self[i], value)))
@@ -355,7 +352,7 @@ namespace MScript.Evaluation
 
             public static double? lastindex(object?[] self, object? value, double? offset = null)
             {
-                var startIndex = Math.Min(NormalizedIndex(self, offset is null ? self.Length - 1 : (int)offset), self.Length - 1);
+                var startIndex = Math.Min(Operations.GetNormalizedIndex(self.Length, offset is null ? self.Length - 1 : (int)offset), self.Length - 1);
                 for (int i = startIndex; i >= 0; i--)
                 {
                     if (Operations.IsTrue(Operations.Equals(self[i], value)))
@@ -543,8 +540,6 @@ namespace MScript.Evaluation
                     return (array, index) => selector.Apply(new[] { array[index] }) as double?;
                 }
             }
-
-            private static int NormalizedIndex(object?[] array, int index) => index < 0 ? array.Length + index : index;
         }
     }
 }
