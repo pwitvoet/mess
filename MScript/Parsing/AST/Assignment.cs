@@ -10,5 +10,7 @@
             Identifier = identifier;
             Value = value;
         }
+
+        public override string ToString() => $"{Identifier} = {Value}";
     }
 }

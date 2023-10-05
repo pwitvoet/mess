@@ -647,6 +647,15 @@ namespace MScript.Parsing
                 exception.Data["Expression"] = expression;
                 exception.Data["Position"] = expression.Position;
             }
+            else if (topItem is Assignment[] assignments)
+            {
+                var lastAssignment = assignments.LastOrDefault();
+                if (lastAssignment != null)
+                {
+                    exception.Data["Assignment"] = lastAssignment;
+                    exception.Data["Position"] = lastAssignment.Value.Position;
+                }
+            }
 
             return exception;
         }
