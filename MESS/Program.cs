@@ -26,7 +26,7 @@ namespace MESS
         static Version? MessVersion => Assembly.GetExecutingAssembly().GetName().Version;
         static string DefaultConfigFilePath => Path.Combine(AppContext.BaseDirectory, "mess.config");
         static string DefaultMessFgdFilePath => Path.Combine(AppContext.BaseDirectory, "mess.fgd");
-        static string DefaultTemplatesDirectory => Path.Combine(AppContext.BaseDirectory, "templates");
+        static string DefaultTemplatesDirectory => Path.Combine(AppContext.BaseDirectory, "template_maps");
 
 
         static int Main(string[] args)
@@ -138,15 +138,15 @@ namespace MESS
                 .Option(
                     "-dir",
                     s => { settings.TemplateMapsDirectory = FileSystem.GetFullPath(s); },
-                    $"The directory to use for resolving relative template map paths. If not specified, the input map file directory will be used.")
+                    $"The directory to use for resolving relative template map paths. The default is \"{{EXE_DIR}}\\template_maps\".")
                 .Option(
                     "-config",
                     s => { settings.ConfigFilePath = FileSystem.GetFullPath(s); },
-                    $"Which config file to use. This can be used to switch between different game configurations. The default is mess.config.")
+                    $"Which config file to use. This can be used to switch between different game configurations. The default is \"{{EXE_DIR}}\\mess.config\".")
                 .Option(
                     "-fgd",
                     s => { settings.MessFgdFilePath = FileSystem.GetFullPath(s); },
-                    $"The MESS fgd file path. MESS will combine all template entity definitions and save them to this fgd file. The default is mess.fgd.")
+                    $"The MESS fgd file path. MESS will combine all template entity definitions and save them to this fgd file. The default is \"{{EXE_DIR}}\\mess.fgd\".")
                 .Option(
                     "-vars",
                     s => { ParseVariables(s, settings.Variables); },
@@ -166,7 +166,7 @@ namespace MESS
                 .Option(
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
-                    $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {settings.LogLevel.ToString().ToLowerInvariant()}.")
+                    $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {LogLevel.Info.ToString().ToLowerInvariant()}.")
                 .Argument(
                     s => { settings.InputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
                     "Input map file.")
