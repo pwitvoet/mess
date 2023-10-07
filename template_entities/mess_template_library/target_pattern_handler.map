@@ -274,6 +274,8 @@
 "selection_weight" "1"
 "anchor" "1"
 "targetname" "->_template"
+"target_entity" "{name.split('->', 2)[0].trim()}"
+"new_target" "{name.split('->', 2)[1].trim()}"
 {
 ( 384 -260 64 ) ( 384 -260 0 ) ( 384 -256 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 448 -256 64 ) ( 448 -256 0 ) ( 448 -260 64 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
@@ -314,9 +316,17 @@
 {
 "classname" "trigger_changetarget"
 "delay" "0"
-"target" "{name.split('->')[0].trim()}"
-"m_iszNewTarget" "{name.split('->')[1].trim()}"
+"target" "{target_entity}"
+"m_iszNewTarget" "{new_target}"
 "targetname" "{name}"
+"origin" "416 -288 32"
+}
+{
+"classname" "macro_insert"
+"instance_count" "1"
+"template_name" "{_mtl_get_target_pattern_template_name(new_target)}"
+"name" "{new_target}"
+"original_name" "{new_target}"
 "origin" "416 -288 32"
 }
 {
