@@ -372,8 +372,12 @@ namespace MESS.Macros
         }
 
         /// <summary>
-        /// Resolves a template by either loading it from a file or by picking a sub-template from the current context.
-        /// Logs a warning and returns null if the specified template could not be resolved.
+        /// Selects a template by name. Returns null if no template matches the given name (or comma-separated names list).
+        /// If multiple templates match the given name(s) then one of them will be selected at random, taking their weights into account.
+        /// <para>
+        /// If a map path (or comma-separated list of map paths) is provided, then the search for a template will be performed within that map,
+        /// otherwise the search will be performed within the current map. If no template name is provided then the specified map itself will be used as a template.
+        /// </para>
         /// </summary>
         private MapTemplate? ResolveTemplate(string? mapPath, string? templateName, InstantiationContext context)
         {
@@ -392,7 +396,16 @@ namespace MESS.Macros
                 try
                 {
                     // TODO: If no extension is specified, use a certain preferential order (.rmf, .map, ...)? ...
-                    return GetMapTemplate(mapPath);
+                    // If no template name is specified, then the map itself will be used as a template:
+                    var mapTemplate = GetMapTemplate(mapPath);
+                    if (string.IsNullOrEmpty(templateName))
+                        return mapTemplate;
+
+                    Logger.Verbose($"Resolving sub-template '{templateName}'.");
+                    templateName = SelectTemplateFromCommaSeparatedWeightedList(context, templateName);
+
+                    Logger.Verbose($"Selected sub-template: '{templateName}'.");
+                    return SelectSubTemplate(mapTemplate.SubTemplates, templateName);
                 }
                 catch (Exception ex)
                 {
@@ -409,13 +422,22 @@ namespace MESS.Macros
 
                 // We'll look for sub-templates in the closest parent context whose template has been loaded from a map file.
                 // If there are multiple matches, we'll pick one at random. If there are no matches, we'll fall through and return null.
-                var matchingSubTemplates = context.SubTemplates
+                return SelectSubTemplate(context.SubTemplates, templateName);
+            }
+
+            return null;
+
+
+            MapTemplate? SelectSubTemplate(IEnumerable<MapTemplate> subTemplates, string templateName)
+            {
+                var matchingSubTemplates = subTemplates
                     .Where(subTemplate => subTemplate.Names.Contains(templateName))
                     .Select(subTemplate => new {
                         SubTemplate = subTemplate,
                         Weight = PropertyExtensions.TryParseDouble(Evaluation.EvaluateInterpolatedString(subTemplate.SelectionWeightExpression, context), out var weight) ? weight : 0
                     })
                     .ToArray();
+
                 if (matchingSubTemplates.Length == 0)
                 {
                     Logger.Warning($"No sub-templates found with the name '{templateName}'.");
@@ -437,8 +459,6 @@ namespace MESS.Macros
                 var selection = context.GetRandomDouble(0, matchingSubTemplates.Sum(weightedSubtemplate => weightedSubtemplate.Weight));
                 return TakeFromWeightedList(matchingSubTemplates, selection, weightedSubTemplate => weightedSubTemplate.Weight)?.SubTemplate;
             }
-
-            return null;
         }
 
         /// <summary>
