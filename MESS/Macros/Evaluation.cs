@@ -452,24 +452,59 @@ namespace MESS.Macros
             public double parentid() => _parentID;
 
             // Randomness:
-            public double rand(double? min = null, double? max = null)
+            public double rand(double? min = null, double? max = null, double? step = null)
             {
                 if (min == null && max == null)     // rand()
                     return GetRandomDouble(0, 1);
 
                 min = min ?? 0.0;
                 max = max ?? 0.0;
-                return GetRandomDouble(Math.Min(min.Value, max.Value), Math.Max(min.Value, max.Value));
+                var lower = Math.Min(min.Value, max.Value);
+                var upper = Math.Max(min.Value, max.Value);
+
+                if (step == null)
+                {
+                    // rand(max)
+                    // rand(min, max)
+                    return GetRandomDouble(lower, upper);
+                }
+                else
+                {
+                    // rand(min, max, step)
+                    var stepSize = Math.Abs(step.Value);
+                    var range = upper - lower;
+                    var steps = Math.Floor(range / stepSize);
+                    if (steps != range / stepSize)
+                        steps += 1;
+
+                    return lower + GetRandomInteger(0, (int)steps) * stepSize;
+                }
             }
 
-            public double randi(double? min = null, double? max = null)
+            public double randi(double? min = null, double? max = null, double? step = null)
             {
                 if (min == null && max == null)     // randi()
                     return GetRandomInteger(0, 2);
 
                 min = min ?? 0.0;
                 max = max ?? 0.0;
-                return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
+                var lower = (int)Math.Min(min.Value, max.Value);
+                var upper = (int)Math.Max(min.Value, max.Value);
+
+                if (step == null)
+                {
+                    // randi(max)
+                    // randi(min, max)
+                    return GetRandomInteger((int)Math.Min(min.Value, max.Value), (int)Math.Max(min.Value, max.Value));
+                }
+                else
+                {
+                    // rand(min, max, step)
+                    var stepSize = (int)Math.Abs(step.Value);
+                    var range = upper - lower;
+                    var steps = (range / stepSize) + 1;
+                    return lower + GetRandomInteger(0, steps) * stepSize;
+                }
             }
 
             public object? randitem(object?[] array, object?[]? weights = null)
