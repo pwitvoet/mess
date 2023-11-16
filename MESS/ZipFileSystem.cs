@@ -3,20 +3,20 @@
 namespace MESS
 {
     /// <summary>
-    /// This class contains .mtb (MESS Template Bundle)-aware file reading functions.
+    /// This class contains file-reading functions that can read from both directories and zip files.
     /// </summary>
-    public static class MtbFileSystem
+    public static class ZipFileSystem
     {
         /// <summary>
         /// Opens the specified file and calls the given file reading function.
         /// <para>
-        /// If the specified file cannot be found, then this will try looking inside .mtb files (zip files that are used for distributing template entities).
-        /// For example, if "C:\modding\maps\mymap.map" does not exist, then it will look inside "C:\modding\maps.mtb" for a "mymap.map" file.
-        /// If that .mtb file does not exist, or if it does not contain the specified file, it will look inside "C:\modding.mtb" for a "maps\mymap.map" file, and so on.
+        /// If the specified file cannot be found, then this function will also try looking inside .zip files.
+        /// For example, if "C:\modding\maps\mymap.map" does not exist, then it will look inside "C:\modding\maps.zip" for a "mymap.map" file.
+        /// If that .zip file does not exist, or if it does not contain the specified file, it will look inside "C:\modding.zip" for a "maps\mymap.map" file, and so on.
         /// </para>
         /// <para>
-        /// If an .mtb path is given (for example, "C:\directory\bundle.mtb\file.ext") then the file will be read from that specific .mtb file only.
-        /// An exception will be thrown if the .mtb file does not exist or if it does not contain the specified file. No .mtb fallback search will be performed.
+        /// If a .zip path is given (for example, "C:\directory\bundle.zip\file.ext") then the file will be read from that specific .zip file only.
+        /// An exception will be thrown if the .zip file does not exist or if it does not contain the specified file. No .zip fallback search will be performed.
         /// </para>
         /// </summary>
         /// <exception cref="FileNotFoundException"/>
@@ -28,16 +28,16 @@ namespace MESS
                 using (var file = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     return readFile(file);
             }
-            else if (path.Contains(".mtb"))
+            else if (path.Contains(".zip"))
             {
-                // We'll skip the .mtb search if a path specifically points to a file inside an .mtb file ("C:\directory\bundle.mtb\file.ext"):
-                var mtbPath = path.Substring(0, path.IndexOf(".mtb") + 4);
-                var entryPath = path.Substring(mtbPath.Length + 1);
+                // We'll skip the .zip search if a path specifically points to a file inside a .zip file ("C:\directory\bundle.zip\file.ext"):
+                var zipPath = path.Substring(0, path.IndexOf(".zip") + 4);
+                var entryPath = path.Substring(zipPath.Length + 1);
 
-                if (!File.Exists(mtbPath))
-                    throw new FileNotFoundException($"The specified .mtb archive '{mtbPath}' does not exist.", path);
+                if (!File.Exists(zipPath))
+                    throw new FileNotFoundException($"The specified .zip archive '{zipPath}' does not exist.", path);
 
-                using (var file = File.Open(mtbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var file = File.Open(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (var zip = new ZipArchive(file, ZipArchiveMode.Read, true))
                 {
                     var matchingEntry = GetEntry(zip, entryPath);
@@ -48,20 +48,20 @@ namespace MESS
                     }
                 }
 
-                throw new FileNotFoundException($"Unable to find '{entryPath}' in .mtb archive '{mtbPath}'.", path);
+                throw new FileNotFoundException($"Unable to find '{entryPath}' in .zip archive '{zipPath}'.", path);
             }
             else
             {
-                // If the specified file does not exist in the normal directory structure, try looking inside .mtb files:
-                var mtbEquivalentDirectory = Path.GetDirectoryName(path);
+                // If the specified file does not exist in the normal directory structure, try looking inside .zip files:
+                var zipEquivalentDirectory = Path.GetDirectoryName(path);
                 var entryPath = Path.GetFileName(path);
-                while (mtbEquivalentDirectory != null)
+                while (zipEquivalentDirectory != null)
                 {
-                    var mtbPath = mtbEquivalentDirectory + ".mtb";
-                    if (File.Exists(mtbPath))
+                    var zipPath = zipEquivalentDirectory + ".zip";
+                    if (File.Exists(zipPath))
                     {
-                        // We found an .mtb file, but does it contain our file? If not, keep looking.
-                        using (var file = File.Open(mtbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        // We found a .zip file, but does it contain our file? If not, keep looking.
+                        using (var file = File.Open(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                         using (var zip = new ZipArchive(file, ZipArchiveMode.Read, true))
                         {
                             var matchingEntry = GetEntry(zip, entryPath);
@@ -73,20 +73,20 @@ namespace MESS
                         }
                     }
 
-                    entryPath = Path.Combine(Path.GetFileName(mtbEquivalentDirectory), entryPath);
-                    mtbEquivalentDirectory = Path.GetDirectoryName(mtbEquivalentDirectory);
+                    entryPath = Path.Combine(Path.GetFileName(zipEquivalentDirectory), entryPath);
+                    zipEquivalentDirectory = Path.GetDirectoryName(zipEquivalentDirectory);
                 }
 
-                throw new FileNotFoundException($"Unable to find '{path}' after .mtb archive search.", path);
+                throw new FileNotFoundException($"Unable to find '{path}' after .zip archive search.", path);
             }
         }
 
         /// <summary>
         /// Opens all matching files in the given directory (and its sub-directories) and calls the given file reading function for each.
-        /// This will also look for matching files inside .mtb files.
+        /// This will also look for matching files inside .zip files.
         /// <para>
         /// The file reading function is given a file content stream and a file path, for identification purposes.
-        /// Files that are loaded from .mtb files can be recognized by their path format: "C:\directory\bundle.mtb\file.ext" (note the .mtb extension).
+        /// Files that are loaded from .zip files can be recognized by their path format: "C:\directory\bundle.zip\file.ext" (note the .zip extension).
         /// </para>
         /// </summary>
         public static IEnumerable<TResult> ReadFiles<TResult>(string directory, string extension, Func<Stream, string, TResult> readFile)
@@ -102,7 +102,7 @@ namespace MESS
 
             void ReadFiles(string currentDirectory)
             {
-                // First visit sub-directories - because real files take priority over files inside .mtb files, and .mtb files in sub-directories take priority over .mtb files in parent directories:
+                // First visit sub-directories - because real files take priority over files inside .zip files, and .zip files in sub-directories take priority over .zip files in parent directories:
                 foreach (var subDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly).OrderBy(path => path))
                     ReadFiles(subDirectory);
 
@@ -115,12 +115,12 @@ namespace MESS
                         results.Add(readFile(file, path));
                 }
 
-                // And finally, look inside .mtb files:
-                foreach (var mtbPath in Directory.EnumerateFiles(currentDirectory, "*.mtb", SearchOption.TopDirectoryOnly).OrderBy(path => path))
+                // And finally, look inside .zip files:
+                foreach (var zipPath in Directory.EnumerateFiles(currentDirectory, "*.zip", SearchOption.TopDirectoryOnly).OrderBy(path => path))
                 {
-                    var mtbDirPath = mtbPath.Replace(".mtb", "", StringComparison.InvariantCultureIgnoreCase);
+                    var zipDirPath = zipPath.Replace(".zip", "", StringComparison.InvariantCultureIgnoreCase);
 
-                    using (var file = File.Open(mtbPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var file = File.Open(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     using (var zip = new ZipArchive(file, ZipArchiveMode.Read))
                     {
                         foreach (var entry in zip.Entries.OrderBy(entry => entry.FullName))
@@ -129,13 +129,13 @@ namespace MESS
                                 continue;
 
                             var normalizedFullname = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
-                            var equivalentPath = Path.Combine(mtbDirPath, normalizedFullname);
+                            var equivalentPath = Path.Combine(zipDirPath, normalizedFullname);
                             if (visitedFiles.Contains(equivalentPath))
                                 continue;
 
                             visitedFiles.Add(equivalentPath);
                             using (var entryStream = entry.Open())
-                                results.Add(readFile(entryStream, Path.Combine(mtbPath, normalizedFullname)));
+                                results.Add(readFile(entryStream, Path.Combine(zipPath, normalizedFullname)));
                         }
                     }
                 }
@@ -143,11 +143,11 @@ namespace MESS
         }
 
         /// <summary>
-        /// Takes a path that points to an entry in an .mtb file, and returns a normalized equivalent path.
-        /// For example, it will return "C:\directory\bundle\file.ext" when given "C:\directory\bundle.mtb\file.ext".
+        /// Takes a path that points to an entry in a .zip file, and returns a normalized equivalent path.
+        /// For example, it will return "C:\directory\bundle\file.ext" when given "C:\directory\bundle.zip\file.ext".
         /// </summary>
-        public static string GetNormalizedPath(string mtbPath)
-            => mtbPath.Replace(".mtb" + Path.DirectorySeparatorChar, "" + Path.DirectorySeparatorChar);
+        public static string GetNormalizedPath(string zipPath)
+            => zipPath.Replace(".zip" + Path.DirectorySeparatorChar, "" + Path.DirectorySeparatorChar);
 
 
         private static ZipArchiveEntry? GetEntry(ZipArchive zipArchive, string entryPath)

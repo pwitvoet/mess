@@ -8,16 +8,16 @@ namespace MESS
         /// <summary>
         /// Loads the specified map file. Supports .map, .rmf and .jmf formats.
         /// <para>
-        /// If the specified file cannot be found, then this will try looking inside .mtb files (zip files that are used for distributing template entities).
-        /// For example, if "C:\modding\maps\mymap.map" does not exist, then "C:\modding\maps.mtb" is checked for a "mymap.map" file.
-        /// If that .mtb file does not exist, or if it does not contain the specified file, "C:\modding.mtb" is checked for a "maps\mymap.map" file, and so on.
+        /// If the specified file cannot be found, then this will try looking inside .zip files.
+        /// For example, if "C:\modding\maps\mymap.map" does not exist, then "C:\modding\maps.zip" is checked for a "mymap.map" file.
+        /// If that .zip file does not exist, or if it does not contain the specified file, "C:\modding.zip" is checked for a "maps\mymap.map" file, and so on.
         /// </para>
         /// </summary>
         /// <exception cref="FileNotFoundException"/>
         public static Map Load(string path)
         {
             var mapLoadFunction = GetMapLoadFunction(Path.GetExtension(path));
-            return MtbFileSystem.ReadFile(path, mapLoadFunction);
+            return ZipFileSystem.ReadFile(path, mapLoadFunction);
         }
 
         /// <summary>

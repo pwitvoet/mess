@@ -35,7 +35,7 @@
         public string? Condition { get; internal set; }
 
         /// <summary>
-        /// The .ted file that this directive was read from. This may refer to an entry inside an .mtb file.
+        /// The .ted file that this directive was read from. This may refer to an entry inside a .zip file.
         /// </summary>
         public string SourceFilePath { get; internal set; } = "";
 

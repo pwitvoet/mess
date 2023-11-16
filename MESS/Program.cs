@@ -240,7 +240,7 @@ namespace MESS
         }
 
         /// <summary>
-        /// This reads rewrite directives from all .ted files (which are basically small .fgd files) in the template directories (including .ted files inside .mtb files).
+        /// This reads rewrite directives from all .ted files (which are basically small .fgd files) in the template directories (including .ted files inside .zip files).
         /// It will also update mess.fgd, if it's outdated.
         /// </summary>
         private static RewriteDirective[] LoadTedRewriteDirectives(IEnumerable<string> templateDirectories, string messFgdFilePath, ILogger logger)
@@ -258,7 +258,7 @@ namespace MESS
                 }
                 else
                 {
-                    var directives = MtbFileSystem.ReadFiles(templatesDirectory, ".ted", (file, path) =>
+                    var directives = ZipFileSystem.ReadFiles(templatesDirectory, ".ted", (file, path) =>
                         {
                             using (var memoryStream = new MemoryStream())
                             {

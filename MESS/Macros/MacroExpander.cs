@@ -116,7 +116,7 @@ namespace MESS.Macros
                 if (!Directory.Exists(templatesDirectory))
                     continue;
 
-                MtbFileSystem.ReadFiles(templatesDirectory, ".mscript", (file, path) =>
+                ZipFileSystem.ReadFiles(templatesDirectory, ".mscript", (file, path) =>
                 {
                     try
                     {
@@ -193,7 +193,7 @@ namespace MESS.Macros
 
             bool IsAllowed(RewriteDirective rewriteDirective)
             {
-                var path = MtbFileSystem.GetNormalizedPath(rewriteDirective.SourceFilePath);
+                var path = ZipFileSystem.GetNormalizedPath(rewriteDirective.SourceFilePath);
                 if (tedPathWhitelist != null)
                     return ContainsMatch(tedPathWhitelist, path);
                 else if (tedPathBlacklist != null)
@@ -1267,7 +1267,7 @@ namespace MESS.Macros
 
 
             // Bundle file or directory:
-            public string? mtb_dir() => Path.GetDirectoryName(_sourceFilePath);
+            public string? zip_dir() => Path.GetDirectoryName(_sourceFilePath);
 
             // .ted file path:
             public string ted_file() => _sourceFilePath;
