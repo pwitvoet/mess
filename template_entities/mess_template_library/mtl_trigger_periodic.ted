@@ -4,7 +4,7 @@
 //
 // @MESS REWRITE:
 // "classname": "macro_insert"
-// "template_map": "{mtb_dir() + '/mtl_trigger_periodic.map'}"
+// "template_map": "{ted_dir() + '/mtl_trigger_periodic.map'}"
 // @MESS;
 @PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_periodic
 [

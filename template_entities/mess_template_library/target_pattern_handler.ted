@@ -1,3 +1,3 @@
 // @MESS REWRITE WHEN "{target}":
-// "_mess_attached_template_map": "{(_mess_attached_template_map ? _mess_attached_template_map + ',' : '') + mtb_dir().replace(',', ',,') + '/target_pattern_handler.map'}"
+// "_mess_attached_template_map": "{(_mess_attached_template_map ? _mess_attached_template_map + ',' : '') + ted_dir().replace(',', ',,') + '/target_pattern_handler.map'}"
 // @MESS;

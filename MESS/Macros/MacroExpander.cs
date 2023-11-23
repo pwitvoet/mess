@@ -1267,10 +1267,10 @@ namespace MESS.Macros
 
 
             // Bundle file or directory:
-            public string? zip_dir() => Path.GetDirectoryName(_sourceFilePath);
+            public string? ted_dir() => Path.GetDirectoryName(_sourceFilePath);
 
             // .ted file path:
-            public string ted_file() => _sourceFilePath;
+            public string ted_path() => _sourceFilePath;
         }
     }
 }

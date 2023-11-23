@@ -7,7 +7,7 @@
 //
 // @MESS REWRITE:
 // "classname": "macro_brush"
-// "template_map": "{mtb_dir() + '/mtl_trigger_area.map'}"
+// "template_map": "{ted_dir() + '/mtl_trigger_area.map'}"
 // "anchor": "1"
 // @MESS;
 @SolidClass = mtl_trigger_area
