@@ -200,13 +200,13 @@ namespace MESS.Formats
         private static void WriteFace(TextWriter writer, Face face)
         {
             foreach (var point in face.PlanePoints)
-                writer.Write(FormattableString.Invariant($"( {point.X:g} {point.Y:g} {point.Z:g} ) "));
+                writer.Write($"( {FormatFloat(point.X)} {FormatFloat(point.Y)} {FormatFloat(point.Z)} ) ");
 
             writer.Write(face.TextureName);
             writer.Write(" ");
-            writer.Write(FormattableString.Invariant($"[ {face.TextureRightAxis.X:g} {face.TextureRightAxis.Y:g} {face.TextureRightAxis.Z:g} {face.TextureShift.X:g} ] "));
-            writer.Write(FormattableString.Invariant($"[ {face.TextureDownAxis.X:g} {face.TextureDownAxis.Y:g} {face.TextureDownAxis.Z:g} {face.TextureShift.Y:g} ] "));
-            writer.WriteLine(FormattableString.Invariant($"{face.TextureAngle:g} {face.TextureScale.X:g} {face.TextureScale.Y:g} "));
+            writer.Write($"[ {FormatFloat(face.TextureRightAxis.X)} {FormatFloat(face.TextureRightAxis.Y)} {FormatFloat(face.TextureRightAxis.Z)} {FormatFloat(face.TextureShift.X)} ] ");
+            writer.Write($"[ {FormatFloat(face.TextureDownAxis.X)} {FormatFloat(face.TextureDownAxis.Y)} {FormatFloat(face.TextureDownAxis.Z)} {FormatFloat(face.TextureShift.Y)} ] ");
+            writer.WriteLine($"{FormatFloat(face.TextureAngle)} {FormatFloat(face.TextureScale.X)} {FormatFloat(face.TextureScale.Y)} ");
         }
 
         private static void WriteEntityPath(TextWriter writer, EntityPath entityPath)
@@ -217,6 +217,8 @@ namespace MESS.Formats
 
 
         private static float ParseFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        private static string FormatFloat(float f) => f.ToString("r", CultureInfo.InvariantCulture).Replace('E', 'e');
 
 
         class ReadingContext : IDisposable
