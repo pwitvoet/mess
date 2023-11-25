@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>5.1. Target patterns - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="target-patterns">5.1. Target patterns</h1>
+<p>
+In Half-Life, when an entity triggers another entity it usually toggles its target (or targets). Specifically enabling or disabling an entity requires an intermediate <code>trigger_relay</code> entity that sends an 'on' or 'off' signal to the target entity.</p>
+<p>
+Some mods, like Spirit of Half-Life, made it possible for any entity to send 'on' or 'off' signals simply by adding a <code>+</code> or <code>-</code> before the target name. The MESS target patterns behavior lets you do exactly that, and more. It works by automatically generating the required intermediate entities. For example, if a <code>func_button</code> targets <code>+door</code>, then MESS will insert a <code>trigger_relay</code> named <code>+door</code>, which sends an 'on' signal to <code>door</code>. This behavior is smart enough to only insert the required entities once, so if another entity also targets <code>+door</code>, only a single <code>trigger_relay</code> named <code>+door</code> will be inserted.</p>
+<p>
+<strong>Available target patterns:</strong></p>
+<ul>
+<li>
+<a href="#enable-target">Enable target</a></li>
+<li>
+<a href="#disable-target">Disable target</a></li>
+<li>
+<a href="#kill-target">Kill target</a></li>
+<li>
+<a href="#show-target">Show target</a></li>
+<li>
+<a href="#hide-target">Hide target</a></li>
+<li>
+<a href="#change-target">Change target</a></li>
+<li>
+<a href="#set-counter-value">Set counter value</a></li>
+<li>
+<a href="#trigger-multiple-targets">Trigger multiple targets</a></li>
+</ul>
+<hr>
+<h3 id="enable-target">Enable target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>+targetname</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>trigger_relay</code> that sends an 'on' signal to <code>targetname</code>.</p>
+<hr>
+<h3 id="disable-target">Disable target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>-targetname</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>trigger_relay</code> that sends an 'off' signal to <code>targetname</code>.</p>
+<hr>
+<h3 id="kill-target">Kill target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>kill targetname</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>trigger_relay</code> that kills all entities named <code>targetname</code>.</p>
+<hr>
+<h3 id="show-target">Show target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>show targetname</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates an <code>env_render</code> that sets the FX amount of <code>targetname</code> to 255.</p>
+<hr>
+<h3 id="hide-target">Hide target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>hide targetname</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates an <code>env_render</code> that sets the FX amount of <code>targetname</code> to 0.</p>
+<hr>
+<h3 id="change-target">Change target</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>targetname->newtarget</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>trigger_changetarget</code> that sets the target of <code>targetname</code> to <code>newtarget</code>.</p>
+<p>
+<code>newtarget</code> can also be a pattern, like <code>+newtarget</code> or <code>-newtarget</code>. Note that multi-target patterns take precedence, so <code>button1->door1,door2</code> is interpreted as a multi-target pattern that contains a change-target pattern.</p>
+<hr>
+<h3 id="set-counter-value">Set counter value</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>set targetname value</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>game_counter_set</code> that sets the value of <code>targetname</code> to <code>value</code>.</p>
+<hr>
+<h3 id="trigger-multiple-targets">Trigger multiple targets</h3>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>target1, target2</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a <code>multi_manager</code> that triggers both <code>target1</code> and <code>target2</code>. Targets can also be patterns, so <code>+target1,show target2</code> will also generate a <code>trigger_relay</code> and an <code>env_render</code>, according to the 'enable' and 'show' patterns.</p>
+<p>
+It's also possible to give targets a delay:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td><code>target1, target2: 1.5, target3: 2</code></td></tr>
+</tbody>
+</table>
+<p>
+This generates a multi-threaded <code>multi_manager</code> that triggers <code>target1</code> immediately, <code>target2</code> after a 1.5 second delay and <code>target3</code> after a 2 second delay.</p>
+<hr>
+<h2 id="configuration">Configuration</h2>
+<p>
+The following globals (defined in <a href="configuration-files.html">mess.config</a>) can be used to disable specific patterns. This can be useful if you're making maps for a mod or game that already supports some of these patterns, such as Spirit of Half-Life:</p>
+<table>
+<thead>
+<tr>
+<th>global</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_ON_PATTERN = 1</code></strong></td><td> Disables the<code>+targetname</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_OFF_PATTERN = 1</code></strong></td><td> Disables the<code>-targetname</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_KILL_PATTERN = 1</code></strong></td><td> Disables the<code>kill targetname</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_SHOW_PATTERN = 1</code></strong></td><td> Disables the<code>show targetname</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_HIDE_PATTERN = 1</code></strong></td><td> Disables the<code>hide targetname</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_CHANGETARGET_PATTERN = 1</code></strong></td><td> Disables the<code>targetname->newtarget</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_SET_PATTERN = 1</code></strong></td><td> Disables the<code>set targetname value</code> pattern.</td></tr>
+<tr>
+<td><strong><code>MTL_TRIGGER_PATTERNS_DISABLE_MULTITARGET_PATTERN = 1</code></strong></td><td> Disables the<code>target1, target2</code> pattern.</td></tr>
+</tbody>
+</table>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

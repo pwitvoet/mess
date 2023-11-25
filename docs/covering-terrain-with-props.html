@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Covering terrain with props - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="covering-terrain-with-props">Covering terrain with props</h1>
+<p>
+<figure>
+<img src="images/covering_terrain_header.png" alt="Covering terrain with props" title="Covering terrain with props">
+<figcaption>Covering terrain with props</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#covering-terrain">1. Covering terrain</a></li>
+<li>
+<a href="#adding-variety">2. Adding variety</a></li>
+<li>
+<a href="#randomizing-scale-and-angles">3. Randomizing scale and angles</a></li>
+<li>
+<a href="#related-articles-&-example-map">4. Related articles & example map</a></li>
+</ul>
+<h2 id="covering-terrain">1. Covering terrain</h2>
+<p>
+In this tutorial, we'll learn how to use MESS to automatically cover terrain with grass, rocks and other props. Take a look at the following scene:</p>
+<p>
+<figure>
+<img src="images/empty_terrain.png" alt="Empty terrain" title="Empty terrain">
+<figcaption>Empty terrain</figcaption>
+</figure>
+</p>
+<p>
+It's pretty empty, right? Let's make it look more interesting by adding some shrubs. First, we'll create a shrub <code>func_illusionary</code>. There are several techniques for this, but we'll start with something simple - we can easily replace it later anyway. We'll be placing this entity outside the playable area - normally that would cause a leak, but it'll be part of a template so we don't need to worry about that.</p>
+<p>
+<figure>
+<img src="images/simple_shrub.png" alt="A simple shrub" title="A simple shrub">
+<figcaption>A simple shrub</figcaption>
+</figure>
+</p>
+<p>
+Two thin brushes, covered with the <code>NULL</code> texture on the sides and <code>{SHRUB1B</code> on the front and back, joined into a single <code>func_illusionary</code> with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Render Mode </td><td> Solid</td></tr>
+<tr>
+<td> FX Amount </td><td> 255</td></tr>
+</tbody>
+</table>
+<p>
+Next, we'll put a <code>macro_template</code> entity around our shrub:</p>
+<p>
+<figure>
+<img src="images/shrub_inside_macro_template.png" alt="A shrub inside a macro_template" title="A shrub inside a macro_template">
+<figcaption>A shrub inside a macro_template</figcaption>
+</figure>
+</p>
+<p>
+This <code>macro_template</code> consists of two blue brushes. Anything inside the bounding box of a <code>macro_template</code> becomes part of that template, so we could use any shape or number of brushes, but this shape lets us easily select what's inside the template. Set the properties of the <code>macro_template</code> as following:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> prop_desert</td></tr>
+<tr>
+<td> Anchor point </td><td> Bottom center</td></tr>
+<tr>
+<td> Selection weight </td><td> 1</td></tr>
+</tbody>
+</table>
+<p>
+Because we've chosen 'Bottom center' as anchor point, we need to make sure that the bottom of the shrub is at the bottom center of the <code>macro_template</code>'s bounding box.</p>
+<p>
+Note that we now have two entities outside the playable area. Normally that would cause a leak, but MESS does not copy <code>macro_template</code> entities and anything that's inside of them to the output map, so we can safely place them anywhere we want.</p>
+<p>
+Now let's go back to our terrain. First, make sure that all unseen faces are covered with the <code>NULL</code> texture - we only want to add shrubs to the top side. Then, select the terrain brushes and turn them into a <code>macro_cover</code> entity:</p>
+<p>
+<figure>
+<img src="images/macro_cover_terrain.png" alt="macro_cover terrain" title="macro_cover terrain">
+<figcaption>macro_cover terrain</figcaption>
+</figure>
+</p>
+<p>
+Give the <code>macro_cover</code> the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Template entity </td><td> prop_desert</td></tr>
+<tr>
+<td> Brush behavior </td><td> Leave as world geometry</td></tr>
+<tr>
+<td> Coverage (<1) or max instance count (>=1) </td><td> 0.5</td></tr>
+<tr>
+<td> Instance radius </td><td> 32</td></tr>
+</tbody>
+</table>
+<p>
+This tells MESS that it must use our shrub template to cover this patch of terrain. A coverage of <code>0.5</code> means that we want to cover roughly 50% of the available surface. MESS then uses the instance radius to calculate how many instances it should try to place. A smaller radius means more instances, but also a higher risk of overlap between them. It's also possible to set a specific number of instances by using values larger than <code>1</code>.</p>
+<p>
+Either way, let's compile the map and see what we get:</p>
+<p>
+<figure>
+<img src="images/macro_cover_terrain_ingame_1.png" alt="macro_cover terrain in-game" title="macro_cover terrain in-game">
+<figcaption>macro_cover terrain in-game</figcaption>
+</figure>
+</p>
+<p>
+Maybe that's a bit much - Half-Life can only show 256 entities at the same time, and we've got more than 200 shrubs already! There are two ways to reduce the number of shrubs: decreasing the coverage, or increasing the instance radius. Halving the coverage to <code>0.25</code> (25%) will halve the number of shrubs. Doubling the instance radius to <code>64</code> will reduce the number of shrubs by a factor of 4, and will also put more distance between shrubs, so let's try that first:</p>
+<p>
+<figure>
+<img src="images/macro_cover_terrain_ingame_2.png" alt="A larger instance radius" title="A larger instance radius">
+<figcaption>A larger instance radius</figcaption>
+</figure>
+</p>
+<p>
+That's better - now we've got something that looks like a desert instead of a jungle.</p>
+<h2 id="adding-variety">2. Adding variety</h2>
+<p>
+Increasing the radius helped, but the scene is still a bit dull - it's lacking variety. Let's make it more interesting by adding some rocks and cactures.</p>
+<p>
+First, create two copies of our 'prop_desert' <code>macro_template</code>. Then create a rock <code>func_wall</code> inside one of them and a cactus <code>func_wall</code> inside the other:</p>
+<p>
+<figure>
+<img src="images/cactus_rock_shrub_templates.png" alt="A cactus, a rock and a shrub walk into a bar..." title="A cactus, a rock and a shrub walk into a bar...">
+<figcaption>A cactus, a rock and a shrub walk into a bar...</figcaption>
+</figure>
+</p>
+<p>
+Whenever MESS finds multiple templates with the same name, it will randomly select one of them each time it creates an instance. So when we recompile the map, we'll see that some shrubs have been replaced by cactuses and rocks:</p>
+<p>
+<figure>
+<img src="images/cactus_rock_shrub_ingame.png" alt="Cactuses, rocks and shrubs in-game" title="Cactuses, rocks and shrubs in-game">
+<figcaption>Cactuses, rocks and shrubs in-game</figcaption>
+</figure>
+</p>
+<p>
+Right now, 1/3 of all instances are shrubs, 1/3 are rocks and 1/3 are cactuses. What if we want more shrubs? We can do that by adjusting the selection weight of the templates. Try setting the selection weight of the shrub template to 3. That changes the total weight to 5 (1 + 1 + 3), so the shrub template now has a 3/5 chance of being chosen, and the other templates each have a 1/5 chance:</p>
+<p>
+<figure>
+<img src="images/cactus_rock_shrub_ingame_2.png" alt="More shrubs, less cactuses and rocks" title="More shrubs, less cactuses and rocks">
+<figcaption>More shrubs, less cactuses and rocks</figcaption>
+</figure>
+</p>
+<h2 id="randomizing-scale-and-angles">3. Randomizing scale and angles</h2>
+<p>
+If we take a closer look, we'll see that all the shrubs, rocks and cactuses have the same size and face the same direction. They're all perfect clones of each other, which isn't very natural. We can improve that by randomizing their scale and direction. Select the <code>macro_cover</code> terrain and change the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Instance angles (Pitch Yaw Roll) </td><td><code>0 {rand(0, 360)} 0</code></td></tr>
+<tr>
+<td> Instance scale </td><td><code>{rand(0.5, 1.25)}</code></td></tr>
+</tbody>
+</table>
+<p>
+The curly braces contain scripts - in this case we're using randomness functions to give each instance a scale between 0.5 and 1.25, and a yaw between 0 and 360 degrees.</p>
+<div class="note">
+<div class="note-header">NOTE</div>
+<p>
+Don't worry if you're not a programmer! A lot of things can be achieved with little or no scripting at all, and whenever scripting is required, often a small script like <code>{rand(0, 360)}</code> is sufficient. You can get pretty far by just copy-pasting the scripts you find in these tutorials and playing around with the numbers.</p>
+</div>
+<p>
+After recompiling, this is what we get:</p>
+<p>
+<figure>
+<img src="images/randomized_scale_angles_ingame.png" alt="Randomized scale and angles in-game" title="Randomized scale and angles in-game">
+<figcaption>Randomized scale and angles in-game</figcaption>
+</figure>
+</p>
+<p>
+However, if you look carefully, you may notice a small problem:</p>
+<p>
+<figure>
+<img src="images/rock_missing_edge_on_slope.png" alt="Missing edges on slopes" title="Missing edges on slopes">
+<figcaption>Missing edges on slopes</figcaption>
+</figure>
+</p>
+<p>
+Whenever a rock or cactus is placed on a slope, a small gap appears between their bottom and the terrain. To solve that, we need to extend the bottom of the rock and the cactus a bit. However, objects that extend beyond the bounding box of a <code>macro_template</code> are no longer part of that template - they have to be fully inside.</p>
+<p>
+We can fix that by switching the 'Anchor point' of these templates to 'Center':</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Anchor point (origin) </td><td> Center</td></tr>
+</tbody>
+</table>
+<p>
+Because these templates now have a different origin, we also need to move the rock and the cactus to the center of their templates, otherwise they'll end up inside the ground. For the cactus, that means we'll need to resize the template to make things fit:</p>
+<p>
+<figure>
+<img src="images/cactus_rock_shrub_templates_centered.png" alt="Templates with different anchor points" title="Templates with different anchor points">
+<figcaption>Templates with different anchor points</figcaption>
+</figure>
+</p>
+<p>
+Here, the rock template has also been resized so all the props remain neatly aligned, but the rock could have been moved upwards just as well. We can now recompile, and the gaps will be gone - if the props have been sufficiently extended, of course.</p>
+<h2 id="related-articles-&-example-map">4. Related articles & example map</h2>
+<h4 id="related-tutorials:">Related tutorials:</h4>
+<ul>
+<li>
+<a href="covering-terrain-advanced-template-selection.html">Covering terrain: advanced template selection</a></li>
+<li>
+<a href="covering-terrain-optimization.html">Covering terrain: optimization</a></li>
+</ul>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/covering_terrain_tutorial.zip">covering_terrain_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

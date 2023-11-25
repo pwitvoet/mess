@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>4.3. mtl_trigger_counter - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li class="current-page"><a class="current-page" href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="mtl_trigger_counter">4.3. mtl_trigger_counter</h1>
+<p>
+A multi-target variant of <code>game_counter</code>. Instead of triggering a single target when its counter reaches a certain value, it can trigger different targets at specific counter values.</p>
+<p>
+This entity also has a 'clock mode', in which the counter is automatically incremented periodically. In this mode, triggering it will pause/resume the clock instead of incrementing the counter.</p>
+<p>
+See <a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a> for an example of how to use this entity.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- The name of this entity.</li>
+<li>
+<strong>Trigger mode</strong> <em>(trigger_mode)</em><ul>
+<li>
+<strong>Increment when triggered</strong> <em>(0)</em> -- In this mode, triggering an <code>mtl_trigger_counter</code> will increment its counter by 1. The counter can also be decremented or set to a specific value by using a <code>trigger_relay</code> or <code>game_counter_set</code>, or by using the <code>-targetname</code> and <code>set targetname value</code> <a href="target-patterns.html" title="Target patterns">target patterns</a>.</li>
+<li>
+<strong>Keep incrementing until triggered again (Clock mode)</strong> <em>(1)</em> -- The counter value will automatically be incremented at a regular interval. Triggering the <code>mtl_trigger_counter</code> will pause or resume the incrementing.</li>
+</ul>
+</li>
+<li>
+<strong>Initial counter value</strong> <em>(initial_value)</em> -- The initial counter value. The default is 0.</li>
+<li>
+<strong>Reset counter at (empty = no reset)</strong> <em>(reset_counter_at)</em> -- When the counter reaches this value, it is reset to the initial counter value. If this is empty, the counter will not be reset automatically.</li>
+<li>
+<strong>Increment interval (Clock mode)</strong> <em>(interval)</em> -- When trigger mode is set to 'Clock mode', this is the interval at which the counter is incremented, in seconds.</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+Similar to <code>multi_manager</code>, targets are specified with custom properties, which can be added when SmartEdit mode is disabled. The property key must be an entity name, and the property value must be a number. The target entity will be triggered when the counter value reaches that number.</p>
+<h2 id="flags">Flags</h2>
+<ul>
+<li>
+<strong>Start on (Clock mode)</strong> <em>(1)</em> -- By default, 'clock mode' is initially paused (off). By enabling this flag, the clock will immediately be active (on) when the level starts.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+Unlike <code>multi_manager</code>, there is no limit to the number of targets.</li>
+<li>
+This entity generates a number of <code>game_counter</code> and <code>multi_manager</code> entities, depending on the number of targets. One <code>game_counter</code> is generated for every distinct target counter number, and a <code>multi_manager</code> is generated for targets that have the same counter number.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

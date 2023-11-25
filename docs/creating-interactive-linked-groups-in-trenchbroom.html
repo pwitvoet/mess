@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Creating interactive linked groups in TrenchBroom - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li class="current-page"><a class="current-page" href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="creating-interactive-linked-groups-in-trenchbroom">Creating interactive linked groups in TrenchBroom</h1>
+<p>
+<figure>
+<img src="images/interactive_linked_groups_header.png" alt="Creating interactive linked groups" title="Creating interactive linked groups">
+<figcaption>Creating interactive linked groups</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#trenchbroom-linked-groups">1. TrenchBroom linked groups</a></li>
+<li>
+<a href="#creating-a-toggleable-desk-lamp">2. Creating a toggleable desk lamp</a></li>
+<li>
+<a href="#duplicating-the-desk-lamp">3. Duplicating the desk lamp</a></li>
+<li>
+<a href="#example-map">4. Example map</a></li>
+</ul>
+<h2 id="trenchbroom-linked-groups">1. TrenchBroom linked groups</h2>
+<p>
+TrenchBroom 2022.1 introduced a powerful feature called <a href="https://trenchbroom.github.io/manual/latest/#linked_groups">'linked groups'</a>. Similar to a template instancing system, it lets the user create linked duplicates of a group of brushes and entities. Any changes made to a duplicate are automatically applied to all other linked duplicates.</p>
+<p>
+For example, all the chairs in this screenshot are linked duplicates of one another:</p>
+<p>
+<figure>
+<img src="images/chair_linked_group.png" alt="Office chairs, linked groups" title="Office chairs, linked groups">
+<figcaption>Office chairs, linked groups</figcaption>
+</figure>
+</p>
+<p>
+Modifying one of the chairs automatically modifies all of them:</p>
+<p>
+<figure>
+<img src="images/modified_chair_linked_group.png" alt="Modified office chairs" title="Modified office chairs">
+<figcaption>Modified office chairs</figcaption>
+</figure>
+</p>
+<h2 id="creating-a-toggleable-desk-lamp">2. Creating a toggleable desk lamp</h2>
+<p>
+We can make this office a bit more interactive by creating a toggleable desk lamp. First, we'll create the lamp itself:</p>
+<p>
+<figure>
+<img src="images/desk_lamp.png" alt="A simple desk lamp" title="A simple desk lamp">
+<figcaption>A simple desk lamp</figcaption>
+</figure>
+</p>
+<p>
+Next, we'll add a <code>light</code> entity with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>targetname</code></td><td><code>desk_light</code></td></tr>
+<tr>
+<td><code>_light</code></td><td><code>255 255 255 200</code></td></tr>
+</tbody>
+</table>
+<p>
+Now we'll turn the lamp into a <code>func_button</code> with these properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td><td><code>desk_light</code></td></tr>
+<tr>
+<td><code>spawnflags</code></td><td><code>33</code> <em>(Don't move, Toggle)</em></td></tr>
+</tbody>
+</table>
+<p>
+Let's compile our map to make sure that our lamp works:</p>
+<p>
+<figure>
+<img src="images/desk_lamp_in_game.png" alt="Desk lamp in-game" title="Desk lamp in-game">
+<figcaption>Desk lamp in-game</figcaption>
+</figure>
+</p>
+<h2 id="duplicating-the-desk-lamp">3. Duplicating the desk lamp</h2>
+<p>
+Our office needs more light, so let's group the lamp and the light together (<code>Ctrl + G</code>) and create a linked duplicate of that group (<code>Ctrl + Shift + D</code>). We can now move this duplicate to another desk and rotate it a bit:</p>
+<p>
+<figure>
+<img src="images/desk_lamp_duplicate.png" alt="Duplicated desk lamps" title="Duplicated desk lamps">
+<figcaption>Duplicated desk lamps</figcaption>
+</figure>
+</p>
+<p>
+However, we do have a problem now: all lamps and lights use the same target name (<code>desk_light</code>), so using any desk lamp will toggle all lights! We could solve this by protecting the <code>targetname</code> and <code>target</code> properties, which allows us to override their values in specific instances, but then we would have to modify every single instance separately. That makes our linked groups harder to use, and we could easily forget to update a few instances!</p>
+<p>
+Fortunately, MESS has special support for linked groups. If we add <code>{_tb_group}</code> to an entity property value, MESS will replace that with the ID of the current linked group instance. All we need to do is to change the name of our light:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>targetname</code></td><td><code>desk_light{_tb_group}</code></td></tr>
+</tbody>
+</table>
+<p>
+And the target of our button:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td><td><code>desk_light{_tb_group}</code></td></tr>
+</tbody>
+</table>
+<p>
+If we recompile the map, we can see that using a lamp now only toggles its own light:</p>
+<p>
+<figure>
+<img src="images/desk_lamp_duplicate_tb_group.png" alt="Duplicated desk lamps with unique names" title="Duplicated desk lamps with unique names">
+<figcaption>Duplicated desk lamps with unique names</figcaption>
+</figure>
+</p>
+<p>
+If we open the processed .map file, we can see that MESS changed the names and targets of our entities to <code>desk_light6</code> and <code>desk_light7</code>. The actual numbers shouldn't be relied upon - they may change when linked groups are added or removed. What's important is that each instance now uses distinct entity names.</p>
+<p>
+And that's all there is to it: adding <code>{_tb_group}</code> to the name or target of an entity will result in different names in different instances.</p>
+<h2 id="example-map">4. Example map</h2>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/tb_linked_group_id_tutorial.zip">tb_linked_group_id_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

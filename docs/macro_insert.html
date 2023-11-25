@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>6.1. macro_insert - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="macro_insert">6.1. macro_insert</h1>
+<p>
+A point entity that creates one or more template instances at a specific position. Instances can be scaled, rotated and translated.</p>
+<p>
+The properties of this entity are visible to <a href="scripting.html">scripts</a> in the selected template, so each instance can be made unique. This entity is often used together with <a href="macro_template.html">macro_template</a>, but it can also use other map files as templates.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- The name of this entity. Templates can reference this in scripts with <code>{targetname}</code> or by using the special function <code>{id()}</code>, which returns either the name of the instance-creating entity, or the unique numerical ID of the current instance.</li>
+<li>
+<strong>Template map path</strong> <em>(template_map)</em> -- The relative or absolute path (or paths) of a map file. If no template entity is specified then the entire map is used as a template. In the main map, relative map paths are taken to be relative to the <a href="configuration-files.html#template-maps-directory">template maps directory</a>. In template maps, they are relative to the current map.</li>
+<li>
+<strong>Template entity</strong> <em>(template_name)</em> -- The name (or names) of a <a href="macro_template.html">macro_template</a> entity in the chosen map, or in the current map if no template map path is specified. If there are multiple templates with the same name, one will be chosen randomly per instance.</li>
+<li>
+<strong>Random seed</strong> <em>(random_seed)</em> -- Random seed value, used for deterministic pseudo-randomness. This affects the <code>rand</code> and <code>randi</code> functions. Default is <code>0</code>.</li>
+<li>
+<strong>Instance count</strong> <em>(instance_count)</em> -- The number of instances to create. Default is <code>1</code>. Use the <code>nth()</code> function in other <code>macro_insert</code> properties to customize each instance.</li>
+<li>
+<strong>Instance orientation</strong> <em>(instance_orientation)</em><ul>
+<li>
+<strong>Local</strong> <em>(0)</em> -- The orientation (angles) of the current instance is relative to the orientation (angles) of this <code>macro_insert</code>.</li>
+<li>
+<strong>Global</strong> <em>(1)</em> -- The orientation (angles) of the current instance is not affected by this <code>macro_insert</code>. This is useful for entities that must always face a specific direction in the editor, such as <code>func_tank</code>.</li>
+</ul>
+</li>
+<li>
+<strong>Instance angles (Pitch Yaw Roll)</strong> <em>(angles)</em> -- The orientation of the current instance. This also affects the angles property of entities within the selected template.</li>
+<li>
+<strong>Instance scale</strong> <em>(scale)</em> -- The scale of the current instance. This also affects the scale property of entities within the selected template.</li>
+<li>
+<strong>Instance geometry scale (x y z)</strong> <em>(instance_geometry_scale)</em> -- Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale property is used instead.</li>
+<li>
+<strong>Instance offset (x y z)</strong> <em>(instance_offset)</em> -- Moves an instance along the x, y and z axis. This enables script-based positioning.</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+Custom properties can be used by MScript expressions in entities inside the selected template. This makes it possible to further customize instances. This is also the mechanism that template entities use for their properties to have any effect.</p>
+<p>
+For example, imagine a template that contains a <code>game_text</code> entity with a <code>message</code> of <code>Hello {name}</code>. If a <code>macro_insert</code> creates an instance of that template, the resulting <code>game_text</code> entity will have a <code>message</code> value of <code>Hello </code>. Adding a custom <code>name</code> property to the <code>macro_insert</code> entity and setting it to <code>John</code> will result in a <code>game_text</code> entity with a <code>message</code> of <code>Hello John</code>. Another <code>macro_insert</code> can have a <code>name</code> property with a different value, and its resulting <code>game_text</code> will have a different <code>message</code> accordingly.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+Angles are usually written in pitch-yaw-roll order, but Half-Life and MESS perform rotations in roll-pitch-yaw order, which corresponds to rotating around the x, y and z axis respectively:<ul>
+<li>
+pitch (y-axis): positive = looking down, negative = looking up (note that this is inverted for model and light entities!)</li>
+<li>
+yaw (z-axis): positive = turning left, negative = turning right</li>
+<li>
+roll (x-axis): positive = leaning to the right, negative = leaning to the left</li>
+</ul>
+</li>
+<li>
+All properties, except for <code>random_seed</code> and <code>instance_count</code>, are evaluated again for every instance. This means that if <code>instance_offset</code> is set to <code>{nth() * 16} 0 0</code>, the first instance will have an offset of <code>0 0 0</code>, the second instance will have an offset of <code>16 0 0</code>, the third an offset of <code>32 0 0</code>, and so on.</li>
+<li>
+To randomly select one of several templates, use a comma-separated list of paths or template names: <code>prop_cactus, prop_rock</code> will randomly use either <code>prop_cactus</code> or <code>prop_rock</code>. It's also possible to specify a selection weight: <code>prop_cactus: 1, prop_rock: 4</code> will select <code>prop_cactus</code> 20% (1/5) of the time, and <code>prop_rock</code> 80% (4/5) of the time. This also works for template map paths.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>7.6. Rewrite rules - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li class="current-page"><a class="current-page" href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="rewrite-rules">7.6. Rewrite rules</h1>
+<p>
+Rewrite rules are the glue that enable template entities and behaviors. They can turn an entity with a custom classname into a <a href="macro_insert.html">macro_insert</a> or other <a href="macro-entities.html">macro entity</a>, and link it to a specific template map. Rewrite rules are stored in <code>.ted</code> (Template Entity Definition) files, and they are used to modify entity properties when a map file is read, or when the final output map file is written.</p>
+<ul>
+<li>
+<a href="#-ted-files">7.6.1. .ted files</a></li>
+<li>
+<a href="#rewrite-rule-syntax">7.6.2. Rewrite rule syntax</a></li>
+<li>
+<a href="#rewrite-rule-functions">7.6.3. Rewrite rule functions</a></li>
+</ul>
+<h2 id="-ted-files">7.6.1. .ted files</h2>
+<p>
+<code>.ted</code> files are similar to <code>.fgd</code> files. They typically contain a single entity definition and some rewrite rules that are related to that entity. MESS combines all <code>.ted</code> files in the <a href="configuration-files.html#templates-directory">templates directory</a> into a single <code>.fgd</code> file, <a href="configuration-files.html#fgd-path">mess.fgd</a>. This makes it easier to share template entities and behaviors with other people: place their <code>.ted</code> and <code>.map</code> files in the templates directory, run MESS.exe, and restart your editor (or reload the fgd) to get access to new template entities.</p>
+<h2 id="rewrite-rule-syntax">7.6.2. Rewrite rule syntax</h2>
+<p>
+Rewrite rule blocks start with a <code>// @MESS REWRITE:</code> line, and end with a <code>// @MESS;</code> line. Every rule line starts with a <code>//</code>, so they will be ignored by fgd-readers.</p>
+<h3 id="rule-types">Rule types</h3>
+<p>
+There are two types of rules:</p>
+<ul>
+<li>
+<code>// "property-name": "new-value"</code> - This will overwrite (or create) the specified property with a new value.</li>
+<li>
+<code>// delete "property-name"</code> - This will delete the specified property.</li>
+</ul>
+<p>
+Note that both property names and values can contain MScript expressions. This makes it possible to modify existing values. For example: <code>// "renderamt": "{rendermode == 4 ? 255 : renderamt}"</code> will set the FX amount (<code>renderamt</code>) to 255 if the Render mode (<code>rendermode</code>) is set to Solid (<code>4</code>), but else it will leave the old value in place (<code>renderamt</code>).</p>
+<h3 id="conditional-rule-blocks">Conditional rule blocks</h3>
+<p>
+Rule blocks can also contain conditional blocks, whose rules are only applied if the condition holds:</p>
+<ul>
+<li>
+<code>// @IF "{condition}":</code> starts a conditional rule block. Conditional blocks cannot be nested.</li>
+<li>
+<code>// @ELSE:</code> starts an alternate rule block. The rules in this block are only applied if the <code>@IF</code> condition does not hold. Else blocks are optional.</li>
+<li>
+<code>// @ENDIF;</code> marks the end of a conditional rule block.</li>
+</ul>
+<h3 id="clauses">Clauses</h3>
+<p>
+Most rewrite rules are only applied to a specific entity type, but it's also possible to apply rules to all entities, or to entities that match specific criteria. A rewrite rule block that is directly followed by an entity definition is automatically associated with that entity type:</p>
+<div class="code">// @MESS REWRITE:
+// "targetname": "test"
+// @MESS;
+@PointClass = info_test
+[
+]
+</div>
+<p>
+If a rule block is not followed by an entity definition, then it must have a <code>FOR</code> or <code>WHEN</code> clause that determines which entities it applies to. A <code>FOR</code> clause must be followed by one or more entity classnames, each surrounded by double quotes. These are the entities that the rule block will be applied to:</p>
+<div class="code">// @MESS REWRITE FOR "info_test" "info_test2":
+// delete "targetname"
+// @MESS;
+</div>
+<p>
+A <code>WHEN</code> clause must be followed by a condition, which must also be surrounded by double quotes. The condition can contain MScript expressions. All entity properties are available in these expressions, but MScript expressions in these properties have not been evaluated yet at this point. The rule block will be applied to any entity that matches the given condition (an empty string or a <code>0</code> is treated as false, anything else is seen as a match):</p>
+<div class="code">// @MESS REWRITE WHEN "{rendermode == 4 && renderamt != 255}":
+// "renderamt": "255"
+// @MESS;
+</div>
+<p>
+By default, rewrite rules are applied before macro entities are processed. This is used by template entities to change their classname to a macro entity, and then setting a specific template map. But it's also possible to apply rewrite rules after macro entity processing:</p>
+<div class="code">// @MESS REWRITE AFTER_MACRO_EXPANSION WHEN "{_tb_group}":
+// delete "_tb_group"
+// @MESS;
+</div>
+<p>
+This can be useful for cleaning up unwanted properties, or for automatically fixing problematic property values.</p>
+<h2 id="rewrite-rule-functions">7.6.3. Rewrite rule functions</h2>
+<p>
+The following MScript functions are only available in rewrite rules.</p>
+<hr>
+<h4 id="ted_dir"><code><span class="keyword">string</span> ted_dir()</code></h4>
+<p>
+Returns the directory or .zip file path that contains the .ted file that contains the current rewrite rule.</p>
+<p>
+For example, <code>ted_dir()</code> may return something like <code>'C:\HL\Tools\MESS\template_entities\my_templates.zip'</code>, if the current .ted file is stored in a .zip file, or <code>'C:\HL\Tools\MESS\template_entities\my_templates'</code> if it's stored in a directory.</p>
+<hr>
+<h4 id="ted_path"><code><span class="keyword">string</span> ted_path()</code></h4>
+<p>
+Returns the absolute path of the .ted file that contains the current rewrite rule. If the .ted file is stored in a .zip file, then the path will contain the .zip filename as if it were a directory.</p>
+<p>
+For example, <code>ted_path()</code> may return something like <code>'C:\HL\Tools\MESS\template_entities\my_templates.zip\landmine.ted'</code>.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

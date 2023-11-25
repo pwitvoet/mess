@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>1.1. JACK & Hammer setup - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li class="current-page">
+<a class="current-page" href="index.html">1. Getting started</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="j-a-c-k--&-hammer-setup">1.1. J.A.C.K. & Hammer setup</h1>
+<p>
+The following steps will help you to set up MESS for <a href="https://jack.hlfx.ru/en/">J.A.C.K.</a> or Hammer:</p>
+<ul>
+<li>
+<a href="#downloading-mess">1.1.1. Downloading MESS</a></li>
+<li>
+<a href="#adding-the-mess-fgd-game-data-file">1.1.2. Adding the mess.fgd game data file</a></li>
+<li>
+<a href="#adding-the-mess-exe-compile-step">1.1.3. Adding the MESS.exe compile step</a></li>
+</ul>
+<h2 id="downloading-mess">1.1.1. Downloading MESS</h2>
+<p>
+This guide assumes that you have <a href="https://github.com/pwitvoet/mess/releases/tag/1.2">downloaded MESS 1.2</a> and extracted the contents of the zip file to <code>C:\HL\Tools\MESS\</code>. You should see the following files:</p>
+<p>
+<figure>
+<img src="images/mess_folder_contents.png" alt="MESS folder contents" title="MESS folder contents">
+<figcaption>MESS folder contents</figcaption>
+</figure>
+</p>
+<h2 id="adding-the-mess-fgd-game-data-file">1.1.2. Adding the <code>mess.fgd</code> game data file</h2>
+<ol>
+<li>
+In J.A.C.K. or Hammer, go to the <code>Tools</code> menu and select <code>Options</code>.</li>
+<li>
+In the configuration window that opens, go to the <code>Game Configurations</code> or <code>Game Profiles</code> tab.</li>
+<li>
+Look for the <code>Game Data Files</code> section, click the <code>Add</code> button and select <code>C:\HL\Tools\MESS\mess.fgd</code>.</li>
+<li>
+Press <code>OK</code> to save the settings changes.</li>
+</ol>
+<p>
+<figure>
+<img src="images/jack_config_fgd.png" alt="JACK game profiles configuration" title="JACK game profiles configuration">
+<figcaption>JACK game profiles configuration</figcaption>
+</figure>
+</p>
+<h2 id="adding-the-mess-exe-compile-step">1.1.3. Adding the <code>MESS.exe</code> compile step</h2>
+<ol>
+<li>
+In J.A.C.K. or Hammer, press the <code>F9</code> key (or go to the <code>File</code> menu and select <code>Run...</code>) to open the map compile window.</li>
+<li>
+Press the <code>Expert</code> button to switch to expert mode.</li>
+<li>
+In the <code>Compile/run commands</code> list, click <code>New</code> to create a new build step, then press the <code>Move Up</code> or <code>Up</code> button until the new command is at the top of the list.</li>
+<li>
+In the <code>Command:</code> field, enter <code>C:/HL/Tools/MESS/MESS.exe</code>.</li>
+<li>
+In the <code>Parameters:</code> field, enter <code>"$path/$file.$ext"</code></li>
+<li>
+For J.A.C.K. users: enable the <code>Wait for Termination</code> and <code>Use Process Window</code> checkboxes.</li>
+</ol>
+<p>
+<figure>
+<img src="images/jack_run_map_advanced.png" alt="JACK run map window, advanced mode" title="JACK run map window, advanced mode">
+<figcaption>JACK run map window, advanced mode</figcaption>
+</figure>
+</p>
+<p>
+That's it! You're now ready to start using <a href="template-entities.html">template entities</a> and <a href="macro_template.html">templates</a>.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

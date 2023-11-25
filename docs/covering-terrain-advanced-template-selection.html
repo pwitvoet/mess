@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Covering terrain&colon; advanced template selection - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li class="current-page"><a class="current-page" href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="covering-terrain:-advanced-template-selection">Covering terrain: advanced template selection</h1>
+<p>
+<figure>
+<img src="images/advanced_templates_header.png" alt="Covering terrain: advanced template selection" title="Covering terrain: advanced template selection">
+<figcaption>Covering terrain: advanced template selection</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#templates-with-multiple-names">1. Templates with multiple names</a></li>
+<li>
+<a href="#referencing-multiple-templates">2. Referencing multiple templates</a></li>
+<li>
+<a href="#using-template-maps">3. Using template maps</a></li>
+<li>
+<a href="#related-articles-&-example-map">4. Related articles & example map</a></li>
+</ul>
+<h2 id="templates-with-multiple-names">1. Templates with multiple names</h2>
+<p>
+In the previous tutorial, <a href="covering-terrain-with-props.html">Covering terrain with props</a>, we gave all of our templates the same name. This made it easy to cover terrain with a variety of props, but the downside is that we can't select a specific template. What if we want to cover one area with a standard variety of shrubs, rocks and cactuses, and another area with only shrubs?</p>
+<p>
+It turns out that templates can be given multiple names, by using a comma-separated list:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td><code>prop_desert, prop_cactus</code></td></tr>
+</tbody>
+</table>
+<p>
+<figure>
+<img src="images/multi_name_templates.png" alt="Templates with multiple names, separated by commas" title="Templates with multiple names, separated by commas">
+<figcaption>Templates with multiple names, separated by commas</figcaption>
+</figure>
+</p>
+<p>
+In the above picture, each template has both a generic name (<code>prop_desert</code>) and a specific name (<code>prop_cactus</code>, <code>prop_rock</code> or <code>prop_shrub</code>). This means that we can keep using the name <code>prop_desert</code> to get a variety of props, but we can also use a specific name to select a particular template:</p>
+<p>
+<figure>
+<img src="images/prop_cactus_vs_prop_desert.png" alt="'prop_cactus' on the left, 'prop_desert' on the right" title="'prop_cactus' on the left, 'prop_desert' on the right">
+<figcaption>'prop_cactus' on the left, 'prop_desert' on the right</figcaption>
+</figure>
+</p>
+<h2 id="referencing-multiple-templates">2. Referencing multiple templates</h2>
+<p>
+Similar to how templates can have multiple names, instance-creating macro entities can also reference multiple templates. For example, a <code>macro_cover</code> entity with the following settings will randomly select either <code>prop_shrub</code> or <code>prop_rock</code> for each instance that it creates:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Template entity </td><td><code>prop_shrub, prop_rock</code></td></tr>
+</tbody>
+</table>
+<p>
+It's also possible to specify custom weights. For example, the following gives an 80% chance (4/5) of selecting a shrub, and a 20% chance (1/5) of selecting a rock:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Template entity </td><td><code>prop_shrub: 4, prop_rock: 1</code></td></tr>
+</tbody>
+</table>
+<p>
+This lets us use different ratios for different areas:</p>
+<p>
+<figure>
+<img src="images/different_rock_and_shrub_ratios.png" alt="'prop_rock: 4, prop_shrub: 1' on the left, 'prop_rock: 1, prop_shrub: 4' on the right" title="'prop_rock: 4, prop_shrub: 1' on the left, 'prop_rock: 1, prop_shrub: 4' on the right">
+<figcaption>'prop_rock: 4, prop_shrub: 1' on the left, 'prop_rock: 1, prop_shrub: 4' on the right</figcaption>
+</figure>
+</p>
+<h2 id="using-template-maps">3. Using template maps</h2>
+<p>
+So far, we have only used local templates. But what if we wanted to use our templates in another map? With local templates, we'd have to copy them to that map, but that's a bit tedious and it can quickly become hard to manage templates when they've been copied into many different maps.</p>
+<p>
+Fortunately there's a better way: we can put our templates inside 'template maps'. Any map (.map, .rmf or .jmf file) that is placed in the <code>MESS\template_maps</code> directory (or whatever your <a href="configuration-files.html#template-maps-directory">template-maps-directory</a> is set to) can be used by macro entities like <code>macro_cover</code>. For example, the following <code>macro_cover</code> will select the <code>prop_shrub</code> template that is inside <code>MESS\template_maps\examples\desert_props.map</code>:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Template map path </td><td><code>examples/desert_props.map</code></td></tr>
+<tr>
+<td> Template entity </td><td><code>prop_shrub</code></td></tr>
+</tbody>
+</table>
+<p>
+If only a 'Template map path' is specified, but no 'Template entity', then the entire template map is used as a template. We can make use of that by putting the following <code>macro_insert</code> entity at the center of our <code>desert_props.map</code> template map:</p>
+<table>
+<thead>
+<tr>
+<th>property name</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Template entity </td><td><code>prop_desert</code></td></tr>
+</tbody>
+</table>
+<p>
+This means that we can use <code>examples/desert_props.map</code> without having to specify a template entity, and it'll automatically give us one of the <code>prop_desert</code> templates:</p>
+<p>
+<figure>
+<img src="images/template_map_props.png" alt="Props from a template map" title="Props from a template map">
+<figcaption>Props from a template map</figcaption>
+</figure>
+</p>
+<h2 id="related-articles-&-example-map">4. Related articles & example map</h2>
+<h4 id="related-tutorials:">Related tutorials:</h4>
+<ul>
+<li>
+<a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li>
+<a href="covering-terrain-optimization.html">Covering terrain: optimization</a></li>
+</ul>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/advanced_terrain_tutorial.zip">advanced_terrain_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>7.1. Entity properties - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="entity-properties">7.1. Entity properties</h1>
+<p>
+Almost all MESS scripting occurs within entity properties. The most basic form of scripting is to reference parent entity properties. There are also several special properties that trigger specific MESS behavior, and it's possible to do things like turning one property into multiple properties with scripting.</p>
+<ul>
+<li>
+<a href="#parent-entity-properties">7.1.1. Parent entity properties</a></li>
+<li>
+<a href="#special-properties">7.1.2. Special properties</a></li>
+<li>
+<a href="#lifted-properties">7.1.3. Lifted properties</a></li>
+<li>
+<a href="#array-property-keys">7.1.4. Array property keys</a></li>
+<li>
+<a href="#empty-property-keys">7.1.5. Empty property keys</a></li>
+</ul>
+<h2 id="parent-entity-properties">7.1.1. Parent entity properties</h2>
+<p>
+When a macro entity such as <code>macro_insert</code> or <code>macro_cover</code> creates an instance of a template (either a <code>macro_template</code> or a separate map file), all of its properties can be referenced inside that template.</p>
+<p>
+Templates (<code>macro_template</code> entities and separate maps) can also have their own properties. These properties can reference parent entity properties, and can themselves be referenced by entities inside the current template. This makes for a good place to initialize common variables, or to set default values for required properties.</p>
+<p>
+Take, for example, the following <code>macro_insert</code>:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>macro_insert</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>key1</code></td></tr>
+<tr>
+<td><code>template_name</code></td><td><code>key_template</code></td></tr>
+<tr>
+<td><code>color</code></td><td><code>255 255 0</code></td></tr>
+</tbody>
+</table>
+<p>
+and the <code>macro_template</code> that it references:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>macro_template</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>key_template</code></td></tr>
+<tr>
+<td><code>color</code></td><td><code>{color or [255, 255, 255]}</code></td></tr>
+</tbody>
+</table>
+<p>
+and finally, an entity inside that template:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall_toggle</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>{id()}</code></td></tr>
+<tr>
+<td><code>rendercolor</code></td><td><code>{color}</code></td></tr>
+</tbody>
+</table>
+<p>
+When the <code>macro_insert</code> entity is processed, first any expressions in its properties are evaluated. In this case, there are none, so MESS will quickly proceed.</p>
+<p>
+Next, any expressions in the properties of the chosen <code>macro_template</code> are evaluated (or, if a separate map is used via <code>template_map</code>, any expressions in the properties of that map). Here, the value of <code>color</code> consists of the expression <code>{color or [255, 255, 255]}</code>. This is a common mechanism to provide a default value. It references the <code>color</code> property of the instance-creating entity, which contains the value <code>255 255 0</code>. If the <code>macro_insert</code> didn't contain a <code>color</code> property, or if it was empty, then the <code>or [255, 255, 255]</code> part would ensure a default color of <code>255 255 255</code>.</p>
+<p>
+Note that the <code>classname</code>, <code>targetname</code>, <code>selection_weight</code> and <code>anchor</code> properties of a <code>macro_template</code> are silently removed, to prevent them from hiding important parent entity properties - specifically the <code>targetname</code>.</p>
+<p>
+Finally, any expressions in entities inside the template are evaluated. The <code>func_wall_toggle</code>'s <code>targetname</code> contains the expression <code>{id()}</code>. This calls the <code>id()</code> function, which returns either the <code>targetname</code> of the parent macro entity, or the unique numeric ID of the current instance.</p>
+<p>
+The <code>rendercolor</code> property references the <code>color</code> property. Both the <code>macro_insert</code> and the <code>macro_template</code> contain a <code>color</code> property. In that case, the value of the <code>macro_template</code>'s <code>color</code> property is used - it's essentially hiding <code>macro_insert</code>'s <code>color</code> property.</p>
+<h2 id="special-properties">7.1.2. Special properties</h2>
+<p>
+The following properties can be added to entities to trigger special behavior in MESS. This includes setting spawnflags on the current entity, removing the entity, merging it with others, or inserting a template map at the entity's position:</p>
+<ul>
+<li>
+<a href="#_mess_spawnflagn">_mess_spawnflagN</a></li>
+<li>
+<a href="#_mess_merge_entity_id">_mess_merge_entity_id</a></li>
+<li>
+<a href="#_mess_merge_entity_master">_mess_merge_entity_master</a></li>
+<li>
+<a href="#_mess_remove_if">_mess_remove_if</a></li>
+<li>
+<a href="#_mess_attached_template_map">_mess_attached_template_map</a></li>
+<li>
+<a href="#_mess_attached_template_name">_mess_attached_template_name</a></li>
+<li>
+<a href="#_mess_allow_rewrite_rules">_mess_allow_rewrite_rules</a></li>
+<li>
+<a href="#_mess_deny_rewrite_rules">_mess_deny_rewrite_rules</a></li>
+</ul>
+<hr>
+<h3 id="_mess_spawnflagn">_mess_spawnflagN</h3>
+<p>
+This set of properties can be used to enable or disable a specific spawn flag with MScript. These properties are removed from the entity after the spawnflag property has been updated. The first spawnflag has number 0, the last has number 31.</p>
+<p>
+If a <code>_mess_spawnflagN</code> value is empty or <code>0</code>, then the corresponding spawn flag will be disabled. Else, it will be enabled. For example, the following entity:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>env_beam</code></td></tr>
+<tr>
+<td><code>_mess_spawnflag0</code></td><td><code>{start_on}</code></td></tr>
+<tr>
+<td><code>_mess_spawnflag2</code></td><td><code>{enable_random_strike_time}</code></td></tr>
+</tbody>
+</table>
+<p>
+will have its first spawn flag enabled if <code>start_on</code> is true, and it will have its third spawn flag enabled if <code>enable_random_strike_time</code> is true. This would be the resulting entity if both are true:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>env_beam</code></td></tr>
+<tr>
+<td><code>spawnflags</code></td><td><code>5</code></td></tr>
+</tbody>
+</table>
+<hr>
+<h3 id="_mess_merge_entity_id">_mess_merge_entity_id</h3>
+<p>
+This property is used to merge brush entities together, which can be useful for certain optimization techniques. Merging happens after post-processing rewrite rules have been applied.</p>
+<p>
+Entities that contain a <code>_mess_merge_entity_id</code> property are grouped by their <code>_mess_merge_entity_id</code> value. Each group is turned into a single entity. The resulting entity will have the properties of the first entity of that group (or the first entity that is marked with a <code>_mess_merge_entity_master</code> property, see below), and it will contain the brushes of all entities of that group. The resulting entity will not contain a <code>_mess_merge_entity_id</code> or <code>_mess_merge_entity_master</code> property.</p>
+<p>
+It's recommended to only merge entities of the same type and with the same properties.</p>
+<hr>
+<h3 id="_mess_merge_entity_master">_mess_merge_entity_master</h3>
+<p>
+This property marks an entity that is part of a <code>_mess_merge_entity_id</code> group as the master of that group. The resulting merged entity will be given the properties of the master entity. If multiple entities in a single group are marked as a master, then the first entity will be the master.</p>
+<hr>
+<h3 id="_mess_remove_if">_mess_remove_if</h3>
+<p>
+Entities that contain this property will be removed if the value of this property is true (which is any value other than leaving it empty or setting it to <code>0</code>). If the entity is part of a template, then the value will be re-evaluated for every instance. This is similar to surrounding the entity with a <a href="macro_remove_if.html">macro_remove_if</a>. This property is removed from the entity afterwards.</p>
+<hr>
+<h3 id="_mess_attached_template_map">_mess_attached_template_map</h3>
+<p>
+Adding this property to a normal (non-macro) entity will insert the specified template map (or maps) at the position of that entity. This property is then removed from the entity. This also works for the special <code>worldspawn</code> entity - adding a <code>_mess_attached_template_map</code> property to the properties of a map will insert the specified map(s) at the center of the current map.</p>
+<p>
+For brush entities that contain an <code>ORIGIN</code> brush, the maps will be inserted at the center of that <code>ORIGIN</code> brush. For brush entities without an <code>ORIGIN</code> brush, the center of their bounding box will be used instead.</p>
+<p>
+The current entity will behave as a macro entity, in the sense that all of its properties will be available inside the selected template map(s).</p>
+<p>
+When inserting multiple maps, their paths must be separated by a comma (<code>,</code>). Relative paths are taken to be relative to the templates directory, or relative to the current map when used inside a template map. For paths that contain comma's, use a double comma escape sequence: <code>a, b and c.map</code> is interpreted as two paths (<code>a</code> and <code>b and c.map</code>), whereas <code>a,, b and c.map</code> is interpreted as a single path (<code>a, b and c.map</code>).</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>worldspawn</code></td></tr>
+<tr>
+<td><code>_mess_attached_template_map</code></td><td><code>TODO.map,TODO2.map</code></td></tr>
+</tbody>
+</table>
+<hr>
+<h3 id="_mess_attached_template_name">_mess_attached_template_name</h3>
+<p>
+This property is similar to <code>_mess_attached_template_map</code>, except that it inserts one or more local templates at the position of the entity that contains this property. The same positioning rules apply for brush entities and for inserting multiple templates.</p>
+<hr>
+<h3 id="_mess_allow_rewrite_rules">_mess_allow_rewrite_rules</h3>
+<p>
+Adding this property to a (template) map will block rewrite directives from all .ted files, except for the paths listed in this property. Paths can cover specific files or entire directories, and do not need to contain a .ted extension. This property is removed afterwards.</p>
+<p>
+This is a specific property that is intended for template entity authors.</p>
+<hr>
+<h3 id="_mess_deny_rewrite_rules">_mess_deny_rewrite_rules</h3>
+<p>
+Adding this property to a (template) map will block rewrite directives from the .ted file paths listed in this property. Paths can cover specific files or entire directories, and do not need to contain a .ted extension. This property is removed afterwards.</p>
+<p>
+This is a specific property that is intended for template entity authors.</p>
+<hr>
+<h2 id="lifted-properties">7.1.3. Lifted properties</h2>
+<p>
+Normally, expressions in properties can only reference properties from their parent entity, but in some cases it's useful to reference properties from the same entity. One particular case is with TrenchBroom linked groups: by default, all copies of a linked group will have the same entity properties, so if a linked group contains a button and a door that is opened by that button, then pressing a button in any of the copies will open the doors in all copies.</p>
+<p>
+Properties in linked group copies can be overridden, but that is somewhat tedious and easily forgotten. Instead, we can tell MESS to lift the special <code>_tb_group</code> property that gets added to entities that are part of a linked group. This property contains a number that is unique for every linked group copy. With this, a linked group that contains the following entities:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_button</code></td></tr>
+<tr>
+<td><code>target</code></td><td><code>door{_tb_group}</code></td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_door</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>door{_tb_group}</code></td></tr>
+</tbody>
+</table>
+<p>
+will, when two copies of the group are made, produce the following entities:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_button</code></td></tr>
+<tr>
+<td><code>target</code></td><td><code>door1</code></td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_door</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>door1</code></td></tr>
+</tbody>
+</table>
+<p>
+and:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_button</code></td></tr>
+<tr>
+<td><code>target</code></td><td><code>door2</code></td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_door</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>door2</code></td></tr>
+</tbody>
+</table>
+<p>
+The exact numbers will vary depending on how many other linked groups the map contains, but the point is that each copy now automatically gets unique entity names. In this case that means that a button from one copy will only open the door from that copy, instead of all doors.</p>
+<p>
+See also: <a href="configuration-files.html#lifted-properties">configuration file: lifted-properties</a> and <a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a>.</p>
+<h2 id="array-property-keys">7.1.4. Array property keys</h2>
+<p>
+If a property key consists of a single MScript expression that returns an array, then MESS will turn that property into multiple properties, one for every value in that array. The property value should also produce an array of equal length, so each property can be given a specific value. If the property value array is too short, then the value for the last few properties will be empty.</p>
+<p>
+For example, an entity with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>multi_manager</code></td></tr>
+<tr>
+<td><code>{['a', 'b', 'c']}</code></td><td><code>{[1, 2, 3]}</code></td></tr>
+</tbody>
+</table>
+<p>
+will, after processing, contain these properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>multi_manager</code></td></tr>
+<tr>
+<td><code>a</code></td><td><code>1</code></td></tr>
+<tr>
+<td><code>b</code></td><td><code>2</code></td></tr>
+<tr>
+<td><code>c</code></td><td><code>3</code></td></tr>
+</tbody>
+</table>
+<hr>
+<p>
+This can be particularly useful when combined with <a href="standard-functions.html#arrays">array functions</a>. For example, the following entity:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>mtl_trigger_random</code></td></tr>
+<tr>
+<td><code>{range(0, 5).map(n => 'target' + n)}</code></td><td><code>{repeat(8, 2).concat(repeat(10, 3))}</code></td></tr>
+</tbody>
+</table>
+<p>
+will become:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>mtl_trigger_random</code></td></tr>
+<tr>
+<td><code>target0</code></td><td><code>8</code></td></tr>
+<tr>
+<td><code>target1</code></td><td><code>8</code></td></tr>
+<tr>
+<td><code>target2</code></td><td><code>10</code></td></tr>
+<tr>
+<td><code>target3</code></td><td><code>10</code></td></tr>
+<tr>
+<td><code>target4</code></td><td><code>10</code></td></tr>
+</tbody>
+</table>
+<hr>
+<p>
+It's also possible to copy properties from a parent entity, by using the <a href="template-functions.html#parent-entity-properties">parent entity property functions</a> (a parent entity is the macro entity that is creating an instance of the current template):</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>multi_manager</code></td></tr>
+<tr>
+<td><code>{get_attr().map(a => a.key)}</code></td><td><code>{get_attr().map(a => a.value)}</code></td></tr>
+</tbody>
+</table>
+<p>
+This will copy all parent entity properties, including standard properties like <code>classname</code>, <code>origin</code>, <code>targetname</code>, and so on. In practice, certain properties will need to be excluded. This can be done with the <code>filter</code> function. Because both the key and value array must be filtered, it's  better to do this in a template property, so the filter doesn't need to be repeated.</p>
+<h2 id="empty-property-keys">7.1.5. Empty property keys</h2>
+<p>
+If, after evaluating MScript expressions, a property key is empty, MESS will remove that property. In this case, any MScript expressions in its value will not be evaluated.</p>
+<p>
+In the following example entity, all keys except <code>classname</code> end up being empty:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>trigger_relay</code></td></tr>
+<tr>
+<td><code>{}</code></td><td><code>empty</code></td></tr>
+<tr>
+<td><code>{''}</code></td><td><code>also empty</code></td></tr>
+<tr>
+<td><code>{1 == 0 ? 'killtarget' : ''}</code></td><td><code>conditionally empty</code></td></tr>
+</tbody>
+</table>
+<p>
+So the resulting entity will only contain the <code>classname</code> property:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>trigger_relay</code></td></tr>
+</tbody>
+</table>
+<p>
+The last property shows how the <code>?:</code> conditional operator can be used to exclude properties based on certain conditions. For example, a <code>trigger_relay</code> entity only needs a <code>killtarget</code> property if it needs to kill another entity.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

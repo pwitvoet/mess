@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>7.4. Standard functions - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li class="current-page"><a class="current-page" href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="standard-functions">7.4. Standard functions</h1>
+<p>
+MScript comes with a small library of functions that are available in any situation:</p>
+<ul>
+<li>
+<a href="#type-checks">7.4.1. Type checks</a></li>
+<li>
+<a href="#type-conversion">7.4.2. Type conversion</a></li>
+<li>
+<a href="#mathematics">7.4.3. Mathematics</a></li>
+<li>
+<a href="#trigonometry">7.4.4. Trigonometry</a></li>
+<li>
+<a href="#text">7.4.5. Text</a></li>
+<li>
+<a href="#arrays">7.4.6. Arrays</a></li>
+<li>
+<a href="#objects">7.4.7. Objects</a></li>
+<li>
+<a href="#functions">7.4.8. Functions</a></li>
+<li>
+<a href="#colors">7.4.9. Colors</a></li>
+<li>
+<a href="#debugging">7.4.10. Debugging</a></li>
+</ul>
+<h2 id="type-checks">7.4.1. Type checks</h2>
+<h4 id="is_num"><code><span class="keyword">bool</span> is_num(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given value is a <code><span class="keyword">number</span></code>, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
+<p>
+For example, <code>is_num(4.5)</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="is_str"><code><span class="keyword">bool</span> is_str(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given value is a <code><span class="keyword">string</span></code>, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
+<p>
+For example, <code>is_str('hello')</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="is_array"><code><span class="keyword">bool</span> is_array(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given value is an <code><span class="keyword">array</span></code>, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
+<p>
+For example, <code>is_array([1, 2, 3])</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="is_obj"><code><span class="keyword">bool</span> is_obj(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given value is an <code><span class="keyword">object</span></code>, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
+<p>
+For example, <code>is_obj({name: 'A'})</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="is_func"><code><span class="keyword">bool</span> is_func(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given value is a <code><span class="keyword">function</span></code>, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
+<p>
+For example, <code>is_func(is_func)</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="typeof"><code><span class="keyword">string</span> typeof(<span class="keyword">any</span> value)</code></h4>
+<p>
+Returns the name of the type of the given value.</p>
+<p>
+This function will return the following type names:</p>
+<table>
+<thead>
+<tr>
+<th>function call</th>
+<th>return value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>typeof(<span class="keyword">none</span>)</code></td><td><code>'<span class="keyword">none</span>'</code></td></tr>
+<tr>
+<td><code>typeof(12)</code></td><td><code>'<span class="keyword">number</span>'</code></td></tr>
+<tr>
+<td><code>typeof('hello')</code></td><td><code>'<span class="keyword">string</span>'</code></td></tr>
+<tr>
+<td><code>typeof([3, 'four'])</code></td><td><code>'<span class="keyword">array</span>'</code></td></tr>
+<tr>
+<td><code>typeof({a: 5, b: 6})</code></td><td><code>'<span class="keyword">object</span>'</code></td></tr>
+<tr>
+<td><code>typeof(() => 0)</code></td><td><code>'<span class="keyword">function</span>'</code></td></tr>
+</tbody>
+</table>
+<hr>
+<h2 id="type-conversion">7.4.2. Type conversion</h2>
+<h4 id="num"><code><span class="keyword">number</span>|<span class="keyword">none</span> num(<span class="keyword">any</span> value)</code></h4>
+<p>
+Converts the given value to a number. Returns <code><span class="keyword">none</span></code> if the given value cannot be converted - only numbers and strings that can be parsed as numbers can be converted.</p>
+<p>
+For example, <code>num('4.5')</code> returns <code>4.5</code>.</p>
+<hr>
+<h4 id="str"><code><span class="keyword">string</span> str(<span class="keyword">any</span> value)</code></h4>
+<p>
+Converts the given value to a string by taking its string representation.</p>
+<p>
+For example, <code>str([4, 5])</code> returns <code>'4 5'</code>.</p>
+<hr>
+<h4 id="array"><code><span class="keyword">array</span> <span class="keyword">array</span>(<span class="keyword">any</span> value)</code></h4>
+<p>
+Converts the given value to an array. Returns an array of 1-character strings if the value is a string. Returns the given value if it is already an array. Returns an empty array if the value is <code><span class="keyword">none</span></code>. Returns an array that contains the given value otherwise.</p>
+<p>
+For example, <code><span class="keyword">array</span>('abc')</code> returns <code>['a', 'b', 'c']</code>, <code><span class="keyword">array</span>(<span class="keyword">none</span>)</code> returns <code>[]</code> and <code><span class="keyword">array</span>(7)</code> returns <code>[7]</code>.</p>
+<hr>
+<h2 id="mathematics">7.4.3. Mathematics</h2>
+<h4 id="min"><code><span class="keyword">number</span> min(<span class="keyword">number</span> value1, <span class="keyword">number</span> value2)</code></h4>
+<p>
+Returns the lowest of the given numbers.</p>
+<p>
+For example, <code>min(4, 5)</code> returns <code>4</code>.</p>
+<hr>
+<h4 id="max"><code><span class="keyword">number</span> max(<span class="keyword">number</span> value1, <span class="keyword">number</span> value2)</code></h4>
+<p>
+Returns the greatest of the given numbers.</p>
+<p>
+For example, <code>max(4, 5)</code> returns <code>5</code>.</p>
+<hr>
+<h4 id="clamp"><code><span class="keyword">number</span> clamp(<span class="keyword">number</span> value, <span class="keyword">number</span> min, <span class="keyword">number</span> max)</code></h4>
+<p>
+Clamps the given number to the given range. The returned number won't be lower than <code>min</code> or higher than <code>max</code>.</p>
+<p>
+For example, <code>clamp(5, 10, 20)</code> returns <code>10</code>.</p>
+<hr>
+<h4 id="abs"><code><span class="keyword">number</span> abs(<span class="keyword">number</span> value)</code></h4>
+<p>
+Returns the absolute value of the given number.</p>
+<p>
+For example, <code>abs(-4.5)</code> returns <code>4.5</code>.</p>
+<hr>
+<h4 id="round"><code><span class="keyword">number</span> round(<span class="keyword">number</span> value)</code></h4>
+<p>
+Rounds the given number to the nearest integer value. Midpoint values are rounded to the nearest even number.</p>
+<p>
+For example, <code>round(1.2)</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="floor"><code><span class="keyword">number</span> floor(<span class="keyword">number</span> value)</code></h4>
+<p>
+Rounds the given number to the nearest integer that is lower than or equal to the given number.</p>
+<p>
+For example, <code>floor(1.8)</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="ceil"><code><span class="keyword">number</span> ceil(<span class="keyword">number</span> value)</code></h4>
+<p>
+Rounds the given number to the nearest integer that is higher than or equal to the given number.</p>
+<p>
+For example, <code>ceil(1.2)</code> returns <code>2</code>.</p>
+<hr>
+<h4 id="pow"><code><span class="keyword">number</span> pow(<span class="keyword">number</span> value, <span class="keyword">number</span> power)</code></h4>
+<p>
+Raises the given number to the given power.</p>
+<p>
+For example, <code>pow(2, 4)</code> returns <code>16</code>.</p>
+<hr>
+<h4 id="sqrt"><code><span class="keyword">number</span> sqrt(<span class="keyword">number</span> value)</code></h4>
+<p>
+Returns the square root of the given number.</p>
+<p>
+For example, <code>sqrt(9)</code> returns <code>3</code>.</p>
+<hr>
+<h2 id="trigonometry">7.4.4. Trigonometry</h2>
+<h4 id="sin"><code><span class="keyword">number</span> sin(<span class="keyword">number</span> radians)</code></h4>
+<p>
+Returns the sine of the given angle.</p>
+<hr>
+<h4 id="cos"><code><span class="keyword">number</span> cos(<span class="keyword">number</span> radians)</code></h4>
+<p>
+Returns the cosine of the given angle.</p>
+<hr>
+<h4 id="tan"><code><span class="keyword">number</span> tan(<span class="keyword">number</span> radians)</code></h4>
+<p>
+Returns the tangent of the given angle.</p>
+<hr>
+<h4 id="asin"><code><span class="keyword">number</span> asin(<span class="keyword">number</span> sine)</code></h4>
+<p>
+Returns the angle (in radians) that corresponds to the given sine.</p>
+<hr>
+<h4 id="acos"><code><span class="keyword">number</span> acos(<span class="keyword">number</span> cosine)</code></h4>
+<p>
+Returns the angle (in radians) that corresponds to the given cosine.</p>
+<hr>
+<h4 id="atan"><code><span class="keyword">number</span> atan(<span class="keyword">number</span> tangent)</code></h4>
+<p>
+Returns the angle (in radians) that corresponds to the given tangent.</p>
+<hr>
+<h4 id="atan2"><code><span class="keyword">number</span> atan2(<span class="keyword">number</span> y, <span class="keyword">number</span> x)</code></h4>
+<p>
+Returns the angle (in radians) between the positive x-axis and a line from the origin towards the point (x, y).</p>
+<hr>
+<h4 id="deg2rad"><code><span class="keyword">number</span> deg2rad(<span class="keyword">number</span> degrees)</code></h4>
+<p>
+Converts an angle in degrees to radians.</p>
+<p>
+For example, <code>deg2rad(360)</code> returns <code>6.283...</code>, which is <code>2 * PI</code>.</p>
+<hr>
+<h4 id="rad2deg"><code><span class="keyword">number</span> rad2deg(<span class="keyword">number</span> radians)</code></h4>
+<p>
+Converts an angle in radians to degrees.</p>
+<p>
+For example, <code>rad2deg(PI)</code> returns <code>180</code>.</p>
+<hr>
+<h2 id="text">7.4.5. Text</h2>
+<h4 id="ord"><code><span class="keyword">number</span> ord(<span class="keyword">string</span> str)</code><br/><code><span class="keyword">number</span> ord(<span class="keyword">string</span> str, <span class="keyword">number</span> index)</code></h4>
+<p>
+Returns the numeric Unicode value of a specific character in the given string. The first character is chosen if no index is provided. Returns <code><span class="keyword">none</span></code> if the index is out of range or if the given string is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>ord('a')</code> returns <code>97</code>, and <code>ord(4)</code> returns <code>52</code>.</p>
+<hr>
+<h4 id="chr"><code><span class="keyword">string</span> chr(<span class="keyword">number</span> value)</code></h4>
+<p>
+Returns a single-character string for the given Unicode value.</p>
+<p>
+For example, <code>chr(97)</code> returns <code>a</code>, and <code>chr(52)</code> returns <code>4</code>.</p>
+<hr>
+<h2 id="arrays">7.4.6. Arrays</h2>
+<p>
+The following functions are used with <a href="data-types.html#6-2-3--array">arrays</a>:</p>
+<h4 id="range"><code><span class="keyword">array</span> range(<span class="keyword">number</span> stop)</code><br/><code><span class="keyword">array</span> range(<span class="keyword">number</span> start, <span class="keyword">number</span> stop)</code><br/><code><span class="keyword">array</span> range(<span class="keyword">number</span> start, <span class="keyword">number</span> stop, <span class="keyword">number</span> step)</code></h4>
+<p>
+Creates an array that contains a range of numbers, starting from <code>start</code> (inclusive) up until <code>stop</code> (exclusive). By default, it will start at 0 and use a step size of <code>1</code>. A higher step size will skip numbers, while a negative step size will create a range of decreasing numbers.</p>
+<p>
+For example, <code>range(5)</code> returns <code>[0, 1, 2, 3, 4]</code>, and <code>range(6, 0, -2)</code> returns <code>[6, 4, 2]</code>.</p>
+<hr>
+<h4 id="repeat"><code><span class="keyword">array</span> repeat(<span class="keyword">any</span> value, <span class="keyword">number</span> count)</code></h4>
+<p>
+Creates an array that contains a specific number of copies of the given value.</p>
+<p>
+For example, <code>repeat('a', 4)</code> returns <code>['a', 'a', 'a', 'a']</code>.</p>
+<h2 id="objects">7.4.7. Objects</h2>
+<p>
+The following functions are used with <a href="data-types.html#6-2-4--object">objects</a>:</p>
+<h4 id="obj_add"><code><span class="keyword">object</span> obj_add(<span class="keyword">object</span> obj, <span class="keyword">string</span> field_name, <span class="keyword">any</span> value)</code></h4>
+<p>
+Returns a copy of the object, but with an extra field added to it. Trying to add an existing field will overwrite its value. Returns a new object with a single field if the given object is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_add({name: 'John'}, 'age', 25)</code> returns <code>{name: 'John', age: 25}</code>.</p>
+<hr>
+<h4 id="obj_remove"><code><span class="keyword">object</span> obj_remove(<span class="keyword">object</span> obj, <span class="keyword">string</span> field_name)</code><br/><code><span class="keyword">object</span> obj_remove(<span class="keyword">object</span> obj, <span class="keyword">array</span> field_names)</code></h4>
+<p>
+Returns a copy of the object, but without the specified field (or fields). Trying to remove a non-existing field won't have any effect. Returns <code><span class="keyword">none</span></code> if the given object is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_remove({name: 'John', age: 25}, 'name')</code> returns <code>{age: 25}</code>.</p>
+<hr>
+<h4 id="obj_merge"><code><span class="keyword">object</span> obj_merge(<span class="keyword">object</span> obj1, <span class="keyword">object</span> obj2)</code></h4>
+<p>
+Returns an object that contains all the fields from both given objects. If the objects contain fields with the same name, then the value from <code>obj2</code> is used. Returns the other object if one of the objects is <code><span class="keyword">none</span></code>. Returns <code><span class="keyword">none</span></code> if both objects are <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_merge({name: 'red', color: '#FF0000'}, {name: 'John', age: 25})</code> returns <code>{name: 'John', color: '#FF0000', age: 25}</code>.</p>
+<hr>
+<h4 id="obj_has"><code><span class="keyword">bool</span> obj_has(<span class="keyword">object</span> obj, <span class="keyword">string</span> name)</code></h4>
+<p>
+Returns <code>1</code> (true) if the given object has a field with the given name, or <code><span class="keyword">none</span></code> (false) otherwise. Returns <code><span class="keyword">none</span></code> if the given object is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_has({name: 'John', age: 25}, 'name')</code> returns <code>1</code>.</p>
+<hr>
+<h4 id="obj_value"><code><span class="keyword">any</span> obj_value(<span class="keyword">object</span> obj, <span class="keyword">string</span> name)</code></h4>
+<p>
+Returns the value of the specified field in the given object, or <code><span class="keyword">none</span></code> if the given object does not contain a field with that name, or if the object is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_value({name: 'John', age: 25}, 'age')</code> returns <code>25</code>.</p>
+<hr>
+<h4 id="obj_fields"><code><span class="keyword">array</span> obj_fields(<span class="keyword">object</span> obj)</code></h4>
+<p>
+Returns an array that contains the names of all the fields in the given object. Returns an empty array if the given object is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>obj_fields({name: 'John', age: 25})</code> returns <code>['name', 'age']</code>.</p>
+<hr>
+<h2 id="functions">7.4.8. Functions</h2>
+<h4 id="func_name"><code><span class="keyword">string</span> func_name(<span class="keyword">function</span> func)</code></h4>
+<p>
+Returns the name of the given function, or <code><span class="keyword">none</span></code> if the given function is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>func_name(max)</code> returns <code>'max'</code>.</p>
+<hr>
+<h4 id="func_args"><code><span class="keyword">array</span> func_args(<span class="keyword">function</span> func)</code></h4>
+<p>
+Returns an array that contains the parameter names of the given function, or <code><span class="keyword">none</span></code> if the given function is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>func_args(pow)</code> returns <code>['value', 'power']</code>.</p>
+<hr>
+<h4 id="func_arg"><code><span class="keyword">object</span> func_arg(<span class="keyword">function</span> func, <span class="keyword">string</span> name)</code></h4>
+<p>
+Returns an object with information about the specified function parameter, or <code><span class="keyword">none</span></code> if the given function is <code><span class="keyword">none</span></code> or if the parameter does not exist.</p>
+<p>
+For example, <code>func_arg(range, 'step')</code> returns <code>{name: 'step', type: 'Number', optional: 1, default_value: <span class="keyword">none</span>}</code>.</p>
+<hr>
+<h4 id="func_apply"><code><span class="keyword">object</span> func_apply(<span class="keyword">function</span> func, <span class="keyword">array</span> arguments)</code></h4>
+<p>
+Calls the given function with the given arguments and returns the result. Returns <code><span class="keyword">none</span></code> if the given function is <code><span class="keyword">none</span></code>.</p>
+<p>
+For example, <code>func_apply(min, [3, 4])</code> returns <code>3</code>.</p>
+<hr>
+<h2 id="colors">7.4.9. Colors</h2>
+<h4 id="color"><code><span class="keyword">array</span> color(<span class="keyword">array</span> color)</code></h4>
+<p>
+Returns an array of 3 values (red, green and blue) if the given array contains 3 values or less. Returns an array of 4 values (red, green, blue and brightness) if the given array contains 4 values or more. The first 3 values are clamped to the 0-255 range (inclusive), and all values are rounded to the nearest integer value. If a value can't be converted or is missing, <code>0</code> is used instead. This function can be used to 'sanitize' colors.</p>
+<p>
+For example, <code>color('100', 300, 150.4)</code> returns <code>[100, 255, 150]</code>.</p>
+<h2 id="debugging">7.4.10. Debugging</h2>
+<h4 id="assert"><code><span class="keyword">bool</span> assert(<span class="keyword">bool</span> condition)</code><br/><code><span class="keyword">bool</span> assert(<span class="keyword">bool</span> condition, <span class="keyword">string</span> message)</code></h4>
+<p>
+This function aborts processing if the given condition is <code><span class="keyword">none</span></code> (false). If a message is provided then it is included in the error message that is logged. Returns <code>1</code> (true) if the condition is true.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

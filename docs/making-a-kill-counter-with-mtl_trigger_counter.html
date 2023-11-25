@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Making a kill counter with mtl_trigger_counter - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li class="current-page"><a class="current-page" href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="making-a-kill-counter-with-mtl_trigger_counter">Making a kill counter with mtl_trigger_counter</h1>
+<p>
+<figure>
+<img src="images/kill_counter_header.png" alt="Making a kill counter with mtl_trigger_counter" title="Making a kill counter with mtl_trigger_counter">
+<figcaption>Making a kill counter with mtl_trigger_counter</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#introduction">1. Introduction</a></li>
+<li>
+<a href="#entity-setup">2. Entity setup</a></li>
+<li>
+<a href="#example-map">3. Example map</a></li>
+</ul>
+<h2 id="introduction">1. Introduction</h2>
+<p>
+Remember that part in Lambda Core where Gordon had to kill 4 alien grunts before a frightened scientist would open the door? Let's recreate that - but, instead of only triggering something when all grunts are killed, we will also display a unique text message after every kill.</p>
+<p>
+In the original level, the grunts, when killed, would trigger a <code>multisource</code>, which activated the door-opening sequence once all grunts were killed. Instead of a <code>multisource</code>, a <code>game_counter</code> with a target count of 4 would also have worked.</p>
+<p>
+In our map we will use an <a href="mtl_trigger_counter.html">mtl_trigger_counter</a> instead. This is essentially a multi-target variant of <code>game_counter</code> that can trigger multiple targets at specific counter values:</p>
+<p>
+<figure>
+<img src="images/trigger_counter_grunts_door.png" alt="Alien grunts triggering a counter, which triggers messages and a door" title="Alien grunts triggering a counter, which triggers messages and a door">
+<figcaption>Alien grunts triggering a counter, which triggers messages and a door</figcaption>
+</figure>
+</p>
+<h2 id="entity-setup">2. Entity setup</h2>
+<p>
+First, create 4 <code>monster_alien_grunt</code> entities and set their properties as following:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> TriggerTarget </td><td> agrunt_kill_counter</td></tr>
+<tr>
+<td> Trigger Condition </td><td> Death</td></tr>
+</tbody>
+</table>
+<p>
+Then create an <code>mtl_trigger_counter</code> with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Targetname </td><td> agrunt_kill_counter</td></tr>
+<tr>
+<td> Trigger mode </td><td> Increment when triggered</td></tr>
+<tr>
+<td> Initial value </td><td> 0</td></tr>
+</tbody>
+</table>
+<p>
+Now disable smartedit mode and add the following key/value pairs to the <code>mtl_trigger_counter</code>:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_kill_1</code></td><td><code>1</code></td></tr>
+<tr>
+<td><code>msg_kill_2</code></td><td><code>2</code></td></tr>
+<tr>
+<td><code>msg_kill_3</code></td><td><code>3</code></td></tr>
+<tr>
+<td><code>msg_kill_4, +door1</code></td><td><code>4</code></td></tr>
+</tbody>
+</table>
+<p>
+The keys are targets, and the values are the counter values at which those targets will be triggered.</p>
+<p>
+Note the final target: MESS provides several convenient 'target patterns', such as the ability to trigger multiple targets by using a comma-separated list, or the ability to send an 'on' signal to an entity by adding a <code>+</code> in front of the target's name. So instead of having to create a <code>multi_manager</code> that triggers <code>msg_kill4</code> and a <code>trigger_relay</code> that sends an 'on' signal to <code>door1</code>, MESS will automatically generate those entities for us.</p>
+<p>
+Finally, create 4 <code>game_text</code> entities named 'msg_kill_1', 'msg_kill_2', 'msg_kill_3' and 'msg_kill_4', give them some interesting messages (be sure to enable their 'All players' flag), and create a door named 'door1'.</p>
+<p>
+Now, each time we kill an alien grunt, it will trigger our <code>mtl_trigger_counter</code>, incrementing its counter. When the first alien grunt is killed, the first kill message is displayed. When the second grunt is killed, the second message is shown, and so on. When the fourth grunt is killed, the final message is shown, and the door is opened:</p>
+<p>
+<figure>
+<img src="images/trigger_counter_grunts_door_opened.png" alt="Congratulations, you did it!" title="Congratulations, you did it!">
+<figcaption>Congratulations, you did it!</figcaption>
+</figure>
+</p>
+<h2 id="example-map">3. Example map</h2>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/kill_counter_tutorial.zip">kill_counter_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

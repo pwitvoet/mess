@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>6.5. macro_template - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li class="current-page"><a class="current-page" href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="macro_template">6.5. macro_template</h1>
+<p>
+Anything inside the bounding box of this entity becomes part of a template. Templates are removed from the map, but instances can be created in various places by <a href="macro-entities.html#instance-entities">other macro entities</a>. For templates that are useful in multiple maps it's better to create a separate template map (MESS supports MAP, RMF and JMF files).</p>
+<p>
+<figure>
+<img src="images/macro_template_example.png" alt="A macro_template consisting of two blue brushes, with a shrub inside" title="A macro_template consisting of two blue brushes, with a shrub inside">
+<figcaption>A macro_template consisting of two blue brushes, with a shrub inside</figcaption>
+</figure>
+</p>
+<h2 id="template-customization">Template customization</h2>
+<p>
+Entities inside a template have access to the custom properties of their template, and to the properties of the macro entity that is currently creating an instance of the template. This makes it possible to customize each instance. Such references are surrounded by curly brackets: <code>{property_name}</code>.</p>
+<p>
+For example, imagine a template named <code>beam_template</code>, which contains an <code>env_beam</code> with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>targetname</code></td><td><code>{targetname}_beam</code></td></tr>
+<tr>
+<td><code>renderamt</code></td><td><code>120</code></td></tr>
+<tr>
+<td><code>rendercolor</code></td><td><code>250 0 0</code></td></tr>
+</tbody>
+</table>
+<p>
+If a <code>macro_insert</code> named <code>machine</code> is used to create an instance of this template, then the resulting <code>env_beam</code> will have a targetname of <code>machine_beam</code>. If another <code>macro_insert</code> named <code>ice</code> also creates an instance, then that <code>env_beam</code> will be named <code>ice_beam</code>. Both beams will have the same render amount and render color. The <code>{targetname}</code> part simply refers to the targetname property of the macro entity that is creating the current instance.</p>
+<p>
+But curly brackets can be used for more than just property references - they can also contain small scripts. For example, <code>button_{4 + 5}</code> becomes <code>button_9</code>, and <code>{damage < 10 ? 'small' : 'big'}_spr</code> becomes <code>small_spr</code> if <code>damage</code> is less than 10, and <code>big_spr</code> otherwise.</p>
+<p>
+One of the most common scripts is <code>{id()}</code>. The <code>id()</code> function is similar to referencing the <code>targetname</code> property, but if the macro entity that's creating the current instance does not have a name then <code>id()</code> returns the numerical ID of the current instance. This ID can also be obtained with the <code>iid()</code> function, which is useful when an entity must have a unique name, even when the <code>targetname</code> of the instance-creating macro entity is not unique.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- The name (or names) of this template. If multiple templates have the same name, one of them is chosen randomly each time an instance is created. Multiple names must be separated by commas.</li>
+<li>
+<strong>Anchor point (origin)</strong> <em>(anchor)</em> -- The origin of this template.<ul>
+<li>
+<strong>Bottom center</strong> <em>(0)</em> -- The bottom center of the template's bounding box.</li>
+<li>
+<strong>Center</strong> <em>(1)</em> -- The center of the template's bounding box. This is the default.</li>
+<li>
+<strong>Top center</strong> <em>(2)</em> -- The top center of the template's bounding box.</li>
+<li>
+<strong>Origin brush</strong> <em>(3)</em> -- The center of the template's origin brush. Uses the bottom center if there is no origin brush.</li>
+</ul>
+</li>
+<li>
+<strong>Random selection weight</strong> <em>(selection_weight)</em> -- This determines how likely this template is to be chosen when there are multiple templates with the same name. If this is set to 0 then the template will not be chosen at all, even if there are no other templates with the same name.</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+When an instance of a template is created, any scripts inside its custom properties are evaluated. These scripts have access to the properties of the macro entity that is creating the current instance. Custom template properties are a good place to set values that are used in multiple places inside the template. </p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+Because it's the bounding box that counts, it's better to mark template areas with two brushes rather than one: one on the left and one on the right. This makes it easier to select and modify the template contents.</li>
+<li>
+When multiple templates have the same name, one of them is chosen randomly each time an instance is created. This can be used to group related templates together: for example, a cactus, a rock and a shrub template could all be named <code>prop_desert</code>.</li>
+<li>
+Use multiple names for templates that should be part of multiple groups: a shrub template named <code>prop_shrub, prop_desert, prop_temperate</code> can be referenced by using either <code>prop_shrub</code>, <code>prop_desert</code> or <code>prop_temperate</code>.</li>
+<li>
+Templates can contain <a href="macro_insert.html" title="macro_insert">macro_insert</a> and other instance-creating macro entities, making them recursive.</li>
+<li>
+To exclude parts of a template in specific instances, use a <a href="macro_remove_if.html" title="macro_remove_if">macro_remove_if</a> entity. To exclude specific entities, add a <a href="entity-properties.html#_mess_remove_if">_mess_remove_if</a> property to them.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

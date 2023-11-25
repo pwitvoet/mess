@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>3.2. Command-line options - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li class="current-page"><a class="current-page" href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="command-line-options">3.2. Command-line options</h1>
+<p>
+<figure>
+<img src="images/mess_command_line.png" alt="MESS command-line" title="MESS command-line">
+<figcaption>MESS command-line</figcaption>
+</figure>
+</p>
+<p>
+Like other command-line tools, MESS can be told what to do via command-line arguments. The most important argument is <a href="#input_path">INPUT_PATH</a>, which is the path of a <code>.map</code>, <code>.rmf</code> or <code>.jmf</code> file. Optionally, an <a href="#output_path">OUTPUT_PATH</a> can also be provided (without this, MESS will overwrite a given <code>.map</code> file).</p>
+<p>
+All other command-line arguments must be placed before the input and output map paths. The most commonly used arguments are <code>-log LOG_LEVEL</code>, which tells MESS how much or how little it should log, and <code>-config PATH</code>, for selecting a different configuration file.</p>
+<p>
+For additional settings, it's better to use <a href="configuration-files.html">configuration files</a>.</p>
+<h2 id="available-arguments">Available arguments</h2>
+<ul>
+<li>
+<a href="#-help">-help</a></li>
+<li>
+<a href="#-repl">-repl</a></li>
+<li>
+<a href="#-dir-path">-dir PATH</a></li>
+<li>
+<a href="#-config-path">-config PATH</a></li>
+<li>
+<a href="#-fgd-path">-fgd PATH</a></li>
+<li>
+<a href="#-vars-assignments">-vars ASSIGNMENTS</a></li>
+<li>
+<a href="#-globals-assignments">-globals ASSIGNMENTS</a></li>
+<li>
+<a href="#-maxrecursion-n">-maxrecursion N</a></li>
+<li>
+<a href="#-maxinstances-n">-maxinstances N</a></li>
+<li>
+<a href="#-log-log_level">-log LOG_LEVEL</a></li>
+<li>
+<a href="#input_path">INPUT_PATH</a></li>
+<li>
+<a href="#output_path">OUTPUT_PATH</a></li>
+</ul>
+<h2 id="-help"><code>-help</code></h2>
+<p>
+When this special argument is set, MESS will show a list of available arguments and then quit. All other arguments will be ignored.</p>
+<h2 id="-repl"><code>-repl</code></h2>
+<p>
+This special argument enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop) that can be used to try out MScript, the scripting language that is embedded in MESS. If this argument is set, then all other arguments will be ignored.</p>
+<p>
+While MScript is almost entirely expression-based, REPL mode supports assignments. For example, <code>a = 4 + 5</code> will store the result of the <code>4 + 5</code> expression in the variable named <code>a</code>. For convenience, the latest evaluation result is also stored in a special variable named <code>_</code>.</p>
+<p>
+The following special commands are available in REPL mode:</p>
+<ul>
+<li>
+<code>quit</code> - This will exit REPL mode.</li>
+<li>
+<code>load PATH</code> - This will load an <code>.mscript</code> file and execute all assignments in it. This can be useful for testing utility functions for template entities.</li>
+</ul>
+<h2 id="-dir-path"><code>-dir PATH</code></h2>
+<p>
+This override the template maps directory setting from the current configuration file. See <a href="configuration-files.html#template-maps-directory">configuration file: template-maps-directory</a> for more information.</p>
+<h2 id="-config-path"><code>-config PATH</code></h2>
+<p>
+This selects a different config file. The <code>.config</code> extension can be omitted, and relative paths are relative to the folder that contains <code>MESS.exe</code>. For example, <code>-config hl</code> will select <code>hl.config</code>.</p>
+<h2 id="-fgd-path">-<code>fgd PATH</code></h2>
+<p>
+This overrides the <code>mess.fgd</code> file path setting from the current configuration file. See <a href="configuration-files.html#fgd-path">configuration file: fgd-path</a> for more information.</p>
+<h2 id="-vars-"assignments""><code>-vars "ASSIGNMENTS"</code></h2>
+<p>
+These variables will be available in MScript expressions in the map properties and top-level entities of the input map. The input format is <code>"name1 = expression; name2 = expression;"</code>, and so on.</p>
+<p>
+These variables are added to the ones from the current configuration file. If multiple variables with the same name are specified, then the last value wins. Variables provided via the command-line always overwrite variables from the configuration file if they have the same name. See <a href="configuration-files.html#variables">configuration file: variables</a> for more information.</p>
+<h2 id="-globals-"assignments""><code>-globals "ASSIGNMENTS"</code></h2>
+<p>
+Global variables are available in MScript expressions anywhere, via the <code>getglobal</code>, <code>setglobal</code> and <code>useglobal</code> functions. Unlike variables, which are only available in the map properties and in top-level entities, globals are also available inside templates and template maps. The input format is <code>"name1 = expression; name2 = expression;"</code>, and so on.</p>
+<p>
+Similar to normal variables, global variables are added to the ones from the current configuration file, using the same rules for handling duplicate names. See <a href="configuration-files.html#globals">configuration file: globals</a> for more information.</p>
+<h2 id="-maxrecursion-n"><code>-maxrecursion N</code></h2>
+<p>
+This overrides the maximum recursion setting from the current configuration file. See <a href="configuration-files.html#max-recursion">configuration file: max-recursion</a> for more information.</p>
+<h2 id="-maxinstances-n"><code>-maxinstances N</code></h2>
+<p>
+This overrides the maximum instances setting from the current configuration file. See <a href="configuration-files.html#max-instances">configuration file: max-instances</a> for more information.</p>
+<h2 id="-log-log_level"><code>-log LOG_LEVEL</code></h2>
+<p>
+This overrides the log level setting from the current configuration file. Available log levels are <code>off</code>, <code>minimal</code>, <code>error</code>, <code>warning</code>, <code>info</code> (the default level) and <code>verbose</code>. See <a href="configuration-files.html#log-level">configuration file: log-level</a> for more information.</p>
+<h2 id="input_path"><code>INPUT_PATH</code></h2>
+<p>
+This specifies the map file that must be processed by MESS. Supported formats are <code>.map</code>, <code>.rmf</code> and <code>.jmf</code>. The output format is always <code>.map</code>. This argument must come after all the other arguments (but before <code>OUTPUT_PATH</code>).</p>
+<p>
+If the input file is a <code>.map</code> file and if no output path is set, then the input file will be overwritten.</p>
+<h2 id="output_path"><code>OUTPUT_PATH</code></h2>
+<p>
+This tells where MESS will save the resulting map file. Specifying a custom output path is useful if you want to prevent MESS from overwriting the input file. This argument must come after all the other arguments.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

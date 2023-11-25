@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>7.5. Template functions - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li class="current-page"><a class="current-page" href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="template-functions">7.5. Template functions</h1>
+<p>
+The following functions are available inside entity properties:</p>
+<ul>
+<li>
+<a href="#instance-id">7.5.1. Instance ID</a></li>
+<li>
+<a href="#randomness">7.5.2. Randomness</a></li>
+<li>
+<a href="#parent-entity-properties">7.5.3. Parent entity properties</a></li>
+<li>
+<a href="#spawnflags">7.5.4. Spawnflags</a></li>
+<li>
+<a href="#directories">7.5.5. Directories</a></li>
+<li>
+<a href="#globals">7.5.6. Globals</a></li>
+<li>
+<a href="#debugging">7.5.7. Debugging</a></li>
+</ul>
+<h2 id="instance-id">7.5.1. Instance ID</h2>
+<p>
+When creating multiple instances of the same template, entities in different instances often need to have distinct names. For example, a landmine template that contains a <code>trigger_once</code> and an <code>env_explosion</code> should produce triggers that only activate the explosion of the current landmine, not the explosions of all landmines.</p>
+<hr>
+<h4 id="id"><code><span class="keyword">string</span> id()</code></h4>
+<p>
+Returns the <code>targetname</code> of the macro entity that is creating the current instance, or the unique ID of the current instance if the <code>targetname</code> is empty. The return value is always a string.</p>
+<p>
+For example, if a <code>macro_insert</code> with the name <code>fire1</code> is creating an instance of a template, and that template contains an <code>env_beam</code> entity with the name <code>{id()}_beam</code>, then the resulting instance will have an <code>env_beam</code> entity with the name <code>fire1_beam</code>.</p>
+<hr>
+<h4 id="iid"><code><span class="keyword">number</span> iid()</code></h4>
+<p>
+Returns the unique ID of the current instance, as a number.</p>
+<p>
+For example, if a macro entity creates an instance of a template that contains a <code>func_button</code> entity with the name <code>btn_{iid()}</code>, and the current instance ID happens to be <code>15</code>, then the resulting <code>func_button</code> will have the name <code>btn_15</code>.</p>
+<hr>
+<h4 id="parentid"><code><span class="keyword">number</span> parentid()</code></h4>
+<p>
+Returns the unique ID of the macro entity that is creating the current instance. This ID is not related to instance IDs.</p>
+<p>
+For example, if a <code>macro_insert</code> or a <code>macro_cover</code> creates multiple instances of a template, and that template contains an <code>env_sprite</code> with the name <code>spr_{parentid()}</code>, and the unique ID of that macro entity happens to be <code>20</code>, then the resulting sprites will all have the same name: <code>spr_20</code>.</p>
+<hr>
+<h4 id="nth"><code><span class="keyword">number</span> nth()</code></h4>
+<p>
+Returns the sequence number of the current instance. The first instance that is created by a macro entity has sequence number <code>0</code>. The second instance created by that same macro entity has sequence number <code>1</code>, and so on.</p>
+<p>
+For example, if a <code>macro_insert</code> with an <code>instance_count</code> of <code>5</code> creates instances of a template that contains an <code>env_sprite</code> entity with the name <code>spr_{nth()}</code>, then the result will be 5 <code>env_sprite</code> entities named <code>spr_0</code>, <code>spr_1</code>, <code>spr_2</code>, <code>spr_3</code> and <code>spr_4</code> respectively.</p>
+<p>
+This function can also be used in the macro entity itself: setting the <code>instance_offset</code> property of the above <code>macro_insert</code> to <code>{nth() * 32} 0 0</code> will put each subsequent instance 32 units to the right of the previous instance.</p>
+<hr>
+<h2 id="randomness">7.5.2. Randomness</h2>
+<p>
+An easy way to add variety is to use randomness. For example, randomizing the angles and scale of props can help to make them look less repetitive.</p>
+<p>
+Randomness in MESS is determistic, which means that compiling the exact same map will always produce the same output. Random numbers are affected by the <code>random_seed</code> property of the current instance-creating macro entity - the same seed will always produce the same sequence of numbers.</p>
+<hr>
+<h4 id="rand"><code><span class="keyword">number</span> rand()</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> min, <span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> min, <span class="keyword">number</span> max, <span class="keyword">number</span> step)</code></h4>
+<p>
+Returns a random floating-point number. When called without arguments, the result will be a number between <code>0.0</code> and <code>1.0</code> (exclusive). When called with a single argument, the result will lie between <code>0.0</code> and the given number. When called with two arguments, the result will lie between the given numbers. Optionally, a third argument can be given, which controls the difference between each consecutive number that can be returned.</p>
+<p>
+The lower bound is inclusive, the upper bound is exclusive.</p>
+<p>
+For example:</p>
+<ul>
+<li>
+<code>rand(5)</code> will return a random number between <code>0</code> and <code>5</code> (but not exactly <code>5</code>)</li>
+<li>
+<code>rand(2, 4)</code> will return a random number between <code>2</code> and <code>4</code> (but not exactly <code>2</code>)</li>
+<li>
+<code>rand(0, 2, 0.5)</code> will return either <code>0</code>, <code>0.5</code>, <code>1</code> or <code>1.5</code> (but not <code>2</code>)</li>
+</ul>
+<hr>
+<h4 id="randi"><code><span class="keyword">number</span> randi()</code><br/><code><span class="keyword">number</span> randi(<span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> randi(<span class="keyword">number</span> min, <span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> randi(<span class="keyword">number</span> min, <span class="keyword">number</span> max, <span class="keyword">number</span> step)</code></h4>
+<p>
+<code>randi</code> (short for 'random integer') returns a pseudo-random integer number. When called without arguments, the result is either <code>0</code> or <code>1</code>. When called with a single argument, the result will lie between <code>0</code> and the given number. When called with two arguments, the result will lie between the given numbers. Optionally, a third argument can be given, which controls the difference between each consecutive number that can be returned.</p>
+<p>
+The lower bound is inclusive, the upper bound is exclusive.</p>
+<p>
+For example:</p>
+<ul>
+<li>
+<code>randi(10)</code> will return a random integer number between <code>0</code> (included) and <code>10</code> (excluded)</li>
+<li>
+<code>randi(5, 15)</code> will return a random integer number between <code>5</code> (included) and <code>15</code> (excluded)</li>
+<li>
+<code>randi(0, 15, 3)</code> will return either <code>0</code>, <code>3</code>, <code>6</code>, <code>9</code> or <code>12</code> (but not <code>15</code>)</li>
+</ul>
+<hr>
+<h4 id="randitem"><code><span class="keyword">any</span> randitem(<span class="keyword">array</span> items)</code><br/><code><span class="keyword">any</span> randitem(<span class="keyword">array</span> items, <span class="keyword">array</span> weights)</code></h4>
+<p>
+Returns a randomly selected item from the given array.</p>
+<p>
+Optionally, an array of weights can be provided, which determines how likely each item is to be chosen. Weights must be numbers larger than or equal to 0. Missing weights - if the weights array is shorter than the items array - and invalid weights are treated as 0, meaning that their corresponding items won't be selected. If no item has a weight above 0 then <code><span class="keyword">none</span></code> will be returned.</p>
+<p>
+For example, <code>randitem([10, 20, 30])</code> will return either <code>10</code>, <code>20</code> or <code>30</code>, all with an equal chance. <code>randitem(['a', 'b', 'c'], [5, 2, 1])</code> will return either <code>'a'</code> (5/8 chance), <code>'b'</code> (2/8 chance) or <code>'c'</code> (1/8 chance).</p>
+<hr>
+<h2 id="parent-entity-properties">7.5.3. Parent entity properties</h2>
+<p>
+Some entities rely on custom properties. For example, <code>multi_manager</code> uses custom properties for its list of targets. The properties of the macro entity that is creating the current instance are available to scripts inside a template, but that is of little use if the property names aren't known up-front. The below functions provide a list of properties, and access to specific properties regardless of their name.</p>
+<p>
+The opposite - adding a variable number of properties to an entity - can be done with arrays. An entity property whose name consists of a single MScript expression that returns an array will be turned into multiple properties. The property value should also be a single MScript expression that returns an array, so that each property can be given a value.</p>
+<p>
+For example, a property with the name <code>{['a', 'b', 'c']}</code> and a value of <code>{range(1, 4)}</code> (an expression that returns the array <code>[1, 2, 3]</code>) will be turned into 3 separate properties: <code>a</code> with value <code>1</code>, <code>b</code> with value <code>2</code> and <code>c</code> with value <code>3</code>.</p>
+<hr>
+<h4 id="attr_count"><code><span class="keyword">number</span> attr_count()</code></h4>
+<p>
+Returns the number of properties of the parent entity. This only includes the properties that are visible when SmartEdit mode is disabled, and 'special' properties like <code>classname</code> and <code>origin</code>.</p>
+<p>
+For example, if a macro entity creates an instance of a template that contains a <code>game_text</code> entity with a <code>message</code> of <code>Count: {attr_count()}</code>, and the macro entity containst 5 properties, then the resulting <code>game_text</code> will have a <code>message</code> of <code>Count: 5</code>.</p>
+<hr>
+<h4 id="get_attr"><code><span class="keyword">array</span> get_attr()</code><br/><code><span class="keyword">object</span>|<span class="keyword">none</span> get_attr(<span class="keyword">number</span> index)</code><br/><code><span class="keyword">object</span>|<span class="keyword">none</span> get_attr(<span class="keyword">string</span> name)</code></h4>
+<p>
+Returns parent entity properties. Each property is returned as a <code>{key: <span class="keyword">string</span>, value: <span class="keyword">any</span>}</code> object. When called without arguments, the result is an array that contains all parent entity properties. When called with a number, the property at that index is returned as a single key-value object, or <code><span class="keyword">none</span></code> if the index is out of range (negative indexes are supported). When called with a string, the property with that name is returned, or <code><span class="keyword">none</span></code> if there is no such property.</p>
+<p>
+For example, <code>get_attr()</code> may return an array like <code>[{key: 'classname', value: 'macro_insert'}, {key: 'origin', value: [256, 64, 576]}, {key: 'template_name', value: ''}]</code> - or an array with many more properties, depending on how many properties the parent entity contains.</p>
+<p>
+In the above situation, <code>get_attr(0)</code> would return <code>{key: 'classname', value: 'macro_insert'}</code>, and <code>get_attr('origin'}</code> would return <code>{key: 'origin', value: [256, 64, 576]}</code>.</p>
+<hr>
+<h2 id="spawnflags">7.5.4. Spawnflags</h2>
+<p>
+The special <code>spawnflags</code> property contains all the flags of an entity. Its value is the sum of the values of the enabled flags. The first flag has value <code>1</code>, and each subsequent flag's value is double that of the previous flag: <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, and so on.</p>
+<p>
+Because this property can only be adjusted via checkboxes, its value cannot be directly controlled with scripting. That is why MESS recognizes special <code>_mess_spawnflagN</code> properties, where <code>N</code> is a number from 0 to 31, to set specific flags. These special properties are removed after the <code>spawnflags</code> property has been updated.</p>
+<hr>
+<h4 id="hasflag"><code><span class="keyword">bool</span> hasflag(<span class="keyword">number</span> flag)</code><br/><code><span class="keyword">bool</span> hasflag(<span class="keyword">number</span> flag, <span class="keyword">number</span> flags)</code></h4>
+<p>
+Returns <code>1</code> (true) if the specified flag is enabled in the given <code>flags</code> value. If the <code>flags</code> argument is not specified, then this will check the <code>spawnflags</code> property of the parent entity. <code>flag</code> must be a number between 0 and 31 (inclusive).</p>
+<p>
+For example, <code>hasflag(0)</code> will return <code>1</code> if the first flag of the parent entity is enabled.</p>
+<hr>
+<h4 id="setflag"><code><span class="keyword">number</span> setflag(<span class="keyword">number</span> flag)</code><br/><code><span class="keyword">number</span> setflag(<span class="keyword">number</span> flag, <span class="keyword">number</span> set)</code><br/><code><span class="keyword">number</span> setflag(<span class="keyword">number</span> flag, <span class="keyword">number</span> set, <span class="keyword">number</span> flags)</code></h4>
+<p>
+Returns a new flags value, which is the given <code>flags</code> value (or the parent entity's <code>spawnflags</code> value) with the specified flag enabled or disabled.</p>
+<p>
+For example, <code>setflag(2, 1)</code> will return the parent entity's <code>spawnflags</code> value, but with the third flag enabled.</p>
+<hr>
+<h2 id="directories">7.5.5. Directories</h2>
+<p>
+There are several directories of importance when MESS is processing a map:</p>
+<ul>
+<li>
+The MESS executable directory, which contains the default <code>mess.config</code> file.</li>
+<li>
+The templates directory, which contains (standard) template entity maps. Any relative template map path is relative to this directory.</li>
+<li>
+The directory where the current map file is located.</li>
+</ul>
+<p>
+It is often not necessary to reference these directories in scripts, but they are available via the following functions just in case.</p>
+<hr>
+<h4 id="map_path"><code><span class="keyword">string</span> map_path()</code></h4>
+<p>
+Returns the path of the current map file. When used inside a template map, the path of that template map is returned, not the path of the 'main' map that is being processed.</p>
+<p>
+For example, <code>map_path()</code> may return something like <code>'C:\HL\my maps\test.map'</code>.</p>
+<hr>
+<h4 id="map_dir"><code><span class="keyword">string</span> map_dir()</code></h4>
+<p>
+Returns the directory that the current map file is in. When used inside a template map, the directory of that template map is returned, not the directory of the 'main' map that is being processed.</p>
+<p>
+For example, <code>map_dir()</code> may return something like <code>'C:\HL\my maps'</code>.</p>
+<hr>
+<h4 id="templates_dir"><code><span class="keyword">string</span> templates_dir()</code></h4>
+<p>
+Returns the templates directory. By default, this is the <code>templates</code> folder next to MESS.exe, but it can also be set explicitly in the config file or via a command-line option.</p>
+<p>
+For example, <code>templates_dir()</code> may return something like <code>'C:\HL\Tools\MESS\templates'</code>.</p>
+<hr>
+<h4 id="mess_dir"><code><span class="keyword">string</span> mess_dir()</code></h4>
+<p>
+Returns the directory that MESS.exe is in.</p>
+<p>
+For example, <code>mess_dir()</code> may return something like <code>'C:\HL\Tools\MESS'</code>.</p>
+<hr>
+<h2 id="globals">7.5.6. Globals</h2>
+<p>
+Sometimes it's useful to share information between entities across multiple template instances. This can be useful for templates that contain parts that only need to be inserted once, or for keeping track of how many times a certain template has been instantiated so far, or for controlling the behavior of certain templates via a config file.</p>
+<hr>
+<h4 id="getglobal"><code><span class="keyword">any</span> getglobal(<span class="keyword">string</span> name)</code></h4>
+<p>
+Returns the value of the specified global variable, or <code><span class="keyword">none</span></code> if it does not exist.</p>
+<p>
+For example, <code>getglobal('landmine_count')</code> may return <code>5</code>, depending on what value was set previously.</p>
+<hr>
+<h4 id="setglobal"><code><span class="keyword">any</span> setglobal(<span class="keyword">string</span> name, <span class="keyword">any</span> value)</code></h4>
+<p>
+Sets the value of the specified global variable, and returns that value.</p>
+<p>
+For example, <code>setglobal('landmine_count', 9)</code> will set the global variable <code>landmine_count</code> to <code>9</code>, and it will then return <code>9</code>.</p>
+<hr>
+<h4 id="useglobal"><code><span class="keyword">bool</span> useglobal(<span class="keyword">string</span> name)</code></h4>
+<p>
+If the specified global variable does not yet exist (or if it has a <code><span class="keyword">none</span></code> value), then this function will set it to <code>1</code>, and return <code><span class="keyword">none</span></code> to indicate that the variable was not set already. Otherwise, it will return <code>1</code>.</p>
+<p>
+For example, <code>useglobal('landmine_brush_model')</code> will return <code><span class="keyword">none</span></code> the first time it is called, and it will return <code>1</code> on subsequent calls. This is useful for templates that contain content that does not need to be duplicated for each instance.</p>
+<hr>
+<h2 id="debugging">7.5.7. Debugging</h2>
+<p>
+Sometimes a script or a template doesn't work as expected. In that case it can be helpful to see the values of specific properties.</p>
+<hr>
+<h4 id="trace"><code><span class="keyword">any</span> trace(<span class="keyword">any</span> value)</code><br/><code><span class="keyword">any</span> trace(<span class="keyword">any</span> value, <span class="keyword">string</span> message)</code></h4>
+<p>
+Writes the given value and an optional message to the log file, and returns the given value. This can be useful for tracking down problems in scripts and templates.</p>
+<p>
+For example, <code>trace(targetname, 'Landmine name')</code> may write something like <code>'mine1' ('Landmine name', trace from instance: #14, sequence <span class="keyword">number</span>: #0).</code> to the log file, and return <code>mine1</code>, if the <code>targetname</code> of the parent entity is <code>mine1</code>. Because the given value is also returned, a <code>trace</code> call does not change how a piece of script works.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

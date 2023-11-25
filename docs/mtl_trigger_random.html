@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>4.5. mtl_trigger_random - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li class="current-page"><a class="current-page" href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="mtl_trigger_random">4.5. mtl_trigger_random</h1>
+<p>
+An entity that randomly selects one of its targets and triggers it. It also has a continuous mode that triggers random targets at a randomized interval.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- The name of this entity.</li>
+<li>
+<strong>Trigger mode</strong> <em>(trigger_mode)</em><ul>
+<li>
+<strong>Fire one target</strong> <em>(0)</em> -- The <code>mtl_trigger_random</code> will trigger a single target each time it is triggered.</li>
+<li>
+<strong>Keep firing targets (until toggled)</strong> <em>(1)</em> -- The <code>mtl_trigger_random</code> will start triggering targets when triggered, and stop triggering targets when triggered again. It can also be enabled or disabled by sending it an 'on' or 'off' signal with a <code>trigger_relay</code>, or by using the <code>+targetname</code> and <code>-targetname</code> <a href="target-patterns.html" title="Target patterns">target patterns</a>.</li>
+</ul>
+</li>
+<li>
+<strong>Min. trigger interval (Toggle mode)</strong> <em>(min_interval)</em> -- The minimum time before another target will be triggered. Only applies to toggle mode. The default is 1 second.</li>
+<li>
+<strong>Max. trigger interval (Toggle mode)</strong> <em>(max_interval)</em> -- The maximum time before another target will be triggered. Only applies to toggle mode. The default is 1 second.</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+Similar to <code>multi_manager</code>, targets are specified with custom properties, which can be added when SmartEdit mode is disabled. The property key must be an entity name, the property value is not used.</p>
+<h2 id="flags">Flags</h2>
+<ul>
+<li>
+<strong>Start on</strong> <em>(1)</em> -- If enabled, the <code>mtl_trigger_random</code> will start triggering targets when the level starts, instead of waiting until it is triggered. Only applies to toggle mode.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+This entity generates a single <code>env_beam</code> and a number of <code>func_button</code> entities. The buttons are invisible and won't block the player, and the beam deals a minimum amount of damage, but the buttons do make some noise when hit, so it's still a good idea to place this entity somewhere out of reach.</li>
+<li>
+The amount of space required for the buttons depends on the number of targets. 48x48x2 is enough for up to 100 targets.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>3.1. Configuration files - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="configuration-files">3.1. Configuration files</h1>
+<p>
+<figure>
+<img src="images/mess_config_file.png" alt="MESS configuration file" title="MESS configuration file">
+<figcaption>MESS configuration file</figcaption>
+</figure>
+</p>
+<p>
+The default MESS configuration file, <code>mess.config</code>, is a plain-text file that contains various settings. A different configuration file can be selected with the <a href="command-line-options.html#-config-path">-config command-line parameter</a>, which can be useful for switching between configurations for different games or mods.</p>
+<h2 id="available-settings">Available settings</h2>
+<ul>
+<li>
+<a href="#template-maps-directory">template-maps-directory</a></li>
+<li>
+<a href="#template-entity-directories">template-entity-directories</a></li>
+<li>
+<a href="#fgd-path">fgd-path</a></li>
+<li>
+<a href="#max-recursion">max-recursion</a></li>
+<li>
+<a href="#max-instances">max-instances</a></li>
+<li>
+<a href="#log-level">log-level</a></li>
+<li>
+<a href="#variables">variables</a></li>
+<li>
+<a href="#globals">globals</a></li>
+<li>
+<a href="#lifted-properties">lifted-properties</a></li>
+<li>
+<a href="#inverted-pitch-predicate">inverted-pitch-predicate</a></li>
+</ul>
+<h2 id="template-maps-directory"><code>template-maps-directory</code></h2>
+<p>
+Relative template map paths are relative to this directory. For example, if the template maps directory is <code>C:\HL\Tools\MESS\template_maps</code>, then a <a href="macro_insert.html">macro_insert</a> entity with a template map path of <code>fire.jmf</code> will create an instance of <code>C:\HL\Tools\MESS\template_maps\fire.jmf</code>.</p>
+<p>
+Maps in this directory can be used by macro entities in all maps, so it's a useful place for template maps with common props and entity setups.</p>
+<p>
+The path can contain MScript expressions, and the executable directory can be referenced with <code>EXE_DIR</code>. The default value is <code>{EXE_DIR}\template_maps</code>.</p>
+<h2 id="template-entity-directories"><code>template-entity-directories</code></h2>
+<p>
+These directories contain <code>.ted</code> (Template Entity Definition) files, their associated template map files, and <code>.mscript</code> files that can contain utility functions. <code>.ted</code> files are small text files that contain fgd-formatted entity definitions and MESS rewrite rules. They are used to generate or update the <code>mess.fgd</code> file. This makes it possible to share custom template entities without having to add additional <code>.fgd</code> files to a level editor: put their <code>.ted</code>, <code>.mscript</code> and template map files in one of the template entity directories, run <code>MESS.exe</code> to update <code>mess.fgd</code>, and restart the level editor to see the new entities.</p>
+<p>
+To make it easier to share template entities, MESS will also look for <code>.ted</code>, <code>.mscript</code> and template map files inside <code>.zip</code> files in these directories.</p>
+<p>
+The paths can contain MScript expressions, and the executable directory can be referenced with <code>EXE_DIR</code>.</p>
+<h2 id="fgd-path"><code>fgd-path</code></h2>
+<p>
+All <code>.ted</code> (Template Entity Definition) files in the template entities directory are combined into a single <code>.fgd</code> file (<code>mess.fgd</code> by default), which can be added to a level editor to get access to these template entities. If a level editor requires <code>.fgd</code> files to be put in a specific directory, then use that location as the <code>fgd-path</code> setting, so MESS can keep the <code>.fgd</code> file up-to-date.</p>
+<p>
+The path can contain MScript expressions, and the executable directory can be referenced with <code>EXE_DIR</code>. The default value is <code>{EXE_DIR}\mess.fgd</code>.</p>
+<h2 id="max-recursion"><code>max-recursion</code></h2>
+<p>
+The maximum recursion depth (recursion is when a macro entity inside a template inserts another template). This is a failsafe to prevent accidental infinite recursion.</p>
+<p>
+The default value is <code>100</code>.</p>
+<h2 id="max-instances"><code>max-instances</code></h2>
+<p>
+The maximum number of template instances to create. This is a failsafe to prevent accidental infinite loops.</p>
+<p>
+The default value is <code>100000</code>.</p>
+<h2 id="log-level"><code>log-level</code></h2>
+<p>
+The default log level. Available levels are:</p>
+<ul>
+<li>
+<code>off</code> -- All logging is disabled.</li>
+<li>
+<code>minimal</code> -- Only a few important messages are logged.</li>
+<li>
+<code>error</code> -- Only critical errors are logged.</li>
+<li>
+<code>warning</code> -- Non-critical warnings are also logged.</li>
+<li>
+<code>info</code> -- Additional information is logged, such as which templates are being loaded.</li>
+<li>
+<code>verbose</code> -- Even more information is logged, such as details about each instantiation.</li>
+</ul>
+<p>
+The default value is <code>info</code>.</p>
+<h2 id="variables"><code>variables</code></h2>
+<p>
+These variables will be available in MScript expressions in the map properties and top-level entities of the input map. This can be useful for things like setting an author name, or for setting wad paths when compiling .rmf or .jmf files directly. Each assignment in this section must be on a separate line:</p>
+<div class="code">variables:
+    variable_1 = 'value 1'
+    variable_2 = [1, 2, 3]
+</div>
+<h2 id="globals"><code>globals</code></h2>
+<p>
+Global variables are available in MScript expressions anywhere, via the <code>getglobal</code>, <code>setglobal</code> and <code>useglobal</code> functions. Unlike variables, which are only available in the map properties and in top-level entities, globals are also available inside templates and template maps.</p>
+<p>
+This makes it possible to create templates whose behavior can be configured via global variables. For example, a template could generate additional entities if a global variable named <code>DEBUG</code> is set to <code>1</code>.</p>
+<p>
+Each assignment in this section must be on a separate line:</p>
+<div class="code">globals:
+    DEBUG = none
+    MAX_LANDMINES = 15
+</div>
+<h2 id="lifted-properties"><code>lifted-properties</code></h2>
+<p>
+'Lifted' properties are always evaluated first, and are then made available to MScript expressions in the other properties of the same entity. One use-case for this is with TrenchBroom linked groups, where entities that are part of a linked group are tagged with a special <code>_tb_group</code> property. By 'lifting' this property and referencing it in other properties, each linked group instance can produce entities with different names and other values.</p>
+<p>
+Each property name must be on a separate line:</p>
+<div class="code">lifted-properties:
+    _tb_group
+    other_property
+</div>
+<h2 id="inverted-pitch-predicate"><code>inverted-pitch-predicate</code></h2>
+<p>
+Most Half-Life entities with a positive pitch will face downwards. However, some entities will face upwards instead (generally speaking, anything that displays a model). The value of this setting is evaluated for every non-macro entity to determine whether it uses inverted pitch behavior.</p>
+<p>
+The predicate can (and most likely should) contain MScript expressions. All properties of the current entity are available, although the <code>classname</code> property is typically the most important one. If the result is <code><span class="keyword">none</span></code> or <code>0</code> then MESS will use normal pitch behavior, else it will use inverted pitch behavior.</p>
+<p>
+The default value (which applies to Half-Life) is: <code>{classname.match('^(?:ammo_|item_|monster_|weapon_|xen_|cycler_|env_sprite)')}</code></p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

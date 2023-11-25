@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Covering terrain&colon; optimization - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li class="current-page"><a class="current-page" href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="covering-terrain:-optimization">Covering terrain: optimization</h1>
+<p>
+<figure>
+<img src="images/terrain_optimization_header.png" alt="Covering terrain: optimization" title="Covering terrain: optimization">
+<figcaption>Covering terrain: optimization</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#goldsource-limitations">1. GoldSource limitations</a></li>
+<li>
+<a href="#optimization-techniques">2. Optimization techniques</a><ul>
+<li>
+<a href="#reducing-the-number-of-props">2.1. Reducing the number of props</a></li>
+<li>
+<a href="#using-less-detailed-props">2.2. Using less detailed props</a></li>
+<li>
+<a href="#replacing-props-with-sprites-or-models">2.3. Replacing props with sprites or models</a></li>
+<li>
+<a href="#reusing-bsp-models">2.4. Reusing bsp models</a></li>
+<li>
+<a href="#merging-props">2.5. Merging props</a></li>
+</ul>
+</li>
+<li>
+<a href="#related-articles-&-example-map">3. Related articles & example map</a></li>
+</ul>
+<h2 id="goldsource-limitations">1. GoldSource limitations</h2>
+<p>
+The GoldSource engine is old and comes with many limitations:</p>
+<ul>
+<li>
+It can only render a couple thousand world polygons per frame before performance takes a hit.</li>
+<li>
+No more than 256 entities can be rendered at the same time.</li>
+<li>
+Map files can only contain up to 512 unique brush entities (bsp models).</li>
+<li>
+Map files can't contain more than 32 thousand planes and faces, and 65 thousand vertices.</li>
+</ul>
+<p>
+This means that optimization is especially important - it should be taken into account right from the start. Levels are usually divided into separate areas, with limited visibility between them, which allows more detail to be added to each individual area. However, open terrain usually spans a large area, so we'll need more tools in our optimization toolkit.</p>
+<h2 id="optimization-techniques">2. Optimization techniques</h2>
+<p>
+There are several things that we can do in our map to stay below these limits:</p>
+<ol>
+<li>
+<a href="#reducing-the-number-of-props">Reducing the number of props</a></li>
+<li>
+<a href="#using-less-detailed-props">Using less detailed props</a></li>
+<li>
+<a href="#replacing-props-with-sprites-or-models">Replacing props with sprites or models</a></li>
+<li>
+<a href="#reusing-bsp-models">Reusing bsp models</a></li>
+<li>
+<a href="#merging-props">Merging props</a></li>
+</ol>
+<h3 id="reducing-the-number-of-props">2.1. Reducing the number of props</h3>
+<p>
+This is the easiest solution that helps with all of the above limits, but the downside is that our map will look more barren. All we need to do is to lower the coverage factor or instance count in our <code>macro_cover</code> terrain, or increase the instance radius.</p>
+<h3 id="using-less-detailed-props">2.2. Using less detailed props</h3>
+<p>
+This too is relatively straightforward: we just replace the contents of our shrub, rock and cactus templates with less detailed versions. This will improve performance and reduce plane, face and vertex usage, but our map will look less detailed.</p>
+<h3 id="replacing-props-with-sprites-or-models">2.3. Replacing props with sprites or models</h3>
+<p>
+Similar to using less detailed props, we can replace the contents of our templates with <code>env_sprite</code> or <a href="mtl_env_model.html"><code>mtl_env_model</code></a> entities. These are much easier for the engine to render, and they don't use up bsp model slots and planes, faces and vertices. The downsides are less detailed lighting (models) or even a lack of lighting (sprites), and lack of collision.</p>
+<h3 id="reusing-bsp-models">2.4. Reusing bsp models</h3>
+<p>
+Normally, every brush entity is turned into a unique bsp model, and a map can only contain 512 of those. A map that contains multiple large <code>macro_cover</code> entities could easily hit that limit.</p>
+<p>
+The ZHLT compile tools introduced a feature that allows entities to use the bsp model of another entity:</p>
+<ul>
+<li>
+The brush entity whose bsp model will be used must be given a name (<code>targetname</code>) and an <code>ORIGIN</code> brush.</li>
+<li>
+The brush entities that will use that bsp model must be given the custom <code>zhlt_usemodel</code> property. The value of that property must be the targetname of the above entity. These entities must also be given an <code>ORIGIN</code> brush.</li>
+</ul>
+<p>
+The downsides are that all instances will get the same scale, orientation and lighting, and that decals applied to one instance will show up on all of them. This technique is therefore mostly suitable for small <code>func_illusionary</code> props.</p>
+<hr>
+<p>
+Applying this to one of our templates requires some scripting: we want the first instance to serve as a bsp model template, so it must have a targetname, and we want all other instances to reference the first with a <code>zhlt_usemodel</code> property.</p>
+<p>
+Select the shrub <code>macro_template</code> and add the following custom property:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>use_model</code></td><td><code>{useglobal('shrub_bsp_template')}</code></td></tr>
+</tbody>
+</table>
+<p>
+The <code>useglobal</code> function returns false (<code><span class="keyword">none</span></code>) the first time it is called with a specific string, and it returns true (<code>1</code>) on subsequent calls. This means that for the first instance of this template, <code>use_model</code> will be false, and for all subsequent instances it will be true.</p>
+<p>
+Next, select the shrub <code>func_illusionary</code> and add the folllowing custom property:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{use_model ? 'zhlt_usemodel' : 'targetname'}</code></td><td><code>shrub_bsp_model</code></td></tr>
+</tbody>
+</table>
+<p>
+If <code>use_model</code> is true, then the key will be named 'zhlt_usemodel', else it will be named 'targetname'. This means that the first instance will have a targetname key, and all subsequent instances will have a zhlt_usemodel key, all with the same value.</p>
+<div class="note">
+<div class="note-header">NOTE</div>
+<p>
+Don't worry if you don't understand what's going on here! This is an advanced optimization technique after all. Just copy the above keys and values into your templates, and change the <code>shrub_bsp_template</code> and <code>shrub_bsp_model</code> names to something unique in each template, and you should be good to go.</p>
+</div>
+<p>
+Finally, add an <code>ORIGIN</code> brush to the shrub. It doesn't really matter where we put it, so we'll just place it at the center of the shrub:</p>
+<p>
+<figure>
+<img src="images/shrub_zhlt_usemodel_template.png" alt="Shrub template with zhlt_usemodel" title="Shrub template with zhlt_usemodel">
+<figcaption>Shrub template with zhlt_usemodel</figcaption>
+</figure>
+</p>
+<p>
+When we recompile the map, we can see in the hlbsp log that the <code>models</code> count is now lower, and many other counts are now lower as well. If we open the in-game console and use the <code>entities</code> command, we can see that many entities now use the same bsp model. However, all the shrubs now have the same size and orientation:</p>
+<p>
+<figure>
+<img src="images/zhlt_usemodel_props.png" alt="Same bsp model, same size, same orientation, same lightmap, same decals..." title="Same bsp model, same size, same orientation, same lightmap, same decals...">
+<figcaption>Same bsp model, same size, same orientation, same lightmap, same decals...</figcaption>
+</figure>
+</p>
+<h3 id="merging-props">2.5. Merging props</h3>
+<p>
+Merging multiple props into a single entity reduces the number of bsp models, and the number of entities that are visible at the same time. </p>
+<p>
+One problem with this is that if an entity becomes too large, the game may no longer be able to determine when the entity is out of sight. In that case it will always be rendered, which reduces performance all across the map. To avoid that, we can split our terrain into multiple <code>macro_cover</code> entities, and only merge props that were generated by the same <code>macro_cover</code>.</p>
+<p>
+To merge our shrubs, add the following custom property to the shrub <code>func_illusionary</code> in the shrub template:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_mess_merge_entity_id</code></td><td><code>merged_shrub_{parentid()}</code></td></tr>
+</tbody>
+</table>
+<p>
+The <code>{parentid()}</code> part will be replaced by the unique ID of the macro entity that is creating the current instance. What that means is that all shrubs created by the same <code>macro_cover</code> will be merged into a single <code>func_illusionary</code>. We can divide our terrain into multiple <code>macro_cover</code> entities to control which props get merged:</p>
+<p>
+<figure>
+<img src="images/macro_cover_terrain_segments.png" alt="4 separate macro_cover terrain segments" title="4 separate macro_cover terrain segments">
+<figcaption>4 separate macro_cover terrain segments</figcaption>
+</figure>
+</p>
+<p>
+When we recompile our map, the MESS log will show that there are now fewer entities in the map. We may be getting some <code>Ambiguous leafnode content ( EMPTY and SOLID )</code> warnings about our <code>func_wall</code> entities, but that's generally harmless.</p>
+<p>
+We can also apply this to our other props, but keep in mind that we should only merge entities of the same type and with the same properties. We don't want cactuses to become passable, or shrubs to block player movement and bullets! So we should use a different merge ID for our rocks, such as <code>merged_rock_{parentid()}</code>. With different IDs for each template, we'll end up with at most 12 entities, each consisting of multiple shrubs, rocks or cactuses:</p>
+<p>
+<figure>
+<img src="images/merged_shrubs.png" alt="multiple shrubs merged into a single entity" title="multiple shrubs merged into a single entity">
+<figcaption>multiple shrubs merged into a single entity</figcaption>
+</figure>
+</p>
+<h2 id="related-articles-&-example-map">3. Related articles & example map</h2>
+<h4 id="related-tutorials:">Related tutorials:</h4>
+<ul>
+<li>
+<a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li>
+<a href="covering-terrain-advanced-template-selection.html">Covering terrain: advanced template selection</a></li>
+</ul>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/terrain_optimization_tutorial.zip">terrain_optimization_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

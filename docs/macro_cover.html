@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>6.2. macro_cover - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li class="current-page"><a class="current-page" href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="macro_cover">6.2. macro_cover</h1>
+<p>
+A brush entity that randomly places template instances across its non-NULL faces. Useful for covering terrain with props.</p>
+<p>
+The properties of this entity are visible to <a href="scripting.html">scripts</a> in the selected template, so each instance can be made unique. This entity is often used together with one or multiple <a href="macro_template.html">macro_template</a> entities, but it can also use other map files as templates.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- The name of this entity. Because this entity creates multiple instances, it's better to use the unique instance ID in templates (with <code>{iid()}</code>), unless every instance really does need to use the same name.</li>
+<li>
+<strong>Template map path</strong> <em>(template_map)</em> -- The relative or absolute path (or paths) of a map file. If no template entity is specified then the entire map is used as a template. In the main map, relative map paths are taken to be relative to the <a href="configuration-files.html#template-maps-directory">template maps directory</a>. In template maps, they are relative to the current map.</li>
+<li>
+<strong>Template entity</strong> <em>(template_name)</em> -- The name (or names) of a <a href="macro_template.html">macro_template</a> entity in the chosen map, or in the current map if no template map path is specified. If there are multiple templates with the same name, one will be chosen randomly per instance.</li>
+<li>
+<strong>Random seed</strong> <em>(random_seed)</em> -- Random seed value, used for deterministic pseudo-randomness. This affects the <code>rand</code> and <code>randi</code> functions. Default is <code>0</code>.</li>
+<li>
+<strong>Brush behavior</strong> <em>(brush_behavior)</em> -- What to do with the brushwork of the <code>macro_cover</code> entity.<ul>
+<li>
+<strong>Remove brushes</strong> <em>(0)</em></li>
+<li>
+<strong>Leave as world geometry</strong> <em>(1)</em></li>
+<li>
+<strong>Leave as func_detail</strong> <em>(2)</em></li>
+</ul>
+</li>
+<li>
+<strong>Coverage (<1) or max instance count (>=1)</strong> <em>(max_instances)</em> -- The maximum number of instances that will be created. Instances will not be placed if they are too close to existing instances, so the actual number of instances may be lower. A value between 0 and 1 is treated as a coverage factor: the number of instances will be derived from the available area, the instance radius and the coverage factor.</li>
+<li>
+<strong>Instance orientation</strong> <em>(instance_orientation)</em> -- The relative orientation of each instance.<ul>
+<li>
+<strong>Global</strong> <em>(0)</em></li>
+<li>
+<strong>Local</strong> <em>(1)</em></li>
+<li>
+<strong>Face</strong> <em>(2)</em></li>
+<li>
+<strong>Texture plane</strong> <em>(3)</em></li>
+</ul>
+</li>
+<li>
+<strong>Instance angles (Pitch Yaw Roll)</strong> <em>(instance_angles)</em> -- The orientation of the current instance. This also affects the <code>angles</code> property of entities within the selected template.</li>
+<li>
+<strong>Instance scale</strong> <em>(instance_scale)</em> -- The scale of the current instance. This also affects the <code>scale</code> property of entities within the selected template.</li>
+<li>
+<strong>Instance geometry scale</strong> <em>(instance_geometry_scale)</em> -- Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale property is used instead.</li>
+<li>
+<strong>Instance offset</strong> <em>(instance_offset)</em> -- Moves an instance along the x, y and z axis. This enables script-based positioning.</li>
+<li>
+<strong>Instance radius</strong> <em>(radius)</em> -- The minimum distance between each instance. This is also used to calculate the number of instances when <code>max_instances</code> is a coverage factor (<1). This property is evaluated up-front, so all instances use the same radius.</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+Custom properties can be used by MScript expressions in entities inside the selected template. This makes it possible to further customize instances. This is also the mechanism that template entities use for their properties to have any effect.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+All properties, except for <code>max_instances</code>, <code>radius</code>, <code>random_seed</code> and <code>brush_behavior</code>, are evaluated again for every instance.</li>
+<li>
+If the <code>macro_cover</code> brushwork must be turned into a specific entity, turn the <code>macro_cover</code> into a <a href="macro_brush.html">macro_brush</a> instead, and create an extra template that contains a <code>macro_cover</code> and brush entity of the desired type.</li>
+<li>
+To randomly select one of several templates, use a comma-separated list of paths or template names: <code>prop_cactus, prop_rock</code> will randomly use either <code>prop_cactus</code> or <code>prop_rock</code>. It's also possible to specify a selection weight: <code>prop_cactus: 1, prop_rock: 4</code> will select <code>prop_cactus</code> 20% (1/5) of the time, and <code>prop_rock</code> 80% (4/5) of the time. This also works for template map paths.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>4.1. mtl_env_model - MESS 1.2 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1>MESS 1.2</h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="mtl_env_model.html">4.1. mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
+<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="mtl_env_model">4.1. mtl_env_model</h1>
+<p>
+Half-Life has a few entities for placing prop models, but all of them have drawbacks:</p>
+<ul>
+<li>
+<code>monster_generic</code> and <code>monster_furniture</code> can't be placed close to walls, they'll drop to the floor, they bleed when shot and they block player movement.</li>
+<li>
+<code>cycler_sprite</code> disappears after loading a savegame, and because it's a sprite entity selecting a model can be cumbersome.</li>
+<li>
+<code>env_sprite</code> doesn't support body and skin selection, and sometimes suffers from an orientation bug. And as with <code>cyler_sprite</code>, selecting a model can be cumbersome.</li>
+</ul>
+<p>
+Of all these, <code>env_sprite</code> appears to be the least troublesome, so that is what <code>mtl_env_model</code> uses. <code>mtl_env_model</code> solves the orientation and model-selection problems, so the only limitations are a lack of body and skin support.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Name</strong> <em>(targetname)</em> -- Giving this entity a name lets other entities trigger it, which will make the model invisible or visible again.</li>
+<li>
+<strong>Render Mode</strong> <em>(rendermode)</em><ul>
+<li>
+<strong>Normal</strong> <em>(0)</em> -- The model is rendered normally. FX Amount has no effect, the model is always fully opaque.</li>
+<li>
+<strong>Color</strong> <em>(1)</em> -- The model is rendered normally, but FX Amount controls the overall transparency.</li>
+<li>
+<strong>Texture</strong> <em>(2)</em> -- Same as 'Color' mode.</li>
+<li>
+<strong>Glow</strong> <em>(3)</em> -- Same as 'Color' mode.</li>
+<li>
+<strong>Solid</strong> <em>(4)</em> -- Same as 'Color' mode.</li>
+<li>
+<strong>Additive</strong> <em>(5)</em> -- The model is rendered as an additive overlay, which makes whatever is behind the model appear more bright. Brighter parts will add more brightness, whereas black parts will add no brightness at all. FX Amount controls the 'strength' of the effect.</li>
+</ul>
+</li>
+<li>
+<strong>FX Amount (0 - 255)</strong> <em>(renderamt)</em> -- Controls the overall transparency of the model, with 0 being fully transparent, and 255 being fully opaque.</li>
+<li>
+<strong>Pitch Yaw Roll (Y Z X)</strong> <em>(angles)</em> -- The model's orientation. <code>0 0 0</code> is facing eastward. Pitch makes the model look up (positive) or down (negative), yaw makes the model look to the left (positive) or to the right (negative), and roll makes the model lean to the right (positive) or to the left (negative).</li>
+<li>
+<strong>Animation speed</strong> <em>(framerate)</em> -- Controls animation speed. At 1.0, the selected animation is played at its default speed. At 2.0, it's played twice as fast. The default is 1.0.</li>
+<li>
+<strong>Model name</strong> <em>(model)</em> -- The relative path of the model (.mdl file).</li>
+<li>
+<strong>Animation sequence (index)</strong> <em>(sequence)</em> -- The animation that will be played. Animations can only be selected by index, not by name. To find this index, open the model in Half-Life Asset Manager, go to the Sequences tab, select the desired sequence and look at the 'Sequence  number.</li>
+</ul>
+<h2 id="flags">Flags</h2>
+<ul>
+<li>
+<strong>Start invisible (when named)</strong> <em>(1)</em> -- If enabled, the model will initially be invisible, and will only become visible after being triggered.</li>
+<li>
+<strong>Play once</strong> <em>(2)</em> -- If enabled, the model will become invisible after the selected animation has played once. The animation can still be played again by triggering the model.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>
+Triggering this entity with an 'on' signal via a <code>trigger_relay</code> (or by using the <code>+target</code> pattern) will make it appear. An 'off' signal will make it disappear. Triggering it normally will toggle its visibility.</li>
+<li>
+The <code>env_sprite</code> game-code contains an old Worldcraft-related hack that changes the angles if roll is 0. To avoid that issue, MESS uses <a href="env_sprite-angles-fix.html">a 'template behavior' to set the roll to 360 if it's 0</a>, so you don't have to worry about that.</li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2023, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
