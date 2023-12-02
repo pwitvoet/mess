@@ -51,6 +51,19 @@ div.main-container
 }
 
 /* Navigation menu: */
+a.home-link
+{
+    padding: 0px;
+    display: block;
+    text-decoration: none;
+    color: unset;
+}
+
+a.home-link:hover
+{
+    background-color: unset;
+}
+
 nav
 {
     grid-area: navbar;
