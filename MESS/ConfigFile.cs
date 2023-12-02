@@ -83,7 +83,7 @@ namespace MESS
                         return true;
 
                     case "template-maps-directory":
-                        settings.TemplateMapsDirectory = ReadString(rest.Trim());
+                        settings.TemplateMapsDirectory = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest.Trim()), evaluationContext));
                         return true;
 
                     case "template-entity-directories":
@@ -103,7 +103,8 @@ namespace MESS
                 switch (segment)
                 {
                     case "template-entity-directories":
-                        settings.TemplateEntityDirectories.Add(RemoveTrailingComments(line));
+                        var directory = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(RemoveTrailingComments(line), evaluationContext));
+                        settings.TemplateEntityDirectories.Add(directory);
                         return true;
 
                     case "variables":
