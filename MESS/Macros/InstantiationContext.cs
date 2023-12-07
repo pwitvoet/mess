@@ -178,8 +178,7 @@ namespace MESS.Macros
 
             OutputMap = parentContext.OutputMap;
 
-            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            EvaluationContext = Evaluation.ContextWithBindings(new Dictionary<string, object?>(), ID, ParentID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+            EvaluationContext = Evaluation.ContextWithSequenceNumber(ID, SequenceNumber, _logger, parentContext.EvaluationContext);
         }
 
         private InstantiationContext(InstantiationContext parentContext, IDictionary<string, object?> liftedProperties)
@@ -202,8 +201,7 @@ namespace MESS.Macros
 
             OutputMap = parentContext.OutputMap;
 
-            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
-            EvaluationContext = Evaluation.ContextWithBindings(liftedProperties, ID, ParentID, SequenceNumber, _random, mapPath, _logger, parentContext.EvaluationContext);
+            EvaluationContext = new EvaluationContext(liftedProperties, parentContext.EvaluationContext);
         }
 
 

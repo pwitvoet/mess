@@ -37,6 +37,22 @@ namespace MESS.Macros
         }
 
         /// <summary>
+        /// Creates an evaluation context that contains a bindings for functions related to the current sequence number, such as 'nth()'.
+        /// </summary>
+        public static EvaluationContext ContextWithSequenceNumber(
+            double id,
+            double sequenceNumber,
+            ILogger logger,
+            EvaluationContext parentContext)
+        {
+            var evaluationContext = new EvaluationContext(null, parentContext);
+            var sequenceNumberFunctions = new SequenceNumberFunctions(id, sequenceNumber, logger);
+            NativeUtils.RegisterInstanceMethods(evaluationContext, sequenceNumberFunctions);
+
+            return evaluationContext;
+        }
+
+        /// <summary>
         /// Creates an evaluation context that contains bindings for standard library functions.
         /// </summary>
         public static EvaluationContext DefaultContext() => new EvaluationContext(null, _standardLibraryContext);
@@ -408,6 +424,33 @@ namespace MESS.Macros
 
             // Debugging:
             public static bool assert(object? condition, string? message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
+        }
+
+
+        class SequenceNumberFunctions
+        {
+            private double _id;
+            private double _sequenceNumber;
+            private ILogger _logger;
+
+
+            public SequenceNumberFunctions(double id, double sequenceNumber, ILogger logger)
+            {
+                _id = id;
+                _sequenceNumber = sequenceNumber;
+                _logger = logger;
+            }
+
+
+            // Enumeration:
+            public double nth() => _sequenceNumber;
+
+            // Debugging:
+            public object? trace(object? value, string? message = null)
+            {
+                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace from instance: #{_id}, sequence number: #{_sequenceNumber}).");
+                return value;
+            }
         }
 
 
