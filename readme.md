@@ -9,7 +9,7 @@ MESS *(Macro Entity Scripting System)* is a map compile tool that gives Half-Lif
 
 ---
 
-To get started, [download MESS 1.2.1](https://github.com/pwitvoet/mess/releases/tag/1.2.1) and follow the [J.A.C.K. & Hammer setup guide](https://pwitvoet.github.io/mess/jack-&-hammer-setup.html) or the [Trenchbroom setup guide](https://pwitvoet.github.io/mess/trenchbroom-setup.html). Then take a look at the [tutorials](https://pwitvoet.github.io/mess/tutorials.html) to see how MESS can be used.
+To get started, [download MESS 1.2.2](https://github.com/pwitvoet/mess/releases/tag/1.2.2) and follow the [J.A.C.K. & Hammer setup guide](https://pwitvoet.github.io/mess/jack-&-hammer-setup.html) or the [Trenchbroom setup guide](https://pwitvoet.github.io/mess/trenchbroom-setup.html). Then take a look at the [tutorials](https://pwitvoet.github.io/mess/tutorials.html) to see how MESS can be used.
 
 ---
 
