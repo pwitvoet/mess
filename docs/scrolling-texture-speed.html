@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>1. Getting started - MESS 1.2.1 documentation</title>
+    <title>5.5. Scrolling texture speed - MESS 1.2.1 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -13,8 +13,8 @@
       <nav>
         <h1><a class="home-link" href="index.html">MESS 1.2.1</a></h1>
         <ul>
-          <li class="current-page">
-<a class="current-page" href="index.html">1. Getting started</a>
+          <li>
+<a href="index.html">1. Getting started</a>
 <ul class="toc">
 <li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
 <li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
@@ -49,14 +49,14 @@
 <li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
 </ul>
 </li>
-<li>
-<a href="template-behaviors.html">5. Template behaviors</a>
+<li class="current-page">
+<a class="current-page" href="template-behaviors.html">5. Template behaviors</a>
 <ul class="toc">
 <li><a href="target-patterns.html">5.1. Target patterns</a></li>
 <li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
 <li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
 <li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
-<li><a href="scrolling-texture-speed.html">5.5. Scrolling texture speed</a></li>
+<li class="current-page"><a class="current-page" href="scrolling-texture-speed.html">5.5. Scrolling texture speed</a></li>
 </ul>
 </li>
 <li>
@@ -88,30 +88,26 @@
       <div class="main-container">
         <main>
           <article>
-            <h1 id="getting-started">1. Getting started</h1>
+            <h1 id="scrolling-texture-speed">5.5. Scrolling texture speed</h1>
 <p>
-MESS <em>(Macro Entity Scripting System)</em> is a map compile tool that gives Half-Life level designers the following tools:</p>
-<ul>
-<li>
-A template instancing system that can be used in a variety of ways, such as for <a href="covering-terrain-with-props.html">decorating terrain</a> or for generating repetitive entity setups.</li>
-<li>
-Multiple <a href="template-entities.html">template entities</a> and <a href="template-behaviors.html">template behaviors</a> that can greatly simplify complicated entity setups, such as triggering random targets.</li>
-<li>
-A <a href="scripting.html">scripting language</a> that can be used for additional randomization and customization, or for creating custom template entities and behaviors.</li>
-</ul>
+Scrolling textures can be applied to any brush entity, but only <code>func_conveyor</code> contains a property for setting the scroll speed. This template behavior lets you set the scroll speed on any other brush entity by adding a custom <code>scrollspeed</code> property.</p>
 <p>
-To get started, <a href="https://github.com/pwitvoet/mess/releases/tag/1.2.1">download MESS 1.2.1</a> and follow the <a href="jack-&-hammer-setup.html">J.A.C.K. & Hammer setup guide</a> or the <a href="trenchbroom-setup.html">Trenchbroom setup guide</a>.</p>
+The underlying mechanism is that Half-Life stores the scroll speed in the FX Color (<code>rendercolor</code>) property. The format isn't very straightforward however: R determines the scroll direction, and G and B together determine the scroll speed, in increments of 1/16. This template behavior automatically converts the custom <code>scrollspeed</code> value to a properly formatted <code>rendercolor</code> value.</p>
+<h2 id="configuration">Configuration</h2>
 <p>
-Bugs can be reported on <a href="https://github.com/pwitvoet/mess/issues">github.com/pwitvoet/mess/issues</a>.</p>
-<p>
-<img src="images/macro_cover_showcase.png" alt="macro_cover_showcase.png">
-</p>
-<p>
-<img src="images/template_entity_showcase.png" alt="template_entity_showcase.png">
-</p>
-<p>
-<img src="images/fun_showcase.png" alt="fun_showcase.png">
-</p>
+The following global (defined in <a href="configuration-files.html">mess.config</a>) can be used to control this behavior:</p>
+<table>
+<thead>
+<tr>
+<th>global</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MTL_DISABLE_SCROLLSPEED_PROPERTY = 1</code></td><td> Disables<code>scrollspeed</code> property handling</td></tr>
+</tbody>
+</table>
 
           </article>
         </main>
