@@ -1,0 +1,13 @@
+// Scrolling textures can be applied to any brush entity, but only func_conveyor has an attribute for controlling the scroll speed.
+// However, because the actual scrolling speed is stored in the 'rendercolor' attribute, it's still possible to control the scrolling speed
+// in other entities, provided you know the format (R = scroll direction, G = scroll speed / 16, B = scroll speed * 16).
+// 
+// This template behavior lets you set the scroll speed by adding a custom 'scrollspeed' attribute to a brush entity,
+// and it will automatically convert that to the right format and store it in the 'rendercolor' attribute.
+// 
+// @MESS REWRITE AFTER_MACRO_EXPANSION WHEN "{scrollspeed}":
+// @IF "{!getglobal('MTL_DISABLE_SCROLLSPEED_PROPERTY')}":
+//   "rendercolor": "{str([scrollspeed >= 0 ? 0 : 1, clamp(round(abs(scrollspeed) / 16), 0, 255), clamp(round((abs(scrollspeed) % 16) * 16), 0, 255)])}"
+//   delete "scrollspeed"
+// @ENDIF;
+// @MESS;
