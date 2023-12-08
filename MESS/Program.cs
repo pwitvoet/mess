@@ -17,8 +17,8 @@ namespace MESS
     /// <summary>
     /// MESS takes two command-line parameters: an input file path and an output file path.
     /// <para>
-    /// MESS supports both RMF and MAP files. If the input path does not specify an extension, MESS will prefer .rmf files over .map files.
-    /// The output is always a MAP format, regardless of the path's extension.
+    /// MESS supports .jmf, .rmf and .map (Valve220 format) files. If the input path does not specify an extension, MESS will assume a .map extension.
+    /// The output is always a .map format, regardless of the path's extension.
     /// </para>
     /// </summary>
     class Program
