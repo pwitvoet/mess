@@ -1141,7 +1141,7 @@ namespace MESS.Macros
                 context.Transform.Scale,
                 context.Transform.GeometryScale,
                 context.Transform.Rotation,
-                position);
+                context.Transform.Apply(position));
 
             var parentID = context.GetNextParentID();
             foreach (var template in templates)
