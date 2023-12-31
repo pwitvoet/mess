@@ -2,11 +2,13 @@
 //
 // @MESS REWRITE:
 // "classname": "macro_insert"
-// "template_map": "{mtb_dir() + '/cs_trigger_roundstart.map'}"
+// "template_map": "{ted_dir() + '/cs_trigger_roundstart.map'}"
 // @MESS;
 @PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = cs_trigger_roundstart
 [
     target(target_destination) : "Target"
+    first_delay(string) : "Delay (first round)"
+    delay(string) : "Delay"
 
     spawnflags(flags) =
     [

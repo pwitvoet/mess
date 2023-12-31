@@ -1,18 +1,18 @@
 {
 "classname" "worldspawn"
-"origin" "0 0 0"
 "mapversion" "220"
-"_mess_allow_rewrite_rules" "../mess_template_library/target_pattern_handler.ted"
+"_mess_allow_rewrite_rules" "{}"
 "target" "{target}"
 "skip_first_round" "{hasflag(0)}"
+"has_delay" "{is_num(delay)}"
+"delay_relay_name" "_ctr_tr{iid()}"
 }
 {
 "classname" "func_door"
-"wait" "{delay}"
 "speed" "100"
 "spawnflags" "1"
 "zhlt_noclip" "1"
-"target" "{target}"
+"target" "{has_delay ? delay_relay_name : target}"
 {
 ( -0.5 -0.5 0.5 ) ( -0.5 -0.5 -0.5 ) ( -0.5 0.5 0.5 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
 ( 0.5 0.5 0.5 ) ( 0.5 0.5 -0.5 ) ( 0.5 -0.5 0.5 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
@@ -23,39 +23,27 @@
 }
 }
 {
-"classname" "macro_insert"
-"instance_count" "{skip_first_round ? 0 : 1}"
-"template_name" "first_round_trigger_template"
-"target" "{target}"
+"classname" "trigger_relay"
 "origin" "0 0 0"
-}
-{
-"classname" "macro_template"
-"selection_weight" "1"
-"anchor" "1"
-"targetname" "first_round_trigger_template"
-{
-( 128 128 128 ) ( 128 128 0 ) ( 128 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 256 136 128 ) ( 256 136 0 ) ( 256 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 128 136 128 ) ( 128 136 0 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 256 128 128 ) ( 256 128 0 ) ( 128 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 256 128 128 ) ( 128 128 128 ) ( 256 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 128 136 0 ) ( 128 128 0 ) ( 256 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-}
-{
-( 256 256 128 ) ( 256 256 0 ) ( 256 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 128 248 128 ) ( 128 248 0 ) ( 128 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 256 248 128 ) ( 256 248 0 ) ( 128 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 128 256 128 ) ( 128 256 0 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
-( 128 256 0 ) ( 128 248 0 ) ( 256 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-( 256 248 128 ) ( 128 248 128 ) ( 256 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
-}
+"_mess_remove_if" "{!has_delay}"
+"targetname" "{delay_relay_name}"
+"target" "{target}"
+"delay" "{max(0, delay)}"
+"triggerstate" "2"
 }
 {
 "classname" "trigger_auto"
+"origin" "0 0 0"
+"_mess_remove_if" "{skip_first_round}"
 "spawnflags" "1"
 "triggerstate" "2"
-"delay" "0"
+"delay" "{max(0, first_delay || 0)}"
 "target" "{target}"
-"origin" "192 192 64"
+}
+{
+"classname" "macro_insert"
+"instance_count" "1"
+"template_map" "{map_dir()}/../mess_template_library/target_pattern_handler.map"
+"target" "{target}"
+"origin" "0 0 0"
 }
