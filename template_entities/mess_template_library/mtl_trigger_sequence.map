@@ -1,6 +1,5 @@
 {
 "classname" "worldspawn"
-"origin" "0 0 0"
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "targetname" "{targetname || 'mm_' + iid()}"
