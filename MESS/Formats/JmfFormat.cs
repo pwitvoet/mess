@@ -19,12 +19,30 @@ namespace MESS.Formats
             if (jhmfMagicString != "JHMF")
                 throw new InvalidDataException($"Expected 'JHMF' magic string, but found '{jhmfMagicString}'.");
 
-            var unknown1 = stream.ReadBytes(4);
+            var fileVersion = stream.ReadInt();
+            if (fileVersion < 121 || fileVersion > 122)
+                throw new NotSupportedException($"Only JMF file versions 121 and 122 are supported.");
 
             // Recent export paths (not relevant for MESS):
             var exportPathCount = stream.ReadInt();
             for (int i = 0; i < exportPathCount; i++)
                 stream.ReadLengthPrefixedString();
+
+            if (fileVersion >= 122)
+            {
+                // 2D view background images (not relevant for MESS):
+                for (int i = 0; i < 3; i++)
+                {
+                    var imagePath = stream.ReadLengthPrefixedString();
+                    var scale = stream.ReadDouble();
+                    var luminance = stream.ReadInt();
+                    var filtering = stream.ReadInt();   // 0 = nearest, 1 = linear
+                    var invertColors = stream.ReadInt() != 0;
+                    var xOffset = stream.ReadInt();
+                    var yOffset = stream.ReadInt();
+                    var unknown = stream.ReadBytes(4);
+                }
+            }
 
             // Groups can be nested:
             var groupCount = stream.ReadInt();

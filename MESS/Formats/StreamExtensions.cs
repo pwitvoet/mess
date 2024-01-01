@@ -10,6 +10,8 @@ namespace MESS.Formats
 
         public static float ReadFloat(this Stream stream) => BitConverter.ToSingle(stream.ReadBytes(4), 0);
 
+        public static double ReadDouble(this Stream stream) => BitConverter.ToDouble(stream.ReadBytes(8), 0);
+
         /// <summary>
         /// Reads a fixed-length ASCII string.
         /// </summary>
