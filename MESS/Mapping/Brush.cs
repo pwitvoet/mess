@@ -11,6 +11,11 @@ namespace MESS.Mapping
         public BoundingBox BoundingBox { get; }
 
 
+        // Editor state:
+        public bool IsSelected { get; set; }
+        public bool IsHidden { get; set; }
+
+
         public Brush(IEnumerable<Face> faces)
         {
             Faces = faces.ToArray();
@@ -24,10 +29,12 @@ namespace MESS.Mapping
         private void InitializePlanes()
         {
             foreach (var face in Faces)
-                face.Plane = Plane.FromPoints(face.PlanePoints);
+            {
+                if (face.Plane.Normal == default)
+                    face.Plane = Plane.FromPoints(face.PlanePoints);
+            }
         }
 
-        // TODO: ORDER the resulting vertices (clockwise)!
         private void InitializeVertices()
         {
             if (Faces.All(face => face.Vertices.Count > 0))
@@ -36,9 +43,7 @@ namespace MESS.Mapping
             foreach (var face in Faces)
                 face.Vertices.Clear();
 
-            // TODO: This is probably O(n^3) or so!
-            //       Would it be more efficient to, for each face, use all other faces to cut it down to a polygon?
-            //       That would be O(n^2) I think??
+            // TODO: Replace this with a more efficient clipping algorithm:
             for (int i = 0; i < Faces.Count; i++)
             {
                 for (int j = i + 1; j < Faces.Count; j++)

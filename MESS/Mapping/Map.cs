@@ -1,4 +1,6 @@
-﻿namespace MESS.Mapping
+﻿using MESS.Mathematics.Spatial;
+
+namespace MESS.Mapping
 {
     /// <summary>
     /// A map consists of entities (in-game 'things') and brushes (3-dimensional textured shapes).
@@ -12,37 +14,42 @@
         /// <summary>
         /// Map properties. These can also be accessed via the special <see cref="Worldspawn"/> entity.
         /// </summary>
-        public Dictionary<string, string> Properties => _worldspawn.Properties;
+        public Dictionary<string, string> Properties => Worldspawn.Properties;
 
         /// <summary>
         /// Map world brushes. These can also be accessed via the special <see cref="Worldspawn"/> entity.
         /// </summary>
-        public IReadOnlyList<Brush> WorldGeometry => _worldspawn.Brushes;
+        public IReadOnlyList<Brush> WorldGeometry => Worldspawn.Brushes;
 
         /// <summary>
         /// A list of all entities in this map (excluding the special <see cref="Worldspawn"/> entity).
         /// </summary>
         public List<Entity> Entities { get; } = new();
 
+        /// <summary>
+        /// A special entity that contains the map properties and world geometry.
+        /// </summary>
+        public Entity Worldspawn { get; set; } = new Entity { ClassName = Common.Entities.Worldspawn };
+
 
         // RMF/JMF formats only:
         public List<EntityPath> EntityPaths { get; } = new();
 
+
+        // Common editor state:
+        public BoundingBox? CordonArea { get; set; }
+
         public List<Group> Groups { get; } = new();
-
-        public int ActiveCameraIndex { get; set; }
-        public List<Camera> Cameras { get; } = new();
-
         public List<VisGroup> VisGroups { get; } = new();
 
+        public List<Camera> Cameras { get; } = new();
+        public int? ActiveCameraIndex { get; set; }
 
-        private Entity _worldspawn = new Entity { ClassName = Common.Entities.Worldspawn };
 
+        public void AddBrush(Brush brush) => Worldspawn.AddBrush(brush);
 
-        public void AddBrush(Brush brush) => _worldspawn.AddBrush(brush);
+        public void AddBrushes(IEnumerable<Brush> brushes) => Worldspawn.AddBrushes(brushes);
 
-        public void AddBrushes(IEnumerable<Brush> brushes) => _worldspawn.AddBrushes(brushes);
-
-        public void RemoveBrush(Brush brush) => _worldspawn.RemoveBrush(brush);
+        public void RemoveBrush(Brush brush) => Worldspawn.RemoveBrush(brush);
     }
 }

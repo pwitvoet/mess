@@ -16,5 +16,6 @@
         public string ClassName { get; set; } = "";
         public PathType Type { get; set; }
         public List<EntityPathNode> Nodes { get; } = new();
+        public Color Color { get; set; } = new Color(255, 255, 255);
     }
 }

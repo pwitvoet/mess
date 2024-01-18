@@ -10,6 +10,20 @@
         public Color Color { get; set; }
         public bool IsVisible { get; set; }
 
-        public List<MapObject> Objects { get; } = new();
+        private List<MapObject> _objects = new();
+        public IReadOnlyList<MapObject> Objects => _objects;
+
+
+        public void AddObject(MapObject mapObject)
+        {
+            _objects.Add(mapObject);
+            mapObject.AddVisGroup(this);
+        }
+
+        public void RemoveObject(MapObject mapObject)
+        {
+            _objects.Remove(mapObject);
+            mapObject.RemoveVisGroup(this);
+        }
     }
 }

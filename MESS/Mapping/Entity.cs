@@ -12,14 +12,13 @@ namespace MESS.Mapping
     {
         public bool IsPointBased => Brushes.Count == 0;
 
-
         public string ClassName
         {
             get => Properties.GetString(Attributes.Classname) ?? "";
             set => Properties.SetString(Attributes.Classname, value);
         }
 
-        public int Flags
+        public int Spawnflags
         {
             get => Properties.GetInteger(Attributes.Spawnflags) ?? 0;
             set => Properties.SetInteger(Attributes.Spawnflags, value);
@@ -60,13 +59,17 @@ namespace MESS.Mapping
             }
         }
 
-
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringEqualityComparer.InvariantIgnoreCase);
 
         private List<Brush> _brushes = new();
         public IReadOnlyList<Brush> Brushes => _brushes;
 
         public BoundingBox BoundingBox { get; private set; }
+
+
+        // Editor state:
+        public bool IsSelected { get; set; }
+        public bool IsHidden { get; set; }
 
 
         public Entity(IEnumerable<Brush>? brushes = null)

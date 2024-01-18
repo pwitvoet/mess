@@ -23,11 +23,29 @@ namespace MESS
         /// <summary>
         /// Saves the given map to the specified file path. Supports only the .map format.
         /// </summary>
-        public static void Save(Map map, string path)
+        public static void Save(Map map, string path, FileSaveSettings? settings = null)
         {
-            var mapSaveFunction = GetMapSaveFunction(Path.GetExtension(path));
-            using (var file = File.Create(path))
-                mapSaveFunction(map, file);
+            var extension = Path.GetExtension(path);
+            switch (extension.ToLowerInvariant())
+            {
+                case ".jmf":
+                case ".jmx":
+                    JmfFormat.Save(map, path, settings as JmfFileSaveSettings);
+                    break;
+
+                case ".rmf":
+                    using (var file = File.Create(path))
+                        RmfFormat.Save(map, file);
+                    break;
+
+                case ".map":
+                    using (var file = File.Create(path))
+                        MapFormat.Save(map, file);
+                    break;
+
+                default:
+                    throw new InvalidDataException($"Unknown output format: '{extension}'.");
+            }
         }
 
 
@@ -37,12 +55,10 @@ namespace MESS
             ".map" => MapFormat.Load,
             _ => throw new InvalidDataException("Unknown map file format.")
         };
+    }
 
-        private static Action<Map, Stream> GetMapSaveFunction(string extension) => extension.ToLowerInvariant() switch { 
-            ".jmf" => JmfFormat.Save,
-            ".rmf" => RmfFormat.Save,
-            ".map" => MapFormat.Save,
-            _ => throw new InvalidDataException($"Unknown output format: '{extension}'.")
-        };
+
+    public abstract class FileSaveSettings
+    {
     }
 }

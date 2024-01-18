@@ -18,7 +18,7 @@ namespace MESS.Formats
             var nextGroupID = 1;
 
             var version = stream.ReadFloat();
-            var rmfMagicString = stream.ReadString(3);
+            var rmfMagicString = stream.ReadFixedLengthString(3);
             if (rmfMagicString != "RMF")
                 throw new InvalidDataException($"Expected 'RMF' magic string, but found '{rmfMagicString}'.");
 
@@ -34,8 +34,8 @@ namespace MESS.Formats
             for (int i = 0; i < objectCount; i++)
             {
                 (var mapObject, var visGroupID) = ReadObject(stream);
-                if (visGroupID > 0 && visGroupIdLookup.TryGetValue(visGroupID, out var visGroup))
-                    mapObject.VisGroup = visGroup;
+                if (visGroupID > 0 && visGroupIdLookup.TryGetValue(visGroupID, out var visGroup) && visGroup != null)
+                    visGroup.AddObject(mapObject);
 
                 AddObject(mapObject);
             }
@@ -97,7 +97,7 @@ namespace MESS.Formats
 
         private static VisGroup ReadVisGroup(Stream stream)
         {
-            var name = stream.ReadString(128);
+            var name = stream.ReadFixedLengthString(128);
             var color = ReadColor(stream);
             stream.ReadByte();      // Padding byte?
             var id = stream.ReadInt();
@@ -141,7 +141,7 @@ namespace MESS.Formats
         {
             var face = new Face();
 
-            face.TextureName = stream.ReadString(256);
+            face.TextureName = stream.ReadFixedLengthString(256);
             stream.ReadFloat(); // ?
 
             face.TextureRightAxis = ReadVector3D(stream);
@@ -183,7 +183,7 @@ namespace MESS.Formats
 
             entity.ClassName = stream.ReadNString();
             stream.ReadBytes(4);    // ?
-            entity.Flags = stream.ReadInt();
+            entity.Spawnflags = stream.ReadInt();
 
             var propertyCount = stream.ReadInt();
             for (int i = 0; i < propertyCount; i++)
@@ -210,7 +210,7 @@ namespace MESS.Formats
 
             var objectCount = stream.ReadInt();
             for (int i = 0; i < objectCount; i++)
-                ReadObject(stream).mapObject.Group = group;
+                group.AddObject(ReadObject(stream).mapObject);
 
             return (group, visGroupID);
         }
@@ -226,8 +226,8 @@ namespace MESS.Formats
         private static EntityPath ReadPath(Stream stream)
         {
             var entityPath = new EntityPath();
-            entityPath.Name = stream.ReadString(128);
-            entityPath.ClassName = stream.ReadString(128);
+            entityPath.Name = stream.ReadFixedLengthString(128);
+            entityPath.ClassName = stream.ReadFixedLengthString(128);
             entityPath.Type = (PathType)stream.ReadInt();
 
             var nodeCount = stream.ReadInt();
@@ -242,7 +242,7 @@ namespace MESS.Formats
             var pathNode = new EntityPathNode();
             pathNode.Position = ReadVector3D(stream);
             pathNode.Index = stream.ReadInt();
-            pathNode.NameOverride = stream.ReadString(128);
+            pathNode.NameOverride = stream.ReadFixedLengthString(128);
 
             var propertyCount = stream.ReadInt();
             for (int i = 0; i < propertyCount; i++)

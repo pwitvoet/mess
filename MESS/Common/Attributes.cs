@@ -45,6 +45,46 @@
         /// </summary>
         public const string Message = "message";
 
+        /// <summary>
+        /// The render mode of a visual entity: normal, color, texture, glow, solid or additive.
+        /// </summary>
+        public const string Rendermode = "rendermode";
+
+        /// <summary>
+        /// The render color of a visual entity. Usage depends on render mode.
+        /// </summary>
+        public const string RenderColor = "rendercolor";
+
+        /// <summary>
+        /// The render amount of a visual entity. Typically used to control opacity.
+        /// </summary>
+        public const string RenderAmount = "renderamt";
+
+        /// <summary>
+        /// The special render effects of a visual entity, such as pulse, strobe, flickering or hologram effects.
+        /// </summary>
+        public const string RenderFX = "renderfx";
+
+        /// <summary>
+        /// The body selection of a model-displaying entity.
+        /// </summary>
+        public const string Body = "body";
+
+        /// <summary>
+        /// The skin selection of a model-displaying entity.
+        /// </summary>
+        public const string Skin = "skin";
+
+        /// <summary>
+        /// The animation sequence of a model-displaying entity.
+        /// </summary>
+        public const string Sequence = "sequence";
+
+        /// <summary>
+        /// The animation framerateof a model or sprite-displaying entity.
+        /// </summary>
+        public const string Framerate = "framerate";
+
 
         // Instance orientation attributes, used by macro_insert, macro_cover and macro_fill:
 

@@ -11,5 +11,10 @@ namespace MESS.Mapping
         public int Index { get; set; }
         public string? NameOverride { get; set; }
         public Dictionary<string, string> Properties { get; } = new();
+        public Color Color { get; set; } = new Color(255, 255, 255);
+
+
+        // Common editor state:
+        public bool IsSelected { get; set; }
     }
 }
