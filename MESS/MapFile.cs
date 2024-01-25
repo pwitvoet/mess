@@ -6,7 +6,7 @@ namespace MESS
     public static class MapFile
     {
         /// <summary>
-        /// Loads the specified map file. Supports .map, .rmf and .jmf formats.
+        /// Loads the specified map file. Supports .map (Valve 220), .rmf and .jmf formats.
         /// <para>
         /// If the specified file cannot be found, then this will try looking inside .zip files.
         /// For example, if "C:\modding\maps\mymap.map" does not exist, then "C:\modding\maps.zip" is checked for a "mymap.map" file.
@@ -21,7 +21,7 @@ namespace MESS
         }
 
         /// <summary>
-        /// Saves the given map to the specified file path. Supports only the .map format.
+        /// Saves the given map to the specified file path. Supports .map (Valve 220), .rmf and .jmf formats.
         /// </summary>
         public static void Save(Map map, string path, FileSaveSettings? settings = null)
         {
@@ -34,8 +34,8 @@ namespace MESS
                     break;
 
                 case ".rmf":
-                    using (var file = File.Create(path))
-                        RmfFormat.Save(map, file);
+                case ".rmx":
+                    RmfFormat.Save(map, path, settings as RmfFileSaveSettings);
                     break;
 
                 case ".map":

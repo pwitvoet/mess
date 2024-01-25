@@ -98,8 +98,11 @@ namespace MESS.Formats
         /// <summary>
         /// Writes a length-prefixed ASCII string, where the length takes up 1 byte.
         /// </summary>
-        public static void WriteNString(this Stream stream, string value, Encoding? encoding = null)
+        public static void WriteNString(this Stream stream, string value, bool addNullTerminator = true, Encoding? encoding = null)
         {
+            if (addNullTerminator && value.Length == 0 || value[value.Length - 1] != '\0')
+                value += '\0';
+
             var bytes = (encoding ?? Encoding.ASCII).GetBytes(value);
             if (bytes.Length > 255)
                 throw new InvalidDataException("An NString can only contain up to 255 characters.");
