@@ -983,7 +983,11 @@ namespace MESS.Macros
             // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
             //       Verify that this works correctly now!!!
             var parentID = context.GetNextParentID();
-            var anchorPoint = brushEntity.GetAnchorPoint(brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom);
+            var anchor = brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom;
+            if (anchor == TemplateAreaAnchor.OriginBrush && brushEntity.GetOrigin() == null)
+                Logger.Warning($"{brushEntity.ClassName} '{brushEntity.Properties.GetString(Attributes.Targetname)}' in instance #{context.ID} has no origin brush! Add an origin brush, or use a different anchor point.");
+
+            var anchorPoint = brushEntity.GetAnchorPoint(anchor);
             var anchorOffset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
             var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));

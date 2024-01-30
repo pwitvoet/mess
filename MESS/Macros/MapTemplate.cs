@@ -98,7 +98,14 @@ namespace MESS.Macros
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
                 var templateName = templateEntity.Properties.EvaluateToString(Attributes.Targetname, mapContext);
                 var selectionWeight = templateEntity.Properties.EvaluateToString(Attributes.SelectionWeight, mapContext);
-                var offset = GetTemplateEntityOrigin(templateEntity, mapContext) * -1;
+
+                if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity.Properties.EvaluateToString(Attributes.Anchor, context), out var anchor))
+                    anchor = TemplateAreaAnchor.Bottom;
+
+                if (anchor == TemplateAreaAnchor.OriginBrush && templateEntity.GetOrigin() == null)
+                    logger.Warning($"Template '{templateName}' in map '{path}' has no origin! Add an origin brush, or use a different anchor point.");
+
+                var offset = templateEntity.GetAnchorPoint(anchor);
                 var templateMap = new Map();
 
                 // Copy custom properties into the template map properties - these will serve as local variables that will be evaluated whenever the template is instantiated:
@@ -147,14 +154,6 @@ namespace MESS.Macros
             }
 
             return subTemplates;
-        }
-
-        private static Vector3D GetTemplateEntityOrigin(Entity templateEntity, EvaluationContext context)
-        {
-            if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity.Properties.EvaluateToString(Attributes.Anchor, context), out var anchor))
-                anchor = TemplateAreaAnchor.OriginBrush;
-
-            return templateEntity.GetAnchorPoint(anchor);
         }
 
         /// <summary>
