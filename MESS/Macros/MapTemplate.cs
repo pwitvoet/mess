@@ -43,9 +43,10 @@ namespace MESS.Macros
         public HashSet<string> Names { get; } = new();
 
         public Map Map { get; }
-        public bool IsSubTemplate { get; }
+        public bool IsSubTemplate => Parent != null;
         public string SelectionWeightExpression { get; }
 
+        public MapTemplate? Parent { get; private set; }
         public IReadOnlyCollection<MapTemplate> SubTemplates { get; }
         public IReadOnlyCollection<RemovableContent> ConditionalContents { get; }
 
@@ -61,7 +62,6 @@ namespace MESS.Macros
             Name = name;
             Map = map;
             SelectionWeightExpression = selectionWeightExpression;
-            IsSubTemplate = isSubTemplate;
 
             if (isSubTemplate)
             {
@@ -71,6 +71,9 @@ namespace MESS.Macros
 
             SubTemplates = subTemplates?.ToArray() ?? Array.Empty<MapTemplate>();
             ConditionalContents = conditionalContent?.ToArray() ?? Array.Empty<RemovableContent>();
+
+            foreach (var subTemplate in SubTemplates)
+                subTemplate.Parent = this;
         }
 
 

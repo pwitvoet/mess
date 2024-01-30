@@ -134,12 +134,17 @@ namespace MESS.Macros
             SequenceNumber = sequenceNumber;
             RecursionDepth = (parentContext?.RecursionDepth ?? -1) + 1;
             Template = template;
-            CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(GetNearestMapFileContext()?.Template?.Name) ?? "";
-            SubTemplates = GetNearestMapFileContext()?.Template?.SubTemplates ?? Array.Empty<MapTemplate>();
+
+            var parentTemplate = template;
+            while (parentTemplate.Parent != null)
+                parentTemplate = parentTemplate.Parent;
+
+            CurrentWorkingDirectory = workingDirectory ?? Path.GetDirectoryName(parentTemplate.Name) ?? "";
+            SubTemplates = parentTemplate.SubTemplates;
 
             Transform = transform ?? Transform.Identity;
 
-            var mapPath = GetNearestMapFileContext()?.Template.Name ?? Template.Name;
+            var mapPath = parentTemplate.Name;
             var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, parentID, SequenceNumber, _random, mapPath, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
             handleTemplateProperties?.Invoke(evaluatedTemplateProperties);
@@ -241,8 +246,5 @@ namespace MESS.Macros
 
 
         private InstantiationContext GetRootContext() => _parentContext?.GetRootContext() ?? this;
-
-        // NOTE: Returns the first parent context who'se template is not a sub-template but a template loaded from a file:
-        private InstantiationContext? GetNearestMapFileContext() => !Template.IsSubTemplate ? this : _parentContext?.GetNearestMapFileContext();
     }
 }
