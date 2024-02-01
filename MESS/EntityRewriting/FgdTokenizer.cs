@@ -27,7 +27,7 @@ namespace MESS.EntityRewriting
                 }
                 else
                 {
-                    if (token.Type == TokenType.Comment && token.Value.Trim().StartsWith("@MESS"))  // TODO: This also matches @MESS; !!!
+                    if (token.Type == TokenType.Comment && token.Value.Trim().StartsWith("@MESS") && token.Value.Trim() != "@MESS;")
                         isMessDirectiveEnabled = true;
                 }
 
