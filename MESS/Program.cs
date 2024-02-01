@@ -57,7 +57,7 @@ namespace MESS
                 {
                     var configFilePath = commandLineSettings.ConfigFilePath ?? DefaultConfigFilePath;
                     if (string.IsNullOrEmpty(Path.GetExtension(configFilePath)))
-                        configFilePath = Path.Combine(configFilePath, "mess.config");
+                        configFilePath += ".config";
 
                     var settings = new ExpansionSettings {
                         TemplateMapsDirectory = DefaultTemplatesDirectory,
