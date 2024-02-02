@@ -305,7 +305,7 @@ namespace MESS.Macros
 
             foreach ((var mergeID, var group) in mergeGroups)
             {
-                var master = group.FirstOrDefault(entity => entity.Properties.ContainsKey(Attributes.MergeEntityMaster)) ?? group.FirstOrDefault();
+                var master = group.FirstOrDefault(IsMergeEntityMaster) ?? group.FirstOrDefault();
                 if (master == null)
                     continue;
 
@@ -320,7 +320,20 @@ namespace MESS.Macros
                 }
 
                 master.Properties.Remove(Attributes.MergeEntityID);
-                master.Properties.Remove(Attributes.MergeEntityMaster);
+            }
+
+            foreach (var entity in context.OutputMap.Entities)
+                entity.Properties.Remove(Attributes.MergeEntityMaster);
+
+
+            bool IsMergeEntityMaster(Entity entity)
+            {
+                var rawValue = entity.Properties.GetString(Attributes.MergeEntityMaster);
+                if (rawValue == null)
+                    return false;
+
+                var value = Evaluation.ParseMScriptValue(rawValue);
+                return Interpreter.IsTrue(value) && value is not 0.0;
             }
         }
 
