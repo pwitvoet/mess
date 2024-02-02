@@ -238,17 +238,85 @@ will have its first spawn flag enabled if <code>start_on</code> is true, and it 
 <p>
 This property is used to merge brush entities together, which can be useful for certain optimization techniques. Merging happens after post-processing rewrite rules have been applied.</p>
 <p>
-Entities that contain a <code>_mess_merge_entity_id</code> property are grouped by their <code>_mess_merge_entity_id</code> value. Each group is turned into a single entity. The resulting entity will have the properties of the first entity of that group (or the first entity that is marked with a <code>_mess_merge_entity_master</code> property, see below), and it will contain the brushes of all entities of that group. The resulting entity will not contain a <code>_mess_merge_entity_id</code> or <code>_mess_merge_entity_master</code> property.</p>
+Entities that contain a <code>_mess_merge_entity_id</code> property are grouped by their <code>_mess_merge_entity_id</code> value. Each group is turned into a single entity. The resulting entity will have the properties of the first entity of that group (or the first entity that is marked as a master, see the <code>_mess_merge_entity_master</code> property below), and it will contain the brushes of all entities of that group. The resulting entity will not contain a <code>_mess_merge_entity_id</code> or <code>_mess_merge_entity_master</code> property.</p>
 <p>
-It's recommended to only merge entities of the same type and with the same properties.</p>
+It is recommended to only merge entities of the same type and with the same properties.</p>
+<p>
+For example, the following two entities will be merged into a single one. Because none of them has been marked as a master, the resulting entity will use the properties of the first entity and so its targetname will be <code>fence1</code>:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>fence1</code></td></tr>
+<tr>
+<td><code>_mess_merge_entity_id</code></td><td><code>outer_fence</code></td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>targetname</code></td><td><code>fence2</code></td></tr>
+<tr>
+<td><code>_mess_merge_entity_id</code></td><td><code>outer_fence</code></td></tr>
+</tbody>
+</table>
 <hr>
 <h3 id="_mess_merge_entity_master">_mess_merge_entity_master</h3>
 <p>
-This property marks an entity that is part of a <code>_mess_merge_entity_id</code> group as the master of that group. The resulting merged entity will be given the properties of the master entity. If multiple entities in a single group are marked as a master, then the first entity will be the master.</p>
+An entity that contains this property will be marked as a master. When merging entities (see the above <code>_mess_merge_entity_id</code> property), the resulting entity will get the properties of the first master entity in that group.</p>
+<p>
+For example, the following entity is the master of the <code>courtyard_grass</code> group, and the resulting entity will get the properties of this entity (minus the <code>_mess_merge_entity_id</code> and <code>_mess_merge_entity_master</code> properties):</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_illusionary</code></td></tr>
+<tr>
+<td><code>_mess_merge_entity_id</code></td><td><code>courtyard_grass</code></td></tr>
+<tr>
+<td><code>_mess_merge_entity_master</code></td><td><code>{}</code></td></tr>
+</tbody>
+</table>
 <hr>
 <h3 id="_mess_remove_if">_mess_remove_if</h3>
 <p>
 Entities that contain this property will be removed if the value of this property is true (which is any value other than leaving it empty or setting it to <code>0</code>). If the entity is part of a template, then the value will be re-evaluated for every instance. This is similar to surrounding the entity with a <a href="macro_remove_if.html">macro_remove_if</a>. This property is removed from the entity afterwards.</p>
+<p>
+For example, the following entity will be removed if the global variable <code>DEBUG</code> exists and if its value is not <code><span class="keyword">none</span></code> or <code>0</code>:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>_mess_remove_if</code></td><td><code>{getglobal('DEBUG')}</code></td></tr>
+</tbody>
+</table>
 <hr>
 <h3 id="_mess_attached_template_map">_mess_attached_template_map</h3>
 <p>
@@ -282,7 +350,26 @@ This property is similar to <code>_mess_attached_template_map</code>, except tha
 <p>
 Adding this property to a (template) map will block rewrite directives from all .ted files, except for the paths listed in this property. Paths can cover specific files or entire directories, and do not need to contain a .ted extension. This property is removed afterwards.</p>
 <p>
-This is a specific property that is intended for template entity authors.</p>
+This is a specific property that is intended for template entity authors. A common use-case is to disallow rewrite rules from all .ted files by setting an empty value:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>worldspawn</code></td></tr>
+<tr>
+<td><code>_mess_allow_rewrite_rules</code></td><td><code>{}</code></td></tr>
+</tbody>
+</table>
+<div class="note">
+<div class="note-header">NOTE</div>
+<p>
+Some editors will remove custom properties if their value is empty, hence the use of <code>{}</code> - an MScript expression that evaluates to an empty string.</p>
+</div>
 <hr>
 <h3 id="_mess_deny_rewrite_rules">_mess_deny_rewrite_rules</h3>
 <p>
