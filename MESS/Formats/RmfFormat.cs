@@ -24,7 +24,7 @@ namespace MESS.Formats
 
             var visGroupCount = stream.ReadInt();
             for (int i = 0; i < visGroupCount; i++)
-                map.VisGroups.Add(ReadVisGroup(stream));
+                map.VisGroups.Add(ReadVisGroup(stream, fileVersion));
             var visGroupIdLookup = map.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
 
             var cMapWorld = stream.ReadNString();
@@ -32,12 +32,12 @@ namespace MESS.Formats
                 throw new InvalidDataException($"Expected a CMapWorld object, but found '{cMapWorld}'.");
 
             stream.ReadInt();   // VIS group ID, always 0
-            map.Worldspawn.Color = ReadColor(stream);
+            map.Worldspawn.Color = ReadColor(stream, fileVersion);
 
             var objectCount = stream.ReadInt();
             for (int i = 0; i < objectCount; i++)
             {
-                (var mapObject, var visGroupID) = ReadMapObject(stream);
+                (var mapObject, var visGroupID) = ReadMapObject(stream, fileVersion);
                 if (visGroupID > 0 && visGroupIdLookup.TryGetValue(visGroupID, out var visGroup) && visGroup != null)
                     visGroup.AddObject(mapObject);
 
@@ -110,12 +110,12 @@ namespace MESS.Formats
 
             stream.WriteInt(map.VisGroups.Count);
             foreach (var visGroup in map.VisGroups)
-                WriteVisGroup(stream, visGroup);
+                WriteVisGroup(stream, visGroup, settings);
 
 
             stream.WriteNString("CMapWorld");
             stream.WriteInt(0);     // VIS group ID
-            WriteColor(stream, map.Worldspawn.Color);
+            WriteColor(stream, map.Worldspawn.Color, settings);
 
             var topLevelObjects = new List<MapObject>();
             topLevelObjects.AddRange(map.WorldGeometry.Where(brush => brush.Group == null));
@@ -125,7 +125,7 @@ namespace MESS.Formats
 
             stream.WriteInt(topLevelObjects.Count);
             foreach (var mapObject in topLevelObjects)
-                WriteMapObject(stream, mapObject);
+                WriteMapObject(stream, mapObject, settings);
 
             // worldspawn & map properties:
             WriteEntityData(stream, map.Worldspawn);
@@ -151,19 +151,21 @@ namespace MESS.Formats
             var version = stream.ReadFloat();
             switch (version)
             {
+                case 1.6f: return RmfFileVersion.V1_6;
+                case 1.8f: return RmfFileVersion.V1_8;
                 case 2.2f: return RmfFileVersion.V2_2;
                 default: throw new NotSupportedException($"Rmf file version {version} is not supported.");
             }
         }
 
-        private static VisGroup ReadVisGroup(Stream stream)
+        private static VisGroup ReadVisGroup(Stream stream, RmfFileVersion fileVersion)
         {
             var name = stream.ReadFixedLengthString(128);
-            var color = ReadColor(stream);
-            stream.ReadByte();      // Padding?
+            var color = ReadColor(stream, fileVersion);
+            stream.ReadByte();      // Unknown (padding?)
             var id = stream.ReadInt();
             var isVisible = stream.ReadSingleByte() == 1;
-            stream.ReadBytes(3);    // More padding?
+            stream.ReadBytes(3);    // Unknown (padding?)
 
             return new VisGroup {
                 Name = name,
@@ -173,50 +175,56 @@ namespace MESS.Formats
             };
         }
 
-        private static (MapObject mapObject, int visGroupID) ReadMapObject(Stream stream)
+        private static (MapObject mapObject, int visGroupID) ReadMapObject(Stream stream, RmfFileVersion fileVersion)
         {
             var typeName = stream.ReadNString();
             switch (typeName)
             {
-                case "CMapSolid": return ReadBrush(stream);
-                case "CMapEntity": return ReadEntity(stream);
-                case "CMapGroup": return ReadGroup(stream);
+                case "CMapSolid": return ReadBrush(stream, fileVersion);
+                case "CMapEntity": return ReadEntity(stream, fileVersion);
+                case "CMapGroup": return ReadGroup(stream, fileVersion);
                 default: throw new InvalidDataException($"Unknown object type '{typeName}'.");
             }
         }
 
-        private static (Brush brush, int visGroupID) ReadBrush(Stream stream)
+        private static (Brush brush, int visGroupID) ReadBrush(Stream stream, RmfFileVersion fileVersion)
         {
             var visGroupID = stream.ReadInt();
-            var color = ReadColor(stream);
+            var color = ReadColor(stream, fileVersion);
             var childObjectCount = stream.ReadInt();
             if (childObjectCount != 0)
                 throw new InvalidDataException($"Expected 0 child objects for brush, but found {childObjectCount}.");
 
             var faces = new Face[stream.ReadInt()];
             for (int i = 0; i < faces.Length; i++)
-                faces[i] = ReadFace(stream);
+                faces[i] = ReadFace(stream, fileVersion);
 
             return (new RmfBrush(faces) { Color = color }, visGroupID);
         }
 
-        private static Face ReadFace(Stream stream)
+        private static Face ReadFace(Stream stream, RmfFileVersion fileVersion)
         {
             var face = new RmfFace();
 
-            face.TextureName = stream.ReadFixedLengthString(256);
-            face.UnknownData1 = stream.ReadInt();
+            face.TextureName = stream.ReadFixedLengthString(GetTextureNameLength(fileVersion));
 
-            face.TextureRightAxis = ReadVector3D(stream);
+            var hasUVAxis = HasUVAxis(fileVersion);
+            if (hasUVAxis)
+                face.TextureRightAxis = ReadVector3D(stream);
+
             var shiftX = stream.ReadFloat();
-            face.TextureDownAxis = ReadVector3D(stream);
+
+            if (hasUVAxis)
+                face.TextureDownAxis = ReadVector3D(stream);
+
             var shiftY = stream.ReadFloat();
             face.TextureShift = new Vector2D(shiftX, shiftY);
 
             face.TextureAngle = stream.ReadFloat();
             face.TextureScale = new Vector2D(stream.ReadFloat(), stream.ReadFloat());
 
-            face.UnknownData2 = stream.ReadBytes(16);
+            var unknownData1Length = fileVersion >= RmfFileVersion.V1_8 ? 16 : 4;
+            face.UnknownData1 = stream.ReadBytes(unknownData1Length);
 
             var vertexCount = stream.ReadInt();
             for (int i = 0; i < vertexCount; i++)
@@ -225,14 +233,37 @@ namespace MESS.Formats
             face.PlanePoints = Enumerable.Range(0, 3)
                 .Select(i => ReadVector3D(stream))
                 .ToArray();
+            face.Plane = Plane.FromPoints(face.PlanePoints);
+
+            if (!hasUVAxis)
+            {
+                var normalX = Math.Abs(face.Plane.Normal.X);
+                var normalY = Math.Abs(face.Plane.Normal.Y);
+                var normalZ = Math.Abs(face.Plane.Normal.Z);
+                if (normalZ >= normalX && normalZ >= normalY)
+                {
+                    face.TextureRightAxis = new Vector3D(1, 0, 0);
+                    face.TextureDownAxis = new Vector3D(0, -1, 0);
+                }
+                else if (normalX >= normalY)
+                {
+                    face.TextureRightAxis = new Vector3D(0, 1, 0);
+                    face.TextureDownAxis = new Vector3D(0, 0, -1);
+                }
+                else
+                {
+                    face.TextureRightAxis = new Vector3D(1, 0, 0);
+                    face.TextureDownAxis = new Vector3D(0, 0, -1);
+                }
+            }
 
             return face;
         }
 
-        private static (Entity entity, int visGroupID) ReadEntity(Stream stream)
+        private static (Entity entity, int visGroupID) ReadEntity(Stream stream, RmfFileVersion fileVersion)
         {
             var visGroupID = stream.ReadInt();
-            var color = ReadColor(stream);
+            var color = ReadColor(stream, fileVersion);
 
             var brushCount = stream.ReadInt();
             var brushes = new Brush[brushCount];
@@ -242,7 +273,7 @@ namespace MESS.Formats
                 if (cMapSolid != "CMapSolid")
                     throw new InvalidDataException($"Expected a CMapSolid child object for entity, but found a '{cMapSolid}'.");
 
-                brushes[i] = ReadBrush(stream).brush;
+                brushes[i] = ReadBrush(stream, fileVersion).brush;
             }
 
             var entity = new RmfEntity(brushes);
@@ -273,24 +304,27 @@ namespace MESS.Formats
                 entity.Properties[stream.ReadNString()] = stream.ReadNString();
         }
 
-        private static (Group group, int visGroupID) ReadGroup(Stream stream)
+        private static (Group group, int visGroupID) ReadGroup(Stream stream, RmfFileVersion fileVersion)
         {
             var group = new RmfGroup();
 
             var visGroupID = stream.ReadInt();
-            group.Color = ReadColor(stream);
+            group.Color = ReadColor(stream, fileVersion);
 
             var objectCount = stream.ReadInt();
             for (int i = 0; i < objectCount; i++)
-                group.AddObject(ReadMapObject(stream).mapObject);
+                group.AddObject(ReadMapObject(stream, fileVersion).mapObject);
 
             return (group, visGroupID);
         }
 
-        private static Color ReadColor(Stream stream)
+        private static Color ReadColor(Stream stream, RmfFileVersion fileVersion)
         {
             var colors = stream.ReadBytes(3);
-            return new Color(colors[0], colors[1], colors[2]);
+            if (fileVersion >= RmfFileVersion.V2_2)
+                return new Color(colors[0], colors[1], colors[2]);
+            else
+                return new Color(colors[2], colors[1], colors[0]);
         }
 
         private static Vector3D ReadVector3D(Stream stream) => new Vector3D(stream.ReadFloat(), stream.ReadFloat(), stream.ReadFloat());
@@ -341,56 +375,62 @@ namespace MESS.Formats
             }
         }
 
-        private static void WriteVisGroup(Stream stream, VisGroup visGroup)
+        private static void WriteVisGroup(Stream stream, VisGroup visGroup, RmfFileSaveSettings settings)
         {
             stream.WriteFixedLengthString(visGroup.Name ?? "", 128);
-            WriteColor(stream, visGroup.Color);
-            stream.WriteByte(0);            // Padding?
+            WriteColor(stream, visGroup.Color, settings);
+            stream.WriteByte(0);            // Unknown (padding?)
             stream.WriteInt(visGroup.ID);
             stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
-            stream.WriteBytes(new byte[3]); // More padding?
+            stream.WriteBytes(new byte[3]); // Unknown (padding?)
         }
 
-        private static void WriteMapObject(Stream stream, MapObject mapObject)
+        private static void WriteMapObject(Stream stream, MapObject mapObject, RmfFileSaveSettings settings)
         {
             switch (mapObject)
             {
-                case Entity entity: WriteEntity(stream, entity); break;
-                case Brush brush: WriteBrush(stream, brush); break;
-                case Group group: WriteGroup(stream, group); break;
+                case Entity entity: WriteEntity(stream, entity, settings); break;
+                case Brush brush: WriteBrush(stream, brush, settings); break;
+                case Group group: WriteGroup(stream, group, settings); break;
                 default: throw new NotSupportedException($"Map objects of type '{mapObject?.GetType().Name}' cannot be saved to an RMF file.");
             }
         }
 
-        private static void WriteBrush(Stream stream, Brush brush)
+        private static void WriteBrush(Stream stream, Brush brush, RmfFileSaveSettings settings)
         {
             stream.WriteNString("CMapSolid");
             stream.WriteInt(brush.VisGroups.FirstOrDefault()?.ID ?? 0);
-            WriteColor(stream, brush.Color);
+            WriteColor(stream, brush.Color, settings);
             stream.WriteInt(0);     // Child object count
 
             stream.WriteInt(brush.Faces.Count);
             foreach (var face in brush.Faces)
-                WriteFace(stream, face);
+                WriteFace(stream, face, settings);
         }
 
-        private static void WriteFace(Stream stream, Face face)
+        private static void WriteFace(Stream stream, Face face, RmfFileSaveSettings settings)
         {
             var rmfFace = face as RmfFace;
 
-            stream.WriteFixedLengthString(face.TextureName, 256);
-            stream.WriteInt(rmfFace?.UnknownData1 ?? 0);
+            stream.WriteFixedLengthString(face.TextureName, GetTextureNameLength(settings.FileVersion));
 
-            WriteVector3D(stream, face.TextureRightAxis);
+            var hasUVAxis = HasUVAxis(settings.FileVersion);
+            if (hasUVAxis)
+                WriteVector3D(stream, face.TextureRightAxis);
+
             stream.WriteFloat(face.TextureShift.X);
-            WriteVector3D(stream, face.TextureDownAxis);
+
+            if (hasUVAxis)
+                WriteVector3D(stream, face.TextureDownAxis);
+
             stream.WriteFloat(face.TextureShift.Y);
 
             stream.WriteFloat(face.TextureAngle);
             stream.WriteFloat(face.TextureScale.X);
             stream.WriteFloat(face.TextureScale.Y);
 
-            stream.WriteBytes(rmfFace?.UnknownData2?.Length == 16 ? rmfFace.UnknownData2 : new byte[16]);
+            var unknownData1Length = settings.FileVersion >= RmfFileVersion.V1_8 ? 16 : 4;
+            stream.WriteBytes(rmfFace?.UnknownData1?.Length == unknownData1Length ? rmfFace.UnknownData1 : new byte[unknownData1Length]);
 
             stream.WriteInt(face.Vertices.Count);
             foreach (var vertex in face.Vertices)
@@ -403,17 +443,17 @@ namespace MESS.Formats
                 WriteVector3D(stream, planePoints[i]);
         }
 
-        private static void WriteEntity(Stream stream, Entity entity)
+        private static void WriteEntity(Stream stream, Entity entity, RmfFileSaveSettings settings)
         {
             var rmfEntity = entity as RmfEntity;
 
             stream.WriteNString("CMapEntity");
             stream.WriteInt(entity.VisGroups.FirstOrDefault()?.ID ?? 0);
-            WriteColor(stream, entity.Color);
+            WriteColor(stream, entity.Color, settings);
 
             stream.WriteInt(entity.Brushes.Count);
             foreach (var brush in entity.Brushes)
-                WriteBrush(stream, brush);
+                WriteBrush(stream, brush, settings);
 
             WriteEntityData(stream, entity);
 
@@ -444,20 +484,20 @@ namespace MESS.Formats
             }
         }
 
-        private static void WriteGroup(Stream stream, Group group)
+        private static void WriteGroup(Stream stream, Group group, RmfFileSaveSettings settings)
         {
             stream.WriteNString("CMapGroup");
             stream.WriteInt(group.VisGroups.FirstOrDefault()?.ID ?? 0);
-            WriteColor(stream, group.Color);
+            WriteColor(stream, group.Color, settings);
 
             stream.WriteInt(group.Objects.Count);
             foreach (var mapObject in group.Objects)
-                WriteMapObject(stream, mapObject);
+                WriteMapObject(stream, mapObject, settings);
         }
 
-        private static void WriteColor(Stream stream, Color color)
+        private static void WriteColor(Stream stream, Color color, RmfFileSaveSettings settings)
         {
-            var rgb = new byte[] { color.R, color.G, color.B };
+            var rgb = settings.FileVersion >= RmfFileVersion.V2_2 ? new byte[] { color.R, color.G, color.B } : new byte[] { color.B, color.G, color.R };
             stream.WriteBytes(rgb);
         }
 
@@ -498,6 +538,11 @@ namespace MESS.Formats
             WriteVector3D(stream, camera.EyePosition);
             WriteVector3D(stream, camera.LookAtPosition);
         }
+
+
+        private static int GetTextureNameLength(RmfFileVersion fileVersion) => fileVersion > RmfFileVersion.V1_6? 260 : 40;
+
+        private static bool HasUVAxis(RmfFileVersion fileVersion) => fileVersion >= RmfFileVersion.V2_2;
     }
 
 
@@ -509,7 +554,19 @@ namespace MESS.Formats
     public enum RmfFileVersion
     {
         /// <summary>
-        /// Version 2.2.
+        /// Version 1.6. Used by Worldcraft 1.5b.
+        /// </summary>
+        V1_6,
+
+        /// <summary>
+        /// Version 1.8. Used by Worldcraft 1.6 to 2.1.
+        /// This version increases the maximum length of texture names.
+        /// </summary>
+        V1_8,
+
+        /// <summary>
+        /// Version 2.2. Used by Worldcraft 3.3 and Hammer 3.4 and 3.5.
+        /// This version adds support for texture UV axis.
         /// </summary>
         V2_2,
     }
