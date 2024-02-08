@@ -49,12 +49,25 @@ namespace MESS
         }
 
 
-        private static Func<Stream, Map> GetMapLoadFunction(string extension) => extension.ToLowerInvariant() switch { 
-            ".jmf" => JmfFormat.Load,
-            ".rmf" => RmfFormat.Load,
-            ".map" => MapFormat.Load,
-            _ => throw new InvalidDataException("Unknown map file format.")
-        };
+        private static Func<Stream, Map> GetMapLoadFunction(string extension)
+        {
+            switch (extension.ToLowerInvariant())
+            {
+                case ".jmf":
+                case ".jmx":
+                    return JmfFormat.Load;
+
+                case ".rmf":
+                case ".rmx":
+                    return RmfFormat.Load;
+
+                case ".map":
+                    return MapFormat.Load;
+
+                default:
+                    throw new InvalidDataException("Unknown map file format.");
+            }
+        }
     }
 
 
