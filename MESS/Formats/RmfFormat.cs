@@ -345,9 +345,9 @@ namespace MESS.Formats
 
         private static EntityPathNode ReadPathNode(Stream stream)
         {
-            var pathNode = new EntityPathNode();
+            var pathNode = new RmfEntityPathNode();
             pathNode.Position = ReadVector3D(stream);
-            pathNode.Index = stream.ReadInt();
+            pathNode.CreationOrder = stream.ReadInt();
             pathNode.NameOverride = stream.ReadFixedLengthString(128);
 
             var propertyCount = stream.ReadInt();
@@ -515,14 +515,15 @@ namespace MESS.Formats
             stream.WriteInt((int)entityPath.Type);
 
             stream.WriteInt(entityPath.Nodes.Count);
-            foreach (var pathNode in entityPath.Nodes)
-                WritePathNode(stream, pathNode);
+            for (int i = 0; i < entityPath.Nodes.Count; i++)
+                WritePathNode(stream, entityPath.Nodes[i], i);
         }
 
-        private static void WritePathNode(Stream stream, EntityPathNode pathNode)
+        private static void WritePathNode(Stream stream, EntityPathNode pathNode, int index)
         {
+            var rmfPathNode = pathNode as RmfEntityPathNode;
             WriteVector3D(stream, pathNode.Position);
-            stream.WriteInt(pathNode.Index);
+            stream.WriteInt(rmfPathNode?.CreationOrder ?? index + 1);
             stream.WriteFixedLengthString(pathNode.NameOverride ?? "", 128);
 
             stream.WriteInt(pathNode.Properties.Count);

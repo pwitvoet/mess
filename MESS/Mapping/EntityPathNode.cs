@@ -8,7 +8,6 @@ namespace MESS.Mapping
     public class EntityPathNode
     {
         public Vector3D Position { get; set; }
-        public int Index { get; set; }
         public string? NameOverride { get; set; }
         public Dictionary<string, string> Properties { get; } = new();
         public Color Color { get; set; } = new Color(255, 255, 255);

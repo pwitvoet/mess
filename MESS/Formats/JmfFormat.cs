@@ -20,9 +20,9 @@ namespace MESS.Formats
         {
             var map = new JmfMap();
 
-            var jhmfMagicString = stream.ReadFixedLengthString(4);
-            if (jhmfMagicString != "JHMF")
-                throw new InvalidDataException($"Expected 'JHMF' magic string, but found '{jhmfMagicString}'.");
+            var jhmfFileSignature = stream.ReadFixedLengthString(4);
+            if (jhmfFileSignature != "JHMF")
+                throw new InvalidDataException($"Expected 'JHMF' magic string, but found '{jhmfFileSignature}'.");
 
             var fileVersion = stream.ReadInt();
             if (fileVersion < 121 || fileVersion > 122)
@@ -385,8 +385,7 @@ namespace MESS.Formats
             face.TextureAlignment = (JmfTextureAlignment)stream.ReadInt();
             face.UnknownData = stream.ReadBytes(12);
             face.Contents = (JmfSurfaceContents)stream.ReadInt();
-            //face.TextureName = stream.ReadFixedLengthString(64);
-            face.TextureName = Encoding.ASCII.GetString(stream.ReadBytes(64));
+            face.TextureName = stream.ReadFixedLengthString(64);
 
             var planeNormal = ReadVector3D(stream);
             var planeDistance = stream.ReadFloat();
