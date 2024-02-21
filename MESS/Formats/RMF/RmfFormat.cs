@@ -1,10 +1,9 @@
 ﻿using MESS.Common;
-using MESS.Formats.RMF;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using System.Text;
 
-namespace MESS.Formats
+namespace MESS.Formats.RMF
 {
     /// <summary>
     /// The binary RMF file format (Rich Map Format) not only stores entities and brushes,
@@ -541,7 +540,7 @@ namespace MESS.Formats
         }
 
 
-        private static int GetTextureNameLength(RmfFileVersion fileVersion) => fileVersion > RmfFileVersion.V1_6? 260 : 40;
+        private static int GetTextureNameLength(RmfFileVersion fileVersion) => fileVersion > RmfFileVersion.V1_6 ? 260 : 40;
 
         private static bool HasUVAxis(RmfFileVersion fileVersion) => fileVersion >= RmfFileVersion.V2_2;
     }

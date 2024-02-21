@@ -1,4 +1,7 @@
 ﻿using MESS.Formats;
+using MESS.Formats.JMF;
+using MESS.Formats.MAP;
+using MESS.Formats.RMF;
 using MESS.Mapping;
 
 namespace MESS

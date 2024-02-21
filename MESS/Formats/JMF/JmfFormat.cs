@@ -1,10 +1,8 @@
 ﻿using MESS.Common;
-using MESS.Formats.JMF;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System.Text;
 
-namespace MESS.Formats
+namespace MESS.Formats.JMF
 {
     /// <summary>
     /// JMF is J.A.C.K.'s map format. Similar to the RMF format,

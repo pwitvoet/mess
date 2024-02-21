@@ -4,7 +4,7 @@ using MESS.Mathematics.Spatial;
 using System.Globalization;
 using System.Text;
 
-namespace MESS.Formats
+namespace MESS.Formats.MAP
 {
     /// <summary>
     /// The text-based MAP file format only stores entities and brushes.
