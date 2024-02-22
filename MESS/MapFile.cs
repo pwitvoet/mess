@@ -2,6 +2,7 @@
 using MESS.Formats.JMF;
 using MESS.Formats.MAP;
 using MESS.Formats.RMF;
+using MESS.Logging;
 using MESS.Mapping;
 
 namespace MESS
@@ -17,16 +18,34 @@ namespace MESS
         /// </para>
         /// </summary>
         /// <exception cref="FileNotFoundException"/>
-        public static Map Load(string path)
+        public static Map Load(string path, FileLoadSettings? settings = null, ILogger? logger = null)
         {
-            var mapLoadFunction = GetMapLoadFunction(Path.GetExtension(path));
-            return ZipFileSystem.ReadFile(path, mapLoadFunction);
+            return ZipFileSystem.ReadFile(path, stream =>
+            {
+                var extension = Path.GetExtension(path);
+                switch (extension.ToLowerInvariant())
+                {
+                    case ".jmf":
+                    case ".jmx":
+                        return JmfFormat.Load(stream);
+
+                    case ".rmf":
+                    case ".rmx":
+                        return RmfFormat.Load(stream, settings as RmfFileLoadSettings, logger);
+
+                    case ".map":
+                        return MapFormat.Load(stream);
+
+                    default:
+                        throw new ArgumentException($"Unknown map file format: '{extension}.");
+                }
+            });
         }
 
         /// <summary>
         /// Saves the given map to the specified file path. Supports .map (Valve 220), .rmf and .jmf formats.
         /// </summary>
-        public static void Save(Map map, string path, FileSaveSettings? settings = null)
+        public static void Save(Map map, string path, FileSaveSettings? settings = null, ILogger? logger = null)
         {
             var extension = Path.GetExtension(path);
             switch (extension.ToLowerInvariant())
@@ -38,7 +57,8 @@ namespace MESS
 
                 case ".rmf":
                 case ".rmx":
-                    RmfFormat.Save(map, path, settings as RmfFileSaveSettings);
+                    using (var file = File.Create(path))
+                        RmfFormat.Save(map, file, settings as RmfFileSaveSettings, logger);
                     break;
 
                 case ".map":
@@ -47,34 +67,8 @@ namespace MESS
                     break;
 
                 default:
-                    throw new InvalidDataException($"Unknown output format: '{extension}'.");
+                    throw new ArgumentException($"Unknown output format: '{extension}'.");
             }
         }
-
-
-        private static Func<Stream, Map> GetMapLoadFunction(string extension)
-        {
-            switch (extension.ToLowerInvariant())
-            {
-                case ".jmf":
-                case ".jmx":
-                    return JmfFormat.Load;
-
-                case ".rmf":
-                case ".rmx":
-                    return RmfFormat.Load;
-
-                case ".map":
-                    return MapFormat.Load;
-
-                default:
-                    throw new InvalidDataException("Unknown map file format.");
-            }
-        }
-    }
-
-
-    public abstract class FileSaveSettings
-    {
     }
 }
