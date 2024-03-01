@@ -2,7 +2,6 @@
 using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
-using System.IO;
 using System.Text;
 
 namespace MESS.Formats.RMF
@@ -266,7 +265,60 @@ namespace MESS.Formats.RMF
 
                 var propertyCount = Stream.ReadInt();
                 for (int i = 0; i < propertyCount; i++)
-                    entity.Properties[stream.ReadNString()] = stream.ReadNString();
+                {
+                    var key = Stream.ReadNString();
+                    var value = Stream.ReadNString();
+
+                    if (key == Attributes.Spawnflags)
+                    {
+                        var isNumeric = int.TryParse(value, out var numericValue);
+                        if (!isNumeric)
+                            numericValue = 0;
+
+                        if (!isNumeric || numericValue != entity.Spawnflags)
+                        {
+                            if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.UseField)
+                            {
+                                Logger.Warning($"Entity of type '{entity.ClassName}' contains a 'spawnflags' key, which will be ignored (spawnflags: {entity.Spawnflags}, key value: {value}).");
+                            }
+                            else if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.UseProperty)
+                            {
+                                // TODO: Handle duplicate spawnflags properties?
+                                Logger.Warning($"Entity of type '{entity.ClassName}' contains a 'spawnflags' key, which will override the spawnflags field (spawnflags: {entity.Spawnflags}, key value: {value}).");
+                                entity.Spawnflags = numericValue;
+                            }
+                            else if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.Fail)
+                            {
+                                var errorMessage = $"Entity of type '{entity.ClassName}' contains a 'spawnflags' key (spawnflags: {entity.Spawnflags}, key value: {value}).";
+                                Logger.Error(errorMessage);
+                                throw new MapLoadException(errorMessage);
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    if (entity.Properties.ContainsKey(key))
+                    {
+                        if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.UseFirst)
+                        {
+                            Logger.Warning($"Entity of type '{entity.ClassName}' contains duplicate key '{key}', using first value: '{entity.Properties[key]}'.");
+                            continue;
+                        }
+                        else if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.UseLast)
+                        {
+                            Logger.Warning($"Entity of type '{entity.ClassName}' contains duplicate key '{key}', using last value: '{value}'.");
+                        }
+                        else if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.Fail)
+                        {
+                            var errorMessage = $"Entity of type '{entity.ClassName}' contains duplicate key '{key}' (first value: '{entity.Properties[key]}', duplicate value: '{value}'.";
+                            Logger.Error(errorMessage);
+                            throw new DuplicateKeyException(errorMessage);
+                        }
+                    }
+
+                    entity.Properties[key] = value;
+                }
             }
 
             private (Group group, int visGroupID) ReadGroup()
@@ -392,7 +444,7 @@ namespace MESS.Formats.RMF
 
             private void WriteVisGroup(VisGroup visGroup)
             {
-                Stream.WriteFixedLengthString(visGroup.Name ?? "", 128);
+                ValidateAndWriteFixedLengthString($"VIS group '{visGroup.Name}'", visGroup.Name ?? "", 128);
                 WriteColor(visGroup.Color);
                 Stream.WriteByte(0);            // Unknown (padding?)
                 Stream.WriteInt(visGroup.ID);
@@ -414,7 +466,7 @@ namespace MESS.Formats.RMF
             private void WriteBrush(Brush brush)
             {
                 Stream.WriteNString("CMapSolid");
-                Stream.WriteInt(brush.VisGroups.FirstOrDefault()?.ID ?? 0);
+                ValidateAndWriteVisGroupID("Brush", brush);
                 WriteColor(brush.Color);
                 Stream.WriteInt(0);     // Child object count
 
@@ -427,7 +479,7 @@ namespace MESS.Formats.RMF
             {
                 var rmfFace = face as RmfFace;
 
-                Stream.WriteFixedLengthString(face.TextureName, GetTextureNameLength(Settings.FileVersion));
+                WriteTextureName(face.TextureName);
 
                 var hasUVAxis = HasUVAxis(Settings.FileVersion);
                 if (hasUVAxis)
@@ -458,12 +510,54 @@ namespace MESS.Formats.RMF
                     WriteVector3D(planePoints[i]);
             }
 
+            private void WriteTextureName(string textureName)
+            {
+                var maxLength = GetTextureNameLength(Settings.FileVersion);
+                var rawTextureName = Encoding.ASCII.GetBytes(textureName);
+
+                if (rawTextureName.Length > maxLength)
+                {
+                    if (Settings.TextureNameTooLongHandling == ValueTooLongHandling.Truncate)
+                    {
+                        Logger.Warning($"Texture name '{textureName}' is too long and will be truncated.");
+                    }
+                    else if (Settings.TextureNameTooLongHandling == ValueTooLongHandling.Fail)
+                    {
+                        var errorMessage = $"Texture name '{textureName}' is too long.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                if (textureName.Contains(' '))  // TODO: What about tabs and control characters?
+                {
+                    if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Replace)
+                    {
+                        var newTextureName = textureName.Replace(" ", Settings.TextureNameInvalidCharacterReplacement);
+                        Logger.Warning($"Texture name '{textureName}' contains invalid characters, replacing with '{newTextureName}'.");
+                        textureName = newTextureName;
+                    }
+                    else if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Ignore)
+                    {
+                        Logger.Warning($"Texture name '{textureName}' contains invalid characters, ignoring.");
+                    }
+                    else if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Fail)
+                    {
+                        var errorMessage = $"Texture name '{textureName}' contains invalid characters.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                Stream.WriteFixedLengthString(textureName, maxLength);
+            }
+
             private void WriteEntity(Entity entity)
             {
                 var rmfEntity = entity as RmfEntity;
 
                 Stream.WriteNString("CMapEntity");
-                Stream.WriteInt(entity.VisGroups.FirstOrDefault()?.ID ?? 0);
+                ValidateAndWriteVisGroupID($"Entity of type '{entity.ClassName}'", entity);
                 WriteColor(entity.Color);
 
                 Stream.WriteInt(entity.Brushes.Count);
@@ -482,27 +576,29 @@ namespace MESS.Formats.RMF
 
             private void WriteEntityData(Entity entity)
             {
-                Stream.WriteNString(entity.ClassName);
+                var logDescription = $"Entity of type '{entity.ClassName}'";
+
+                ValidateAndWriteNString("classname", entity.ClassName, entity.ClassName);
                 Stream.WriteBytes(new byte[4]);             // Unknown
                 Stream.WriteInt(entity.Spawnflags);
 
                 // NOTE: This behavior matches Hammer, but J.A.C.K. will include some of these property names, which can cause interoperability problems between J.A.C.K. and Hammer.
                 var properties = entity.Properties
-                    .Where(property => (property.Key != Attributes.Classname || entity.ClassName == Entities.Worldspawn) && property.Key != Attributes.Spawnflags && property.Key != Attributes.Origin)
+                    .Where(property => property.Key != Attributes.Classname && property.Key != Attributes.Spawnflags && property.Key != Attributes.Origin)
                     .ToDictionary(property => property.Key, property => property.Value);
 
                 Stream.WriteInt(properties.Count);
                 foreach (var property in properties)
                 {
-                    Stream.WriteNString(property.Key);
-                    Stream.WriteNString(property.Value);
+                    ValidateAndWriteNString(logDescription, "key", property.Key);
+                    ValidateAndWriteNString(logDescription, "value", property.Value);
                 }
             }
 
             private void WriteGroup(Group group)
             {
                 Stream.WriteNString("CMapGroup");
-                Stream.WriteInt(group.VisGroups.FirstOrDefault()?.ID ?? 0);
+                ValidateAndWriteVisGroupID("Group", group);
                 WriteColor(group.Color);
 
                 Stream.WriteInt(group.Objects.Count);
@@ -525,27 +621,31 @@ namespace MESS.Formats.RMF
 
             private void WritePath(EntityPath entityPath)
             {
-                Stream.WriteFixedLengthString(entityPath.Name, 128);
-                Stream.WriteFixedLengthString(entityPath.ClassName, 128);
+                var logDescription = $"Path of type '{entityPath.ClassName}' (name: '{entityPath.Name}')";
+
+                ValidateAndWriteFixedLengthString(logDescription, entityPath.Name, 128);
+                ValidateAndWriteFixedLengthString(logDescription, entityPath.ClassName, 128);
                 Stream.WriteInt((int)entityPath.Type);
 
                 Stream.WriteInt(entityPath.Nodes.Count);
                 for (int i = 0; i < entityPath.Nodes.Count; i++)
-                    WritePathNode(entityPath.Nodes[i], i);
+                    WritePathNode(entityPath.Nodes[i], i, entityPath.ClassName);
             }
 
-            private void WritePathNode(EntityPathNode pathNode, int index)
+            private void WritePathNode(EntityPathNode pathNode, int index, string className)
             {
+                var logDescription = $"Path node of type '{className}' (position: {pathNode.Position})";
+
                 var rmfPathNode = pathNode as RmfEntityPathNode;
                 WriteVector3D(pathNode.Position);
                 Stream.WriteInt(rmfPathNode?.CreationOrder ?? index + 1);
-                Stream.WriteFixedLengthString(pathNode.NameOverride ?? "", 128);
+                ValidateAndWriteFixedLengthString(logDescription, pathNode.NameOverride ?? "", 128);
 
                 Stream.WriteInt(pathNode.Properties.Count);
                 foreach (var property in pathNode.Properties)
                 {
-                    Stream.WriteNString(property.Key);
-                    Stream.WriteNString(property.Value);
+                    ValidateAndWriteNString(logDescription, "key", property.Key);
+                    ValidateAndWriteNString(logDescription, "value", property.Value);
                 }
             }
 
@@ -554,11 +654,105 @@ namespace MESS.Formats.RMF
                 WriteVector3D(camera.EyePosition);
                 WriteVector3D(camera.LookAtPosition);
             }
+
+
+            private void ValidateAndWriteVisGroupID(string objectDescription, MapObject mapObject)
+            {
+                var visGroupID = mapObject.VisGroups.FirstOrDefault()?.ID ?? 0;
+                if (mapObject.VisGroups.Count > 1)
+                {
+                    if (Settings.TooManyVisGroupsHandling == TooManyVisGroupsHandling.UseFirst)
+                    {
+                        Logger.Warning($"{objectDescription} is part of {mapObject.VisGroups.Count} VIS groups, using first VIS group.");
+                    }
+                    else if (Settings.TooManyVisGroupsHandling == TooManyVisGroupsHandling.UseLast)
+                    {
+                        Logger.Warning($"{objectDescription} is part of {mapObject.VisGroups.Count} VIS groups, using last VIS group.");
+                        visGroupID = mapObject.VisGroups.LastOrDefault()?.ID ?? 0;
+                    }
+                    else if (Settings.TooManyVisGroupsHandling == TooManyVisGroupsHandling.Fail)
+                    {
+                        var errorMessage = $"{objectDescription} is part of {mapObject.VisGroups.Count} VIS groups.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                Stream.WriteInt(visGroupID);
+            }
+
+            private void ValidateAndWriteFixedLengthString(string objectDescription, string value, int maxLength)
+            {
+                var rawValue = Encoding.ASCII.GetBytes(value);
+
+                if (rawValue.Length > maxLength)
+                {
+                    if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Truncate)
+                    {
+                        Logger.Warning($"{objectDescription} contains a value that is too long: '{value}', truncating value.");
+                    }
+                    else if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Fail)
+                    {
+                        var errorMessage = $"{objectDescription} contains a value that is too long: '{value}'.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                Stream.WriteFixedLengthString(value, maxLength);
+            }
+
+            private void ValidateAndWriteNString(string objectDescription, string type, string value)
+            {
+                if (!IsValidNStringSize(value))
+                {
+                    if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Truncate)
+                    {
+                        Logger.Warning($"{objectDescription} contains a {type} that is too long: '{value}', truncating {type}.");
+                    }
+                    else if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Fail)
+                    {
+                        var errorMessage = $"{objectDescription} contains a {type} that is too long: '{value}'.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                if (value.Contains('"'))
+                {
+                    if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Replace)
+                    {
+                        var newValue = value.Replace("\"", Settings.KeyValueInvalidCharacterReplacement);
+                        Logger.Warning($"{objectDescription} contains a {type} with invalid characters: '{value}', replacing with '{newValue}'.");
+                        value = newValue;
+                    }
+                    else if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Ignore)
+                    {
+                        Logger.Warning($"{objectDescription} contains a {type} with invalid characters: '{value}', ignoring.");
+                    }
+                    else if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Fail)
+                    {
+                        var errorMessage = $"{objectDescription} contains a {type} with invalid characters: '{value}'.";
+                        Logger.Error(errorMessage);
+                        throw new MapSaveException(errorMessage);
+                    }
+                }
+
+                Stream.WriteNString(value, truncate: true);
+            }
         }
 
         private static int GetTextureNameLength(RmfFileVersion fileVersion) => fileVersion > RmfFileVersion.V1_6 ? 260 : 40;
 
         private static bool HasUVAxis(RmfFileVersion fileVersion) => fileVersion >= RmfFileVersion.V2_2;
+
+        private static bool IsValidNStringSize(string value)
+        {
+            var bytes = Encoding.ASCII.GetBytes(value);
+            var isNullTerminated = bytes.Length > 0 && bytes[bytes.Length - 1] == 0;
+
+            return (isNullTerminated ? bytes.Length : bytes.Length + 1) <= 255;
+        }
     }
 
 

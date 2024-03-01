@@ -78,7 +78,7 @@ namespace MESS.Formats
         public static void WriteDouble(this Stream stream, double value) => stream.Write(BitConverter.GetBytes(value), 0, 8);
 
         /// <summary>
-        /// Writes a fixed-length ASCII string.
+        /// Writes a fixed-length ASCII string. Values that are too long will be truncated.
         /// </summary>
         public static void WriteFixedLengthString(this Stream stream, string value, int? length = null, Encoding? encoding = null)
         {
@@ -97,18 +97,26 @@ namespace MESS.Formats
 
         /// <summary>
         /// Writes a length-prefixed ASCII string, where the length takes up 1 byte.
+        /// Throws an exception if the value is too long, unless the <paramref name="truncate"/> parameter is true.
         /// </summary>
-        public static void WriteNString(this Stream stream, string value, bool addNullTerminator = true, Encoding? encoding = null)
+        public static void WriteNString(this Stream stream, string value, bool addNullTerminator = true, Encoding? encoding = null, bool truncate = false)
         {
             if (addNullTerminator && value.Length == 0 || value[value.Length - 1] != '\0')
                 value += '\0';
 
             var bytes = (encoding ?? Encoding.ASCII).GetBytes(value);
-            if (bytes.Length > 255)
-                throw new InvalidDataException("An NString can only contain up to 255 characters.");
+            var length = bytes.Length;
+            if (length > 255)
+            {
+                if (!truncate)
+                    throw new InvalidDataException("An NString can only contain up to 255 characters.");
 
-            stream.WriteByte((byte)bytes.Length);
-            stream.Write(bytes, 0, bytes.Length);
+                bytes[254] = 0;
+                length = 255;
+            }
+
+            stream.WriteByte((byte)length);
+            stream.Write(bytes, 0, length);
         }
 
         /// <summary>
