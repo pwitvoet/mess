@@ -1,5 +1,5 @@
 ﻿using MESS.Macros;
-using MESS.Formats;
+using MESS.Formats.MAP;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MScript.Parsing;
