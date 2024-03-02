@@ -1269,6 +1269,13 @@ namespace MESS.Macros
                 _globals[name ?? ""] = 1.0;
                 return false;
             }
+            public double incglobal(string? name)
+            {
+                if (!_globals.TryGetValue(name ?? "", out var value) || value is not double count)
+                    count = 0;
+                _globals[name ?? ""] = count + 1;
+                return count;
+            }
         }
 
 
@@ -1288,6 +1295,25 @@ namespace MESS.Macros
 
             // .ted file path:
             public string ted_path() => _sourceFilePath;
+
+
+            // Flags:
+            public bool hasflag(double flag, double flags)
+            {
+                var bit = (int)flag;
+                if (bit < 0 || bit > 31)
+                    return false;
+
+                return (((int)flags >> bit) & 1) == 1;
+            }
+
+            public double setflag(double flag, double set, double flags)
+            {
+                if (set != 0)
+                    return (int)flags | (1 << (int)flag);
+                else
+                    return (int)flags & ~(1 << (int)flag);
+            }
         }
     }
 }

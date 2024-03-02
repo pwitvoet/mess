@@ -311,6 +311,10 @@ namespace MScript.Evaluation
 
             public static object?[] take(object?[] self, double count) => self.Take((int)count).ToArray();
 
+            public static object? first(object?[] self) => self.FirstOrDefault();
+
+            public static object? last(object?[] self) => self.LastOrDefault();
+
             public static object?[] concat(object?[] self, object?[] other) => self.Concat(other).ToArray();
 
             public static object?[] prepend(object?[] self, object? value) => self.Prepend(value).ToArray();
