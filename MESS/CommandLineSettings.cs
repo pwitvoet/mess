@@ -6,6 +6,7 @@ namespace MESS
     {
         public int? RecursionLimit { get; set; }
         public int? InstanceLimit { get; set; }
+        public bool? NoRewriteRules { get; set; }
         public LogLevel? LogLevel { get; set; }
 
         public string? InputPath { get; set; }

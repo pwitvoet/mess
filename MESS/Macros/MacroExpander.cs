@@ -49,7 +49,8 @@ namespace MESS.Macros
 
             expander.CreateInstance(context);
 
-            expander.ApplyRewriteDirectives(context.OutputMap, path, ProcessingStage.AfterMacroExpansion, null, null);
+            if (settings.ApplyRewriteRules)
+                expander.ApplyRewriteDirectives(context.OutputMap, path, ProcessingStage.AfterMacroExpansion, null, null);
 
             expander.MergeEntities(context);
 
@@ -354,10 +355,13 @@ namespace MESS.Macros
                 var map = MapFile.Load(path);
                 map.ExpandPaths();
 
-                var mapDirectory = Path.GetDirectoryName(path)!;
-                var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules, mapDirectory);
-                var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules, mapDirectory);
-                ApplyRewriteDirectives(map, path, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
+                if (Settings.ApplyRewriteRules)
+                {
+                    var mapDirectory = Path.GetDirectoryName(path)!;
+                    var tedPathWhitelist = GetTedPathList(map.Properties, Attributes.AllowRewriteRules, mapDirectory);
+                    var tedPathBlacklist = GetTedPathList(map.Properties, Attributes.DenyRewriteRules, mapDirectory);
+                    ApplyRewriteDirectives(map, path, ProcessingStage.BeforeMacroExpansion, tedPathWhitelist, tedPathBlacklist);
+                }
 
                 template = MapTemplate.FromMap(map, path, TopLevelEvaluationContext, Logger);
 

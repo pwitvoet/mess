@@ -164,6 +164,10 @@ namespace MESS
                     s => { settings.InstanceLimit = Math.Max(1, int.Parse(s)); },
                     $"Limits the total number of instantiations. This protects against acidentally triggering an excessive amount of instantiation. Default value is {settings.InstanceLimit}.")
                 .Option(
+                    "-norewrite",
+                    () => { settings.NoRewriteRules = true; },
+                    "Disables rewrite rules. This will also disable template entities and template behaviors because they depend on rewrite rules.")
+                .Option(
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                     $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {LogLevel.Info.ToString().ToLowerInvariant()}.")
@@ -179,6 +183,7 @@ namespace MESS
         {
             if (commandLineSettings.RecursionLimit != null) settings.RecursionLimit = commandLineSettings.RecursionLimit;
             if (commandLineSettings.InstanceLimit != null) settings.InstanceLimit = commandLineSettings.InstanceLimit;
+            if (commandLineSettings.NoRewriteRules != null) settings.ApplyRewriteRules = !commandLineSettings.NoRewriteRules.Value;
             if (commandLineSettings.LogLevel != null) settings.LogLevel = commandLineSettings.LogLevel.Value;
 
             if (commandLineSettings.InputPath != null) settings.InputPath = commandLineSettings.InputPath;

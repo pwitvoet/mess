@@ -6,6 +6,7 @@ namespace MESS.Macros
     {
         public int? RecursionLimit { get; set; } = 100;
         public int? InstanceLimit { get; set; } = 100_000;
+        public bool ApplyRewriteRules { get; set; } = true;
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
 
         public string InputPath { get; set; } = "";
