@@ -88,7 +88,7 @@ namespace MESS
         /// <summary>
         /// Registers an option that does not take a value.
         /// </summary>
-        public CommandLine Option(string name, Action action, string description)
+        public CommandLine Switch(string name, Action action, string description)
         {
             _options[name] = new CmdOption(name, false, s => action(), description);
             return this;

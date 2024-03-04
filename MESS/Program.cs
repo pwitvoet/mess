@@ -131,7 +131,7 @@ namespace MESS
         private static CommandLine GetCommandLineParser(CommandLineSettings settings)
         {
             return new CommandLine()
-                .Option(
+                .Switch(
                     "-repl",
                     () => { },  // This argument is taken care of in Main.
                     $"Enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop). All other arguments will be ignored.")
@@ -163,7 +163,7 @@ namespace MESS
                     "-maxinstances",
                     s => { settings.InstanceLimit = Math.Max(1, int.Parse(s)); },
                     $"Limits the total number of instantiations. This protects against acidentally triggering an excessive amount of instantiation. Default value is {settings.InstanceLimit}.")
-                .Option(
+                .Switch(
                     "-norewrite",
                     () => { settings.NoRewriteRules = true; },
                     "Disables rewrite rules. This will also disable template entities and template behaviors because they depend on rewrite rules.")
