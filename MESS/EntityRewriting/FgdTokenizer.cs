@@ -10,7 +10,10 @@ namespace MESS.EntityRewriting
             var isMessDirectiveEnabled = false;
             while (true)
             {
-                SkipWhitespace(context);
+                var whitespaceToken = ReadWhitespace(context);
+                if (whitespaceToken != null)
+                    yield return whitespaceToken.Value;
+
                 if (context.IsExhausted)
                     yield break;
 
@@ -42,10 +45,22 @@ namespace MESS.EntityRewriting
         }
 
 
-        private static void SkipWhitespace(Context context)
+        private static Token? ReadWhitespace(Context context)
         {
+            var line = context.Line;
+            var offset = context.Offset;
+
+            var buffer = new StringBuilder();
             while (!context.IsExhausted && char.IsWhiteSpace(context.Current))
+            {
+                buffer.Append(context.Current);
                 context.MoveNext();
+            }
+
+            if (buffer.Length > 0)
+                return new Token(line, offset, TokenType.Whitespace, buffer.ToString());
+            else
+                return null;
         }
 
         private static Token ReadToken(Context context)
@@ -53,18 +68,19 @@ namespace MESS.EntityRewriting
             var line = context.Line;
             var offset = context.Offset;
 
+            var currentChar = context.Current;
             switch (context.Current)
             {
-                case ',': context.MoveNext(); return new Token(line, offset, TokenType.Comma, context.Current.ToString());
-                case '=': context.MoveNext(); return new Token(line, offset, TokenType.Assignment, context.Current.ToString());
-                case ':': context.MoveNext(); return new Token(line, offset, TokenType.Colon, context.Current.ToString());
-                case '-': context.MoveNext(); return new Token(line, offset, TokenType.Minus, context.Current.ToString());
-                case '(': context.MoveNext(); return new Token(line, offset, TokenType.ParensOpen, context.Current.ToString());
-                case ')': context.MoveNext(); return new Token(line, offset, TokenType.ParensClose, context.Current.ToString());
-                case '[': context.MoveNext(); return new Token(line, offset, TokenType.BracketOpen, context.Current.ToString());
-                case ']': context.MoveNext(); return new Token(line, offset, TokenType.BracketClose, context.Current.ToString());
-                case '{': context.MoveNext(); return new Token(line, offset, TokenType.BraceOpen, context.Current.ToString());
-                case '}': context.MoveNext(); return new Token(line, offset, TokenType.BraceClose, context.Current.ToString());
+                case ',': context.MoveNext(); return new Token(line, offset, TokenType.Comma, currentChar.ToString());
+                case '=': context.MoveNext(); return new Token(line, offset, TokenType.Assignment, currentChar.ToString());
+                case ':': context.MoveNext(); return new Token(line, offset, TokenType.Colon, currentChar.ToString());
+                case '-': context.MoveNext(); return new Token(line, offset, TokenType.Minus, currentChar.ToString());
+                case '(': context.MoveNext(); return new Token(line, offset, TokenType.ParensOpen, currentChar.ToString());
+                case ')': context.MoveNext(); return new Token(line, offset, TokenType.ParensClose, currentChar.ToString());
+                case '[': context.MoveNext(); return new Token(line, offset, TokenType.BracketOpen, currentChar.ToString());
+                case ']': context.MoveNext(); return new Token(line, offset, TokenType.BracketClose, currentChar.ToString());
+                case '{': context.MoveNext(); return new Token(line, offset, TokenType.BraceOpen, currentChar.ToString());
+                case '}': context.MoveNext(); return new Token(line, offset, TokenType.BraceClose, currentChar.ToString());
 
                 case '"':
                     return ReadString(context);
@@ -196,6 +212,8 @@ namespace MESS.EntityRewriting
             BracketClose,   // ]
             BraceOpen,      // {
             BraceClose,     // }
+
+            Whitespace,     // \s+
         }
 
 

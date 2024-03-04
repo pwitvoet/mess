@@ -1237,7 +1237,7 @@ namespace MESS.Macros
         }
 
 
-        class MacroExpanderFunctions
+        public class MacroExpanderFunctions
         {
             private string _templatesDirectory;
             private string _messDirectory;
@@ -1283,7 +1283,7 @@ namespace MESS.Macros
         }
 
 
-        class RewriteDirectiveFunctions
+        public class RewriteDirectiveFunctions
         {
             private string _sourceFilePath;
 

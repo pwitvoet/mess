@@ -8,9 +8,10 @@
 
 
     /// <summary>
-    /// Entity rewrite rules are used to modify matching entities immediately after a map file is loaded.
+    /// Entity rewrite rules are used to modify matching entities immediately after a map file is loaded, or after the main map has been processed.
     /// The intended use-case is to turn custom entities into macro entities that reference a specific template map.
     /// However, rewrite rules can be used to overwrite or delete any attribute, not just the classname.
+    /// Rewrite rules operate on unevaluated keys and values.
     /// </summary>
     public class RewriteDirective
     {

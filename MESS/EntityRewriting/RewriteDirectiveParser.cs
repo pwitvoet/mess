@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using MESS.Macros;
+using MScript;
+using System.Text.RegularExpressions;
 
 namespace MESS.EntityRewriting
 {
@@ -16,14 +18,19 @@ namespace MESS.EntityRewriting
     /// </summary>
     public static class RewriteDirectiveParser
     {
-        public static IEnumerable<RewriteDirective> ParseRewriteDirectives(Stream stream)
+        public static IEnumerable<RewriteDirective> ParseRewriteDirectives(Stream tedStream, TextWriter fgdOutput, EvaluationContext evaluationContext)
         {
             var input = "";
-            using (var reader = new StreamReader(stream, leaveOpen: true))
+            using (var reader = new StreamReader(tedStream, leaveOpen: true))
                 input = reader.ReadToEnd();
 
-            var tokens = FgdTokenizer.Tokenize(input);
-            using (var context = new Context(tokens.Where(token => token.Type != FgdTokenizer.TokenType.Comment)))
+            // First copy the .ted file contents to the .fgd output:
+            var tokens = FgdTokenizer.Tokenize(input).ToArray();
+            foreach (var token in tokens)
+                WriteToken(token, fgdOutput, evaluationContext);
+
+            // Then parse the .ted file to extract rewrite directives:
+            using (var context = new Context(tokens.Where(token => token.Type != FgdTokenizer.TokenType.Comment && token.Type != FgdTokenizer.TokenType.Whitespace)))
             {
                 RewriteDirective? unassociatedRewriteDirective = null;
                 while (!context.IsExhausted)
@@ -59,6 +66,28 @@ namespace MESS.EntityRewriting
             }
         }
 
+
+        private static void WriteToken(FgdTokenizer.Token token, TextWriter fgdOutput, EvaluationContext evaluationContext)
+        {
+            switch (token.Type)
+            {
+                case FgdTokenizer.TokenType.String:
+                    fgdOutput.Write('"');
+                    fgdOutput.Write(Evaluation.EvaluateInterpolatedString(token.Value, evaluationContext));
+                    fgdOutput.Write('"');
+                    break;
+
+                case FgdTokenizer.TokenType.Comment:
+                case FgdTokenizer.TokenType.MessDirective:
+                    fgdOutput.Write("//");
+                    fgdOutput.Write(token.Value);
+                    break;
+
+                default:
+                    fgdOutput.Write(token.Value);
+                    break;
+            }
+        }
 
         /// <summary>
         /// Parses the next entity definition and returns its name.
