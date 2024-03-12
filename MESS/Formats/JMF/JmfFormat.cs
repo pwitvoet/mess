@@ -1,4 +1,5 @@
 ﻿using MESS.Common;
+using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 
@@ -11,771 +12,781 @@ namespace MESS.Formats.JMF
     /// </summary>
     public class JmfFormat
     {
+        // TODO: This list depends on fgd settings, and may not always be the same for every entity!
         private static string[] SerializedAttributeNames { get; } = new[] { "spawnflags", "origin", "angles", "scale", "targetname", "target", "skyname", "model", "model", "texture", "model", "model", "script" };
 
 
-        public static Map Load(Stream stream)
+        public static Map Load(Stream stream, FileLoadSettings? settings = null, ILogger? logger = null)
+            => new JmfLoader(stream, settings, logger).LoadMap();
+
+        public static void Save(Map map, Stream stream, JmfFileSaveSettings? settings = null, ILogger? logger = null)
+            => new JmfSaver(stream, settings, logger).SaveMap(map);
+
+
+        class JmfLoader : IOContext<FileLoadSettings>
         {
-            var map = new JmfMap();
-
-            var jhmfFileSignature = stream.ReadFixedLengthString(4);
-            if (jhmfFileSignature != "JHMF")
-                throw new InvalidDataException($"Expected 'JHMF' magic string, but found '{jhmfFileSignature}'.");
-
-            var fileVersion = stream.ReadInt();
-            if (fileVersion < 121 || fileVersion > 122)
-                throw new NotSupportedException($"Only JMF file versions 121 and 122 are supported.");
-
-            // Recent export paths:
-            var exportPathCount = stream.ReadInt();
-            for (int i = 0; i < exportPathCount; i++)
-                map.RecentExportPaths.Add(stream.ReadLengthPrefixedString() ?? "");
-
-            if (fileVersion >= 122)
+            public JmfLoader(Stream stream, FileLoadSettings? settings, ILogger? logger)
+                : base(stream, settings ?? new FileLoadSettings(), logger)
             {
-                // 2D view background images:
-                map.FrontViewBackgroundImage = ReadBackgroundImageSettings(stream);
-                map.SideViewBackgroundImage = ReadBackgroundImageSettings(stream);
-                map.TopViewBackgroundImage = ReadBackgroundImageSettings(stream);
             }
 
-            // Groups can be nested:
-            var groupCount = stream.ReadInt();
-            var parentGroupIDs = new Dictionary<int, int>();
-            for (int i = 0; i < groupCount; i++)
+            public Map LoadMap()
             {
-                (var group, var parentGroupID) = ReadGroup(stream);
-                if (parentGroupID != 0)
-                    parentGroupIDs[group.ID] = parentGroupID;
+                var map = new JmfMap();
 
-                map.Groups.Add(group);
-            }
-            var groups = map.Groups.ToDictionary(group => group.ID, group => group);
-            foreach (var kv in parentGroupIDs)
-                groups[kv.Value].AddObject(groups[kv.Key]);
+                var jhmfFileSignature = Stream.ReadFixedLengthString(4);
+                if (jhmfFileSignature != "JHMF")
+                    throw new InvalidDataException($"Expected 'JHMF' magic string, but found '{jhmfFileSignature}'.");
 
-            // Objects can be part of multiple VIS groups:
-            var visGroupCount = stream.ReadInt();
-            for (int i = 0; i < visGroupCount; i++)
-                map.VisGroups.Add(ReadVisGroup(stream));
-            var visGroups = map.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
+                var fileVersion = Stream.ReadInt();
+                if (fileVersion < 121 || fileVersion > 122)
+                    throw new NotSupportedException($"Only JMF file versions 121 and 122 are supported.");
 
-            var cordonMin = ReadVector3D(stream);
-            var cordonMax = ReadVector3D(stream);
-            map.CordonArea = new BoundingBox(cordonMin, cordonMax);
+                // Recent export paths:
+                var exportPathCount = Stream.ReadInt();
+                for (int i = 0; i < exportPathCount; i++)
+                    map.RecentExportPaths.Add(Stream.ReadLengthPrefixedString() ?? "");
 
-            var cameraCount = stream.ReadInt();
-            for (int i = 0; i < cameraCount; i++)
-            {
-                (var camera, var isSelected) = ReadCamera(stream);
-                map.Cameras.Add(camera);
-
-                if (isSelected)
-                    map.ActiveCameraIndex = i;
-            }
-
-            var pathCount = stream.ReadInt();
-            for (int i = 0; i < pathCount; i++)
-                map.EntityPaths.Add(ReadEntityPath(stream));
-
-            try
-            {
-                while (true)
+                if (fileVersion >= 122)
                 {
-                    var entity = ReadEntity(stream, groups, visGroups);
-                    if (entity.ClassName == Entities.Worldspawn)
-                        map.Worldspawn = entity;
+                    // 2D view background images:
+                    map.FrontViewBackgroundImage = ReadBackgroundImageSettings();
+                    map.SideViewBackgroundImage = ReadBackgroundImageSettings();
+                    map.TopViewBackgroundImage = ReadBackgroundImageSettings();
+                }
+
+                // Groups can be nested:
+                var groupCount = Stream.ReadInt();
+                var parentGroupIDs = new Dictionary<int, int>();
+                for (int i = 0; i < groupCount; i++)
+                {
+                    (var group, var parentGroupID) = ReadGroup();
+                    if (parentGroupID != 0)
+                        parentGroupIDs[group.ID] = parentGroupID;
+
+                    map.Groups.Add(group);
+                }
+                var groups = map.Groups.ToDictionary(group => group.ID, group => group);
+                foreach (var kv in parentGroupIDs)
+                    groups[kv.Value].AddObject(groups[kv.Key]);
+
+                // Objects can be part of multiple VIS groups:
+                var visGroupCount = Stream.ReadInt();
+                for (int i = 0; i < visGroupCount; i++)
+                    map.VisGroups.Add(ReadVisGroup());
+                var visGroups = map.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
+
+                var cordonMin = ReadVector3D();
+                var cordonMax = ReadVector3D();
+                map.CordonArea = new BoundingBox(cordonMin, cordonMax);
+
+                var cameraCount = Stream.ReadInt();
+                for (int i = 0; i < cameraCount; i++)
+                {
+                    (var camera, var isSelected) = ReadCamera();
+                    map.Cameras.Add(camera);
+
+                    if (isSelected)
+                        map.ActiveCameraIndex = i;
+                }
+
+                var pathCount = Stream.ReadInt();
+                for (int i = 0; i < pathCount; i++)
+                    map.EntityPaths.Add(ReadEntityPath());
+
+                try
+                {
+                    while (true)
+                    {
+                        var entity = ReadEntity(groups, visGroups);
+                        if (entity.ClassName == Entities.Worldspawn)
+                            map.Worldspawn = entity;
+                        else
+                            map.Entities.Add(entity);
+                    }
+                }
+                catch (EndOfStreamException)
+                {
+                    // End of file, no more entities.
+                }
+
+                return map;
+            }
+
+
+            private JmfBackgroundImageSettings ReadBackgroundImageSettings()
+            {
+                var settings = new JmfBackgroundImageSettings();
+
+                settings.ImagePath = Stream.ReadLengthPrefixedString() ?? "";
+                settings.Scale = Stream.ReadDouble();
+                settings.Luminance = Stream.ReadInt();
+                settings.Filtering = (ImageFiltering)Stream.ReadInt();
+                settings.InvertColors = Stream.ReadInt() == 1;
+                settings.OffsetX = Stream.ReadInt();
+                settings.OffsetY = Stream.ReadInt();
+                settings.UnknownData = Stream.ReadBytes(4);
+
+                return settings;
+            }
+
+            private (Group group, int parentGroupID) ReadGroup()
+            {
+                var group = new Group();
+                group.ID = Stream.ReadInt();
+                var parentGroupID = Stream.ReadInt();
+
+                var flags = (JmfMapObjectFlags)Stream.ReadInt();
+                group.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);
+                group.IsHidden = flags.HasFlag(JmfMapObjectFlags.Hidden);
+
+                var count = Stream.ReadInt();
+                group.Color = ReadColor();
+
+                return (group, parentGroupID);
+            }
+
+            private VisGroup ReadVisGroup()
+            {
+                var visGroup = new VisGroup();
+                visGroup.Name = Stream.ReadLengthPrefixedString();
+                visGroup.ID = Stream.ReadInt();
+                visGroup.Color = ReadColor();
+                visGroup.IsVisible = Stream.ReadSingleByte() == 1;
+                return visGroup;
+            }
+
+            private (Camera camera, bool isSelected) ReadCamera()
+            {
+                var camera = new Camera();
+                camera.EyePosition = ReadVector3D();
+                camera.LookAtPosition = ReadVector3D();
+                var isSelected = ((JmfMapObjectFlags)Stream.ReadInt()).HasFlag(JmfMapObjectFlags.Selected);
+                camera.Color = ReadColor();
+                return (camera, isSelected);
+            }
+
+            private EntityPath ReadEntityPath()
+            {
+                var path = new JmfEntityPath();
+                path.ClassName = Stream.ReadLengthPrefixedString() ?? "";
+                path.Name = Stream.ReadLengthPrefixedString() ?? "";
+                path.Type = (PathType)Stream.ReadInt();
+                path.UnknownData = Stream.ReadBytes(4);
+                path.Color = ReadColor();
+
+                var nodeCount = Stream.ReadInt();
+                for (int i = 0; i < nodeCount; i++)
+                    path.Nodes.Add(ReadPathNode());
+
+                return path;
+            }
+
+            private EntityPathNode ReadPathNode()
+            {
+                var node = new EntityPathNode();
+                node.NameOverride = Stream.ReadLengthPrefixedString();
+
+                var fireOnTarget = Stream.ReadLengthPrefixedString();
+                if (!string.IsNullOrEmpty(fireOnTarget))
+                    node.Properties[Attributes.Message] = fireOnTarget;
+
+                node.Position = ReadVector3D();
+
+                var angles = ReadAngles();
+                if (angles.Pitch != 0 || angles.Yaw != 0 || angles.Roll != 0)
+                    node.Properties[Attributes.Angles] = FormattableString.Invariant($"{angles.Pitch} {angles.Yaw} {angles.Roll}");
+
+                var flags = (JmfMapObjectFlags)Stream.ReadInt();
+                node.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);    // NOTE: Path nodes cannot be hidden in JACK, but this behavior may change.
+                node.Color = ReadColor();
+
+                var propertyCount = Stream.ReadInt();
+                for (int i = 0; i < propertyCount; i++)
+                {
+                    var key = Stream.ReadLengthPrefixedString();
+                    var value = Stream.ReadLengthPrefixedString();
+                    node.Properties[key ?? ""] = value ?? "";
+                }
+
+                return node;
+            }
+
+            private Entity ReadEntity(IDictionary<int, Group> groups, IDictionary<int, VisGroup> visGroups)
+            {
+                var entity = new JmfEntity();
+
+                entity.ClassName = Stream.ReadLengthPrefixedString() ?? "";
+                entity.JmfOrigin = ReadVector3D();
+
+                entity.JmfFlags = (JmfMapObjectFlags)Stream.ReadInt();
+                entity.IsSelected = entity.JmfFlags.HasFlag(JmfMapObjectFlags.Selected);
+                entity.IsHidden = entity.JmfFlags.HasFlag(JmfMapObjectFlags.Hidden);
+
+                var groupID = Stream.ReadInt();
+                if (groupID != 0 && groups.TryGetValue(groupID, out var group) && group != null)
+                    group.AddObject(entity);
+
+                var rootGroupID = Stream.ReadInt();
+                entity.Color = ReadColor();
+
+                // NOTE: Each entity contains a list of 'special' attribute names, which are almost always the same and don't seem to serve any purpose:
+                for (int i = 0; i < 13; i++)
+                    entity.SpecialAttributeNames.Add(Stream.ReadLengthPrefixedString());
+
+                // This is internal editor state that can mostly be derived from entity properties,
+                // but sometimes different properties are used depending on the type of entity,
+                // and some data depends on fgd settings that are not replicated in the entity properties.
+                // Still, for normal operations, this can be ignored because only the data in entity.Properties
+                // is exported to a .map file:
+                entity.JmfSpawnflags = Stream.ReadInt();
+                entity.JmfAngles = ReadAngles();
+                entity.JmfRendering = (JmfRenderMode)Stream.ReadInt();
+
+                entity.JmfFxColor = ReadColor();
+                entity.JmfRenderMode = Stream.ReadInt();
+                entity.JmfRenderFX = Stream.ReadInt();
+                entity.JmfBody = Stream.ReadShort();
+                entity.JmfSkin = Stream.ReadShort();
+                entity.JmfSequence = Stream.ReadInt();
+                entity.JmfFramerate = Stream.ReadFloat();
+                entity.JmfScale = Stream.ReadFloat();
+                entity.JmfRadius = Stream.ReadFloat();
+                entity.UnknownData = Stream.ReadBytes(28);
+
+                var propertyCount = Stream.ReadInt();
+                for (int i = 0; i < propertyCount; i++)
+                {
+                    var key = Stream.ReadLengthPrefixedString();
+                    var value = Stream.ReadLengthPrefixedString();
+                    entity.JmfProperties.Add(new KeyValuePair<string?, string?>(key, value));
+                    entity.Properties[key ?? ""] = value ?? "";
+                }
+
+                var visGroupCount = Stream.ReadInt();
+                for (int i = 0; i < visGroupCount; i++)
+                {
+                    var visGroupID = Stream.ReadInt();
+                    if (visGroups.TryGetValue(visGroupID, out var visGroup))
+                        visGroup.AddObject(entity);
+                }
+
+                var brushCount = Stream.ReadInt();
+                for (int i = 0; i < brushCount; i++)
+                    entity.AddBrush(ReadBrush(groups, visGroups));
+
+                if (entity.IsPointBased)
+                    entity.Origin = entity.JmfOrigin;
+
+                return entity;
+            }
+
+            private Brush ReadBrush(IDictionary<int, Group> groups, IDictionary<int, VisGroup> visGroups)
+            {
+                var isPatch = Stream.ReadInt() == 1;
+                var flags = (JmfMapObjectFlags)Stream.ReadInt();
+                var groupID = Stream.ReadInt();
+                var rootGroupID = Stream.ReadInt();
+                var color = ReadColor();
+
+                var visGroupCount = Stream.ReadInt();
+                var visGroupIDs = Enumerable.Range(0, visGroupCount)
+                    .Select(i => Stream.ReadInt())
+                    .ToArray();
+
+                var faceCount = Stream.ReadInt();
+                var faces = Enumerable.Range(0, faceCount)
+                    .Select(i => ReadFace())
+                    .ToArray();
+
+                var brush = new JmfBrush(faces);
+                brush.Color = color;
+                if (isPatch)
+                    brush.Patch = ReadPatch();
+
+
+                if (groupID != 0 && groups.TryGetValue(groupID, out var group) && group != null)
+                    group.AddObject(brush);
+
+                foreach (var visGroupID in visGroupIDs)
+                {
+                    if (visGroups.TryGetValue(visGroupID, out var visGroup))
+                        visGroup.AddObject(brush);
+                }
+
+                brush.JmfFlags = flags;
+                brush.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);
+                brush.IsHidden = flags.HasFlag(JmfMapObjectFlags.Hidden);
+
+                return brush;
+            }
+
+            private Face ReadFace()
+            {
+                var face = new JmfFace();
+
+                face.RenderFlags = Stream.ReadInt();
+                var vertexCount = Stream.ReadInt();
+                face.TextureRightAxis = ReadVector3D();
+                var textureShiftX = Stream.ReadFloat();
+                face.TextureDownAxis = ReadVector3D();
+                var textureShiftY = Stream.ReadFloat();
+                face.TextureShift = new Vector2D(textureShiftX, textureShiftY);
+                face.TextureScale = new Vector2D(Stream.ReadFloat(), Stream.ReadFloat());
+                face.TextureAngle = Stream.ReadFloat();
+                face.TextureAlignment = (JmfTextureAlignment)Stream.ReadInt();
+                face.UnknownData = Stream.ReadBytes(12);
+                face.Contents = (JmfSurfaceContents)Stream.ReadInt();
+                face.TextureName = Stream.ReadFixedLengthString(64);
+
+                var planeNormal = ReadVector3D();
+                var planeDistance = Stream.ReadFloat();
+                face.Plane = new Plane(planeNormal, planeDistance);
+                face.AxisAlignment = (JmfAxisAlignment)Stream.ReadInt();
+
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    face.Vertices.Add(ReadVector3D());
+                    face.VertexUVCoordinates.Add(new Vector2D(Stream.ReadFloat(), Stream.ReadFloat()));
+                    face.VertexSelectionState.Add((JmfVertexSelection)Stream.ReadInt());
+                }
+
+                face.PlanePoints = face.Vertices.Take(3).Reverse().ToArray();
+
+                return face;
+            }
+
+            private JmfPatch ReadPatch()
+            {
+                var columns = Stream.ReadInt();
+                var rows = Stream.ReadInt();
+
+                var patch = new JmfPatch(columns, rows);
+
+                patch.TextureRightAxis = ReadVector3D();
+                var textureShiftX = Stream.ReadFloat();
+                patch.TextureDownAxis = ReadVector3D();
+                var textureShiftY = Stream.ReadFloat();
+                patch.TextureShift = new Vector2D(textureShiftX, textureShiftY);
+                patch.TextureScale = new Vector2D(Stream.ReadFloat(), Stream.ReadFloat());
+                patch.TextureAngle = Stream.ReadFloat();
+                patch.TextureAlignment = (JmfTextureAlignment)Stream.ReadInt();
+                patch.UnknownData = Stream.ReadBytes(12);
+
+                patch.Contents = (JmfSurfaceContents)Stream.ReadInt();
+                patch.TextureName = Stream.ReadFixedLengthString(64);
+                patch.UnknownData2 = Stream.ReadBytes(4);
+
+
+                for (int column = 0; column < 32; column++)
+                {
+                    for (int row = 0; row < 32; row++)
+                    {
+                        var controlPoint = ReadPatchControlPoint();
+                        if (column < columns && row < rows)
+                            patch.ControlPoints[column, row] = controlPoint;
+                    }
+                }
+
+                return patch;
+            }
+
+            private JmfPatchControlPoint ReadPatchControlPoint()
+            {
+                var controlPoint = new JmfPatchControlPoint();
+                controlPoint.Position = ReadVector3D();
+                controlPoint.Normal = ReadVector3D();
+                controlPoint.UV = new Vector2D(Stream.ReadFloat(), Stream.ReadFloat());
+                controlPoint.IsSelected = Stream.ReadInt() == 1;
+                return controlPoint;
+            }
+
+
+            private Vector3D ReadVector3D() => new Vector3D(Stream.ReadFloat(), Stream.ReadFloat(), Stream.ReadFloat());
+
+            private Color ReadColor()
+            {
+                var color = Stream.ReadBytes(4);    // RGBA
+                return new Color(color[0], color[1], color[2], color[3]);
+            }
+
+            private Angles ReadAngles()
+            {
+                var pitch = Stream.ReadFloat();
+                var yaw = Stream.ReadFloat();
+                var roll = Stream.ReadFloat();
+                return new Angles(roll, pitch, yaw);
+            }
+        }
+
+        class JmfSaver : IOContext<JmfFileSaveSettings>
+        {
+            public JmfSaver(Stream stream, JmfFileSaveSettings? settings, ILogger? logger)
+                : base(stream, settings ?? new JmfFileSaveSettings(), logger)
+            {
+            }
+
+            public void SaveMap(Map map)
+            {
+                Stream.WriteFixedLengthString("JHMF");
+                Stream.WriteInt((int)Settings.FileVersion);
+
+                // Export paths:
+                var jmfMap = map as JmfMap;
+                var recentExportPaths = jmfMap?.RecentExportPaths ?? new List<string>();
+                Stream.WriteInt(recentExportPaths.Count);
+                foreach (var exportPath in recentExportPaths)
+                    Stream.WriteLengthPrefixedString(exportPath);
+
+                if (Settings.FileVersion >= JmfFileVersion.V122)
+                {
+                    // 2D view background images:
+                    WriteBackgroundImageSettings(jmfMap?.FrontViewBackgroundImage);
+                    WriteBackgroundImageSettings(jmfMap?.SideViewBackgroundImage);
+                    WriteBackgroundImageSettings(jmfMap?.TopViewBackgroundImage);
+                }
+
+                // Groups:
+                Stream.WriteInt(map.Groups.Count);
+                foreach (var group in map.Groups)
+                    WriteGroup(group);
+
+                // VIS groups:
+                Stream.WriteInt(map.VisGroups.Count);
+                foreach (var visGroup in map.VisGroups)
+                    WriteVisGroup(visGroup);
+
+                // Cordon:
+                WriteVector3D(map.CordonArea?.Min ?? new Vector3D());
+                WriteVector3D(map.CordonArea?.Max ?? new Vector3D());
+
+                // Cameras:
+                Stream.WriteInt(map.Cameras.Count);
+                for (int i = 0; i < map.Cameras.Count; i++)
+                    WriteCamera(map.Cameras[i], map.ActiveCameraIndex == i);
+
+                // Paths:
+                Stream.WriteInt(map.EntityPaths.Count);
+                foreach (var entityPath in map.EntityPaths)
+                    WriteEntityPath(entityPath);
+
+                // Entities (and their brushes):
+                WriteEntity(map.Worldspawn);
+                foreach (var entity in map.Entities)
+                    WriteEntity(entity);
+            }
+
+
+            private void WriteBackgroundImageSettings(JmfBackgroundImageSettings? settings)
+            {
+                Stream.WriteLengthPrefixedString(settings?.ImagePath ?? "");
+                Stream.WriteDouble(settings?.Scale ?? 1.0);
+                Stream.WriteInt(settings?.Luminance ?? 255);
+                Stream.WriteInt((int)(settings?.Filtering ?? ImageFiltering.Linear));
+                Stream.WriteInt(settings?.InvertColors == true ? 1 : 0);
+                Stream.WriteInt(settings?.OffsetX ?? 0);
+                Stream.WriteInt(settings?.OffsetY ?? 0);
+                Stream.WriteBytes(GetFixedLengthByteArray(settings?.UnknownData, 4));
+            }
+
+            private void WriteGroup(Group group)
+            {
+                Stream.WriteInt(group.ID);
+                Stream.WriteInt(group.Group?.ID ?? 0);
+                Stream.WriteInt((int)GetJmfMapObjectFlags(group));
+                Stream.WriteInt(group.Objects.Count);
+                WriteColor(group.Color);
+            }
+
+            private void WriteVisGroup(VisGroup visGroup)
+            {
+                Stream.WriteLengthPrefixedString(visGroup.Name);
+                Stream.WriteInt(visGroup.ID);
+                WriteColor(visGroup.Color);
+                Stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
+            }
+
+            private void WriteCamera(Camera camera, bool isSelected)
+            {
+                WriteVector3D(camera.EyePosition);
+                WriteVector3D(camera.LookAtPosition);
+
+                Stream.WriteInt((int)(isSelected ? JmfMapObjectFlags.Selected : JmfMapObjectFlags.None));
+                WriteColor(camera.Color);
+            }
+
+            private void WriteEntityPath(EntityPath entityPath)
+            {
+                var jmfEntityPath = entityPath as JmfEntityPath;
+
+                Stream.WriteLengthPrefixedString(entityPath.ClassName);
+                Stream.WriteLengthPrefixedString(entityPath.Name);
+                Stream.WriteInt((int)entityPath.Type);
+
+                Stream.WriteBytes(GetFixedLengthByteArray(jmfEntityPath?.UnknownData, 4));
+                WriteColor(entityPath.Color);
+
+                Stream.WriteInt(entityPath.Nodes.Count);
+                foreach (var pathNode in entityPath.Nodes)
+                    WritePathNode(pathNode);
+            }
+
+            private void WritePathNode(EntityPathNode pathNode)
+            {
+                Stream.WriteLengthPrefixedString(pathNode.NameOverride);
+                Stream.WriteLengthPrefixedString(pathNode.Properties.TryGetValue(Attributes.Message, out var fireOnTarget) ? fireOnTarget : null);
+
+                WriteVector3D(pathNode.Position);
+                WriteAngles(pathNode.Properties.GetAngles(Attributes.Angles) ?? new Angles());
+
+                Stream.WriteInt((int)(pathNode.IsSelected ? JmfMapObjectFlags.Selected : JmfMapObjectFlags.None));
+                WriteColor(pathNode.Color);
+
+                Stream.WriteInt(pathNode.Properties.Count);
+                foreach (var property in pathNode.Properties)
+                {
+                    Stream.WriteLengthPrefixedString(property.Key);
+                    Stream.WriteLengthPrefixedString(property.Value);
+                }
+            }
+
+            private void WriteEntity(Entity entity)
+            {
+                var jmfEntity = entity as JmfEntity;
+
+                Stream.WriteLengthPrefixedString(entity.ClassName);
+                WriteVector3D(jmfEntity?.JmfOrigin ?? entity.Origin);
+                Stream.WriteInt((int)(jmfEntity?.JmfFlags ?? GetJmfMapObjectFlags(entity)));
+                Stream.WriteInt(entity.Group?.ID ?? 0);
+                Stream.WriteInt(entity.Group == null ? 0 : GetRootGroupID(entity.Group));
+                WriteColor(entity.Color);
+
+                foreach (var attributeName in jmfEntity?.SpecialAttributeNames.ToArray() ?? SerializedAttributeNames)
+                    Stream.WriteLengthPrefixedString(attributeName);
+
+                Stream.WriteInt(jmfEntity?.JmfSpawnflags ?? entity.Spawnflags);
+                WriteAngles(jmfEntity?.JmfAngles ?? entity.Angles ?? new Angles());
+                Stream.WriteInt((int)(jmfEntity?.JmfRendering ?? GetJmfRenderMode(entity)));
+
+                var renderColor = GetColorProperty(Attributes.RenderColor, new Color(255, 255, 255));
+                renderColor.A = (byte)Math.Clamp(GetIntProperty(Attributes.RenderAmount, 255), 0, 255);
+                WriteColor(jmfEntity?.JmfFxColor ?? renderColor);
+
+                Stream.WriteInt(jmfEntity?.JmfRenderMode ?? GetIntProperty(Attributes.Rendermode, 0));
+                Stream.WriteInt(jmfEntity?.JmfRenderFX ?? GetIntProperty(Attributes.RenderFX, 0));
+                Stream.WriteShort((short)(jmfEntity?.JmfBody ?? GetIntProperty(Attributes.Body, 0)));
+                Stream.WriteShort((short)(jmfEntity?.JmfSkin ?? GetIntProperty(Attributes.Skin, 0)));
+                Stream.WriteInt(jmfEntity?.JmfSequence ?? GetIntProperty(Attributes.Sequence, 0));
+                Stream.WriteFloat(jmfEntity?.JmfFramerate ?? GetFloatProperty(Attributes.Framerate, 10));
+                Stream.WriteFloat(jmfEntity?.JmfScale ?? GetFloatProperty(Attributes.Scale, 1));
+                Stream.WriteFloat(jmfEntity?.JmfRadius ?? GetFloatProperty(Attributes.Radius, 0));
+                Stream.WriteBytes(GetFixedLengthByteArray(jmfEntity?.UnknownData, 28));
+
+                var serializedProperties = entity.Properties
+                    .Where(kv => kv.Key != Attributes.Classname && kv.Key != Attributes.Origin)
+                    .Cast<KeyValuePair<string?, string?>>()
+                    .ToArray();
+                if (jmfEntity != null)
+                    serializedProperties = jmfEntity.JmfProperties.ToArray();
+
+                Stream.WriteInt(serializedProperties.Length);
+                foreach (var property in serializedProperties)
+                {
+                    if (property.Key == Attributes.Classname)
+                        continue;
+
+                    Stream.WriteLengthPrefixedString(property.Key);
+                    Stream.WriteLengthPrefixedString(property.Value);
+                }
+
+                Stream.WriteInt(entity.VisGroups.Count);
+                foreach (var visGroup in entity.VisGroups)
+                    Stream.WriteInt(visGroup.ID);
+
+                Stream.WriteInt(entity.Brushes.Count);
+                foreach (var brush in entity.Brushes)
+                    WriteBrush(brush);
+
+
+                Color GetColorProperty(string name, Color defaultColor)
+                {
+                    if (entity.Properties.TryGetValue(name, out var rawColor))
+                    {
+                        var parts = rawColor.Split();
+                        if (parts.Length >= 3 && byte.TryParse(parts[0], out var r) && byte.TryParse(parts[1], out var g) && byte.TryParse(parts[2], out var b))
+                            return new Color(r, g, b);
+                    }
+
+                    return defaultColor;
+                }
+
+                int GetIntProperty(string name, int defaultValue)
+                    => entity.Properties.TryGetValue(name, out var rawValue) && int.TryParse(rawValue, out var value) ? value : defaultValue;
+
+                float GetFloatProperty(string name, float defaultValue)
+                    => entity.Properties.TryGetValue(name, out var rawValue) && float.TryParse(rawValue, out var value) ? value : defaultValue;
+            }
+
+            private void WriteBrush(Brush brush)
+            {
+                var jmfBrush = brush as JmfBrush;
+                var patch = jmfBrush?.Patch;
+
+                Stream.WriteInt(patch != null ? 1 : 0);
+                Stream.WriteInt((int)(jmfBrush?.JmfFlags ?? GetJmfMapObjectFlags(brush)));
+                Stream.WriteInt(brush.Group?.ID ?? 0);
+                Stream.WriteInt(brush.Group == null ? 0 : GetRootGroupID(brush.Group));
+                WriteColor(brush.Color);
+
+                Stream.WriteInt(brush.VisGroups.Count);
+                foreach (var visGroup in brush.VisGroups)
+                    Stream.WriteInt(visGroup.ID);
+
+                Stream.WriteInt(brush.Faces.Count);
+                foreach (var face in brush.Faces)
+                    WriteFace(face);
+
+                if (patch != null)
+                    WritePatch(patch);
+            }
+
+            private void WriteFace(Face face)
+            {
+                var jmfFace = face as JmfFace;
+
+                Stream.WriteInt(jmfFace?.RenderFlags ?? 0);
+                Stream.WriteInt(face.Vertices.Count);
+
+                WriteVector3D(face.TextureRightAxis);
+                Stream.WriteFloat(face.TextureShift.X);
+                WriteVector3D(face.TextureDownAxis);
+                Stream.WriteFloat(face.TextureShift.Y);
+                Stream.WriteFloat(face.TextureScale.X);
+                Stream.WriteFloat(face.TextureScale.Y);
+                Stream.WriteFloat(face.TextureAngle);
+
+                Stream.WriteInt((int)(jmfFace?.TextureAlignment ?? GetTextureAlignment()));
+                Stream.Write(GetFixedLengthByteArray(jmfFace?.UnknownData, 12));
+                Stream.WriteInt((int)(jmfFace?.Contents ?? JmfSurfaceContents.None));
+                Stream.WriteFixedLengthString(face.TextureName, 64);
+
+                WriteVector3D(face.Plane.Normal);
+                Stream.WriteFloat(face.Plane.Distance);
+                Stream.WriteInt((int)(jmfFace?.AxisAlignment ?? GetAxisAlignment()));
+
+                for (int i = 0; i < face.Vertices.Count; i++)
+                {
+                    WriteVector3D(face.Vertices[i]);
+                    if (jmfFace != null)
+                    {
+                        Stream.WriteFloat(jmfFace.VertexUVCoordinates[i].X);
+                        Stream.WriteFloat(jmfFace.VertexUVCoordinates[i].Y);
+                        Stream.WriteInt((int)jmfFace.VertexSelectionState[i]);
+                    }
                     else
-                        map.Entities.Add(entity);
+                    {
+                        Stream.WriteFloat(0f);
+                        Stream.WriteFloat(0f);
+                        Stream.WriteInt(0);
+                    }
                 }
-            }
-            catch (EndOfStreamException)
-            {
-                // End of file, no more entities.
-            }
 
-            return map;
-        }
 
-
-        public static void Save(Map map, string path, JmfFileSaveSettings? settings = null)
-        {
-            using (var file = File.Create(path))
-                Save(map, file, settings);
-        }
-
-        public static void Save(Map map, Stream stream, JmfFileSaveSettings? settings = null)
-        {
-            if (settings == null)
-                settings = new JmfFileSaveSettings();
-
-
-            stream.WriteFixedLengthString("JHMF");
-            stream.WriteInt((int)settings.FileVersion);
-
-            // Export paths:
-            var jmfMap = map as JmfMap;
-            var recentExportPaths = jmfMap?.RecentExportPaths ?? new List<string>();
-            stream.WriteInt(recentExportPaths.Count);
-            foreach (var exportPath in recentExportPaths)
-                stream.WriteLengthPrefixedString(exportPath);
-
-            if (settings.FileVersion >= JmfFileVersion.V122)
-            {
-                // 2D view background images:
-                WriteBackgroundImageSettings(stream, jmfMap?.FrontViewBackgroundImage);
-                WriteBackgroundImageSettings(stream, jmfMap?.SideViewBackgroundImage);
-                WriteBackgroundImageSettings(stream, jmfMap?.TopViewBackgroundImage);
-            }
-
-            // Groups:
-            stream.WriteInt(map.Groups.Count);
-            foreach (var group in map.Groups)
-                WriteGroup(stream, group);
-
-            // VIS groups:
-            stream.WriteInt(map.VisGroups.Count);
-            foreach (var visGroup in map.VisGroups)
-                WriteVisGroup(stream, visGroup);
-
-            // Cordon:
-            WriteVector3D(stream, map.CordonArea?.Min ?? new Vector3D());
-            WriteVector3D(stream, map.CordonArea?.Max ?? new Vector3D());
-
-            // Cameras:
-            stream.WriteInt(map.Cameras.Count);
-            for (int i = 0; i < map.Cameras.Count; i++)
-                WriteCamera(stream, map.Cameras[i], map.ActiveCameraIndex == i);
-
-            // Paths:
-            stream.WriteInt(map.EntityPaths.Count);
-            foreach (var entityPath in map.EntityPaths)
-                WriteEntityPath(stream, entityPath);
-
-            // Entities (and their brushes):
-            WriteEntity(stream, map.Worldspawn);
-            foreach (var entity in map.Entities)
-                WriteEntity(stream, entity);
-        }
-
-
-        private static JmfBackgroundImageSettings ReadBackgroundImageSettings(Stream stream)
-        {
-            var settings = new JmfBackgroundImageSettings();
-
-            settings.ImagePath = stream.ReadLengthPrefixedString() ?? "";
-            settings.Scale = stream.ReadDouble();
-            settings.Luminance = stream.ReadInt();
-            settings.Filtering = (ImageFiltering)stream.ReadInt();
-            settings.InvertColors = stream.ReadInt() == 1;
-            settings.OffsetX = stream.ReadInt();
-            settings.OffsetY = stream.ReadInt();
-            settings.UnknownData = stream.ReadBytes(4);
-
-            return settings;
-        }
-
-        private static (Group group, int parentGroupID) ReadGroup(Stream stream)
-        {
-            var group = new Group();
-            group.ID = stream.ReadInt();
-            var parentGroupID = stream.ReadInt();
-
-            var flags = (JmfMapObjectFlags)stream.ReadInt();
-            group.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);
-            group.IsHidden = flags.HasFlag(JmfMapObjectFlags.Hidden);
-
-            var count = stream.ReadInt();
-            group.Color = ReadColor(stream);
-
-            return (group, parentGroupID);
-        }
-
-        private static VisGroup ReadVisGroup(Stream stream)
-        {
-            var visGroup = new VisGroup();
-            visGroup.Name = stream.ReadLengthPrefixedString();
-            visGroup.ID = stream.ReadInt();
-            visGroup.Color = ReadColor(stream);
-            visGroup.IsVisible = stream.ReadSingleByte() == 1;
-            return visGroup;
-        }
-
-        private static (Camera camera, bool isSelected) ReadCamera(Stream stream)
-        {
-            var camera = new Camera();
-            camera.EyePosition = ReadVector3D(stream);
-            camera.LookAtPosition = ReadVector3D(stream);
-            var isSelected = ((JmfMapObjectFlags)stream.ReadInt()).HasFlag(JmfMapObjectFlags.Selected);
-            camera.Color = ReadColor(stream);
-            return (camera, isSelected);
-        }
-
-        private static EntityPath ReadEntityPath(Stream stream)
-        {
-            var path = new JmfEntityPath();
-            path.ClassName = stream.ReadLengthPrefixedString() ?? "";
-            path.Name = stream.ReadLengthPrefixedString() ?? "";
-            path.Type = (PathType)stream.ReadInt();
-            path.UnknownData = stream.ReadBytes(4);
-            path.Color = ReadColor(stream);
-
-            var nodeCount = stream.ReadInt();
-            for (int i = 0; i < nodeCount; i++)
-                path.Nodes.Add(ReadPathNode(stream));
-
-            return path;
-        }
-
-        private static EntityPathNode ReadPathNode(Stream stream)
-        {
-            var node = new EntityPathNode();
-            node.NameOverride = stream.ReadLengthPrefixedString();
-
-            var fireOnTarget = stream.ReadLengthPrefixedString();
-            if (!string.IsNullOrEmpty(fireOnTarget))
-                node.Properties[Attributes.Message] = fireOnTarget;
-
-            node.Position = ReadVector3D(stream);
-
-            var angles = ReadAngles(stream);
-            if (angles.Pitch != 0 || angles.Yaw != 0 || angles.Roll != 0)
-                node.Properties[Attributes.Angles] = FormattableString.Invariant($"{angles.Pitch} {angles.Yaw} {angles.Roll}");
-
-            var flags = (JmfMapObjectFlags)stream.ReadInt();
-            node.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);    // NOTE: Path nodes cannot be hidden in JACK, but this behavior may change. TEST THIS BY GENERATING A JMF!!!
-            node.Color = ReadColor(stream);
-
-            var propertyCount = stream.ReadInt();
-            for (int i = 0; i < propertyCount; i++)
-            {
-                var key = stream.ReadLengthPrefixedString();
-                var value = stream.ReadLengthPrefixedString();
-                node.Properties[key ?? ""] = value ?? "";
-            }
-
-            return node;
-        }
-
-        private static Entity ReadEntity(Stream stream, IDictionary<int, Group> groups, IDictionary<int, VisGroup> visGroups)
-        {
-            var entity = new JmfEntity();
-
-            entity.ClassName = stream.ReadLengthPrefixedString() ?? "";
-            entity.JmfOrigin = ReadVector3D(stream);
-
-            entity.JmfFlags = (JmfMapObjectFlags)stream.ReadInt();
-            entity.IsSelected = entity.JmfFlags.HasFlag(JmfMapObjectFlags.Selected);
-            entity.IsHidden = entity.JmfFlags.HasFlag(JmfMapObjectFlags.Hidden);
-
-            var groupID = stream.ReadInt();
-            if (groupID != 0 && groups.TryGetValue(groupID, out var group) && group != null)
-                group.AddObject(entity);
-
-            var rootGroupID = stream.ReadInt();
-            entity.Color = ReadColor(stream);
-
-            // NOTE: Each entity contains a list of 'special' attribute names, which are always the same and don't seem to serve any purpose:
-            for (int i = 0; i < 13; i++)
-                entity.SpecialAttributeNames.Add(stream.ReadLengthPrefixedString());
-
-            // This is internal editor state that can mostly be derived from entity properties,
-            // but sometimes different properties are used depending on the type of entity,
-            // and some data depends on fgd settings that are not replicated in the entity properties.
-            // Still, for normal operations, this can be ignored because only the data in entity.Properties
-            // is exported to a .map file:
-            entity.JmfSpawnflags = stream.ReadInt();
-            entity.JmfAngles = ReadAngles(stream);
-            entity.JmfRendering = (JmfRenderMode)stream.ReadInt();
-
-            entity.JmfFxColor = ReadColor(stream);
-            entity.JmfRenderMode = stream.ReadInt();
-            entity.JmfRenderFX = stream.ReadInt();
-            entity.JmfBody = stream.ReadShort();
-            entity.JmfSkin = stream.ReadShort();
-            entity.JmfSequence = stream.ReadInt();
-            entity.JmfFramerate = stream.ReadFloat();
-            entity.JmfScale = stream.ReadFloat();
-            entity.JmfRadius = stream.ReadFloat();
-            entity.UnknownData = stream.ReadBytes(28);
-
-            var propertyCount = stream.ReadInt();
-            for (int i = 0; i < propertyCount; i++)
-            {
-                var key = stream.ReadLengthPrefixedString();
-                var value = stream.ReadLengthPrefixedString();
-                entity.JmfProperties.Add(new KeyValuePair<string?, string?>(key, value));
-                entity.Properties[key ?? ""] = value ?? "";
-                //entity.Properties[stream.ReadLengthPrefixedString() ?? ""] = stream.ReadLengthPrefixedString() ?? "";
-            }
-
-            var visGroupCount = stream.ReadInt();
-            for (int i = 0; i < visGroupCount; i++)
-            {
-                var visGroupID = stream.ReadInt();
-                if (visGroups.TryGetValue(visGroupID, out var visGroup))
-                    visGroup.AddObject(entity);
-            }
-
-            var brushCount = stream.ReadInt();
-            for (int i = 0; i < brushCount; i++)
-                entity.AddBrush(ReadBrush(stream, groups, visGroups));
-
-            if (entity.IsPointBased)
-                entity.Origin = entity.JmfOrigin;
-
-            return entity;
-        }
-
-        private static Brush ReadBrush(Stream stream, IDictionary<int, Group> groups, IDictionary<int, VisGroup> visGroups)
-        {
-            var isPatch = stream.ReadInt() == 1;
-            var flags = (JmfMapObjectFlags)stream.ReadInt();
-            var groupID = stream.ReadInt();
-            var rootGroupID = stream.ReadInt();
-            var color = ReadColor(stream);
-
-            var visGroupCount = stream.ReadInt();
-            var visGroupIDs = Enumerable.Range(0, visGroupCount)
-                .Select(i => stream.ReadInt())
-                .ToArray();
-
-            var faceCount = stream.ReadInt();
-            var faces = Enumerable.Range(0, faceCount)
-                .Select(i => ReadFace(stream))
-                .ToArray();
-
-            var brush = new JmfBrush(faces);
-            brush.Color = color;
-            if (isPatch)
-                brush.Patch = ReadPatch(stream);
-
-
-            if (groupID != 0 && groups.TryGetValue(groupID, out var group) && group != null)
-                group.AddObject(brush);
-
-            foreach (var visGroupID in visGroupIDs)
-            {
-                if (visGroups.TryGetValue(visGroupID, out var visGroup))
-                    visGroup.AddObject(brush);
-            }
-
-            brush.JmfFlags = flags;
-            brush.IsSelected = flags.HasFlag(JmfMapObjectFlags.Selected);
-            brush.IsHidden = flags.HasFlag(JmfMapObjectFlags.Hidden);
-
-            return brush;
-        }
-
-        private static Face ReadFace(Stream stream)
-        {
-            var face = new JmfFace();
-
-            face.RenderFlags = stream.ReadInt();
-            var vertexCount = stream.ReadInt();
-            face.TextureRightAxis = ReadVector3D(stream);
-            var textureShiftX = stream.ReadFloat();
-            face.TextureDownAxis = ReadVector3D(stream);
-            var textureShiftY = stream.ReadFloat();
-            face.TextureShift = new Vector2D(textureShiftX, textureShiftY);
-            face.TextureScale = new Vector2D(stream.ReadFloat(), stream.ReadFloat());
-            face.TextureAngle = stream.ReadFloat();
-            face.TextureAlignment = (JmfTextureAlignment)stream.ReadInt();
-            face.UnknownData = stream.ReadBytes(12);
-            face.Contents = (JmfSurfaceContents)stream.ReadInt();
-            face.TextureName = stream.ReadFixedLengthString(64);
-
-            var planeNormal = ReadVector3D(stream);
-            var planeDistance = stream.ReadFloat();
-            face.Plane = new Plane(planeNormal, planeDistance);
-            face.AxisAlignment = (JmfAxisAlignment)stream.ReadInt();
-
-            for (int i = 0; i < vertexCount; i++)
-            {
-                face.Vertices.Add(ReadVector3D(stream));
-                face.VertexUVCoordinates.Add(new Vector2D(stream.ReadFloat(), stream.ReadFloat()));
-                face.VertexSelectionState.Add((JmfVertexSelection)stream.ReadInt());
-            }
-
-            face.PlanePoints = face.Vertices.Take(3).Reverse().ToArray();
-
-            return face;
-        }
-
-        private static JmfPatch ReadPatch(Stream stream)
-        {
-            var columns = stream.ReadInt();
-            var rows = stream.ReadInt();
-
-            var patch = new JmfPatch(columns, rows);
-
-            patch.TextureRightAxis = ReadVector3D(stream);
-            var textureShiftX = stream.ReadFloat();
-            patch.TextureDownAxis = ReadVector3D(stream);
-            var textureShiftY = stream.ReadFloat();
-            patch.TextureShift = new Vector2D(textureShiftX, textureShiftY);
-            patch.TextureScale = new Vector2D(stream.ReadFloat(), stream.ReadFloat());
-            patch.TextureAngle = stream.ReadFloat();
-            patch.TextureAlignment = (JmfTextureAlignment)stream.ReadInt();
-            patch.UnknownData = stream.ReadBytes(12);
-
-            patch.Contents = (JmfSurfaceContents)stream.ReadInt();
-            patch.TextureName = stream.ReadFixedLengthString(64);
-            patch.UnknownData2 = stream.ReadBytes(4);
-
-
-            for (int column = 0; column < 32; column++)
-            {
-                for (int row = 0; row < 32; row++)
+                JmfTextureAlignment GetTextureAlignment()
                 {
-                    var controlPoint = ReadPatchControlPoint(stream);
-                    if (column < columns && row < rows)
-                        patch.ControlPoints[column, row] = controlPoint;
+                    var textureAlignment = JmfTextureAlignment.None;
+
+                    // TODO: Use an epsilon here!
+                    var textureNormal = face.TextureDownAxis.CrossProduct(face.TextureRightAxis);
+                    if (textureNormal == face.Plane.Normal)
+                        textureAlignment |= JmfTextureAlignment.Face;
+
+                    // TODO: Check whether the face normal is also closest to the projection axis!
+                    if (face.TextureRightAxis == new Vector3D(0, 1, 0) && face.TextureDownAxis == new Vector3D(0, 0, -1) ||   // Projected along X axis
+                        face.TextureRightAxis == new Vector3D(1, 0, 0) && face.TextureDownAxis == new Vector3D(0, 0, -1) ||   // Projected along Y axis
+                        face.TextureRightAxis == new Vector3D(1, 0, 0) && face.TextureDownAxis == new Vector3D(0, -1, 0))     // Projected alogn Z axis
+                        textureAlignment |= JmfTextureAlignment.World;
+
+                    return textureAlignment;
                 }
-            }
 
-            return patch;
-        }
-
-        private static JmfPatchControlPoint ReadPatchControlPoint(Stream stream)
-        {
-            var controlPoint = new JmfPatchControlPoint();
-            controlPoint.Position = ReadVector3D(stream);
-            controlPoint.Normal = ReadVector3D(stream);
-            controlPoint.UV = new Vector2D(stream.ReadFloat(), stream.ReadFloat());
-            controlPoint.IsSelected = stream.ReadInt() == 1;
-            return controlPoint;
-        }
-
-
-        private static void WriteBackgroundImageSettings(Stream stream, JmfBackgroundImageSettings? settings)
-        {
-            stream.WriteLengthPrefixedString(settings?.ImagePath ?? "");
-            stream.WriteDouble(settings?.Scale ?? 1.0);
-            stream.WriteInt(settings?.Luminance ?? 255);
-            stream.WriteInt((int)(settings?.Filtering ?? ImageFiltering.Linear));
-            stream.WriteInt(settings?.InvertColors == true ? 1 : 0);
-            stream.WriteInt(settings?.OffsetX ?? 0);
-            stream.WriteInt(settings?.OffsetY ?? 0);
-            stream.WriteBytes(GetFixedLengthByteArray(settings?.UnknownData, 4));
-        }
-
-        private static void WriteGroup(Stream stream, Group group)
-        {
-            stream.WriteInt(group.ID);
-            stream.WriteInt(group.Group?.ID ?? 0);
-            stream.WriteInt((int)GetJmfMapObjectFlags(group));
-            stream.WriteInt(group.Objects.Count);
-            WriteColor(stream, group.Color);
-        }
-
-        private static void WriteVisGroup(Stream stream, VisGroup visGroup)
-        {
-            stream.WriteLengthPrefixedString(visGroup.Name);
-            stream.WriteInt(visGroup.ID);
-            WriteColor(stream, visGroup.Color);
-            stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
-        }
-
-        private static void WriteCamera(Stream stream, Camera camera, bool isSelected)
-        {
-            WriteVector3D(stream, camera.EyePosition);
-            WriteVector3D(stream, camera.LookAtPosition);
-
-            stream.WriteInt((int)(isSelected ? JmfMapObjectFlags.Selected : JmfMapObjectFlags.None));
-            WriteColor(stream, camera.Color);
-        }
-
-        private static void WriteEntityPath(Stream stream, EntityPath entityPath)
-        {
-            var jmfEntityPath = entityPath as JmfEntityPath;
-
-            stream.WriteLengthPrefixedString(entityPath.ClassName);
-            stream.WriteLengthPrefixedString(entityPath.Name);
-            stream.WriteInt((int)entityPath.Type);
-
-            stream.WriteBytes(GetFixedLengthByteArray(jmfEntityPath?.UnknownData, 4));
-            WriteColor(stream, entityPath.Color);
-
-            stream.WriteInt(entityPath.Nodes.Count);
-            foreach (var pathNode in entityPath.Nodes)
-                WritePathNode(stream, pathNode);
-        }
-
-        private static void WritePathNode(Stream stream, EntityPathNode pathNode)
-        {
-            stream.WriteLengthPrefixedString(pathNode.NameOverride);
-            stream.WriteLengthPrefixedString(pathNode.Properties.TryGetValue(Attributes.Message, out var fireOnTarget) ? fireOnTarget : null);
-
-            WriteVector3D(stream, pathNode.Position);
-            WriteAngles(stream, pathNode.Properties.GetAngles(Attributes.Angles) ?? new Angles());
-
-            stream.WriteInt((int)(pathNode.IsSelected ? JmfMapObjectFlags.Selected : JmfMapObjectFlags.None));
-            WriteColor(stream, pathNode.Color);
-
-            stream.WriteInt(pathNode.Properties.Count);
-            foreach (var property in pathNode.Properties)
-            {
-                stream.WriteLengthPrefixedString(property.Key);
-                stream.WriteLengthPrefixedString(property.Value);
-            }
-        }
-
-        private static void WriteEntity(Stream stream, Entity entity)
-        {
-            var jmfEntity = entity as JmfEntity;
-
-            stream.WriteLengthPrefixedString(entity.ClassName);
-            WriteVector3D(stream, jmfEntity?.JmfOrigin ?? entity.Origin);
-            stream.WriteInt((int)(jmfEntity?.JmfFlags ?? GetJmfMapObjectFlags(entity)));
-            stream.WriteInt(entity.Group?.ID ?? 0);
-            stream.WriteInt(entity.Group == null ? 0 : GetRootGroupID(entity.Group));
-            WriteColor(stream, entity.Color);
-
-            // NOTE: I'm not sure what the purpose is of saving these attribute names, but it's consistent with what J.A.C.K. does...
-            foreach (var attributeName in jmfEntity?.SpecialAttributeNames.ToArray() ?? SerializedAttributeNames)
-                stream.WriteLengthPrefixedString(attributeName);
-
-            stream.WriteInt(jmfEntity?.JmfSpawnflags ?? entity.Spawnflags);
-            WriteAngles(stream, jmfEntity?.JmfAngles ?? entity.Angles ?? new Angles());
-            stream.WriteInt((int)(jmfEntity?.JmfRendering ?? GetJmfRenderMode(entity)));
-
-            var renderColor = GetColorProperty(Attributes.RenderColor, new Color(255, 255, 255));
-            renderColor.A = (byte)Math.Clamp(GetIntProperty(Attributes.RenderAmount, 255), 0, 255);
-            WriteColor(stream, jmfEntity?.JmfFxColor ?? renderColor);
-
-            stream.WriteInt(jmfEntity?.JmfRenderMode ?? GetIntProperty(Attributes.Rendermode, 0));
-            stream.WriteInt(jmfEntity?.JmfRenderFX ?? GetIntProperty(Attributes.RenderFX, 0));
-            stream.WriteShort((short)(jmfEntity?.JmfBody ?? GetIntProperty(Attributes.Body, 0)));
-            stream.WriteShort((short)(jmfEntity?.JmfSkin ?? GetIntProperty(Attributes.Skin, 0)));
-            stream.WriteInt(jmfEntity?.JmfSequence ?? GetIntProperty(Attributes.Sequence, 0));
-            stream.WriteFloat(jmfEntity?.JmfFramerate ?? GetFloatProperty(Attributes.Framerate, 10));
-            stream.WriteFloat(jmfEntity?.JmfScale ?? GetFloatProperty(Attributes.Scale, 1));
-            stream.WriteFloat(jmfEntity?.JmfRadius ?? GetFloatProperty(Attributes.Radius, 0));
-            stream.WriteBytes(GetFixedLengthByteArray(jmfEntity?.UnknownData, 28));
-
-            var serializedProperties = entity.Properties
-                .Where(kv => kv.Key != Attributes.Classname && kv.Key != Attributes.Origin)
-                .ToArray();
-            if (jmfEntity != null) serializedProperties = jmfEntity.JmfProperties.ToArray();
-            stream.WriteInt(serializedProperties.Length);
-            foreach (var property in serializedProperties)
-            {
-                if (property.Key == Attributes.Classname)
-                    continue;
-
-                stream.WriteLengthPrefixedString(property.Key);
-                stream.WriteLengthPrefixedString(property.Value);
-            }
-
-            stream.WriteInt(entity.VisGroups.Count);
-            foreach (var visGroup in entity.VisGroups)
-                stream.WriteInt(visGroup.ID);
-
-            stream.WriteInt(entity.Brushes.Count);
-            foreach (var brush in entity.Brushes)
-                WriteBrush(stream, brush);
-
-
-            Color GetColorProperty(string name, Color defaultColor)
-            {
-                if (entity.Properties.TryGetValue(name, out var rawColor))
+                JmfAxisAlignment GetAxisAlignment()
                 {
-                    var parts = rawColor.Split();
-                    if (parts.Length >= 3 && byte.TryParse(parts[0], out var r) && byte.TryParse(parts[1], out var g) && byte.TryParse(parts[2], out var b))
-                        return new Color(r, g, b);
-                }
+                    var isZeroX = face.Plane.Normal.X == 0;
+                    var isZeroY = face.Plane.Normal.Y == 0;
+                    var isZeroZ = face.Plane.Normal.Z == 0;
 
-                return defaultColor;
+                    if (!isZeroX && isZeroY && isZeroZ)
+                        return JmfAxisAlignment.XAligned;
+                    else if (isZeroX && !isZeroY && isZeroZ)
+                        return JmfAxisAlignment.YAligned;
+                    else if (isZeroX && isZeroY && !isZeroZ)
+                        return JmfAxisAlignment.ZAligned;
+                    else
+                        return JmfAxisAlignment.Unaligned;
+                }
             }
 
-            int GetIntProperty(string name, int defaultValue)
-                => entity.Properties.TryGetValue(name, out var rawValue) && int.TryParse(rawValue, out var value) ? value : defaultValue;
-
-            float GetFloatProperty(string name, float defaultValue)
-                => entity.Properties.TryGetValue(name, out var rawValue) && float.TryParse(rawValue, out var value) ? value : defaultValue;
-        }
-
-        private static void WriteBrush(Stream stream, Brush brush)
-        {
-            var jmfBrush = brush as JmfBrush;
-            var patch = jmfBrush?.Patch;
-
-            stream.WriteInt(patch != null ? 1 : 0);
-            stream.WriteInt((int)(jmfBrush?.JmfFlags ?? GetJmfMapObjectFlags(brush)));
-            stream.WriteInt(brush.Group?.ID ?? 0);
-            stream.WriteInt(brush.Group == null ? 0 : GetRootGroupID(brush.Group));
-            WriteColor(stream, brush.Color);
-
-            stream.WriteInt(brush.VisGroups.Count);
-            foreach (var visGroup in brush.VisGroups)
-                stream.WriteInt(visGroup.ID);
-
-            stream.WriteInt(brush.Faces.Count);
-            foreach (var face in brush.Faces)
-                WriteFace(stream, face);
-
-            if (patch != null)
-                WritePatch(stream, patch);
-        }
-
-        private static void WriteFace(Stream stream, Face face)
-        {
-            var jmfFace = face as JmfFace;
-
-            stream.WriteInt(jmfFace?.RenderFlags ?? 0);
-            stream.WriteInt(face.Vertices.Count);
-
-            WriteVector3D(stream, face.TextureRightAxis);
-            stream.WriteFloat(face.TextureShift.X);
-            WriteVector3D(stream, face.TextureDownAxis);
-            stream.WriteFloat(face.TextureShift.Y);
-            stream.WriteFloat(face.TextureScale.X);
-            stream.WriteFloat(face.TextureScale.Y);
-            stream.WriteFloat(face.TextureAngle);
-
-            stream.WriteInt((int)(jmfFace?.TextureAlignment ?? GetTextureAlignment()));
-            stream.Write(GetFixedLengthByteArray(jmfFace?.UnknownData, 12));
-            stream.WriteInt((int)(jmfFace?.Contents ?? JmfSurfaceContents.None));
-            stream.WriteFixedLengthString(face.TextureName, 64);
-
-            WriteVector3D(stream, face.Plane.Normal);
-            stream.WriteFloat(face.Plane.Distance);
-            stream.WriteInt((int)(jmfFace?.AxisAlignment ?? GetAxisAlignment()));
-
-            for (int i = 0; i < face.Vertices.Count; i++)
+            private void WritePatch(JmfPatch patch)
             {
-                WriteVector3D(stream, face.Vertices[i]);
-                if (jmfFace != null)
+                Stream.WriteInt(patch.Columns);
+                Stream.WriteInt(patch.Rows);
+
+                WriteVector3D(patch.TextureRightAxis);
+                Stream.WriteFloat(patch.TextureShift.X);
+                WriteVector3D(patch.TextureDownAxis);
+                Stream.WriteFloat(patch.TextureShift.Y);
+                Stream.WriteFloat(patch.TextureScale.X);
+                Stream.WriteFloat(patch.TextureScale.Y);
+                Stream.WriteFloat(patch.TextureAngle);
+                Stream.WriteInt((int)patch.TextureAlignment);
+                Stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData, 12));
+
+                Stream.WriteInt((int)patch.Contents);
+                Stream.WriteFixedLengthString(patch.TextureName, 64);
+                Stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData2, 4));
+
+                var emptyControlPoint = new JmfPatchControlPoint();
+                for (int column = 0; column < 32; column++)
                 {
-                    stream.WriteFloat(jmfFace.VertexUVCoordinates[i].X);
-                    stream.WriteFloat(jmfFace.VertexUVCoordinates[i].Y);
-                    stream.WriteInt((int)jmfFace.VertexSelectionState[i]);
-                }
-                else
-                {
-                    stream.WriteFloat(0f);
-                    stream.WriteFloat(0f);
-                    stream.WriteInt(0);
+                    for (int row = 0; row < 32; row++)
+                    {
+                        var controlPoint = column < patch.Columns && row < patch.Rows ? patch.ControlPoints[column, row] : emptyControlPoint;
+                        WritePatchControlPoint(controlPoint);
+                    }
                 }
             }
 
-
-            JmfTextureAlignment GetTextureAlignment()
+            private void WritePatchControlPoint(JmfPatchControlPoint controlPoint)
             {
-                var textureAlignment = JmfTextureAlignment.None;
-
-                // TODO: Use an epsilon here!
-                var textureNormal = face.TextureDownAxis.CrossProduct(face.TextureRightAxis);
-                if (textureNormal == face.Plane.Normal)
-                    textureAlignment |= JmfTextureAlignment.Face;
-
-                // TODO: Check whether the face normal is also closest to the projection axis!
-                if ((face.TextureRightAxis == new Vector3D(0, 1, 0) && face.TextureDownAxis == new Vector3D(0, 0, -1)) ||   // Projected along X axis
-                    (face.TextureRightAxis == new Vector3D(1, 0, 0) && face.TextureDownAxis == new Vector3D(0, 0, -1)) ||   // Projected along Y axis
-                    (face.TextureRightAxis == new Vector3D(1, 0, 0) && face.TextureDownAxis == new Vector3D(0, -1, 0)))     // Projected alogn Z axis
-                    textureAlignment |= JmfTextureAlignment.World;
-
-                return textureAlignment;
+                WriteVector3D(controlPoint.Position);
+                WriteVector3D(controlPoint.Normal);
+                Stream.WriteFloat(controlPoint.UV.X);
+                Stream.WriteFloat(controlPoint.UV.Y);
+                Stream.WriteInt(controlPoint.IsSelected ? 1 : 0);
             }
 
-            JmfAxisAlignment GetAxisAlignment()
-            {
-                var isZeroX = face.Plane.Normal.X == 0;
-                var isZeroY = face.Plane.Normal.Y == 0;
-                var isZeroZ = face.Plane.Normal.Z == 0;
 
-                if (!isZeroX && isZeroY && isZeroZ)
-                    return JmfAxisAlignment.XAligned;
-                else if (isZeroX && !isZeroY && isZeroZ)
-                    return JmfAxisAlignment.YAligned;
-                else if (isZeroX && isZeroY && !isZeroZ)
-                    return JmfAxisAlignment.ZAligned;
-                else
-                    return JmfAxisAlignment.Unaligned;
+            private void WriteVector3D(Vector3D vector)
+            {
+                Stream.WriteFloat(vector.X);
+                Stream.WriteFloat(vector.Y);
+                Stream.WriteFloat(vector.Z);
+            }
+
+            private void WriteColor(Color color)
+            {
+                var rgba = new byte[] { color.R, color.G, color.B, color.A };
+                Stream.WriteBytes(rgba);
+            }
+
+            private void WriteAngles(Angles angles)
+            {
+                Stream.WriteFloat(angles.Pitch);
+                Stream.WriteFloat(angles.Yaw);
+                Stream.WriteFloat(angles.Roll);
             }
         }
-
-        private static void WritePatch(Stream stream, JmfPatch patch)
-        {
-            stream.WriteInt(patch.Columns);
-            stream.WriteInt(patch.Rows);
-
-            WriteVector3D(stream, patch.TextureRightAxis);
-            stream.WriteFloat(patch.TextureShift.X);
-            WriteVector3D(stream, patch.TextureDownAxis);
-            stream.WriteFloat(patch.TextureShift.Y);
-            stream.WriteFloat(patch.TextureScale.X);
-            stream.WriteFloat(patch.TextureScale.Y);
-            stream.WriteFloat(patch.TextureAngle);
-            stream.WriteInt((int)patch.TextureAlignment);
-            stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData, 12));
-
-            stream.WriteInt((int)patch.Contents);
-            stream.WriteFixedLengthString(patch.TextureName, 64);
-            stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData2, 4));
-
-            var emptyControlPoint = new JmfPatchControlPoint();
-            for (int column = 0; column < 32; column++)
-            {
-                for (int row = 0; row < 32; row++)
-                {
-                    var controlPoint = column < patch.Columns && row < patch.Rows ? patch.ControlPoints[column, row] : emptyControlPoint;
-                    WritePatchControlPoint(stream, controlPoint);
-                }
-            }
-        }
-
-        private static void WritePatchControlPoint(Stream stream, JmfPatchControlPoint controlPoint)
-        {
-            WriteVector3D(stream, controlPoint.Position);
-            WriteVector3D(stream, controlPoint.Normal);
-            stream.WriteFloat(controlPoint.UV.X);
-            stream.WriteFloat(controlPoint.UV.Y);
-            stream.WriteInt(controlPoint.IsSelected ? 1 : 0);
-        }
-
-
-        private static Vector3D ReadVector3D(Stream stream)
-        {
-            return new Vector3D(stream.ReadFloat(), stream.ReadFloat(), stream.ReadFloat());
-        }
-
-        private static Color ReadColor(Stream stream)
-        {
-            var color = stream.ReadBytes(4);    // RGBA
-            return new Color(color[0], color[1], color[2], color[3]);
-        }
-
-        private static Angles ReadAngles(Stream stream)
-        {
-            var pitch = stream.ReadFloat();
-            var yaw = stream.ReadFloat();
-            var roll = stream.ReadFloat();
-            return new Angles(roll, pitch, yaw);
-        }
-
-
-        private static void WriteVector3D(Stream stream, Vector3D vector)
-        {
-            stream.WriteFloat(vector.X);
-            stream.WriteFloat(vector.Y);
-            stream.WriteFloat(vector.Z);
-        }
-
-        private static void WriteColor(Stream stream, Color color)
-        {
-            var rgba = new byte[] { color.R, color.G, color.B, color.A };
-            stream.WriteBytes(rgba);
-        }
-
-        private static void WriteAngles(Stream stream, Angles angles)
-        {
-            stream.WriteFloat(angles.Pitch);
-            stream.WriteFloat(angles.Yaw);
-            stream.WriteFloat(angles.Roll);
-        }
-
 
         private static int GetRootGroupID(Group group) => group.Group == null ? group.ID : GetRootGroupID(group.Group);
 
@@ -895,11 +906,6 @@ namespace MESS.Formats.JMF
         PathEntity =    0x0080,     // Any entity whose name starts with "path_"
 
         Unknown1 =      0x8000,     // TODO: This appears to be related to models, and may have been introduced in a newer JACK version?
-    }
-
-    public class JmfFileSaveSettings : FileSaveSettings
-    {
-        public JmfFileVersion FileVersion { get; set; } = JmfFileVersion.V121;
     }
 
     public enum JmfFileVersion

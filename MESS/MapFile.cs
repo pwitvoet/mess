@@ -27,7 +27,7 @@ namespace MESS
                 {
                     case ".jmf":
                     case ".jmx":
-                        return JmfFormat.Load(stream);
+                        return JmfFormat.Load(stream, settings, logger);
 
                     case ".rmf":
                     case ".rmx":
@@ -52,7 +52,8 @@ namespace MESS
             {
                 case ".jmf":
                 case ".jmx":
-                    JmfFormat.Save(map, path, settings as JmfFileSaveSettings);
+                    using (var file = File.Create(path))
+                        JmfFormat.Save(map, file, settings as JmfFileSaveSettings, logger);
                     break;
 
                 case ".rmf":
