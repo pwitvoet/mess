@@ -3,7 +3,7 @@
 namespace MESS.Mapping
 {
     /// <summary>
-    /// Faces are defined by a number of vertices (RMF format only) and by the plane they're on (MAP and RMF formats).
+    /// Faces are defined by a number of vertices (RMF and JMF formats) and by the plane they're on (MAP and RMF formats).
     /// This plane is defined by 3 points, in clockwise order, as seen from the outside of the brush.
     /// If vertices are not stored, they can be derived by finding the intersections with neighboring planes.
     /// 

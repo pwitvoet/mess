@@ -513,42 +513,7 @@ namespace MESS.Formats.RMF
             private void WriteTextureName(string textureName)
             {
                 var maxLength = GetTextureNameLength(Settings.FileVersion);
-                var rawTextureName = Encoding.ASCII.GetBytes(textureName);
-
-                if (rawTextureName.Length > maxLength)
-                {
-                    if (Settings.TextureNameTooLongHandling == ValueTooLongHandling.Truncate)
-                    {
-                        Logger.Warning($"Texture name '{textureName}' is too long and will be truncated.");
-                    }
-                    else if (Settings.TextureNameTooLongHandling == ValueTooLongHandling.Fail)
-                    {
-                        var errorMessage = $"Texture name '{textureName}' is too long.";
-                        Logger.Error(errorMessage);
-                        throw new MapSaveException(errorMessage);
-                    }
-                }
-
-                if (textureName.Contains(' '))  // TODO: What about tabs and control characters?
-                {
-                    if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Replace)
-                    {
-                        var newTextureName = textureName.Replace(" ", Settings.TextureNameInvalidCharacterReplacement);
-                        Logger.Warning($"Texture name '{textureName}' contains invalid characters, replacing with '{newTextureName}'.");
-                        textureName = newTextureName;
-                    }
-                    else if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Ignore)
-                    {
-                        Logger.Warning($"Texture name '{textureName}' contains invalid characters, ignoring.");
-                    }
-                    else if (Settings.TextureNameInvalidCharacterHandling == InvalidCharacterHandling.Fail)
-                    {
-                        var errorMessage = $"Texture name '{textureName}' contains invalid characters.";
-                        Logger.Error(errorMessage);
-                        throw new MapSaveException(errorMessage);
-                    }
-                }
-
+                textureName = Validation.ValidateTextureName(textureName, maxLength, Settings, Logger, Encoding.ASCII);
                 Stream.WriteFixedLengthString(textureName, maxLength);
             }
 
@@ -578,7 +543,9 @@ namespace MESS.Formats.RMF
             {
                 var logDescription = $"Entity of type '{entity.ClassName}'";
 
-                ValidateAndWriteNString("classname", entity.ClassName, entity.ClassName);
+                var className = Validation.ValidateValue(entity.ClassName, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
+                Stream.WriteNString(className ?? "", truncate: true);
+
                 Stream.WriteBytes(new byte[4]);             // Unknown
                 Stream.WriteInt(entity.Spawnflags);
 
@@ -590,8 +557,11 @@ namespace MESS.Formats.RMF
                 Stream.WriteInt(properties.Count);
                 foreach (var property in properties)
                 {
-                    ValidateAndWriteNString(logDescription, "key", property.Key);
-                    ValidateAndWriteNString(logDescription, "value", property.Value);
+                    var key = Validation.ValidateKey(property.Key, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
+                    Stream.WriteNString(key ?? "", truncate: true);
+
+                    var value = Validation.ValidateValue(property.Value, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
+                    Stream.WriteNString(value ?? "", truncate: true);
                 }
             }
 
@@ -644,8 +614,11 @@ namespace MESS.Formats.RMF
                 Stream.WriteInt(pathNode.Properties.Count);
                 foreach (var property in pathNode.Properties)
                 {
-                    ValidateAndWriteNString(logDescription, "key", property.Key);
-                    ValidateAndWriteNString(logDescription, "value", property.Value);
+                    var key = Validation.ValidateKey(property.Key, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
+                    Stream.WriteNString(key, truncate: true);
+
+                    var value = Validation.ValidateValue(property.Value, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
+                    Stream.WriteNString(value, truncate: true);
                 }
             }
 
@@ -700,45 +673,6 @@ namespace MESS.Formats.RMF
                 }
 
                 Stream.WriteFixedLengthString(value, maxLength);
-            }
-
-            private void ValidateAndWriteNString(string objectDescription, string type, string value)
-            {
-                if (!IsValidNStringSize(value))
-                {
-                    if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Truncate)
-                    {
-                        Logger.Warning($"{objectDescription} contains a {type} that is too long: '{value}', truncating {type}.");
-                    }
-                    else if (Settings.KeyValueTooLongHandling == ValueTooLongHandling.Fail)
-                    {
-                        var errorMessage = $"{objectDescription} contains a {type} that is too long: '{value}'.";
-                        Logger.Error(errorMessage);
-                        throw new MapSaveException(errorMessage);
-                    }
-                }
-
-                if (value.Contains('"'))
-                {
-                    if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Replace)
-                    {
-                        var newValue = value.Replace("\"", Settings.KeyValueInvalidCharacterReplacement);
-                        Logger.Warning($"{objectDescription} contains a {type} with invalid characters: '{value}', replacing with '{newValue}'.");
-                        value = newValue;
-                    }
-                    else if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Ignore)
-                    {
-                        Logger.Warning($"{objectDescription} contains a {type} with invalid characters: '{value}', ignoring.");
-                    }
-                    else if (Settings.KeyValueInvalidCharacterHandling == InvalidCharacterHandling.Fail)
-                    {
-                        var errorMessage = $"{objectDescription} contains a {type} with invalid characters: '{value}'.";
-                        Logger.Error(errorMessage);
-                        throw new MapSaveException(errorMessage);
-                    }
-                }
-
-                Stream.WriteNString(value, truncate: true);
             }
         }
 

@@ -2,6 +2,7 @@
 using MESS.Logging;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
+using System.Text;
 
 namespace MESS.Formats.JMF
 {
@@ -260,7 +261,29 @@ namespace MESS.Formats.JMF
                     var key = Stream.ReadLengthPrefixedString();
                     var value = Stream.ReadLengthPrefixedString();
                     entity.JmfProperties.Add(new KeyValuePair<string?, string?>(key, value));
-                    entity.Properties[key ?? ""] = value ?? "";
+
+                    key = key ?? "";
+                    value = value ?? "";
+                    if (entity.Properties.ContainsKey(key))
+                    {
+                        if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.UseFirst)
+                        {
+                            Logger.Warning($"Entity of type '{entity.ClassName}' contains duplicate key '{key}', using first value: '{entity.Properties[key]}'.");
+                            continue;
+                        }
+                        else if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.UseLast)
+                        {
+                            Logger.Warning($"Entity of type '{entity.ClassName}' contains duplicate key '{key}', using last value: '{value}'.");
+                        }
+                        else if (Settings.DuplicateKeyHandling == DuplicateKeyHandling.Fail)
+                        {
+                            var errorMessage = $"Entity of type '{entity.ClassName}' contains duplicate key '{key}' (first value: '{entity.Properties[key]}', duplicate value: '{value}'.";
+                            Logger.Error(errorMessage);
+                            throw new DuplicateKeyException(errorMessage);
+                        }
+                    }
+
+                    entity.Properties[key] = value;
                 }
 
                 var visGroupCount = Stream.ReadInt();
@@ -517,10 +540,15 @@ namespace MESS.Formats.JMF
 
             private void WriteEntityPath(EntityPath entityPath)
             {
+                var logDescription = $"Path of type '{entityPath.ClassName}'";
                 var jmfEntityPath = entityPath as JmfEntityPath;
 
-                Stream.WriteLengthPrefixedString(entityPath.ClassName);
-                Stream.WriteLengthPrefixedString(entityPath.Name);
+                var className = Validation.ValidateValue(entityPath.ClassName, null, Settings, Logger, logDescription);
+                Stream.WriteLengthPrefixedString(className);
+
+                var name = Validation.ValidateValue(entityPath.Name, null, Settings, Logger, logDescription);
+                Stream.WriteLengthPrefixedString(name);
+
                 Stream.WriteInt((int)entityPath.Type);
 
                 Stream.WriteBytes(GetFixedLengthByteArray(jmfEntityPath?.UnknownData, 4));
@@ -528,13 +556,19 @@ namespace MESS.Formats.JMF
 
                 Stream.WriteInt(entityPath.Nodes.Count);
                 foreach (var pathNode in entityPath.Nodes)
-                    WritePathNode(pathNode);
+                    WritePathNode(pathNode, entityPath.ClassName);
             }
 
-            private void WritePathNode(EntityPathNode pathNode)
+            private void WritePathNode(EntityPathNode pathNode, string className)
             {
-                Stream.WriteLengthPrefixedString(pathNode.NameOverride);
-                Stream.WriteLengthPrefixedString(pathNode.Properties.TryGetValue(Attributes.Message, out var fireOnTarget) ? fireOnTarget : null);
+                var logDescription = $"Path node of type '{className}' (position: {pathNode.Position})";
+
+                var nameOverride = Validation.ValidateValue(pathNode.NameOverride, null, Settings, Logger, logDescription);
+                Stream.WriteLengthPrefixedString(nameOverride);
+
+                if (pathNode.Properties.TryGetValue(Attributes.Message, out var fireOnTarget))
+                    fireOnTarget = Validation.ValidateValue(fireOnTarget, null, Settings, Logger, logDescription);
+                Stream.WriteLengthPrefixedString(fireOnTarget);
 
                 WriteVector3D(pathNode.Position);
                 WriteAngles(pathNode.Properties.GetAngles(Attributes.Angles) ?? new Angles());
@@ -545,8 +579,11 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(pathNode.Properties.Count);
                 foreach (var property in pathNode.Properties)
                 {
-                    Stream.WriteLengthPrefixedString(property.Key);
-                    Stream.WriteLengthPrefixedString(property.Value);
+                    var key = Validation.ValidateKey(property.Key ?? "", null, Settings, Logger, logDescription);
+                    Stream.WriteLengthPrefixedString(key);
+
+                    var value = Validation.ValidateValue(property.Value ?? "", null, Settings, Logger, logDescription);
+                    Stream.WriteLengthPrefixedString(value);
                 }
             }
 
@@ -589,14 +626,16 @@ namespace MESS.Formats.JMF
                 if (jmfEntity != null)
                     serializedProperties = jmfEntity.JmfProperties.ToArray();
 
+                var logDescription = $"Entity of type '{entity.ClassName}'";
+
                 Stream.WriteInt(serializedProperties.Length);
                 foreach (var property in serializedProperties)
                 {
-                    if (property.Key == Attributes.Classname)
-                        continue;
+                    var key = Validation.ValidateKey(property.Key ?? "", null, Settings, Logger, logDescription);
+                    Stream.WriteLengthPrefixedString(key);
 
-                    Stream.WriteLengthPrefixedString(property.Key);
-                    Stream.WriteLengthPrefixedString(property.Value);
+                    var value = Validation.ValidateValue(property.Value ?? "", null, Settings, Logger, logDescription);
+                    Stream.WriteLengthPrefixedString(value);
                 }
 
                 Stream.WriteInt(entity.VisGroups.Count);
@@ -668,7 +707,7 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt((int)(jmfFace?.TextureAlignment ?? GetTextureAlignment()));
                 Stream.Write(GetFixedLengthByteArray(jmfFace?.UnknownData, 12));
                 Stream.WriteInt((int)(jmfFace?.Contents ?? JmfSurfaceContents.None));
-                Stream.WriteFixedLengthString(face.TextureName, 64);
+                WriteTextureName(face.TextureName, 64);
 
                 WriteVector3D(face.Plane.Normal);
                 Stream.WriteFloat(face.Plane.Distance);
@@ -743,7 +782,7 @@ namespace MESS.Formats.JMF
                 Stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData, 12));
 
                 Stream.WriteInt((int)patch.Contents);
-                Stream.WriteFixedLengthString(patch.TextureName, 64);
+                WriteTextureName(patch.TextureName, 64);
                 Stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData2, 4));
 
                 var emptyControlPoint = new JmfPatchControlPoint();
@@ -764,6 +803,12 @@ namespace MESS.Formats.JMF
                 Stream.WriteFloat(controlPoint.UV.X);
                 Stream.WriteFloat(controlPoint.UV.Y);
                 Stream.WriteInt(controlPoint.IsSelected ? 1 : 0);
+            }
+
+            private void WriteTextureName(string textureName, int maxLength)
+            {
+                textureName = Validation.ValidateTextureName(textureName, maxLength, Settings, Logger, Encoding.ASCII);
+                Stream.WriteFixedLengthString(textureName, maxLength);
             }
 
 
