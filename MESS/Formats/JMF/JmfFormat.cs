@@ -374,7 +374,12 @@ namespace MESS.Formats.JMF
                     face.VertexSelectionState.Add((JmfVertexSelection)Stream.ReadInt());
                 }
 
-                face.PlanePoints = face.Vertices.Take(3).Reverse().ToArray();
+                // Jmf files store vertices in counter-clockwise order:
+                face.Vertices.Reverse();
+                face.VertexUVCoordinates.Reverse();
+                face.VertexSelectionState.Reverse();
+
+                face.PlanePoints = face.Vertices.Take(3).ToArray();
 
                 return face;
             }
@@ -713,7 +718,8 @@ namespace MESS.Formats.JMF
                 Stream.WriteFloat(face.Plane.Distance);
                 Stream.WriteInt((int)(jmfFace?.AxisAlignment ?? GetAxisAlignment()));
 
-                for (int i = 0; i < face.Vertices.Count; i++)
+                // Vertices are stored in counter-clockwise order:
+                for (int i = face.Vertices.Count - 1; i >= 0; i--)
                 {
                     WriteVector3D(face.Vertices[i]);
                     if (jmfFace != null)
