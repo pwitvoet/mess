@@ -1,4 +1,5 @@
-﻿using MESS.Macros;
+﻿using MESS.Common;
+using MESS.Macros;
 using MScript;
 using System.Text.RegularExpressions;
 
@@ -124,12 +125,19 @@ namespace MESS.EntityRewriting
                 Expect(context, FgdTokenizer.TokenType.String);
             }
 
+            // Help text (optional):
+            if (context.Current.Type == FgdTokenizer.TokenType.Colon)
+            {
+                Expect(context, FgdTokenizer.TokenType.Colon);
+                Expect(context, FgdTokenizer.TokenType.String);
+            }
+
             // Entity attributes:
             Expect(context, FgdTokenizer.TokenType.BracketOpen);
             while (context.Current.Type != FgdTokenizer.TokenType.BracketClose)
             {
                 // Attribute name & data type:
-                Expect(context, FgdTokenizer.TokenType.Name);
+                var attributeName = Expect(context, FgdTokenizer.TokenType.Name).Value;
                 Expect(context, FgdTokenizer.TokenType.ParensOpen);
                 Expect(context, FgdTokenizer.TokenType.Name);
                 Expect(context, FgdTokenizer.TokenType.ParensClose);
@@ -145,7 +153,15 @@ namespace MESS.EntityRewriting
                 if (context.Current.Type == FgdTokenizer.TokenType.Colon)
                 {
                     Expect(context, FgdTokenizer.TokenType.Colon);
-                    ExpectValue(context);
+                    if (context.Current.Type != FgdTokenizer.TokenType.Colon)
+                        ExpectValue(context);
+                }
+
+                // Help text (optional):
+                if (context.Current.Type == FgdTokenizer.TokenType.Colon)
+                {
+                    Expect(context, FgdTokenizer.TokenType.Colon);
+                    Expect(context, FgdTokenizer.TokenType.String);
                 }
 
                 // Options list (optional):
@@ -160,11 +176,21 @@ namespace MESS.EntityRewriting
                         Expect(context, FgdTokenizer.TokenType.Colon);
                         Expect(context, FgdTokenizer.TokenType.String);
 
-                        // Initial state (optional):
                         if (context.Current.Type == FgdTokenizer.TokenType.Colon)
                         {
-                            Expect(context, FgdTokenizer.TokenType.Colon);
-                            Expect(context, FgdTokenizer.TokenType.Integer);
+                            // Initial state (optional):
+                            if (attributeName == Attributes.Spawnflags)
+                            {
+                                Expect(context, FgdTokenizer.TokenType.Colon);
+                                Expect(context, FgdTokenizer.TokenType.Integer);
+                            }
+
+                            // Description (optional):
+                            if (context.Current.Type == FgdTokenizer.TokenType.Colon)
+                            {
+                                Expect(context, FgdTokenizer.TokenType.Colon);
+                                Expect(context, FgdTokenizer.TokenType.String);
+                            }
                         }
                     }
                     Expect(context, FgdTokenizer.TokenType.BracketClose);
