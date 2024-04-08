@@ -100,12 +100,24 @@ namespace MESS.Mapping
         public void RemoveBrush(Brush brush)
         {
             if (_brushes.Remove(brush))
-            {
-                if (Brushes.Count == 0)
-                    BoundingBox = new BoundingBox(Origin, Origin);
-                else
-                    BoundingBox = BoundingBox.FromBoundingBoxes(Brushes.Select(b => b.BoundingBox));
-            }
+                RecalculateBoundingBox();
+        }
+
+        public void RemoveBrushes(IEnumerable<Brush> brushes)
+        {
+            foreach (var brush in brushes)
+                _brushes.Remove(brush);
+
+            RecalculateBoundingBox();
+        }
+
+
+        private void RecalculateBoundingBox()
+        {
+            if (Brushes.Count == 0)
+                BoundingBox = new BoundingBox(Origin, Origin);
+            else
+                BoundingBox = BoundingBox.FromBoundingBoxes(Brushes.Select(b => b.BoundingBox));
         }
     }
 }

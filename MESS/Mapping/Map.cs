@@ -67,5 +67,7 @@ namespace MESS.Mapping
         public void AddBrushes(IEnumerable<Brush> brushes) => Worldspawn.AddBrushes(brushes);
 
         public void RemoveBrush(Brush brush) => Worldspawn.RemoveBrush(brush);
+
+        public void RemoveBrushes(IEnumerable<Brush> brushes) => Worldspawn.RemoveBrushes(brushes);
     }
 }

@@ -8,6 +8,8 @@
         private Group? _group;
         public Group? Group => _group;
 
+        public virtual Group? TopLevelGroup => _group?.TopLevelGroup;
+
         private List<VisGroup> _visGroups = new();
         public IReadOnlyList<VisGroup> VisGroups => _visGroups;
 

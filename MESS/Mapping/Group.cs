@@ -13,6 +13,8 @@
         public bool IsSelected { get; set; }
         public bool IsHidden { get; set; }
 
+        public override Group? TopLevelGroup => Group?.TopLevelGroup ?? this;
+
 
         public void AddObject(MapObject mapObject)
         {
@@ -21,6 +23,12 @@
 
             _objects.Add(mapObject);
             mapObject.SetGroup(this);
+        }
+
+        public void AddObjects(IEnumerable<MapObject> mapObjects)
+        {
+            foreach (var mapObject in mapObjects)
+                AddObject(mapObject);
         }
 
         public void RemoveObject(MapObject mapObject)
