@@ -81,5 +81,20 @@
         /// If the target format does not support VIS groups at all, then VIS group data is silently discarded.
         /// </summary>
         public TooManyVisGroupsHandling TooManyVisGroupsHandling { get; set; } = TooManyVisGroupsHandling.UseFirst;
+
+
+        public FileSaveSettings(FileSaveSettings? settings = null)
+        {
+            if (settings != null)
+            {
+                KeyValueTooLongHandling = settings.KeyValueTooLongHandling;
+                TextureNameTooLongHandling = settings.TextureNameTooLongHandling;
+                KeyValueInvalidCharacterHandling = settings.KeyValueInvalidCharacterHandling;
+                KeyValueInvalidCharacterReplacement = settings.KeyValueInvalidCharacterReplacement;
+                TextureNameInvalidCharacterHandling = settings.TextureNameInvalidCharacterHandling;
+                TextureNameInvalidCharacterReplacement = settings.TextureNameInvalidCharacterReplacement;
+                TooManyVisGroupsHandling = settings.TooManyVisGroupsHandling;
+            }
+        }
     }
 }

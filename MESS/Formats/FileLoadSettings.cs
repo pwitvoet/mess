@@ -26,5 +26,14 @@
         /// What to do when an entity contains duplicate keys.
         /// </summary>
         public DuplicateKeyHandling DuplicateKeyHandling { get; set; }
+
+
+        public FileLoadSettings(FileLoadSettings? settings = null)
+        {
+            if (settings != null)
+            {
+                DuplicateKeyHandling = settings.DuplicateKeyHandling;
+            }
+        }
     }
 }

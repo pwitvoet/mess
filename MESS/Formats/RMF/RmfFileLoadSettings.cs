@@ -26,5 +26,11 @@
         /// What to do when an entity contains a spawnflags property (which is duplicate data, because entities already have a spawnflags field).
         /// </summary>
         public RmfSpawnflagsPropertyHandling SpawnflagsPropertyHandling { get; set; }
+
+
+        public RmfFileLoadSettings(FileLoadSettings? settings = null)
+            : base(settings)
+        {
+        }
     }
 }
