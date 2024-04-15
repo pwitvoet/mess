@@ -449,6 +449,9 @@ namespace MESS.Formats.JMF
 
         class JmfSaver : IOContext<JmfFileSaveSettings>
         {
+            private Dictionary<int, int> _visGroupIDMapping = new Dictionary<int, int>();
+
+
             public JmfSaver(Stream stream, JmfFileSaveSettings? settings, ILogger? logger)
                 : base(stream, settings ?? new JmfFileSaveSettings(), logger)
             {
@@ -478,6 +481,11 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(map.Groups.Count);
                 foreach (var group in map.Groups)
                     WriteGroup(group);
+
+                // NOTE: Apparently JACK uses VISgroup IDs as indexes, because any ID higher than map.VisGroups.Count will cause it to crash.
+                //       So we'll have to map IDs to a safe range (starting at 1):
+                for (int i = 0; i < map.VisGroups.Count; i++)
+                    _visGroupIDMapping[map.VisGroups[i].ID] = i + 1;
 
                 // VIS groups:
                 Stream.WriteInt(map.VisGroups.Count);
@@ -529,7 +537,7 @@ namespace MESS.Formats.JMF
             private void WriteVisGroup(VisGroup visGroup)
             {
                 Stream.WriteLengthPrefixedString(visGroup.Name);
-                Stream.WriteInt(visGroup.ID);
+                Stream.WriteInt(_visGroupIDMapping[visGroup.ID]);
                 WriteColor(visGroup.Color);
                 Stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
             }
@@ -643,9 +651,10 @@ namespace MESS.Formats.JMF
                     Stream.WriteLengthPrefixedString(value);
                 }
 
-                Stream.WriteInt(entity.VisGroups.Count);
-                foreach (var visGroup in entity.VisGroups)
-                    Stream.WriteInt(visGroup.ID);
+                var visGroupIDs = GetVisGroupIDs(entity);
+                Stream.WriteInt(visGroupIDs.Length);
+                foreach (var visGroupID in visGroupIDs)
+                    Stream.WriteInt(visGroupID);
 
                 Stream.WriteInt(entity.Brushes.Count);
                 foreach (var brush in entity.Brushes)
@@ -682,9 +691,10 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(brush.Group == null ? 0 : GetRootGroupID(brush.Group));
                 WriteColor(brush.Color);
 
-                Stream.WriteInt(brush.VisGroups.Count);
-                foreach (var visGroup in brush.VisGroups)
-                    Stream.WriteInt(visGroup.ID);
+                var visGroupIDs = GetVisGroupIDs(brush);
+                Stream.WriteInt(visGroupIDs.Length);
+                foreach (var visGroupID in visGroupIDs)
+                    Stream.WriteInt(visGroupID);
 
                 Stream.WriteInt(brush.Faces.Count);
                 foreach (var face in brush.Faces)
@@ -837,100 +847,120 @@ namespace MESS.Formats.JMF
                 Stream.WriteFloat(angles.Yaw);
                 Stream.WriteFloat(angles.Roll);
             }
-        }
 
-        private static int GetRootGroupID(Group group) => group.Group == null ? group.ID : GetRootGroupID(group.Group);
 
-        private static JmfMapObjectFlags GetJmfMapObjectFlags(Group group)
-        {
-            var flags = JmfMapObjectFlags.None;
-
-            if (group.IsSelected)
-                flags |= JmfMapObjectFlags.Selected;
-
-            if (group.IsHidden)
-                flags |= JmfMapObjectFlags.Hidden;
-
-            return flags;
-        }
-
-        private static JmfMapObjectFlags GetJmfMapObjectFlags(Entity entity)
-        {
-            var flags = JmfMapObjectFlags.None;
-
-            if (!entity.Brushes.Any())
-                flags |= JmfMapObjectFlags.PointBased;
-
-            if (entity.IsSelected)
-                flags |= JmfMapObjectFlags.Selected;
-
-            if (entity.IsHidden)
-                flags |= JmfMapObjectFlags.Hidden;
-
-            if (entity.Properties.TryGetValue(Attributes.Rendermode, out var rawRenderMode) && int.TryParse(rawRenderMode, out var renderMode) && renderMode != 0)
-                flags |= JmfMapObjectFlags.RenderMode;
-
-            if (entity.ClassName == Entities.Worldspawn)
-                flags |= JmfMapObjectFlags.IsWorld;
-
-            if (entity.ClassName.StartsWith("weapon") || entity.ClassName.StartsWith("item_"))
-                flags |= JmfMapObjectFlags.WeaponOrItem;
-
-            if (entity.ClassName.StartsWith("path_"))
-                flags |= JmfMapObjectFlags.PathEntity;
-
-            // TODO: Unknown1 flag!
-
-            return flags;
-        }
-
-        private static JmfMapObjectFlags GetJmfMapObjectFlags(Brush brush)
-        {
-            var flags = JmfMapObjectFlags.None;
-
-            if (brush.IsSelected)
-                flags |= JmfMapObjectFlags.Selected;
-
-            if (brush.IsHidden)
-                flags |= JmfMapObjectFlags.Hidden;
-
-            return flags;
-        }
-
-        private static JmfRenderMode GetJmfRenderMode(Entity entity)
-        {
-            if (!entity.Properties.TryGetValue(Attributes.Rendermode, out var rawRenderMode) || !int.TryParse(rawRenderMode, out var renderMode))
-                renderMode = 0;
-
-            switch (renderMode)
+            private int[] GetVisGroupIDs(MapObject mapObject)
             {
-                case 0:     // Normal
-                default:
-                    return JmfRenderMode.Normal;
+                switch (_visGroupAssignment)
+                {
+                    case VisGroupAssignment.PerGroup:
+                        return (mapObject.TopLevelGroup ?? mapObject).VisGroups
+                            .Select(visGroup => _visGroupIDMapping[visGroup.ID])
+                            .ToArray();
 
-                case 1:     // Color
-                case 2:     // Texture
-                    return JmfRenderMode.Translucent;
+                    case VisGroupAssignment.PerObject:
+                        return mapObject.VisGroups
+                            .Select(visGroup => _visGroupIDMapping[visGroup.ID])
+                            .ToArray();
 
-                case 3:     // Glow
-                case 5:     // Additive
-                    return JmfRenderMode.Glow;
-
-                case 4:     // Solid
-                    return JmfRenderMode.TransparentColorKey;
+                    default:
+                        throw new NotImplementedException($"Unknown VIS group assignment approach: {_visGroupAssignment}.");
+                }
             }
-        }
 
-        private static byte[] GetFixedLengthByteArray(byte[]? data, int length)
-        {
-            if (data == null)
-                return new byte[length];
-            else if (data.Length == length)
-                return data;
+            private int GetRootGroupID(Group group) => group.Group == null ? group.ID : GetRootGroupID(group.Group);
 
-            var buffer = new byte[length];
-            Array.Copy(data, buffer, Math.Min(data.Length, length));
-            return buffer;
+            private JmfMapObjectFlags GetJmfMapObjectFlags(Group group)
+            {
+                var flags = JmfMapObjectFlags.None;
+
+                if (group.IsSelected)
+                    flags |= JmfMapObjectFlags.Selected;
+
+                if (group.IsHidden)
+                    flags |= JmfMapObjectFlags.Hidden;
+
+                return flags;
+            }
+
+            private JmfMapObjectFlags GetJmfMapObjectFlags(Entity entity)
+            {
+                var flags = JmfMapObjectFlags.None;
+
+                if (!entity.Brushes.Any())
+                    flags |= JmfMapObjectFlags.PointBased;
+
+                if (entity.IsSelected)
+                    flags |= JmfMapObjectFlags.Selected;
+
+                if (entity.IsHidden)
+                    flags |= JmfMapObjectFlags.Hidden;
+
+                if (entity.Properties.TryGetValue(Attributes.Rendermode, out var rawRenderMode) && int.TryParse(rawRenderMode, out var renderMode) && renderMode != 0)
+                    flags |= JmfMapObjectFlags.RenderMode;
+
+                if (entity.ClassName == Entities.Worldspawn)
+                    flags |= JmfMapObjectFlags.IsWorld;
+
+                if (entity.ClassName.StartsWith("weapon") || entity.ClassName.StartsWith("item_"))
+                    flags |= JmfMapObjectFlags.WeaponOrItem;
+
+                if (entity.ClassName.StartsWith("path_"))
+                    flags |= JmfMapObjectFlags.PathEntity;
+
+                // TODO: Unknown1 flag!
+
+                return flags;
+            }
+
+            private JmfMapObjectFlags GetJmfMapObjectFlags(Brush brush)
+            {
+                var flags = JmfMapObjectFlags.None;
+
+                if (brush.IsSelected)
+                    flags |= JmfMapObjectFlags.Selected;
+
+                if (brush.IsHidden)
+                    flags |= JmfMapObjectFlags.Hidden;
+
+                return flags;
+            }
+
+            private JmfRenderMode GetJmfRenderMode(Entity entity)
+            {
+                if (!entity.Properties.TryGetValue(Attributes.Rendermode, out var rawRenderMode) || !int.TryParse(rawRenderMode, out var renderMode))
+                    renderMode = 0;
+
+                switch (renderMode)
+                {
+                    case 0:     // Normal
+                    default:
+                        return JmfRenderMode.Normal;
+
+                    case 1:     // Color
+                    case 2:     // Texture
+                        return JmfRenderMode.Translucent;
+
+                    case 3:     // Glow
+                    case 5:     // Additive
+                        return JmfRenderMode.Glow;
+
+                    case 4:     // Solid
+                        return JmfRenderMode.TransparentColorKey;
+                }
+            }
+
+            private byte[] GetFixedLengthByteArray(byte[]? data, int length)
+            {
+                if (data == null)
+                    return new byte[length];
+                else if (data.Length == length)
+                    return data;
+
+                var buffer = new byte[length];
+                Array.Copy(data, buffer, Math.Min(data.Length, length));
+                return buffer;
+            }
         }
     }
 
