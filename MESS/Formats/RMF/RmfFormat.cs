@@ -32,6 +32,9 @@ namespace MESS.Formats.RMF
             public Map LoadMap()
             {
                 var map = new Map();
+                map.VisGroupAssignment = VisGroupAssignment.PerGroup;
+                map.HasColorInformation = true;
+
                 var nextGroupID = 1;
 
                 FileVersion = ReadFileVersion();
@@ -385,6 +388,10 @@ namespace MESS.Formats.RMF
 
         class RmfSaver : IOContext<RmfFileSaveSettings>
         {
+            private bool _hasColorInformation;
+            private Random _random = new Random();
+
+
             public RmfSaver(Stream stream, RmfFileSaveSettings? settings, ILogger? logger)
                 : base(stream, settings ?? new RmfFileSaveSettings(), logger)
             {
@@ -392,6 +399,8 @@ namespace MESS.Formats.RMF
 
             public void SaveMap(Map map)
             {
+                _hasColorInformation = map.HasColorInformation;
+
                 WriteFileVersion(Settings.FileVersion);
                 Stream.WriteFixedLengthString("RMF");
 
@@ -445,7 +454,7 @@ namespace MESS.Formats.RMF
             private void WriteVisGroup(VisGroup visGroup)
             {
                 ValidateAndWriteFixedLengthString($"VIS group '{visGroup.Name}'", visGroup.Name ?? "", 128);
-                WriteColor(visGroup.Color);
+                WriteColor(_hasColorInformation ? visGroup.Color : GenerateRandomColor());
                 Stream.WriteByte(0);            // Unknown (padding?)
                 Stream.WriteInt(visGroup.ID);
                 Stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
@@ -467,7 +476,7 @@ namespace MESS.Formats.RMF
             {
                 Stream.WriteNString("CMapSolid");
                 ValidateAndWriteVisGroupID("Brush", brush);
-                WriteColor(brush.Color);
+                WriteColor(_hasColorInformation ? brush.Color : GenerateRandomColor());
                 Stream.WriteInt(0);     // Child object count
 
                 Stream.WriteInt(brush.Faces.Count);
@@ -523,7 +532,7 @@ namespace MESS.Formats.RMF
 
                 Stream.WriteNString("CMapEntity");
                 ValidateAndWriteVisGroupID($"Entity of type '{entity.ClassName}'", entity);
-                WriteColor(entity.Color);
+                WriteColor(_hasColorInformation ? entity.Color : GenerateRandomColor());
 
                 Stream.WriteInt(entity.Brushes.Count);
                 foreach (var brush in entity.Brushes)
@@ -569,7 +578,7 @@ namespace MESS.Formats.RMF
             {
                 Stream.WriteNString("CMapGroup");
                 ValidateAndWriteVisGroupID("Group", group);
-                WriteColor(group.Color);
+                WriteColor(_hasColorInformation ? group.Color : GenerateRandomColor());
 
                 Stream.WriteInt(group.Objects.Count);
                 foreach (var mapObject in group.Objects)
@@ -673,6 +682,14 @@ namespace MESS.Formats.RMF
                 }
 
                 Stream.WriteFixedLengthString(value, maxLength);
+            }
+
+            private Color GenerateRandomColor()
+            {
+                var red = (byte)0;
+                var green = (byte)_random.Next(100, 256);
+                var blue = (byte)_random.Next(100, 256);
+                return new Color(red, green, blue);
             }
         }
 

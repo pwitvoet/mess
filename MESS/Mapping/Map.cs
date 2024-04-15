@@ -2,6 +2,28 @@
 
 namespace MESS.Mapping
 {
+    public enum VisGroupAssignment
+    {
+        /// <summary>
+        /// <para>
+        /// Only 'top-level' objects can be linked to a VIS group. Objects that are part of a group automatically belong to that group's VIS group.
+        /// Objects can only be linked to a single VIS group.
+        /// </para>
+        /// This approach is used by Hammer and TrenchBroom.
+        /// </summary>
+        PerGroup,
+
+        /// <summary>
+        /// <para>
+        /// Entities and brushes can be linked to multiple VIS group, on an individual basis.
+        /// Groups are not linked to VIS groups.
+        /// </para>
+        /// This approach is used by J.A.C.K.
+        /// </summary>
+        PerObject,
+    }
+
+
     /// <summary>
     /// A map consists of entities (in-game 'things') and brushes (3-dimensional textured shapes).
     /// <para>
@@ -11,6 +33,11 @@ namespace MESS.Mapping
     /// </summary>
     public class Map
     {
+        // Data interpretation (different editors may interpret the same data in a different way, and not all formats can store all data):
+        public VisGroupAssignment VisGroupAssignment { get; set; }
+        public bool HasColorInformation { get; set; }
+
+
         /// <summary>
         /// Map properties. These can also be accessed via the special <see cref="Worldspawn"/> entity.
         /// </summary>

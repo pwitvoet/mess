@@ -34,6 +34,8 @@ namespace MESS.Formats.JMF
             public Map LoadMap()
             {
                 var map = new JmfMap();
+                map.VisGroupAssignment = VisGroupAssignment.PerObject;
+                map.HasColorInformation = true;
 
                 var jhmfFileSignature = Stream.ReadFixedLengthString(4);
                 if (jhmfFileSignature != "JHMF")
@@ -450,6 +452,9 @@ namespace MESS.Formats.JMF
         class JmfSaver : IOContext<JmfFileSaveSettings>
         {
             private Dictionary<int, int> _visGroupIDMapping = new Dictionary<int, int>();
+            private VisGroupAssignment _visGroupAssignment;
+            private bool _hasColorInformation;
+            private Random _random = new Random();
 
 
             public JmfSaver(Stream stream, JmfFileSaveSettings? settings, ILogger? logger)
@@ -459,6 +464,9 @@ namespace MESS.Formats.JMF
 
             public void SaveMap(Map map)
             {
+                _visGroupAssignment = map.VisGroupAssignment;
+                _hasColorInformation = map.HasColorInformation;
+
                 Stream.WriteFixedLengthString("JHMF");
                 Stream.WriteInt((int)Settings.FileVersion);
 
@@ -531,14 +539,14 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(group.Group?.ID ?? 0);
                 Stream.WriteInt((int)GetJmfMapObjectFlags(group));
                 Stream.WriteInt(group.Objects.Count);
-                WriteColor(group.Color);
+                WriteColor(_hasColorInformation ? group.Color : GenerateRandomColor());
             }
 
             private void WriteVisGroup(VisGroup visGroup)
             {
                 Stream.WriteLengthPrefixedString(visGroup.Name);
                 Stream.WriteInt(_visGroupIDMapping[visGroup.ID]);
-                WriteColor(visGroup.Color);
+                WriteColor(_hasColorInformation ? visGroup.Color : GenerateRandomColor());
                 Stream.WriteByte((byte)(visGroup.IsVisible ? 1 : 0));
             }
 
@@ -548,7 +556,7 @@ namespace MESS.Formats.JMF
                 WriteVector3D(camera.LookAtPosition);
 
                 Stream.WriteInt((int)(isSelected ? JmfMapObjectFlags.Selected : JmfMapObjectFlags.None));
-                WriteColor(camera.Color);
+                WriteColor(_hasColorInformation ? camera.Color : GenerateRandomColor());
             }
 
             private void WriteEntityPath(EntityPath entityPath)
@@ -609,7 +617,7 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt((int)(jmfEntity?.JmfFlags ?? GetJmfMapObjectFlags(entity)));
                 Stream.WriteInt(entity.Group?.ID ?? 0);
                 Stream.WriteInt(entity.Group == null ? 0 : GetRootGroupID(entity.Group));
-                WriteColor(entity.Color);
+                WriteColor(_hasColorInformation ? entity.Color : new Color(220, 30, 220));  // NOTE: JACK appears to ignore this - it'll use .fgd color information for entities instead.
 
                 foreach (var attributeName in jmfEntity?.SpecialAttributeNames.ToArray() ?? SerializedAttributeNames)
                     Stream.WriteLengthPrefixedString(attributeName);
@@ -689,7 +697,7 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt((int)(jmfBrush?.JmfFlags ?? GetJmfMapObjectFlags(brush)));
                 Stream.WriteInt(brush.Group?.ID ?? 0);
                 Stream.WriteInt(brush.Group == null ? 0 : GetRootGroupID(brush.Group));
-                WriteColor(brush.Color);
+                WriteColor(_hasColorInformation ? brush.Color : GenerateRandomColor());
 
                 var visGroupIDs = GetVisGroupIDs(brush);
                 Stream.WriteInt(visGroupIDs.Length);
@@ -877,8 +885,11 @@ namespace MESS.Formats.JMF
                 if (group.IsSelected)
                     flags |= JmfMapObjectFlags.Selected;
 
-                if (group.IsHidden)
+                if ((_visGroupAssignment == VisGroupAssignment.PerGroup && group.VisGroups.Any(visGroup => !visGroup.IsVisible)) ||
+                    (_visGroupAssignment == VisGroupAssignment.PerObject && group.IsHidden))
+                {
                     flags |= JmfMapObjectFlags.Hidden;
+                }
 
                 return flags;
             }
@@ -893,8 +904,11 @@ namespace MESS.Formats.JMF
                 if (entity.IsSelected)
                     flags |= JmfMapObjectFlags.Selected;
 
-                if (entity.IsHidden)
+                if ((_visGroupAssignment == VisGroupAssignment.PerGroup && entity.VisGroups.Any(visGroup => !visGroup.IsVisible)) ||
+                    (_visGroupAssignment == VisGroupAssignment.PerObject && entity.IsHidden))
+                {
                     flags |= JmfMapObjectFlags.Hidden;
+                }
 
                 if (entity.Properties.TryGetValue(Attributes.Rendermode, out var rawRenderMode) && int.TryParse(rawRenderMode, out var renderMode) && renderMode != 0)
                     flags |= JmfMapObjectFlags.RenderMode;
@@ -920,8 +934,11 @@ namespace MESS.Formats.JMF
                 if (brush.IsSelected)
                     flags |= JmfMapObjectFlags.Selected;
 
-                if (brush.IsHidden)
+                if ((_visGroupAssignment == VisGroupAssignment.PerGroup && brush.VisGroups.Any(visGroup => !visGroup.IsVisible)) ||
+                    (_visGroupAssignment == VisGroupAssignment.PerObject && brush.IsHidden))
+                {
                     flags |= JmfMapObjectFlags.Hidden;
+                }
 
                 return flags;
             }
@@ -960,6 +977,14 @@ namespace MESS.Formats.JMF
                 var buffer = new byte[length];
                 Array.Copy(data, buffer, Math.Min(data.Length, length));
                 return buffer;
+            }
+
+            private Color GenerateRandomColor()
+            {
+                var red = (byte)0;
+                var green = (byte)_random.Next(100, 256);
+                var blue = (byte)_random.Next(100, 256);
+                return new Color(red, green, blue);
             }
         }
     }
