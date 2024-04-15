@@ -92,8 +92,14 @@ namespace MESS.Mapping
         {
             var wasEmpty = _brushes.Count == 0;
 
-            _brushes.AddRange(brushes);
-            var brushesBoundingBox = BoundingBox.FromBoundingBoxes(brushes.Select(brush => brush.BoundingBox));
+            var boundingBoxes = new List<BoundingBox>();
+            foreach (var brush in brushes)
+            {
+                _brushes.Add(brush);
+                boundingBoxes.Add(brush.BoundingBox);
+            }
+
+            var brushesBoundingBox = BoundingBox.FromBoundingBoxes(boundingBoxes);
             BoundingBox = wasEmpty ? brushesBoundingBox : BoundingBox.CombineWith(brushesBoundingBox);
         }
 
