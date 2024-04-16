@@ -1,5 +1,4 @@
 ﻿using MESS.Macros;
-using MESS.Formats.MAP;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MScript.Parsing;
@@ -218,22 +217,21 @@ namespace MESS
                 inputPath = Path.ChangeExtension(settings.InputPath, ".map");
 
             if (string.IsNullOrEmpty(settings.OutputPath))
-                settings.OutputPath = inputPath;
+                settings.OutputPath = Path.ChangeExtension(inputPath, ".map");
 
 
             logger.Info($"Starting to expand macros in '{settings.InputPath}'.");
 
             var expandedMap = MacroExpander.ExpandMacros(inputPath, settings, rewriteDirectives, logger);
 
-            // TODO: Create a backup if the target file already exists! -- how many backups to make? -- make a setting for this behavior?
-            using (var file = File.Create(settings.OutputPath))
-            {
-                logger.Info("");
-                logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
-                MapFormat.Save(expandedMap, file);
+            // TODO: Create a backup if the target file already exists! -- how many backups to make? -- make a setting for this behavior?   // TODO: !!!
+            logger.Info("");
+            logger.Info($"Finished macro expansion. Saving to '{settings.OutputPath}'.");
 
-                logger.Info($"Map saved. Map contains {expandedMap.WorldGeometry.Count} brushes and {expandedMap.Entities.Count} entities.");
-            }
+            FileSaveSettings? fileSaveSettings = null;  // TODO: Create settings based on output type & cmd-line arguments!
+            MapFile.Save(expandedMap, settings.OutputPath, fileSaveSettings, logger);
+
+            logger.Info($"Map saved. Map contains {expandedMap.WorldGeometry.Count} brushes and {expandedMap.Entities.Count} entities.");
         }
 
         private static void ParseVariables(string s, IDictionary<string, object?> variables)
