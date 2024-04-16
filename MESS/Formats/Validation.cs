@@ -9,17 +9,17 @@ namespace MESS.Formats
         /// Validates the given texture name. Returns either a valid texture name, or throws a <see cref="MapSaveException"/>, depending on the given file save settings.
         /// Uses ASCII encoding by default.
         /// </summary>
-        public static string ValidateTextureName(string textureName, int maxLength, FileSaveSettings settings, ILogger logger, Encoding? encoding = null)
+        public static string ValidateTextureName(string textureName, int? maxLength, FileSaveSettings settings, ILogger logger, Encoding? encoding = null)
         {
             encoding = encoding ?? Encoding.ASCII;
             var rawTextureName = encoding.GetBytes(textureName);
 
-            if (rawTextureName.Length > maxLength)
+            if (maxLength != null && rawTextureName.Length > maxLength)
             {
                 if (settings.TextureNameTooLongHandling == ValueTooLongHandling.Truncate)
                 {
                     logger.Warning($"Texture name '{textureName}' is too long and will be truncated.");
-                    textureName = encoding.GetString(rawTextureName, 0, maxLength);
+                    textureName = encoding.GetString(rawTextureName, 0, maxLength.Value);
                 }
                 else if (settings.TextureNameTooLongHandling == ValueTooLongHandling.Fail)
                 {

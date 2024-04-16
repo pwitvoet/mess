@@ -34,7 +34,7 @@ namespace MESS
                         return RmfFormat.Load(stream, settings as RmfFileLoadSettings ?? new RmfFileLoadSettings(settings), logger);
 
                     case ".map":
-                        return MapFormat.Load(stream);
+                        return MapFormat.Load(stream, settings as MapFileLoadSettings ?? new MapFileLoadSettings(settings), logger);
 
                     default:
                         throw new ArgumentException($"Unknown map file format: '{extension}.");
@@ -64,7 +64,7 @@ namespace MESS
 
                 case ".map":
                     using (var file = File.Create(path))
-                        MapFormat.Save(map, file);
+                        MapFormat.Save(map, file, settings as MapFileSaveSettings ?? new MapFileSaveSettings(settings), logger);
                     break;
 
                 default:
