@@ -7,6 +7,14 @@ using MESS.Mapping;
 
 namespace MESS
 {
+    public enum MapFileFormat
+    {
+        Map,
+        Rmf,
+        Jmf,
+    }
+
+
     public static class MapFile
     {
         /// <summary>
@@ -22,22 +30,20 @@ namespace MESS
         {
             return ZipFileSystem.ReadFile(path, stream =>
             {
-                var extension = Path.GetExtension(path);
-                switch (extension.ToLowerInvariant())
+                var fileFormat = GetMapFileFormat(path);
+                switch (fileFormat)
                 {
-                    case ".jmf":
-                    case ".jmx":
-                        return JmfFormat.Load(stream, settings, logger);
-
-                    case ".rmf":
-                    case ".rmx":
-                        return RmfFormat.Load(stream, settings as RmfFileLoadSettings ?? new RmfFileLoadSettings(settings), logger);
-
-                    case ".map":
+                    case MapFileFormat.Map:
                         return MapFormat.Load(stream, settings as MapFileLoadSettings ?? new MapFileLoadSettings(settings), logger);
 
+                    case MapFileFormat.Rmf:
+                        return RmfFormat.Load(stream, settings as RmfFileLoadSettings ?? new RmfFileLoadSettings(settings), logger);
+
+                    case MapFileFormat.Jmf:
+                        return JmfFormat.Load(stream, settings, logger);
+
                     default:
-                        throw new ArgumentException($"Unknown map file format: '{extension}.");
+                        throw new ArgumentException($"Unknown map file format: '{Path.GetExtension(path)}'.");
                 }
             });
         }
@@ -47,28 +53,47 @@ namespace MESS
         /// </summary>
         public static void Save(Map map, string path, FileSaveSettings? settings = null, ILogger? logger = null)
         {
-            var extension = Path.GetExtension(path);
-            switch (extension.ToLowerInvariant())
+            var fileFormat = GetMapFileFormat(path);
+            switch (fileFormat)
             {
-                case ".jmf":
-                case ".jmx":
-                    using (var file = File.Create(path))
-                        JmfFormat.Save(map, file, settings as JmfFileSaveSettings ?? new JmfFileSaveSettings(settings), logger);
-                    break;
-
-                case ".rmf":
-                case ".rmx":
-                    using (var file = File.Create(path))
-                        RmfFormat.Save(map, file, settings as RmfFileSaveSettings ?? new RmfFileSaveSettings(settings), logger);
-                    break;
-
-                case ".map":
+                case MapFileFormat.Map:
                     using (var file = File.Create(path))
                         MapFormat.Save(map, file, settings as MapFileSaveSettings ?? new MapFileSaveSettings(settings), logger);
                     break;
 
+                case MapFileFormat.Rmf:
+                    using (var file = File.Create(path))
+                        RmfFormat.Save(map, file, settings as RmfFileSaveSettings ?? new RmfFileSaveSettings(settings), logger);
+                    break;
+
+                case MapFileFormat.Jmf:
+                    using (var file = File.Create(path))
+                        JmfFormat.Save(map, file, settings as JmfFileSaveSettings ?? new JmfFileSaveSettings(settings), logger);
+                    break;
+
                 default:
-                    throw new ArgumentException($"Unknown output format: '{extension}'.");
+                    throw new ArgumentException($"Unknown output format: '{Path.GetExtension(path)}'.");
+            }
+        }
+
+        public static MapFileFormat? GetMapFileFormat(string path)
+        {
+            var extension = Path.GetExtension(path);
+            switch (extension.ToLowerInvariant())
+            {
+                case ".map":
+                    return MapFileFormat.Map;
+
+                case ".rmf":
+                case ".rmx":
+                    return MapFileFormat.Rmf;
+
+                case ".jmf":
+                case ".jmx":
+                    return MapFileFormat.Jmf;
+
+                default:
+                    return null;
             }
         }
     }
