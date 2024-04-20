@@ -280,11 +280,11 @@ namespace MESS.Formats.RMF
 
                         if (!isNumeric || numericValue != entity.Spawnflags)
                         {
-                            if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.UseField)
+                            if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.Ignore)
                             {
                                 Logger.Warning($"Entity of type '{entity.ClassName}' contains a 'spawnflags' key, which will be ignored (spawnflags: {entity.Spawnflags}, key value: {value}).");
                             }
-                            else if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.UseProperty)
+                            else if (Settings.SpawnflagsPropertyHandling == RmfSpawnflagsPropertyHandling.Use)
                             {
                                 // TODO: Handle duplicate spawnflags properties?
                                 Logger.Warning($"Entity of type '{entity.ClassName}' contains a 'spawnflags' key, which will override the spawnflags field (spawnflags: {entity.Spawnflags}, key value: {value}).");

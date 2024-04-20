@@ -49,7 +49,7 @@
         Fail,
     }
 
-    public abstract class FileSaveSettings
+    public class FileSaveSettings
     {
         /// <summary>
         /// What to do when a property key or value is too long for the target format.

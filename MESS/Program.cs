@@ -37,7 +37,7 @@ namespace MESS
 
             try
             {
-                // Special commands/modes (these do not have required arguments, but the cmd-line parser doesn't support that, so we'll handle these up-front):
+                // Special commands/modes:
                 if (args.Contains("-help"))
                 {
                     ShowHelp(commandLineParser);
@@ -46,6 +46,10 @@ namespace MESS
                 else if (args.Contains("-repl"))
                 {
                     return ReplMode.Run();
+                }
+                else if (args.Contains("-convert"))
+                {
+                    return ConvertMode.Run(args);
                 }
 
                 commandLineParser.Parse(args);
