@@ -1,4 +1,5 @@
 ﻿using MESS.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace MESS.Formats
@@ -56,6 +57,7 @@ namespace MESS.Formats
         /// Validates the given key. Returns either a valid key, or throws a <see cref="MapSaveException"/>, depending on the given file save settings.
         /// Uses ASCII encoding by default.
         /// </summary>
+        [return: NotNullIfNotNull(nameof(key))]
         public static string? ValidateKey(string? key, int? maxLength, FileSaveSettings settings, ILogger logger, string logPrefix, Encoding? encoding = null, bool mustBeNullTerminated = false)
             => ValidateKeyValue(key, maxLength, settings, logger, logPrefix, "key", encoding, mustBeNullTerminated);
 
@@ -63,9 +65,11 @@ namespace MESS.Formats
         /// Validates the given value. Returns either a valid key, or throws a <see cref="MapSaveException"/>, depending on the given file save settings.
         /// Uses ASCII encoding by default.
         /// </summary>
+        [return: NotNullIfNotNull(nameof(value))]
         public static string? ValidateValue(string? value, int? maxLength, FileSaveSettings settings, ILogger logger, string logPrefix, Encoding? encoding = null, bool mustBeNullTerminated = false)
             => ValidateKeyValue(value, maxLength, settings, logger, logPrefix, "value", encoding, mustBeNullTerminated);
 
+        [return: NotNullIfNotNull(nameof(value))]
         private static string? ValidateKeyValue(string? value, int? maxLength, FileSaveSettings settings, ILogger logger, string logPrefix, string type, Encoding? encoding = null, bool mustBeNullTerminated = false)
         {
             if (value == null)

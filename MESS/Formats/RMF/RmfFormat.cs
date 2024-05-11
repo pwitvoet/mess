@@ -553,7 +553,7 @@ namespace MESS.Formats.RMF
                 var logDescription = $"Entity of type '{entity.ClassName}'";
 
                 var className = Validation.ValidateValue(entity.ClassName, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
-                Stream.WriteNString(className ?? "", truncate: true);
+                Stream.WriteNString(className, truncate: true);
 
                 Stream.WriteBytes(new byte[4]);             // Unknown
                 Stream.WriteInt(entity.Spawnflags);
@@ -567,10 +567,10 @@ namespace MESS.Formats.RMF
                 foreach (var property in properties)
                 {
                     var key = Validation.ValidateKey(property.Key, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
-                    Stream.WriteNString(key ?? "", truncate: true);
+                    Stream.WriteNString(key, truncate: true);
 
                     var value = Validation.ValidateValue(property.Value, 255, Settings, Logger, logDescription, mustBeNullTerminated: true);
-                    Stream.WriteNString(value ?? "", truncate: true);
+                    Stream.WriteNString(value, truncate: true);
                 }
             }
 
