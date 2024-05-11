@@ -11,5 +11,15 @@
         /// Brush entities can use a brush covered with this texture to specify their origin. Often used for rotating entities.
         /// </summary>
         public const string Origin = "ORIGIN";
+
+        /// <summary>
+        /// Default texture for cordon brushes.
+        /// </summary>
+        public const string Black = "BLACK";
+
+        /// <summary>
+        /// Faces covered with this texture will display the skybox.
+        /// </summary>
+        public const string Sky = "sky";
     }
 }

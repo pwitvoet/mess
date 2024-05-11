@@ -1,9 +1,12 @@
-﻿using MESS.Formats;
+﻿using MESS.Common;
+using MESS.Formats;
 using MESS.Formats.JMF;
 using MESS.Formats.MAP;
 using MESS.Formats.RMF;
+using MESS.Geometry;
 using MESS.Logging;
 using MESS.Mapping;
+using MESS.Mathematics.Spatial;
 using MESS.Util;
 using System.Diagnostics;
 
@@ -36,6 +39,13 @@ namespace MESS
         public MapFileVariant? MapFormat { get; set; }
         public string? TrenchBroomGameName { get; set; }
         public string? MapWadProperty { get; set; }
+
+        // Cordoning:
+        public BoundingBox? CordonArea { get; set; }
+        public bool UseJmfCordonArea { get; set; }
+        public string? CordonTexture { get; set; }
+        public float? CordonPadding { get; set; }
+        public float? CordonThickness { get; set; }
 
         // Other settings:
         public LogLevel? LogLevel { get; set; }
@@ -92,6 +102,9 @@ namespace MESS
                         }
 
 
+                        // Cordon area:
+                        ApplyCordonSettings(map, settings, logger);
+
                         // Wad property:
                         if (!string.IsNullOrEmpty(settings.MapWadProperty))
                             map.Properties["wad"] = settings.MapWadProperty;
@@ -104,6 +117,8 @@ namespace MESS
 
                             var fileSaveSettings = CreateFileSaveSettings(settings);
                             MapFile.Save(map, settings.OutputPath, fileSaveSettings, logger);
+
+                            logger.Info($"Map saved. Map contains {map.WorldGeometry.Count} brushes and {map.Entities.Count} entities.");
                             return 0;
                         }
                         catch (Exception ex)
@@ -217,6 +232,28 @@ namespace MESS
                     s => settings.MapWadProperty = s,
                     "This sets the special 'wad' map property in the output .map file.")
 
+                // Cordoning:
+                .Option(
+                    "-cordonarea",
+                    s => settings.CordonArea = ParseBoundingBox(s),
+                    "Exclude anything outside the specified cordon area. Format is \"x1 y1 z1 x2 y2 z2\".")
+                .Switch(
+                    "-jmfcordonarea",
+                    () => settings.UseJmfCordonArea = true,
+                    "Exclude anything outside the cordon area defined in the input .jmf file, if it contains a cordon area.")
+                .Option(
+                    "-cordontexture",
+                    s => settings.CordonTexture = s,
+                    "The texture that will be applied to the cordon brushes. Default value is \"BLACK\".")
+                .Option(
+                    "-cordonpadding",
+                    s => settings.CordonPadding = float.Parse(s),
+                    "How far the cordon brushes should extend beyond the map's leftover content. Default value is 16. This is the default behavior, which matches how Hammer creates cordon brushes.")
+                .Option(
+                    "-cordonthickness",
+                    s => settings.CordonThickness = float.Parse(s),
+                    "This setting gives cordon brushes a fixed thickness. This may cause leaks because not all of the map's leftover content may be covered. This matches J.A.C.K.'s behavior.")
+
                 // Other settings:
                 .Option(
                     "-log",
@@ -231,6 +268,17 @@ namespace MESS
                     s => settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
                     "Output map file. If not specified, the input path is used, with the extension changed to .map.");
 
+
+            BoundingBox ParseBoundingBox(string input)
+            {
+                var values = input.Split()
+                    .Select(float.Parse)
+                    .ToArray();
+
+                return new BoundingBox(
+                    new Vector3D(Math.Min(values[0], values[3]), Math.Min(values[1], values[4]), Math.Min(values[2], values[5])),
+                    new Vector3D(Math.Max(values[0], values[3]), Math.Max(values[1], values[4]), Math.Max(values[2], values[5])));
+            }
 
             TEnum ParseOption<TEnum>(string input) where TEnum : struct, Enum
                 => (TEnum)Enum.Parse(typeof(TEnum), input, true);
@@ -250,6 +298,71 @@ namespace MESS
                 writer.WriteLine($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
                 commandLine.ShowDescriptions(writer);
             }
+        }
+
+
+        private static void ApplyCordonSettings(Map map, ConvertSettings settings, ILogger logger)
+        {
+            var cordonArea = settings.CordonArea;
+            if (settings.UseJmfCordonArea)
+            {
+                if (map is JmfMap jmfMap && jmfMap.CordonArea != null)
+                {
+                    logger.Info("Using cordon area from .jmf input map.");
+                    cordonArea = jmfMap.CordonArea;
+                }
+                else
+                {
+                    logger.Info("No cordon area found in input map.");
+                }
+            }
+
+            if (cordonArea == null)
+                return;
+
+
+            logger.Info($"Applying cordon area ({cordonArea.Value.Min} to {cordonArea.Value.Max}).");
+
+            // Remove all brushes and entities whose bounding boxes are completely outside the cordon area.
+            // NOTE: This also removes point entities that are exactly at the cordon area's boundaries. Hammer also does this, JACK does not.
+            map.RemoveBrushes(map.WorldGeometry.Where(brush => !cordonArea.Value.Touches(brush.BoundingBox)));
+            map.RemoveEntities(map.Entities.Where(entity => !cordonArea.Value.Touches(entity.BoundingBox)));
+
+
+            // Seal off the cordon area:
+            BoundingBox cordonOuterArea;
+            if (settings.CordonThickness != null)
+            {
+                // This behavior adds cordon brushes with a fixed thickness. This matches JACK's behavior, but it may cause leaks because not all content may be covered:
+                cordonOuterArea = cordonArea.Value.ExpandBy(Math.Max(1, settings.CordonThickness.Value));
+            }
+            else
+            {
+                // The default behavior is to cover all leftover map content with cordon brushes, which prevents brush entities
+                // that are partially outside the cordon area from causing leaks. This matches Hammer's behavior:
+                var mapBoundingBox = cordonArea.Value
+                    .CombineWith(map.Worldspawn.BoundingBox)
+                    .CombineWith(BoundingBox.FromBoundingBoxes(map.Entities.Select(entity => entity.BoundingBox)));
+                cordonOuterArea = mapBoundingBox.ExpandBy(Math.Max(0, settings.CordonPadding ?? 16f));
+            }
+            var cordonTexture = settings.CordonTexture ?? Textures.Black;
+            AddCordonSealingBrushes(map, cordonArea.Value, cordonOuterArea, cordonTexture);
+        }
+
+        private static void AddCordonSealingBrushes(Map map, BoundingBox cordonArea, BoundingBox cordonOuterArea, string cordonTexture)
+        {
+            var inner = cordonArea;
+            var outer = cordonOuterArea;
+
+            var cordonBrushes = new[] {
+                Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, outer.Min.Y, inner.Max.Z), new Vector3D(outer.Max.X, outer.Max.Y, outer.Max.Z)), cordonTexture), // Top
+                Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, outer.Min.Y, outer.Min.Z), new Vector3D(outer.Max.X, outer.Max.Y, inner.Min.Z)), cordonTexture), // Bottom
+                Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, inner.Max.Y, inner.Min.Z), new Vector3D(outer.Max.X, outer.Max.Y, inner.Max.Z)), cordonTexture), // Back
+                Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, outer.Min.Y, inner.Min.Z), new Vector3D(outer.Max.X, inner.Min.Y, inner.Max.Z)), cordonTexture), // Front
+                Shapes.Block(new BoundingBox(new Vector3D(inner.Max.X, inner.Min.Y, inner.Min.Z), new Vector3D(outer.Max.X, inner.Max.Y, inner.Max.Z)), cordonTexture), // Right
+                Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, inner.Min.Y, inner.Min.Z), new Vector3D(inner.Min.X, inner.Max.Y, inner.Max.Z)), cordonTexture), // Left
+            };
+            map.AddBrushes(cordonBrushes);
         }
 
 
