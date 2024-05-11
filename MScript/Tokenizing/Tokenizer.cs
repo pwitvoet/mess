@@ -148,19 +148,39 @@ namespace MScript.Tokenizing
                 context.MoveNext();
             }
 
-            if (!context.IsExhausted && context.Current == '.')
+            if (!context.IsExhausted)
             {
-                buffer.Append('.');
-                if (!context.MoveNext())
-                    throw ParseError(context, $"Expected a decimal number part but found '{context.Current}'.");
-
-                while (!context.IsExhausted && char.IsDigit(context.Current))
+                if (context.Current == '.')
                 {
+                    // Decimal part:
+                    buffer.Append('.');
+                    if (!context.MoveNext())
+                        throw ParseError(context, "Expected a decimal number part but found end of input.");
+
+                    while (!context.IsExhausted && char.IsDigit(context.Current))
+                    {
+                        buffer.Append(context.Current);
+                        context.MoveNext();
+                    }
+                }
+                else if ((context.Current == 'x' || context.Current == 'X') && buffer.Length == 1 && buffer[0] == '0')
+                {
+                    // Hexadecimal format:
                     buffer.Append(context.Current);
-                    context.MoveNext();
+                    if (!context.MoveNext())
+                        throw ParseError(context, "Expected a hexadecimal digit but found end of input.");
+
+                    while (!context.IsExhausted && IsHexDigit(context.Current))
+                    {
+                        buffer.Append(context.Current);
+                        context.MoveNext();
+                    }
                 }
             }
             return new Token(TokenType.Number, buffer.ToString(), position);
+
+
+            bool IsHexDigit(char c) => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
         }
 
         private static Token ReadString(Context context, Position position)

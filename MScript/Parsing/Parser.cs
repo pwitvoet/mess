@@ -1,6 +1,7 @@
 ﻿using MScript.Parsing.AST;
 using MScript.Tokenizing;
 using System.Globalization;
+using System.Numerics;
 
 namespace MScript.Parsing
 {
@@ -231,7 +232,12 @@ namespace MScript.Parsing
             AssertTokenType(token, TokenType.Number);
 
             // literal: <number>
-            return context.ReplaceLast(1, new NumberLiteral(double.Parse(token.Value, CultureInfo.InvariantCulture), token.Position));
+            double value;
+            if (token.Value.StartsWith("0x") || token.Value.StartsWith("0X"))
+                value = (double)BigInteger.Parse(token.Value.Substring(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            else
+                value = double.Parse(token.Value, CultureInfo.InvariantCulture);
+            return context.ReplaceLast(1, new NumberLiteral(value, token.Position));
         }
 
         private static bool ReduceString(Context context, Token token)
