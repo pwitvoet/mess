@@ -2,6 +2,7 @@
 using MESS.Formats;
 using MESS.Formats.JMF;
 using MESS.Formats.MAP;
+using MESS.Formats.MAP.Trenchbroom;
 using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
@@ -9,6 +10,7 @@ using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using MESS.Util;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace MESS
 {
@@ -39,6 +41,14 @@ namespace MESS
         public MapFileVariant? MapFormat { get; set; }
         public string? TrenchBroomGameName { get; set; }
         public string? MapWadProperty { get; set; }
+
+        // VIS group filtering:
+        public string[]? OnlyVisGroups { get; set; }
+        public string[]? NotVisGroups { get; set; }
+        public bool OnlyVisGroupObjects { get; set; }
+        public bool NoInvisibleVisGroups { get; set; }
+        public bool NoVisibleVisGroups { get; set; }
+        public bool NoOmittedLayers { get; set; }
 
         // Cordoning:
         public BoundingBox? CordonArea { get; set; }
@@ -101,6 +111,9 @@ namespace MESS
                             return -1;
                         }
 
+
+                        // VIS group filtering:
+                        ApplyVisGroupFiltering(map, settings, logger);
 
                         // Cordon area:
                         ApplyCordonSettings(map, settings, logger);
@@ -232,6 +245,32 @@ namespace MESS
                     s => settings.MapWadProperty = s,
                     "This sets the special 'wad' map property in the output .map file.")
 
+                // VIS group filtering:
+                .Option(
+                    "-onlyvisgroups",
+                    s => settings.OnlyVisGroups = ParseCommaSeparatedList(s),
+                    "Only objects that belong to one of the listed VIS groups are included in the output map. VIS group names may include wildcards (*). Multiple VIS group names must be separated by commas.")
+                .Option(
+                    "-notvisgroups",
+                    s => settings.NotVisGroups = ParseCommaSeparatedList(s),
+                    "Objects that belong to one of the listed VIS groups are excluded from the output map. VIS group names may include wildcards (*). Multiple VIS group names must be separated by commas.")
+                .Switch(
+                    "-onlyvisgroupobjects",
+                    () => settings.OnlyVisGroupObjects = true,
+                    "Objects that do not belong to any VIS group are excluded from the output map.")
+                .Switch(
+                    "-noinvisiblevisgroups",
+                    () => settings.NoInvisibleVisGroups = true,
+                    "Objects that belong to an invisible VIS group are excluded from the output map.")
+                .Switch(
+                    "-novisiblevisgroups",
+                    () => settings.NoVisibleVisGroups = true,
+                    "Objects that belong to a visible VIS group are excluded from the output map.")
+                .Switch(
+                    "-noomittedlayers",
+                    () => settings.NoOmittedLayers = true,
+                    "Objects that belong to a TrenchBroom layer that is set to be omitted from export are excluded from the output map.")
+
                 // Cordoning:
                 .Option(
                     "-cordonarea",
@@ -269,6 +308,14 @@ namespace MESS
                     "Output map file. If not specified, the input path is used, with the extension changed to .map.");
 
 
+            string[] ParseCommaSeparatedList(string input)
+            {
+                return input
+                    .Split(',')
+                    .Select(part => part.Trim())
+                    .ToArray();
+            }
+
             BoundingBox ParseBoundingBox(string input)
             {
                 var values = input.Split()
@@ -300,6 +347,70 @@ namespace MESS
             }
         }
 
+
+        private static void ApplyVisGroupFiltering(Map map, ConvertSettings settings, ILogger logger)
+        {
+            var includeNamePattern = CreateWildcardNamesPattern(settings.OnlyVisGroups);
+            var excludeNamePattern = CreateWildcardNamesPattern(settings.NotVisGroups);
+
+            var excludedVisGroups = new List<VisGroup>();
+            foreach (var visGroup in map.VisGroups)
+            {
+                if ((excludeNamePattern != null && Regex.IsMatch(visGroup.Name ?? "", excludeNamePattern)) ||
+                    (includeNamePattern != null && !Regex.IsMatch(visGroup.Name ?? "", includeNamePattern)) ||
+                    (settings.NoInvisibleVisGroups && !visGroup.IsVisible) ||
+                    (settings.NoVisibleVisGroups && visGroup.IsVisible) ||
+                    (settings.NoOmittedLayers && visGroup is TBLayer tbLayer && tbLayer.IsOmittedFromExport))
+                {
+                    excludedVisGroups.Add(visGroup);
+                }
+            }
+
+            foreach (var visGroup in excludedVisGroups)
+            {
+                logger.Info($"Excluding VIS group '{visGroup.Name}'.");
+                map.RemoveVisGroup(visGroup, removeContent: true);
+            }
+
+            if (settings.OnlyVisGroupObjects)
+            {
+                var excludedBrushes = map.WorldGeometry
+                    .Where(brush => !brush.GetVisGroups(map.VisGroupAssignment).Any())
+                    .ToArray();
+                map.RemoveBrushes(excludedBrushes);
+
+                var excludedEntities = map.Entities
+                    .Where(entity => !entity.GetVisGroups(map.VisGroupAssignment).Any())
+                    .ToArray();
+                map.RemoveEntities(excludedEntities);
+
+                logger.Info($"Excluded {excludedBrushes.Length} brushes and {excludedEntities.Length} entities that did not belong to any VIS group.");
+            }
+
+
+            string? CreateWildcardNamesPattern(string[]? wildcardNames)
+            {
+                if (wildcardNames == null)
+                    return null;
+
+                return string.Join("|", wildcardNames.Select(CreateSingleNamePattern));
+            }
+
+            string CreateSingleNamePattern(string wildcardName)
+            {
+                var pattern = Regex.Replace(
+                    wildcardName,
+                    @"\\\*|\*|[^*]+",
+                    match => match.Value switch
+                    {
+                        @"\*" => Regex.Escape("*"),
+                        "*" => ".*",
+                        _ => Regex.Escape(match.Value)
+                    });
+
+                return "^" + pattern + "$";
+            }
+        }
 
         private static void ApplyCordonSettings(Map map, ConvertSettings settings, ILogger logger)
         {
