@@ -317,7 +317,7 @@ namespace MESS.Macros
 
                     if (entity.Brushes.Any())
                         master.AddBrushes(entity.Brushes);
-                    context.OutputMap.Entities.Remove(entity);
+                    context.OutputMap.RemoveEntity(entity);
                 }
 
                 master.Properties.Remove(Attributes.MergeEntityID);
@@ -736,7 +736,7 @@ namespace MESS.Macros
                 case CoverBrushBehavior.FuncDetail:
                     var funcDetail = new Entity(coverEntity.Brushes.Select(brush => brush.Copy(new Vector3D())));
                     funcDetail.ClassName = "func_detail";
-                    context.OutputMap.Entities.Add(funcDetail);
+                    context.OutputMap.AddEntity(funcDetail);
                     break;
             }
 
@@ -1116,7 +1116,7 @@ namespace MESS.Macros
 
 
             Logger.Verbose($"Creating '{normalEntity.ClassName}', using {(invertedPitch ? "inverted" : "normal")} pitch.");
-            context.OutputMap.Entities.Add(normalEntity);
+            context.OutputMap.AddEntity(normalEntity);
 
             CreateAttachedTemplateInstances(context, attachedTemplatesPosition, evaluatedProperties, templateMapPaths, templateNames);
         }

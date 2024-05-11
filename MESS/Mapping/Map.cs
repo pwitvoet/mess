@@ -1,4 +1,5 @@
 ﻿using MESS.Mathematics.Spatial;
+using MESS.Util;
 
 namespace MESS.Mapping
 {
@@ -51,7 +52,7 @@ namespace MESS.Mapping
         /// <summary>
         /// A list of all entities in this map (excluding the special <see cref="Worldspawn"/> entity).
         /// </summary>
-        public List<Entity> Entities { get; } = new();
+        public IReadOnlyList<Entity> Entities => _entities;
 
         /// <summary>
         /// A special entity that contains the map properties and world geometry.
@@ -89,12 +90,52 @@ namespace MESS.Mapping
         public int? ActiveCameraIndex { get; set; }
 
 
+        private List<Entity> _entities = new();
+
+
         public void AddBrush(Brush brush) => Worldspawn.AddBrush(brush);
 
         public void AddBrushes(IEnumerable<Brush> brushes) => Worldspawn.AddBrushes(brushes);
 
-        public void RemoveBrush(Brush brush) => Worldspawn.RemoveBrush(brush);
+        public void RemoveBrush(Brush brush)
+        {
+            Worldspawn.RemoveBrush(brush);
+            brush.RemoveFromGroupAndVisGroups();
+        }
 
-        public void RemoveBrushes(IEnumerable<Brush> brushes) => Worldspawn.RemoveBrushes(brushes);
+        public void RemoveBrushes(IEnumerable<Brush> brushes)
+        {
+            brushes = brushes.GetSafeEnumerable();
+
+            Worldspawn.RemoveBrushes(brushes);
+
+            foreach (var brush in brushes)
+                brush.RemoveFromGroupAndVisGroups();
+        }
+
+        public void AddEntity(Entity entity) => _entities.Add(entity);
+
+        public void AddEntities(IEnumerable<Entity> entities) => _entities.AddRange(entities);
+
+        public void RemoveEntity(Entity entity)
+        {
+            if (!_entities.Remove(entity))
+                return;
+
+            entity.RemoveFromGroupAndVisGroups();
+        }
+
+        public void RemoveEntities(IEnumerable<Entity> entities)
+        {
+            entities = entities.GetSafeEnumerable();
+
+            foreach (var entity in entities)
+            {
+                if (!_entities.Remove(entity))
+                    continue;
+
+                entity.RemoveFromGroupAndVisGroups();
+            }
+        }
     }
 }

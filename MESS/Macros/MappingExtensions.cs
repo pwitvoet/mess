@@ -22,7 +22,7 @@ namespace MESS.Macros
         public static void ExpandPaths(this Map map)
         {
             foreach (var entityPath in map.EntityPaths)
-                map.Entities.AddRange(entityPath.GenerateEntities());
+                map.AddEntities(entityPath.GenerateEntities());
             map.EntityPaths.Clear();
         }
 

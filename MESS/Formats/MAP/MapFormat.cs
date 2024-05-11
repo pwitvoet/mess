@@ -88,7 +88,7 @@ namespace MESS.Formats.MAP
                         }
                         else
                         {
-                            map.Entities.Add(entity);
+                            map.AddEntity(entity);
                         }
 
                         entityNumber += 1;
@@ -152,7 +152,7 @@ namespace MESS.Formats.MAP
                             }
                             else
                             {
-                                map.Entities.Add(entity);
+                                map.AddEntity(entity);
                             }
 
                             entityNumber += 1;

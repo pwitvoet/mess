@@ -17,6 +17,14 @@
 
 
 
+        public void RemoveFromGroupAndVisGroups()
+        {
+            Group?.RemoveObject(this);
+
+            while (VisGroups.Any())
+                VisGroups[0].RemoveObject(this);
+        }
+
         internal void SetGroup(Group? group) => _group = group;
 
         internal void AddVisGroup(VisGroup visGroup) => _visGroups.Add(visGroup);

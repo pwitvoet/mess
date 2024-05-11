@@ -95,7 +95,7 @@ namespace MESS.Formats.RMF
                     switch (mapObject)
                     {
                         case Entity entity:
-                            map.Entities.Add(entity);
+                            map.AddEntity(entity);
                             break;
 
                         case Brush brush:

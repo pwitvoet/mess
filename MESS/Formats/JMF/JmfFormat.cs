@@ -105,7 +105,7 @@ namespace MESS.Formats.JMF
                         if (entity.ClassName == Entities.Worldspawn)
                             map.Worldspawn = entity;
                         else
-                            map.Entities.Add(entity);
+                            map.AddEntity(entity);
                     }
                 }
                 catch (EndOfStreamException)

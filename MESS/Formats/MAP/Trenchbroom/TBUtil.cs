@@ -117,7 +117,7 @@ namespace MESS.Formats.MAP.Trenchbroom
                 };
                 layers[layer.ID] = layer;
 
-                map.Entities.Remove(layerEntity);
+                map.RemoveEntity(layerEntity);
                 if (layerEntity.Brushes.Any())
                 {
                     map.AddBrushes(layerEntity.Brushes);
@@ -163,7 +163,7 @@ namespace MESS.Formats.MAP.Trenchbroom
 
                 // Groups can safely be added in the order that they appear:
                 map.Groups.Add(group);
-                map.Entities.Remove(groupEntity);
+                map.RemoveEntity(groupEntity);
                 if (groupEntity.Brushes.Any())
                 {
                     map.AddBrushes(groupEntity.Brushes);
@@ -331,10 +331,10 @@ namespace MESS.Formats.MAP.Trenchbroom
 
             // Finally, replace groups and visGroups with group and layer entities:
             map.Groups.Clear();
-            map.Entities.AddRange(groupEntities.Values);
+            map.AddEntities(groupEntities.Values);
 
             map.VisGroups.Clear();
-            map.Entities.AddRange(layerEntities.Values);
+            map.AddEntities(layerEntities.Values);
 
 
             VisGroup? DetermineVisGroup(MapObject mapObject)
@@ -394,7 +394,7 @@ namespace MESS.Formats.MAP.Trenchbroom
             copy.Worldspawn = CopyEntity(map.Worldspawn, ignoreGroups: false);
 
             foreach (var entity in map.Entities)
-                copy.Entities.Add(CopyEntity(entity));
+                copy.AddEntity(CopyEntity(entity));
 
             foreach (var entityPath in map.EntityPaths)
                 copy.EntityPaths.Add(CopyEntityPath(entityPath));

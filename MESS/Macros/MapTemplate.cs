@@ -122,7 +122,7 @@ namespace MESS.Macros
                 {
                     if (templateArea.Contains(entity))
                     {
-                        templateMap.Entities.Add(entity.Copy(offset));
+                        templateMap.AddEntity(entity.Copy(offset));
                         objectsMarkedForRemoval.Add(entity);
                     }
                 }
@@ -147,7 +147,7 @@ namespace MESS.Macros
             {
                 switch (mapObject)
                 {
-                    case Entity entity: map.Entities.Remove(entity); break;
+                    case Entity entity: map.RemoveEntity(entity); break;
                     case Brush brush: map.RemoveBrush(brush); break;
                 }
                 // TODO: They're also still part of groups, vis-groups, etc!
@@ -188,8 +188,7 @@ namespace MESS.Macros
             }
 
             // At this point we no longer need the macro_remove_if entities:
-            foreach (var removeIfEntity in map.GetEntitiesWithClassName(MacroEntity.RemoveIf).ToArray())
-                map.Entities.Remove(removeIfEntity);
+            map.RemoveEntities(map.GetEntitiesWithClassName(MacroEntity.RemoveIf));
 
             return conditionalContents;
         }
