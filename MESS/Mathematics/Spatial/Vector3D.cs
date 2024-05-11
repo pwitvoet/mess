@@ -44,6 +44,8 @@
         }
 
 
+        public static Vector3D operator -(Vector3D vector) => new Vector3D(-vector.X, -vector.Y, -vector.Z);
+
         public static Vector3D operator +(Vector3D left, Vector3D right) => new Vector3D(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
         public static Vector3D operator -(Vector3D left, Vector3D right) => new Vector3D(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
 

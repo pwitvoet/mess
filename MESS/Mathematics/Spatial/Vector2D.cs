@@ -33,6 +33,8 @@
         public float DotProduct(Vector2D other) => (X * other.X) + (Y * other.Y);
 
 
+        public static Vector2D operator -(Vector2D vector) => new Vector2D(-vector.X, -vector.Y);
+
         public static Vector2D operator +(Vector2D left, Vector2D right) => new Vector2D(left.X + right.X, left.Y + right.Y);
         public static Vector2D operator -(Vector2D left, Vector2D right) => new Vector2D(left.X - right.X, left.Y - right.Y);
 
