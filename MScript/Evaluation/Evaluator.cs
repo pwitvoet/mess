@@ -117,8 +117,8 @@ namespace MScript.Evaluation
         {
             switch (binaryOperation.Operator)
             {
-                case BinaryOperator.And: return Operations.And(binaryOperation.LeftOperand, binaryOperation.RightOperand, context);
-                case BinaryOperator.Or: return Operations.Or(binaryOperation.LeftOperand, binaryOperation.RightOperand, context);
+                case BinaryOperator.LogicalAnd: return Operations.And(binaryOperation.LeftOperand, binaryOperation.RightOperand, context);
+                case BinaryOperator.LogicalOr: return Operations.Or(binaryOperation.LeftOperand, binaryOperation.RightOperand, context);
             }
 
             var leftOperand = Evaluate(binaryOperation.LeftOperand, context);
@@ -136,6 +136,11 @@ namespace MScript.Evaluation
                 case BinaryOperator.GreaterThanOrEqual: return Operations.GreaterThanOrEqual(leftOperand, rightOperand);
                 case BinaryOperator.LessThan: return Operations.LessThan(leftOperand, rightOperand);
                 case BinaryOperator.LessThanOrEqual: return Operations.LessThanOrEqual(leftOperand, rightOperand);
+                case BinaryOperator.BitshiftLeft: return Operations.BitshiftLeft(leftOperand, rightOperand);
+                case BinaryOperator.BitshiftRight: return Operations.BitshiftRight(leftOperand, rightOperand);
+                case BinaryOperator.BitwiseAnd: return Operations.BitwiseAnd(leftOperand, rightOperand);
+                case BinaryOperator.BitwiseXor: return Operations.BitwiseXor(leftOperand, rightOperand);
+                case BinaryOperator.BitwiseOr: return Operations.BitwiseOr(leftOperand, rightOperand);
                 default: throw EvaluationError($"Unknown operator: {binaryOperation.Operator}.", binaryOperation);
             }
         }
@@ -147,6 +152,7 @@ namespace MScript.Evaluation
             {
                 case UnaryOperator.Negate: return Operations.Negate(operand);
                 case UnaryOperator.LogicalNegate: return Operations.LogicalNegate(operand);
+                case UnaryOperator.BitwiseComplement: return Operations.BitwiseComplement(operand);
                 default: throw EvaluationError($"Unknown operator: {unaryOperation.Operator}.", unaryOperation);
             }
         }

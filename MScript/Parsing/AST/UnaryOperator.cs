@@ -5,5 +5,8 @@
         // Negation:
         Negate,             // -exp
         LogicalNegate,      // !exp
+
+        // Bitwise:
+        BitwiseComplement,  // ~exp
     }
 }

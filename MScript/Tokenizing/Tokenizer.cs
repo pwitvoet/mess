@@ -48,6 +48,8 @@ namespace MScript.Tokenizing
                 case '-': context.MoveNext(); return new Token(TokenType.Minus, position);
                 case '*': context.MoveNext(); return new Token(TokenType.Asterisk, position);
                 case '%': context.MoveNext(); return new Token(TokenType.PercentageSign, position);
+                case '^': context.MoveNext(); return new Token(TokenType.Caret, position);
+                case '~': context.MoveNext(); return new Token(TokenType.Tilde, position);
 
                 case '/':
                     if (context.MoveNext())
@@ -79,26 +81,46 @@ namespace MScript.Tokenizing
                     return new Token(TokenType.NotEquals, position);
 
                 case '>':
-                    if (!context.MoveNext() || context.Current != '=')
-                        return new Token(TokenType.GreaterThan, position);
-                    context.MoveNext();
-                    return new Token(TokenType.GreaterThanOrEqual, position);
+                    if (context.MoveNext())
+                    {
+                        if (context.Current == '>')
+                        {
+                            context.MoveNext();
+                            return new Token(TokenType.ShiftRight, position);
+                        }
+                        else if (context.Current == '=')
+                        {
+                            context.MoveNext();
+                            return new Token(TokenType.GreaterThanOrEqual, position);
+                        }
+                    }
+                    return new Token(TokenType.GreaterThan, position);
 
                 case '<':
-                    if (!context.MoveNext() || context.Current != '=')
-                        return new Token(TokenType.LessThan, position);
-                    context.MoveNext();
-                    return new Token(TokenType.LessThanOrEqual, position);
+                    if (context.MoveNext())
+                    {
+                        if (context.Current == '<')
+                        {
+                            context.MoveNext();
+                            return new Token(TokenType.ShiftLeft, position);
+                        }
+                        else if (context.Current == '=')
+                        {
+                            context.MoveNext();
+                            return new Token(TokenType.LessThanOrEqual, position);
+                        }
+                    }
+                    return new Token(TokenType.LessThan, position);
 
                 case '&':
                     if (!context.MoveNext() || context.Current != '&')
-                        throw ParseError(context, $"Expected '&&' but found '&{context.Current}'.");
+                        return new Token(TokenType.SingleAmpersand, position);
                     context.MoveNext();
                     return new Token(TokenType.DoubleAmpersand, position);
 
                 case '|':
                     if (!context.MoveNext() || context.Current != '|')
-                        throw ParseError(context, $"Expected '||' but found '|{context.Current}'.");
+                        return new Token(TokenType.SingleBar, position);
                     context.MoveNext();
                     return new Token(TokenType.DoubleBar, position);
 

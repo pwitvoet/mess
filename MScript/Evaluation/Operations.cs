@@ -117,6 +117,27 @@ namespace MScript.Evaluation
         public static object? LogicalNegate(object? operand) => ToBoolean(!IsTrue(operand));
 
 
+        // Bitwise:
+        public static object? BitshiftLeft(object? leftOperand, object? rightOperand) => BitwiseOperation(leftOperand, rightOperand, (a, b) => a << b);
+
+        public static object? BitshiftRight(object? leftOperand, object? rightOperand) => BitwiseOperation(leftOperand, rightOperand, (a, b) => a >> b);
+
+        public static object? BitwiseAnd(object? leftOperand, object? rightOperand) => BitwiseOperation(leftOperand, rightOperand, (a, b) => a & b);
+
+        public static object? BitwiseXor(object? leftOperand, object? rightOperand) => BitwiseOperation(leftOperand, rightOperand, (a, b) => a ^ b);
+
+        public static object? BitwiseOr(object? leftOperand, object? rightOperand) => BitwiseOperation(leftOperand, rightOperand, (a, b) => a | b);
+
+        public static object? BitwiseComplement(object? operand)
+        {
+            if (GetNumericalValue(operand) is not double number)
+                throw new InvalidOperationException($"Cannot perform bitwise operation on {operand}.");
+
+            var integerValue = (int)Math.Truncate(number);
+            return (double)(~integerValue);
+        }
+
+
         // Conditional:
         public static object? Conditional(Expression condition, Expression trueExpression, Expression falseExpression, EvaluationContext context)
         {
@@ -209,6 +230,14 @@ namespace MScript.Evaluation
                 throw new InvalidOperationException($"Cannot compare {leftOperand} and {rightOperand}.");
 
             return ToBoolean(comparison(leftNumber, rightNumber));
+        }
+
+        private static object? BitwiseOperation(object? leftOperand, object? rightOperand, Func<int, int, int> operation)
+        {
+            if (GetNumericalValue(leftOperand) is not double leftNumber || GetNumericalValue(rightOperand) is not double rightNumber)
+                throw new InvalidOperationException($"Cannot perform bitwise operation on {leftOperand} and {rightOperand}.");
+
+            return (double)operation((int)((long)Math.Truncate(leftNumber)), (int)((long)Math.Truncate(rightNumber)));
         }
 
         private static double? GetNumericalValue(object? operand) => operand switch {

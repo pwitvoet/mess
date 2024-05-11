@@ -20,7 +20,14 @@
         LessThanOrEqual,    // exp <= exp
 
         // Logical:
-        And,                // exp && exp
-        Or,                 // exp || exp
+        LogicalAnd,         // exp && exp
+        LogicalOr,          // exp || exp
+
+        // Bitwise:
+        BitshiftLeft,       // exp << exp
+        BitshiftRight,      // exp >> exp
+        BitwiseAnd,         // exp & exp
+        BitwiseXor,         // exp ^ exp
+        BitwiseOr,          // exp | exp
     }
 }

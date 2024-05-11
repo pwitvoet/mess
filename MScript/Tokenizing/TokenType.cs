@@ -37,6 +37,13 @@
         LessThan,           // <
         LessThanOrEqual,    // <=
 
+        ShiftLeft,          // <<
+        ShiftRight,         // >>
+        SingleAmpersand,    // &
+        Caret,              // ^
+        SingleBar,          // |
+        Tilde,              // ~
+
         None,               // none
         And,                // and
         Or,                 // or

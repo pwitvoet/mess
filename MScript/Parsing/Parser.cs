@@ -542,11 +542,17 @@ namespace MScript.Parsing
             TokenType.LessThan => BinaryOperator.LessThan,
             TokenType.LessThanOrEqual => BinaryOperator.LessThanOrEqual,
 
-            TokenType.DoubleAmpersand => BinaryOperator.And,
-            TokenType.And => BinaryOperator.And,
+            TokenType.DoubleAmpersand => BinaryOperator.LogicalAnd,
+            TokenType.And => BinaryOperator.LogicalAnd,
 
-            TokenType.DoubleBar => BinaryOperator.Or,
-            TokenType.Or => BinaryOperator.Or,
+            TokenType.DoubleBar => BinaryOperator.LogicalOr,
+            TokenType.Or => BinaryOperator.LogicalOr,
+
+            TokenType.ShiftLeft => BinaryOperator.BitshiftLeft,
+            TokenType.ShiftRight => BinaryOperator.BitshiftRight,
+            TokenType.SingleAmpersand => BinaryOperator.BitwiseAnd,
+            TokenType.Caret => BinaryOperator.BitwiseXor,
+            TokenType.SingleBar => BinaryOperator.BitwiseOr,
 
             _ => null,
         };
@@ -557,6 +563,7 @@ namespace MScript.Parsing
             TokenType.Minus => UnaryOperator.Negate,
             TokenType.ExclamationMark => UnaryOperator.LogicalNegate,
             TokenType.Not => UnaryOperator.LogicalNegate,
+            TokenType.Tilde => UnaryOperator.BitwiseComplement,
 
             _ => null,
         };
@@ -574,10 +581,10 @@ namespace MScript.Parsing
                 case TokenType.Period:
                 case TokenType.ParensOpen:
                 case TokenType.BracketOpen:
-                    return 10;
+                    return 14;
 
-                // unary-operation: 9
-                // binary-operation: 3-8
+                // unary-operation: 13
+                // binary-operation: 3-12
 
                 // conditional-operation:
                 case TokenType.QuestionMark:
@@ -602,26 +609,39 @@ namespace MScript.Parsing
                 case BinaryOperator.Multiply:
                 case BinaryOperator.Divide:
                 case BinaryOperator.Remainder:
-                    return 8;
+                    return 12;
 
                 case BinaryOperator.Add:
                 case BinaryOperator.Subtract:
-                    return 7;
+                    return 11;
+
+                case BinaryOperator.BitshiftLeft:
+                case BinaryOperator.BitshiftRight:
+                    return 10;
 
                 case BinaryOperator.GreaterThan:
                 case BinaryOperator.GreaterThanOrEqual:
                 case BinaryOperator.LessThan:
                 case BinaryOperator.LessThanOrEqual:
-                    return 6;
+                    return 9;
 
                 case BinaryOperator.Equals:
                 case BinaryOperator.NotEquals:
+                    return 8;
+
+                case BinaryOperator.BitwiseAnd:
+                    return 7;
+
+                case BinaryOperator.BitwiseXor:
+                    return 6;
+
+                case BinaryOperator.BitwiseOr:
                     return 5;
 
-                case BinaryOperator.And:
+                case BinaryOperator.LogicalAnd:
                     return 4;
 
-                case BinaryOperator.Or:
+                case BinaryOperator.LogicalOr:
                     return 3;
 
                 default:
@@ -629,7 +649,7 @@ namespace MScript.Parsing
             }
         }
 
-        private static int GetPrecedence(UnaryOperator unaryOperator) => 9;
+        private static int GetPrecedence(UnaryOperator unaryOperator) => 13;
 
 
         private static ParseException ParseError(string message, Context context)
