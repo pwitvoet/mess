@@ -16,6 +16,15 @@
         public Color Color { get; set; }
 
 
+        public IReadOnlyList<VisGroup> GetVisGroups(VisGroupAssignment visGroupAssignment)
+        {
+            switch (visGroupAssignment)
+            {
+                case VisGroupAssignment.PerGroup: return (TopLevelGroup ?? this).VisGroups;
+                case VisGroupAssignment.PerObject: return VisGroups;
+                default: throw new NotImplementedException($"Unknown VIS group assignment approach: {visGroupAssignment}.");
+            }
+        }
 
         public void RemoveFromGroupAndVisGroups()
         {

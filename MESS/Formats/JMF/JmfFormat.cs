@@ -67,7 +67,7 @@ namespace MESS.Formats.JMF
                     if (parentGroupID != 0)
                         parentGroupIDs[group.ID] = parentGroupID;
 
-                    map.Groups.Add(group);
+                    map.AddGroup(group);
                 }
                 var groups = map.Groups.ToDictionary(group => group.ID, group => group);
                 foreach (var kv in parentGroupIDs)
@@ -76,7 +76,7 @@ namespace MESS.Formats.JMF
                 // Objects can be part of multiple VIS groups:
                 var visGroupCount = Stream.ReadInt();
                 for (int i = 0; i < visGroupCount; i++)
-                    map.VisGroups.Add(ReadVisGroup());
+                    map.AddVisGroup(ReadVisGroup());
                 var visGroups = map.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
 
                 var cordonMin = ReadVector3D();

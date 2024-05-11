@@ -76,12 +76,12 @@ namespace MESS.Mapping
         /// <summary>
         /// A list of all groups in this map. This includes groups that are part of other groups.
         /// </summary>
-        public List<Group> Groups { get; } = new();
+        public IReadOnlyList<Group> Groups => _groups;
 
         /// <summary>
         /// A list of all visibility groups in this map. Visibility groups are used in level editors to quickly hide or show related objects.
         /// </summary>
-        public List<VisGroup> VisGroups { get; } = new();
+        public IReadOnlyList<VisGroup> VisGroups => _visGroups;
 
         /// <summary>
         /// A list of cameras. Cameras are only used in level editors.
@@ -91,6 +91,8 @@ namespace MESS.Mapping
 
 
         private List<Entity> _entities = new();
+        private List<Group> _groups = new();
+        private List<VisGroup> _visGroups = new();
 
 
         public void AddBrush(Brush brush) => Worldspawn.AddBrush(brush);
@@ -135,6 +137,82 @@ namespace MESS.Mapping
                     continue;
 
                 entity.RemoveFromGroupAndVisGroups();
+            }
+        }
+
+
+        public void AddGroup(Group group) => _groups.Add(group);
+
+        /// <summary>
+        /// Removes the given group from this map. If <paramref name="removeContent"/> is true,
+        /// all objects that belong to the group will also be removed from the map.
+        /// </summary>
+        public void RemoveGroup(Group group, bool removeContent = false)
+        {
+            if (!_groups.Remove(group))
+                return;
+
+            if (removeContent)
+            {
+                // Remove group content from map:
+                foreach (var mapObject in group.Objects.ToArray())
+                {
+                    switch (mapObject)
+                    {
+                        case Group childGroup: RemoveGroup(childGroup, removeContent); break;
+                        case Entity entity: RemoveEntity(entity); break;
+                        case Brush brush: RemoveBrush(brush); break;
+                        default: throw new NotImplementedException($"Unknown map object: {mapObject.GetType().Name}.");
+                    }
+                }
+            }
+            else
+            {
+                // Unlink content from group:
+                while (group.Objects.Any())
+                    group.RemoveObject(group.Objects[0]);
+            }
+        }
+
+        public void AddVisGroup(VisGroup visGroup) => _visGroups.Add(visGroup);
+
+        /// <summary>
+        /// Removes the given VIS group from this map. If <paramref name="removeContent"/> is true,
+        /// all objects that are assigned to the VIS group will also be removed from the map.
+        /// In that case, the behavior of this method depends on <see cref="VisGroupAssignment"/>.
+        /// </summary>
+        public void RemoveVisGroup(VisGroup visGroup, bool removeContent = false)
+        {
+            if (!_visGroups.Remove(visGroup))
+                return;
+
+            if (removeContent)
+            {
+                foreach (var mapObject in visGroup.Objects.ToArray())
+                {
+                    // Only remove top level objects if VIS group assignment is per group:
+                    var isTopLevelObject = mapObject.Group == null;
+                    if (VisGroupAssignment == VisGroupAssignment.PerGroup && !isTopLevelObject)
+                        continue;
+
+                    switch (mapObject)
+                    {
+                        case Group group:
+                            if (VisGroupAssignment == VisGroupAssignment.PerGroup)
+                                RemoveGroup(group, removeContent);
+                            break;
+
+                        case Entity entity: RemoveEntity(entity); break;
+                        case Brush brush: RemoveBrush(brush); break;
+                        default: throw new NotImplementedException($"Unknown map object: {mapObject.GetType().Name}.");
+                    }
+                }
+            }
+            else
+            {
+                // Unlink content from VIS group:
+                while (visGroup.Objects.Any())
+                    visGroup.RemoveObject(visGroup.Objects[0]);
             }
         }
     }

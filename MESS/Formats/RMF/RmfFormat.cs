@@ -44,7 +44,7 @@ namespace MESS.Formats.RMF
 
                 var visGroupCount = Stream.ReadInt();
                 for (int i = 0; i < visGroupCount; i++)
-                    map.VisGroups.Add(ReadVisGroup());
+                    map.AddVisGroup(ReadVisGroup());
                 var visGroupIdLookup = map.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
 
                 var cMapWorld = Stream.ReadNString();
@@ -104,7 +104,7 @@ namespace MESS.Formats.RMF
 
                         case Group group:
                             group.ID = nextGroupID++;
-                            map.Groups.Add(group);
+                            map.AddGroup(group);
                             foreach (var childObject in group.Objects)
                                 AddObject(childObject);
                             break;

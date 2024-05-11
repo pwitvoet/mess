@@ -129,9 +129,9 @@ namespace MESS.Formats.MAP.Trenchbroom
             }
 
             // Add layers in the correct order:
-            map.VisGroups.Add(defaultLayer);
+            map.AddVisGroup(defaultLayer);
             foreach (var layer in layers.Values.OrderBy(layer => layerSortIndexes[layer.ID]))
-                map.VisGroups.Add(layer);
+                map.AddVisGroup(layer);
 
 
             // Groups:
@@ -162,7 +162,7 @@ namespace MESS.Formats.MAP.Trenchbroom
                     defaultLayer.AddObject(group);
 
                 // Groups can safely be added in the order that they appear:
-                map.Groups.Add(group);
+                map.AddGroup(group);
                 map.RemoveEntity(groupEntity);
                 if (groupEntity.Brushes.Any())
                 {
@@ -330,10 +330,12 @@ namespace MESS.Formats.MAP.Trenchbroom
 
 
             // Finally, replace groups and visGroups with group and layer entities:
-            map.Groups.Clear();
+            while (map.Groups.Any())
+                map.RemoveGroup(map.Groups[0]);
             map.AddEntities(groupEntities.Values);
 
-            map.VisGroups.Clear();
+            while (map.VisGroups.Any())
+                map.RemoveVisGroup(map.VisGroups[0]);
             map.AddEntities(layerEntities.Values);
 
 
@@ -379,10 +381,12 @@ namespace MESS.Formats.MAP.Trenchbroom
             copy.HasColorInformation = map.HasColorInformation;
 
             // First copy VIS groups and groups:
-            copy.VisGroups.AddRange(map.VisGroups.Select(CopyVisGroup));
+            foreach (var visGroup in map.VisGroups)
+                copy.AddVisGroup(CopyVisGroup(visGroup));
             var visGroups = copy.VisGroups.ToDictionary(visGroup => visGroup.ID, visGroup => visGroup);
 
-            copy.Groups.AddRange(map.Groups.Select(CopyGroup));
+            foreach (var group in map.Groups)
+                copy.AddGroup(CopyGroup(group));
             var groups = copy.Groups.ToDictionary(group => group.ID, group => group);
 
             // Link up groups to parents:
