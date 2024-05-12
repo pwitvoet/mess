@@ -250,6 +250,8 @@ namespace MESS.Macros
 
             public static double ceil(double value) => Math.Ceiling(value);
 
+            public static double trunc(double value) => Math.Truncate(value);
+
             public static double pow(double value, double power) => Math.Pow(value, power);
 
             public static double sqrt(double value) => Math.Sqrt(value);
