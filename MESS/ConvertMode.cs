@@ -76,6 +76,13 @@ namespace MESS
 
             try
             {
+                // Special commands:
+                if (args.Contains("-help"))
+                {
+                    ShowHelp(commandLineParser);
+                    return 0;
+                }
+
                 commandLineParser.Parse(args.Where(arg => arg != "-convert").ToArray());
 
                 var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(settings.InputPath) ? "mess-convert.log" : $"{settings.InputPath}.mess-convert.log");
@@ -172,6 +179,7 @@ namespace MESS
         {
             return new CommandLine()
                 // Input-related options:
+                .Section("Input:")
                 .Option(
                     "-duplicatekeys",
                     s => settings.DuplicateKeys =  ParseOption<DuplicateKeyHandling>(s),
@@ -186,6 +194,7 @@ namespace MESS
                     $"Decides whether func_group entities in TrenchBroom .map files should be read as groups and VIS groups, or left as entities. Valid options are: {GetOptions<TrenchbroomGroupHandling>()}. Default behavior is {ToString(TrenchbroomGroupHandling.ConvertToGroup)}.")
 
                 // Output-related options:
+                .Section("Output:")
                 .Option(
                     "-keyvaluetoolong",
                     s => settings.KeyValueTooLong = ParseOption<ValueTooLongHandling>(s),
@@ -216,18 +225,21 @@ namespace MESS
                     $"How to handle VIS group assignment if an object is part of multiple VIS groups, but the output format only supports one. Valid options are: {GetOptions<TooManyVisGroupsHandling>()}. Default behavior is {ToString(TooManyVisGroupsHandling.UseFirst)}.")
 
                 // Jmf output:
+                .Section("Jmf format output:")
                 .Option(
                     "-jmfversion",
                     s => settings.JmfVersion = ParseOption<JmfFileVersion>(s),
                     $"The output .jmf file version. Valid options are: {GetOptions<JmfFileVersion>()}. Default version is {ToString(JmfFileVersion.V122)}.")
 
                 // Rmf output:
+                .Section("Rmf format output:")
                 .Option(
                     "-rmfversion",
                     s => settings.RmfVersion = ParseOption<RmfFileVersion>(s),
                     $"The output .rmf file version. Valid options are: {GetOptions<RmfFileVersion>()}. Default version is {ToString(RmfFileVersion.V2_2)}.")
 
                 // Map output:
+                .Section("Map format output:")
                 .Option(
                     "-mapdecimals",
                     s => settings.MapDecimals = Math.Max(0, int.Parse(s)),
@@ -246,6 +258,7 @@ namespace MESS
                     "This sets the special 'wad' map property in the output .map file.")
 
                 // VIS group filtering:
+                .Section("VIS group filtering:")
                 .Option(
                     "-onlyvisgroups",
                     s => settings.OnlyVisGroups = ParseCommaSeparatedList(s),
@@ -272,6 +285,7 @@ namespace MESS
                     "Objects that belong to a TrenchBroom layer that is set to be omitted from export are excluded from the output map.")
 
                 // Cordoning:
+                .Section("Cordon area:")
                 .Option(
                     "-cordonarea",
                     s => settings.CordonArea = ParseBoundingBox(s),
@@ -293,7 +307,8 @@ namespace MESS
                     s => settings.CordonThickness = float.Parse(s),
                     "This setting gives cordon brushes a fixed thickness. This may cause leaks because not all of the map's leftover content may be covered. This matches J.A.C.K.'s behavior.")
 
-                // Other settings:
+                // Logging:
+                .Section("Logging:")
                 .Option(
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
@@ -343,6 +358,9 @@ namespace MESS
             using (var writer = new StreamWriter(output, leaveOpen: true))
             {
                 writer.WriteLine($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
+                writer.WriteLine();
+                writer.WriteLine("Conversion mode");
+                writer.WriteLine();
                 commandLine.ShowDescriptions(writer);
             }
         }

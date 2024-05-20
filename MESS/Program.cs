@@ -38,18 +38,18 @@ namespace MESS
             try
             {
                 // Special commands/modes:
-                if (args.Contains("-help"))
+                if (args.Contains("-convert"))
                 {
-                    ShowHelp(commandLineParser);
-                    return 0;
+                    return ConvertMode.Run(args);
                 }
                 else if (args.Contains("-repl"))
                 {
                     return ReplMode.Run();
                 }
-                else if (args.Contains("-convert"))
+                else if (args.Contains("-help"))
                 {
-                    return ConvertMode.Run(args);
+                    ShowHelp(commandLineParser);
+                    return 0;
                 }
 
                 commandLineParser.Parse(args);
@@ -136,10 +136,17 @@ namespace MESS
         private static CommandLine GetCommandLineParser(CommandLineSettings settings)
         {
             return new CommandLine()
+                .Section("Modes:")
+                .Switch(
+                    "-convert",
+                    () => { },  // This argument is taken care of in Main.
+                    $"Enables file conversion mode, which can convert between .map, .rmf and .jmf files. Use -convert -help for more information.")
                 .Switch(
                     "-repl",
                     () => { },  // This argument is taken care of in Main.
                     $"Enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop). All other arguments will be ignored.")
+
+                .Section("Settings:")
                 .Option(
                     "-dir",
                     s => { settings.TemplateMapsDirectory = FileSystem.GetFullPath(s); },
@@ -160,6 +167,8 @@ namespace MESS
                     "-globals",
                     s => { ParseVariables(s, settings.Globals); },
                     $"Global variables are available in any expressions, via the getglobal, setglobal and useglobal functions. Input format is \"name1 = expression; name2 = expression; ...\".")
+
+                .Section("Limits:")
                 .Option(
                     "-maxrecursion",
                     s => { settings.RecursionLimit = Math.Max(1, int.Parse(s)); },
@@ -172,6 +181,8 @@ namespace MESS
                     "-norewrite",
                     () => { settings.NoRewriteRules = true; },
                     "Disables rewrite rules. This will also disable template entities and template behaviors because they depend on rewrite rules.")
+
+                .Section("Logging:")
                 .Option(
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },

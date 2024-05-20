@@ -1,12 +1,21 @@
-﻿using System.Text;
-
-namespace MESS
+﻿namespace MESS
 {
     /// <summary>
     /// Parses command line arguments and can show descriptions for all accepted options and arguments.
     /// </summary>
     public class CommandLine
     {
+        class CmdSection
+        {
+            public string Name { get; }
+            public List<CmdOption> Options { get; } = new();
+
+            public CmdSection(string name)
+            {
+                Name = name;
+            }
+        }
+
         class CmdOption
         {
             public string? Name { get; }
@@ -24,16 +33,20 @@ namespace MESS
         }
 
 
-        private Dictionary<string, CmdOption> _options = new();
+        private List<CmdSection> _sections = new();
         private List<CmdOption> _arguments = new();
         private int _requiredArgumentsCount;
 
 
         public bool Parse(string[] input)
         {
+            var optionsLookup = _sections
+                .SelectMany(section => section.Options)
+                .ToDictionary(cmdOption => cmdOption.Name ?? "", cmdOption => cmdOption);
+
             // Start parsing options:
             int index = 0;
-            while (index < input.Length && _options.TryGetValue(input[index], out var option))
+            while (index < input.Length && optionsLookup.TryGetValue(input[index], out var option))
             {
                 if (option.HasValue)
                 {
@@ -69,19 +82,39 @@ namespace MESS
 
         public void ShowDescriptions(TextWriter output)
         {
+            var indent = _sections
+                .SelectMany(section => section.Options)
+                .Select(option => option.Name?.Length ?? 0)
+                .Max() + 1;
+
             output.WriteLine("Options:");
-            foreach (var option in _options.Values.OrderBy(option => option.Name))
-                output.WriteLine($"{option.Name,-16}{option.Description}");
+            foreach (var section in _sections)
+            {
+                if (!string.IsNullOrEmpty(section.Name))
+                {
+                    output.WriteLine();
+                    output.WriteLine(section.Name);
+                }
 
-            output.WriteLine();
-            output.WriteLine("Arguments:");
-            foreach (var argument in _arguments.Take(_requiredArgumentsCount))
-                output.WriteLine($"{argument.Description}");
+                foreach (var option in section.Options)
+                    output.WriteLine($"{option.Name?.PadRight(indent) ?? new string(' ', indent)}{option.Description}");
+            }
 
-            output.WriteLine();
-            output.WriteLine("Optional arguments:");
-            foreach (var argument in _arguments.Skip(_requiredArgumentsCount))
-                output.WriteLine($"{argument.Description}");
+            if (_requiredArgumentsCount > 0)
+            {
+                output.WriteLine();
+                output.WriteLine("Arguments:");
+                for (int i = 0; i < _requiredArgumentsCount; i++)
+                    output.WriteLine($"{i + 1}: {_arguments[i].Description}");
+            }
+
+            if (_arguments.Skip(_requiredArgumentsCount).Any())
+            {
+                output.WriteLine();
+                output.WriteLine("Optional arguments:");
+                for (int i = 0; i < _arguments.Count - _requiredArgumentsCount; i++)
+                    output.WriteLine($"{i + 1}: {_arguments[_requiredArgumentsCount + i].Description}");
+            }
         }
 
 
@@ -90,7 +123,7 @@ namespace MESS
         /// </summary>
         public CommandLine Switch(string name, Action action, string description)
         {
-            _options[name] = new CmdOption(name, false, s => action(), description);
+            AddOption(new CmdOption(name, false, s => action(), description));
             return this;
         }
 
@@ -99,7 +132,16 @@ namespace MESS
         /// </summary>
         public CommandLine Option(string name, Action<string> parse, string description)
         {
-            _options[name] = new CmdOption(name, true, parse, description);
+            AddOption(new CmdOption(name, true, parse, description));
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a new section. Sections are used to show descriptions in a more organized manner.
+        /// </summary>
+        public CommandLine Section(string name)
+        {
+            _sections.Add(new CmdSection(name));
             return this;
         }
 
@@ -120,6 +162,15 @@ namespace MESS
         {
             _arguments.Add(new CmdOption(null, false, parse, description));
             return this;
+        }
+
+
+        private void AddOption(CmdOption option)
+        {
+            if (!_sections.Any())
+                _sections.Add(new CmdSection(""));
+
+            _sections.Last().Options.Add(option);
         }
     }
 }
