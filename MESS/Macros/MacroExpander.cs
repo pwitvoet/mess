@@ -1055,7 +1055,7 @@ namespace MESS.Macros
                         continue;
                     }
 
-                    var textureName = templateEntity.Brushes[0].Faces[0].TextureName;
+                    var textureName = templateTextureNames.First();
                     var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
                     foreach (var kv in templateEntity.Properties)
                         entityCopy.Properties[kv.Key] = kv.Value;   // NOTE: Expression evaluation is taken care of by HandleEntity.
