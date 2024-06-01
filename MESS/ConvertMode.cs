@@ -320,7 +320,7 @@ namespace MESS
                     "Input map file. Accepted formats are .map (valve220), .rmf and .jmf.")
                 .Argument(
                     s => settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
-                    "Output map file. If not specified, the input path is used, with the extension changed to .map.");
+                    "Output map file. Accepted formats are .map, .rmf and .jmf.");
 
 
             string[] ParseCommaSeparatedList(string input)
