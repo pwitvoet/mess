@@ -382,7 +382,7 @@ namespace MESS.Macros
                 if (value == null)
                     return properties.ContainsKey(propertyName) ? Array.Empty<string>() : null;
 
-                return Interpreter.Print(value).Split(';')
+                return Interpreter.Print(value).Split(',')
                     .Select(path => FileSystem.GetFullPath(path, mapDirectory))
                     .ToArray();
             }
