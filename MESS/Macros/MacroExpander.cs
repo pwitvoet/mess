@@ -93,7 +93,7 @@ namespace MESS.Macros
 
             Globals = settings.Globals;
 
-            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateMapsDirectory, AppContext.BaseDirectory, Globals);
+            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, Globals, logger);
             BaseEvaluationContext = Evaluation.DefaultContext();
             NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
 
@@ -242,7 +242,7 @@ namespace MESS.Macros
 
             Logger.Verbose($"Applying directive from '{rewriteDirective.SourceFilePath}' to {entityProperties.GetString(Attributes.Classname)}.");
 
-            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.SourceFilePath));
+            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.SourceFilePath, Settings.TemplateEntityDirectories.ToArray(), Logger));
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -1237,25 +1237,49 @@ namespace MESS.Macros
         }
 
 
+        private static string? GetTemplateEntityFile(string relativePath, string[] templateEntityDirectories)
+        {
+            if (Path.IsPathRooted(relativePath))
+                return relativePath;
+
+            foreach (var templateEntityDirectory in templateEntityDirectories)
+            {
+                var absolutePath = Path.Combine(templateEntityDirectory, relativePath);
+                if (File.Exists(absolutePath))
+                    return absolutePath;
+            }
+            return null;
+        }
+
+
+        /// <summary>
+        /// These functions are available during macro expansion but also to MScript expressions inside .ted files.
+        /// </summary>
         public class MacroExpanderFunctions
         {
             private string _templatesDirectory;
+            private string[] _templateEntityDirectories;
             private string _messDirectory;
             private IDictionary<string, object?> _globals;
+            private ILogger _logger;
 
 
-            public MacroExpanderFunctions(string templatesDirectory, string messDirectory, IDictionary<string, object?> globals)
+            public MacroExpanderFunctions(string templatesDirectory, string[] templateEntityDirectories, string messDirectory, IDictionary<string, object?> globals, ILogger logger)
             {
                 _templatesDirectory = templatesDirectory;
+                _templateEntityDirectories = templateEntityDirectories;
                 _messDirectory = messDirectory;
                 _globals = globals;
+                _logger = logger;
             }
 
 
-            // Directories:
+            // Directories & paths:
             public string dir() => _templatesDirectory;  // TODO: Make this obsolete!
 
             public string templates_dir() => _templatesDirectory;
+            public object?[] ted_dirs() => _templateEntityDirectories.Cast<object?>().ToArray();
+            public string? ted_path(string relative_path) => GetTemplateEntityFile(relative_path, _templateEntityDirectories);
             public string mess_dir() => _messDirectory;
 
             // Globals:
@@ -1280,25 +1304,45 @@ namespace MESS.Macros
                 _globals[name ?? ""] = count + 1;
                 return count;
             }
+
+            // Debugging:
+            public object? trace(object? value, string? message = null)
+            {
+                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace).");
+                return value;
+            }
         }
 
 
+        /// <summary>
+        /// These functions are available to MScript expressions inside .ted files.
+        /// </summary>
         public class RewriteDirectiveFunctions
         {
             private string _sourceFilePath;
+            private string[] _templateEntityDirectories;
+            private ILogger _logger;
 
 
-            public RewriteDirectiveFunctions(string sourceFilePath)
+            public RewriteDirectiveFunctions(string sourceFilePath, string[] templateEntityDirectories, ILogger logger)
             {
                 _sourceFilePath = sourceFilePath;
+                _templateEntityDirectories = templateEntityDirectories;
+                _logger = logger;
             }
 
 
-            // Bundle file or directory:
+            // Current bundle file or directory:
             public string? ted_dir() => Path.GetDirectoryName(_sourceFilePath);
 
-            // .ted file path:
-            public string ted_path() => _sourceFilePath;
+            // Current .ted file path, or path to another file in a template entity directory:
+            public string? ted_path(string? relative_path = null)
+            {
+                if (relative_path == null)
+                    return _sourceFilePath;
+
+                return GetTemplateEntityFile(relative_path, _templateEntityDirectories);
+            }
 
 
             // Flags:
@@ -1317,6 +1361,13 @@ namespace MESS.Macros
                     return (int)flags | (1 << (int)flag);
                 else
                     return (int)flags & ~(1 << (int)flag);
+            }
+
+            // Debugging:
+            public object? trace(object? value, string? message = null)
+            {
+                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace from '{_sourceFilePath}').");
+                return value;
             }
         }
     }

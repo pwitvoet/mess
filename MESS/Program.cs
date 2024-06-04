@@ -88,7 +88,9 @@ namespace MESS
                     logger.Important("");
 
                     var rewriteDirectivesEvaluationContext = Evaluation.DefaultContext();
-                    NativeUtils.RegisterInstanceMethods(rewriteDirectivesEvaluationContext, new MacroExpander.MacroExpanderFunctions(settings.TemplateMapsDirectory, AppContext.BaseDirectory, settings.Globals));
+                    NativeUtils.RegisterInstanceMethods(
+                        rewriteDirectivesEvaluationContext,
+                        new MacroExpander.MacroExpanderFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, settings.Globals, logger));
                     var rewriteDirectives = LoadTedRewriteDirectives(settings.TemplateEntityDirectories, settings.MessFgdFilePath, rewriteDirectivesEvaluationContext, logger);
 
                     try
@@ -268,6 +270,7 @@ namespace MESS
             var fgdOutput = new StringWriter();
             var rewriteDirectives = new List<RewriteDirective>();
 
+            templateDirectories = templateDirectories.GetSafeEnumerable();
             foreach (var templatesDirectory in templateDirectories)
             {
                 logger.Info($"Loading .ted files from '{templatesDirectory}'.");
@@ -291,7 +294,7 @@ namespace MESS
                                 fgdOutput.WriteLine();
 
                                 var tedEvaluationContext = new EvaluationContext(parentContext: baseEvaluationContext);
-                                NativeUtils.RegisterInstanceMethods(tedEvaluationContext, new MacroExpander.RewriteDirectiveFunctions(path));
+                                NativeUtils.RegisterInstanceMethods(tedEvaluationContext, new MacroExpander.RewriteDirectiveFunctions(path, templateDirectories.ToArray(), logger));
 
                                 // Then read the rewrite rules, and copy the .ted file contents into mess.fgd:
                                 var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(file, fgdOutput, tedEvaluationContext).ToArray();
