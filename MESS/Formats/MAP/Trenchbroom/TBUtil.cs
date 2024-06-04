@@ -197,7 +197,7 @@ namespace MESS.Formats.MAP.Trenchbroom
             }
 
             // Finally, give the default layer a unique, positive ID:
-            defaultLayer.ID = Math.Max(groups.Max(kv => kv.Key), layers.Max(kv => kv.Key)) + 1;
+            defaultLayer.ID = Math.Max(groups.Any() ? groups.Max(kv => kv.Key) : 0, layers.Any() ? layers.Max(kv => kv.Key) : 0) + 1;
         }
 
         /// <summary>
