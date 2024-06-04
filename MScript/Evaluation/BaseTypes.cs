@@ -187,6 +187,11 @@ namespace MScript.Evaluation
             public static string replace(string self, string? str, string? replacement, object? ignore_case = null)
                 => !string.IsNullOrEmpty(str) ? self.Replace(str, replacement, GetStringComparison(ignore_case)) : self;
 
+            // Changing case:
+            public static string upper(string self) => self.ToUpperInvariant();
+
+            public static string lower(string self) => self.ToLowerInvariant();
+
             // Splitting and joining:
             public static object?[] split(string self, object? delimiters = null, double? count = null)
             {
