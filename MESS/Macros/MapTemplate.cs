@@ -105,7 +105,7 @@ namespace MESS.Macros
                 if (anchor == TemplateAreaAnchor.OriginBrush && templateEntity.GetOrigin() == null)
                     logger.Warning($"Template '{templateName}' in map '{path}' has no origin! Add an origin brush, or use a different anchor point.");
 
-                var offset = templateEntity.GetAnchorPoint(anchor);
+                var offset = -templateEntity.GetAnchorPoint(anchor);
                 var templateMap = new Map();
 
                 // Copy custom properties into the template map properties - these will serve as local variables that will be evaluated whenever the template is instantiated:
@@ -150,7 +150,6 @@ namespace MESS.Macros
                     case Entity entity: map.RemoveEntity(entity); break;
                     case Brush brush: map.RemoveBrush(brush); break;
                 }
-                // TODO: They're also still part of groups, vis-groups, etc!
             }
 
             return subTemplates;
