@@ -90,6 +90,14 @@ namespace MScript.Evaluation
                 else if (indexable is string @string)
                     return Operations.Index(@string, (int)index);
             }
+            else if (indexable is MObject obj)
+            {
+                var indexResult = Interpreter.Print(Evaluate(indexing.Index, context));
+                if (obj.Fields.TryGetValue(indexResult, out var value))
+                    return value;
+
+                return null;
+            }
 
             throw EvaluationError($"A {TypeDescriptor.GetType(indexable)} cannot be indexed.", indexing);
         }

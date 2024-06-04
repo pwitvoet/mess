@@ -440,6 +440,23 @@ namespace MScript.Parsing
                 keyValuePairList.KeyValuePairs.Insert(0, (key2.Name, valueExpression2));
                 return context.ReplaceBeforeLast(5, keyValuePairList);
             }
+            else if (context.Stack(-4) is StringLiteral stringKey &&
+                    context.IsToken(-3, TokenType.Colon) &&
+                    context.Stack(-2) is Expression valueExpression3)
+            {
+                // <string> : expression }
+                return context.ReplaceBeforeLast(3, new KeyValuePairList((stringKey.Value, valueExpression3)));
+            }
+            else if (context.Stack(-6) is StringLiteral stringKey2 &&
+                context.IsToken(-5, TokenType.Colon) &&
+                context.Stack(-4) is Expression valueExpression4 &&
+                context.IsToken(-3, TokenType.Comma) &&
+                context.Stack(-2) is KeyValuePairList keyValuePairList2)
+            {
+                // <string> : expression , key-value-pair-list }
+                keyValuePairList2.KeyValuePairs.Insert(0, (stringKey2.Value, valueExpression4));
+                return context.ReplaceBeforeLast(5, keyValuePairList2);
+            }
 
             // object-literal
             if (context.IsToken(-2, TokenType.BraceOpen, out var braceOpenToken))
