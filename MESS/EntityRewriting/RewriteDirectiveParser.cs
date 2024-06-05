@@ -81,7 +81,7 @@ namespace MESS.EntityRewriting
                 case FgdTokenizer.TokenType.Comment:
                 case FgdTokenizer.TokenType.MessDirective:
                     fgdOutput.Write("//");
-                    fgdOutput.Write(token.Value);
+                    fgdOutput.WriteLine(token.Value);
                     break;
 
                 default:
