@@ -1108,6 +1108,7 @@ namespace MESS.Macros
             }
             evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
             GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out var templateMapPaths, out var templateNames);
+            ApplyTextureReplacementRules(evaluatedProperties, normalEntity);
 
 
             normalEntity.Properties.Clear();
@@ -1169,6 +1170,68 @@ namespace MESS.Macros
             {
                 var instantiationContext = context.GetTemplateInstantiationContext(template!, Logger, transform, evaluatedProperties, parentID);
                 CreateInstance(instantiationContext);
+            }
+        }
+
+        /// <summary>
+        /// This checks for <see cref="Attributes.ReplaceTexture"/> attributes and replaces textures in the given entity accordingly.
+        /// The <see cref="Attributes.ReplaceTexture"/> attributes are removed from the given properties.
+        /// </summary>
+        private void ApplyTextureReplacementRules(IDictionary<string, object?> evaluatedProperties, Entity entity)
+        {
+            var replacementTextures = new Dictionary<string, string>();
+            IFunction? replacementFunction = null;
+            string? defaultReplacementTexture = null;
+
+            foreach (var property in evaluatedProperties.Where(property => property.Key.StartsWith(Attributes.ReplaceTexture)).ToArray())
+            {
+                var parts = property.Key.Split();
+                if (parts.Length > 1)
+                {
+                    evaluatedProperties.Remove(property.Key);
+                    replacementTextures[parts[1].ToLowerInvariant()] = Interpreter.Print(property.Value);
+                }
+            }
+
+            if (evaluatedProperties.TryGetValue(Attributes.ReplaceTexture, out var defaultProperty))
+            {
+                evaluatedProperties.Remove(Attributes.ReplaceTexture);
+                switch (defaultProperty)
+                {
+                    case MObject obj:
+                        foreach (var field in obj.Fields)
+                            replacementTextures[field.Key] = Interpreter.Print(field.Value);
+                        break;
+
+                    case IFunction function:
+                        replacementFunction = function;
+                        break;
+
+                    default:
+                        defaultReplacementTexture = Interpreter.Print(defaultProperty);
+                        break;
+                }
+            }
+
+            foreach (var brush in entity.Brushes)
+            {
+                foreach (var face in brush.Faces)
+                {
+                    if (replacementTextures.TryGetValue(face.TextureName.ToLowerInvariant(), out var replacementTexture))
+                    {
+                        face.TextureName = replacementTexture;
+                    }
+                    else if (replacementFunction != null)
+                    {
+                        replacementTexture = Interpreter.Print(replacementFunction.Apply(new[] { face.TextureName }));
+                        if (!string.IsNullOrEmpty(replacementTexture))
+                            face.TextureName = replacementTexture;
+                    }
+                    else if (!string.IsNullOrEmpty(defaultReplacementTexture))
+                    {
+                        face.TextureName = defaultReplacementTexture;
+                    }
+                }
             }
         }
 
