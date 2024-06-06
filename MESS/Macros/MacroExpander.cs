@@ -1189,7 +1189,10 @@ namespace MESS.Macros
                 if (parts.Length > 1)
                 {
                     evaluatedProperties.Remove(property.Key);
-                    replacementTextures[parts[1].ToLowerInvariant()] = Interpreter.Print(property.Value);
+
+                    var replacementTexture = Interpreter.Print(property.Value);
+                    if (!string.IsNullOrEmpty(replacementTexture))
+                        replacementTextures[parts[1].ToLowerInvariant()] = replacementTexture;
                 }
             }
 
@@ -1200,11 +1203,18 @@ namespace MESS.Macros
                 {
                     case MObject obj:
                         foreach (var field in obj.Fields)
-                            replacementTextures[field.Key] = Interpreter.Print(field.Value);
+                        {
+                            var replacementTexture = Interpreter.Print(field.Value);
+                            if (!string.IsNullOrEmpty(replacementTexture))
+                                replacementTextures[field.Key.ToLowerInvariant()] = replacementTexture;
+                        }
                         break;
 
                     case IFunction function:
-                        replacementFunction = function;
+                        if (function.Parameters.Count == 1)
+                            replacementFunction = function;
+                        else
+                            Logger.Warning($"A texture replacement function must take 1 argument, not {function.Parameters.Count} (entity of type '{evaluatedProperties.GetString(Attributes.Classname)}', name: '{evaluatedProperties.GetString(Attributes.Targetname)}').");
                         break;
 
                     default:
@@ -1213,6 +1223,7 @@ namespace MESS.Macros
                 }
             }
 
+            // NOTE: Simple replacement rules are case-insensitive, but the replacement function is not.
             foreach (var brush in entity.Brushes)
             {
                 foreach (var face in brush.Faces)
