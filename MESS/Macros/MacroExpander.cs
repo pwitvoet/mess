@@ -1204,17 +1204,30 @@ namespace MESS.Macros
                     case MObject obj:
                         foreach (var field in obj.Fields)
                         {
-                            var replacementTexture = Interpreter.Print(field.Value);
-                            if (!string.IsNullOrEmpty(replacementTexture))
-                                replacementTextures[field.Key.ToLowerInvariant()] = replacementTexture;
+                            if (string.IsNullOrEmpty(field.Key))
+                            {
+                                if (field.Value is IFunction function)
+                                {
+                                    SetReplacementFunction(function);
+                                }
+                                else
+                                {
+                                    var replacementTexture = Interpreter.Print(field.Value);
+                                    if (!string.IsNullOrEmpty(replacementTexture))
+                                        defaultReplacementTexture = replacementTexture;
+                                }
+                            }
+                            else
+                            {
+                                var replacementTexture = Interpreter.Print(field.Value);
+                                if (!string.IsNullOrEmpty(replacementTexture))
+                                    replacementTextures[field.Key.ToLowerInvariant()] = replacementTexture;
+                            }
                         }
                         break;
 
                     case IFunction function:
-                        if (function.Parameters.Count == 1)
-                            replacementFunction = function;
-                        else
-                            Logger.Warning($"A texture replacement function must take 1 argument, not {function.Parameters.Count} (entity of type '{evaluatedProperties.GetString(Attributes.Classname)}', name: '{evaluatedProperties.GetString(Attributes.Targetname)}').");
+                        SetReplacementFunction(function);
                         break;
 
                     default:
@@ -1234,7 +1247,7 @@ namespace MESS.Macros
                     }
                     else if (replacementFunction != null)
                     {
-                        replacementTexture = Interpreter.Print(replacementFunction.Apply(new[] { face.TextureName }));
+                        replacementTexture = Interpreter.Print(replacementFunction.Apply(new[] { face.TextureName.ToLowerInvariant() }));
                         if (!string.IsNullOrEmpty(replacementTexture))
                             face.TextureName = replacementTexture;
                     }
@@ -1243,6 +1256,15 @@ namespace MESS.Macros
                         face.TextureName = defaultReplacementTexture;
                     }
                 }
+            }
+
+
+            void SetReplacementFunction(IFunction function)
+            {
+                if (function.Parameters.Count == 1)
+                    replacementFunction = function;
+                else
+                    Logger.Warning($"A texture replacement function must take 1 argument, not {function.Parameters.Count} (entity of type '{evaluatedProperties.GetString(Attributes.Classname)}', name: '{evaluatedProperties.GetString(Attributes.Targetname)}').");
             }
         }
 
