@@ -424,7 +424,7 @@
 "classname" "macro_insert"
 "template_map" "{map_dir() + '/multi_manager_expansion.map'}"
 "targetname" "{name}"
-"{targets.map(t => t.key)}" "{targets.map(t => t.value)}"
+"{targets.map((t, i) => t.key + '#' + i)}" "{targets.map(t => t.value)}"
 "_mess_spawnflag0" "{targets.any(t => t.value > 0)}"
 "origin" "672 -32 32"
 }
