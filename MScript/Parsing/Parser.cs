@@ -123,7 +123,7 @@ namespace MScript.Parsing
                     {
                         // Find end of string (ignore \' escape sequences):
                         var isEscaped = false;
-                        for (; i < input.Length; i++)
+                        for (i++; i < input.Length; i++)
                         {
                             if (!isEscaped)
                             {
