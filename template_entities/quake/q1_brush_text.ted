@@ -1,0 +1,74 @@
+// This is a compile-time entity that generates brush-based text,
+// using Makkon's techdc fonts.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{ted_dir() + '/q1_brush_text.map'}"
+// @MESS;
+@PointClass size(-16 -16 -16, 16 16 16) = q1_brush_text : "Brush-based text generator"
+[
+    // Text:
+    text(string) : "Text" : "" //: "Creates one brush for each character. Use \n to insert newlines."
+
+    font(choices) : "Font" : "techdc4" =
+    [
+        "techdc1" : "Makkon symbols (large)"
+        "techdc2" : "Makkon symbols (medium)"
+        "techdc3" : "Makkon symbols (small)"
+        "techdc4" : "Makkon text (large)"
+        "techdc5" : "Makkon text (medium)"
+        "techdc6" : "Makkon text (small)"
+    ]
+    color(choices) : "Color" : "grey2" =
+    [
+        "blk1" : "Black 1"
+        "blk1_1" : "Black 1.1 (symbols only)"
+        "blk2" : "Black 2"
+        "blk3" : "Black 3 (symbols only)"
+        "blu1" : "Blue 1"
+        "blu1_1" : "Blue 1.1 (medium and large text only)"
+        "blu2" : "Blue 2 (symbols and small text only)"
+        "brwn1" : "Brown 1"
+        "brwn2" : "Brown 2"
+        "grey1" : "Grey 1"
+        "grey2" : "Grey 2"
+        "grn1" : "Green 1"
+        "grn3" : "Green 3 (text only)"
+        "grn4" : "Green 4"
+        "orn1" : "Orange"
+        "prpl1" : "Purple"
+        "red1" : "Red 1"
+        "red2" : "Red 2"
+        "teal1" : "Teal 1"
+        "teal2" : " Teal 2"
+        "ylw1" : "Yellow 1"
+        "ylw2" : "Yellow 2"
+    ]
+
+    // Resulting entity type:
+    entity_classname(string) : "Resulting entity classname" : "func_detail_illusionary" //: "The classname of the resulting entity."
+
+    // Spacing:
+    line_height(string) : "Line height" : "56" //: "The vertical distance between each line."
+    char_spacing(string) : "Character spacing" : "3" //: "The space between each character."
+    space_width(string) : "Space width" : "32" //: "The width of a space character."
+
+    // Size/orientation:
+    font_size(string) : "Font size" : "1" //: "The font size (1 = default)."
+    angles(string) : "Angles (pitch yaw roll)" : "0 0 0" //: "The text orientation (pitch yaw roll)."
+
+    // Alignment:
+    horizontal_alignment(choices) : "Horizontal alignment" : "left" =
+    [
+        "left" : "Left"
+        "center" : "Center"
+        "right" : "Right"
+    ]
+    vertical_alignment(choices) : "Vertical alignment" : "baseline" =
+    [
+        "baseline" : "Baseline"
+        "top" : "Top"
+        "center" : "Center"
+        "bottom" : "Bottom"
+    ]
+]

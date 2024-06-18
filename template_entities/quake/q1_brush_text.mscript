@@ -1,0 +1,91 @@
+// Utility functions for q1_brush_text, a template entity that generates brush-based text,
+// using Makkon's techdc fonts.
+
+// Not all fonts contain the same color variants:
+get_font_texture = (font, color) =>
+    (font == 'techdc1' || font == 'techdc2' || font == 'techdc3') ?
+        (color == 'blu1_1' ? '{' + font + '_blu1' :
+           color == 'grn3' ? '{' + font + '_grn1' :
+                             '{' + font + '_' + color) :
+        (color == 'blk1_1' ? '{' + font + '_blk1' :
+           color == 'blk3' ? '{' + font + '_blk2' :
+           color == 'blu1_1' && font == 'techdc6' ? '{' + font + '_blu1' :
+           color == 'blu2' && font != 'techdc6' ? '{' + font + '_blu1_1' :
+                             '{' + font + '_' + color);
+
+is_supported_char = c =>
+    (ord(c) >= ord('a') && ord(c) <= ord('z')) ||
+    (ord(c) >= ord('A') && ord(c) <= ord('Z')) ||
+    (ord(c) >= ord('0') && ord(c) <= ord('9')) ||
+    c == '-' ||
+    c == '#' ||
+    c == ' ';
+
+get_char_width = (font, c, space_width) =>
+    font == 'techdc1' ? get_techdc1_char_width(c, space_width) :
+    font == 'techdc2' ? get_techdc2_char_width(c, space_width) :
+    font == 'techdc3' ? get_techdc3_char_width(c, space_width) :
+    font == 'techdc4' ? get_techdc4_char_width(c, space_width) :
+    font == 'techdc5' ? get_techdc5_char_width(c, space_width) :
+    font == 'techdc6' ? get_techdc6_char_width(c, space_width) :
+                        0;
+
+
+get_techdc1_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    53;
+
+get_techdc2_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    26;
+
+get_techdc3_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    14;
+
+get_techdc4_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    c == 't' ? 22 :
+    'I1'.contains(c) ? 24 :
+    'mw#'.contains(c) ? 42 :
+    'ijl'.contains(c) ? 11 :
+    'abdefghpq'.contains(c) ? 32 :
+    'cknorsuvxyz'.contains(c) ? 27 :
+    36;
+
+get_techdc5_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    c == 't' ? 10 :
+    'I1'.contains(c) ? 12 :
+    'mw#'.contains(c) ? 22 :
+    'ijl'.contains(c) ? 6 :
+    'abdefghpq'.contains(c) ? 16 :
+    'cknorsuvxyz'.contains(c) ? 14 :
+    18;
+
+get_techdc6_char_width = (c, space_width) =>
+    c == ' ' ? space_width :
+    c == 't' ? 5 :
+    'I1ko'.contains(c) ? 6 :
+    'mw'.contains(c) ? 11 :
+    'ijl'.contains(c) ? 3 :
+    'abdefghpq'.contains(c) ? 8 :
+    'cnrsuvxyz'.contains(c) ? 7 :
+    10;
+
+get_line_width = (font, line, space_width, char_spacing) =>
+    array(line)
+        .filter(is_supported_char)
+        .sum(c => get_char_width(font, c, space_width))
+     + (line.length > 1 ? (line.length - 1) * char_spacing : 0);
+
+get_x_offset = (horizontal_alignment, line_width) =>
+    horizontal_alignment == 'right' ? -line_width :
+    horizontal_alignment == 'center' ? -line_width / 2 :
+    0;
+
+get_y_offset = (vertical_alignment, line_count, line_height, cap_height) =>
+    vertical_alignment == 'bottom' ? (line_count - 1) * line_height :
+    vertical_alignment == 'center' ? ((line_count - 1) * line_height - cap_height) / 2 :
+    vertical_alignment == 'top' ? -cap_height :
+    0;
