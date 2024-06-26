@@ -98,9 +98,11 @@ namespace MESS.Macros
                 var templateArea = templateEntity.BoundingBox.ExpandBy(0.5f);
                 var templateName = templateEntity.Properties.EvaluateToString(Attributes.Targetname, mapContext);
                 var selectionWeight = templateEntity.Properties.EvaluateToString(Attributes.SelectionWeight, mapContext);
+                if (string.IsNullOrEmpty(selectionWeight))
+                    selectionWeight = "1";
 
                 if (!Enum.TryParse<TemplateAreaAnchor>(templateEntity.Properties.EvaluateToString(Attributes.Anchor, context), out var anchor))
-                    anchor = TemplateAreaAnchor.Bottom;
+                    anchor = TemplateAreaAnchor.Center;
 
                 if (anchor == TemplateAreaAnchor.OriginBrush && templateEntity.GetOrigin() == null)
                     logger.Warning($"Template '{templateName}' in map '{path}' has no origin! Add an origin brush, or use a different anchor point.");
