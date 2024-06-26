@@ -30,23 +30,37 @@
 
     // The number of instances to create. The default is 1.
     instance_count(integer) : "Instance count" : 1
+
+    // Specifies whether the angles attribute is relative to the current macro_insert, or an absolute orientation.
     instance_orientation(choices) : "Instance orientation" : 0 =
     [
         0 : "Local"
         1 : "Global"
     ]
-
-
     // Half-Life (and MESS) performs rotations in roll-pitch-yaw order, which corresponds to rotating around the x, y and z axis respectively.
     // - pitch (y-axis): Looking down (positive) or up (negative). NOTE: studio model (.mdl) and light entities use inverted pitch!
     // - yaw   (z-axis): Turning left (positive) or right (negative).
     // - roll  (x-axis): Leaning over sidewards to the right (positive) or to the left (negative).
     // NOTE: Model and light-related entities turn around the y-axis (pitch) in the opposite direction, so a positive pitch will make them look up instead of down.
     angles(string) : "Instance angles (Pitch Yaw Roll)" : "0 0 0"
+
+    // Specifies whether the scale and instance_geometry_scale attributes are used as relative (to the current macro_insert) or as absolute scales.
+    instance_scaling(choices) : "Instance scaling" : 0 =
+    [
+        0 : "Relative"
+        1 : "Absolute"
+    ]
     scale(string) : "Instance scale" : "1"
 
     // Geometry (brushes) can be scaled along the x, y and z axis. If empty, the scale or instance_scale is used instead.
     instance_geometry_scale(string) : "Instance geometry scale (x y z)"
+
+    // Specifies whether the instance_offset attribute is used as an offset (relative to this macro_insert) or as an absolute position.
+    instance_positioning(choices) : "Instance positioning" : 0 =
+    [
+        0 : "Relative"
+        1 : "Absolute"
+    ]
 
     // Moves an instance along the x, y and z axis. This enables script-based positioning.
     instance_offset(string) : "Instance offset" : "0 0 0"

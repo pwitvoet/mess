@@ -622,9 +622,9 @@ namespace MESS.Macros
 
                 // NOTE: Because some editors use 0 as default value for missing attributes, we'll swap values here to ensure that Local is the default behavior:
                 var orientation = (evaluatedProperties.GetInteger(Attributes.InstanceOrientation) ?? 0) == 0 ? Orientation.Local : Orientation.Global;
-                var rotation = Matrix3x3.Identity;
+                var instanceRotation = Matrix3x3.Identity;
                 if (orientation == Orientation.Local)
-                    rotation = sequenceContext.Transform.Rotation;
+                    instanceRotation = sequenceContext.Transform.Rotation;
 
                 // Create a child context for this insertion, with a properly adjusted transform:
                 var scale = (float)(evaluatedProperties.GetDouble(Attributes.Scale) ?? 1);
@@ -632,11 +632,25 @@ namespace MESS.Macros
                 var anglesMatrix = evaluatedProperties.GetAngles(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
                 var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
 
+                var positioning = (Positioning)(evaluatedProperties.GetInteger(Attributes.InstancePositioning) ?? 0);
+                var instancePosition = sequenceContext.Transform.Apply(insertEntity.Origin + offset);
+                if (positioning == Positioning.Absolute)
+                    instancePosition = offset;
+
+                var scaling = (Scaling)(evaluatedProperties.GetInteger(Attributes.InstanceScaling) ?? 0);
+                var instanceScale = sequenceContext.Transform.Scale * scale;
+                var instanceGeometryScale = sequenceContext.Transform.GeometryScale * geometryScale;
+                if (scaling == Scaling.Absolute)
+                {
+                    instanceScale = scale;
+                    instanceGeometryScale = geometryScale;
+                }
+
                 var transform = new Transform(
-                    sequenceContext.Transform.Scale * scale,
-                    sequenceContext.Transform.GeometryScale * geometryScale,
-                    rotation * anglesMatrix,
-                    sequenceContext.Transform.Apply(insertEntity.Origin + offset));
+                    instanceScale,
+                    instanceGeometryScale,
+                    instanceRotation * anglesMatrix,
+                    instancePosition);
 
                 // TODO: Maybe filter out a few entity properties, such as 'classname', 'origin', etc?
                 evaluatedProperties.UpdateTransformProperties(context.Transform);
