@@ -12,7 +12,7 @@
 // "classname": "macro_insert"
 // "template_map": "{ted_dir() + '/mtl_trigger_counter.map'}"
 // @MESS;
-@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_counter
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) iconsprite("{ted_dir()}/mtl_trigger_counter.spr") = mtl_trigger_counter
 [
     targetname(target_source) : "Name"
     trigger_mode(choices) : "Trigger mode" : 0 =

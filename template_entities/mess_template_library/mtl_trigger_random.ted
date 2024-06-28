@@ -8,7 +8,7 @@
 // "classname": "macro_insert"
 // "template_map": "{ted_dir() + '/mtl_trigger_random.map'}"
 // @MESS;
-@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_random
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) iconsprite("{ted_dir()}/mtl_trigger_random.spr") = mtl_trigger_random
 [
     targetname(target_source) : "Name"
     trigger_mode(choices) : "Trigger mode" : 0 =

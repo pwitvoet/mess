@@ -5,7 +5,7 @@
 // "classname": "macro_insert"
 // "template_map": "{ted_dir() + '/q1_brush_text.map'}"
 // @MESS;
-@PointClass size(-16 -16 -16, 16 16 16) = q1_brush_text : "Brush-based text generator"
+@PointClass size(-16 -16 -16, 16 16 16) iconsprite("{ted_dir()}/q1_brush_text.spr") = q1_brush_text : "Brush-based text generator"
 [
     // Text:
     text(string) : "Text" : "" //: "Creates one brush for each character. Use \n to insert newlines."
@@ -40,7 +40,7 @@
         "red1" : "Red 1"
         "red2" : "Red 2"
         "teal1" : "Teal 1"
-        "teal2" : " Teal 2"
+        "teal2" : "Teal 2"
         "ylw1" : "Yellow 1"
         "ylw2" : "Yellow 2"
     ]

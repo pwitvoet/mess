@@ -9,7 +9,7 @@
 // "classname": "macro_insert"
 // "template_map": "{ted_dir() + '/mtl_trigger_sequence.map'}"
 // @MESS;
-@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) = mtl_trigger_sequence
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) iconsprite("{ted_dir()}/mtl_trigger_sequence.spr") = mtl_trigger_sequence
 [
     targetname(target_source) : "Name"
 
