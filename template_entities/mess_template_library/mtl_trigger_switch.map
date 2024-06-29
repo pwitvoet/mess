@@ -1,0 +1,116 @@
+{
+"classname" "worldspawn"
+"mapversion" "220"
+"_mess_allow_rewrite_rules" "{}"
+"targetname" "{targetname}"
+"target_on" "{target_on}"
+"target_off" "{target_off}"
+"start_on" "{hasflag(0)}"
+{
+( 65 193 65 ) ( 65 193 63 ) ( 65 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 191 65 ) ( 63 191 63 ) ( 63 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 65 191 65 ) ( 65 191 63 ) ( 63 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 65 ) ( 63 193 63 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 63 ) ( 63 191 63 ) ( 65 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 65 191 65 ) ( 63 191 65 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "path_corner"
+"spawnflags" "3"
+"targetname" "_mts_{iid()}_on"
+"message" "{target_on}"
+"target" "_mts_{iid()}_off"
+"origin" "64 192 64"
+}
+{
+"classname" "path_corner"
+"spawnflags" "3"
+"targetname" "_mts_{iid()}_off"
+"message" "{target_off}"
+"target" "_mts_{iid()}_on"
+"origin" "64 192 64"
+}
+{
+"classname" "macro_template"
+"selection_weight" "1"
+"anchor" "1"
+"targetname" "trigger_switch_template"
+{
+( 128 256 128 ) ( 128 256 0 ) ( 128 248 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 248 128 ) ( 0 248 0 ) ( 0 256 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 248 128 ) ( 128 248 0 ) ( 0 248 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 256 128 ) ( 0 256 0 ) ( 128 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 256 0 ) ( 0 248 0 ) ( 128 256 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 248 128 ) ( 0 248 128 ) ( 128 256 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+{
+( 128 136 128 ) ( 128 136 0 ) ( 128 128 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 128 128 ) ( 0 128 0 ) ( 0 136 128 ) C3A2A_TNK1B [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 128 128 128 ) ( 128 128 0 ) ( 0 128 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 136 128 ) ( 0 136 0 ) ( 128 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 0 136 0 ) ( 0 128 0 ) ( 128 136 0 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 128 128 128 ) ( 0 128 128 ) ( 128 136 128 ) C3A2A_TNK1B [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_offset" "-4095 -4095 -4095"
+"instance_positioning" "1"
+"scale" "1"
+"instance_scaling" "1"
+"angles" "0 0 0"
+"instance_orientation" "1"
+"instance_count" "1"
+"template_name" "trigger_switch_template"
+"target_on" "{target_on}"
+"target_off" "{target_off}"
+"targetname" "{targetname}"
+"start_on" "{start_on}"
+"origin" "0 0 0"
+}
+{
+"classname" "button_target"
+"zhlt_lightflags" "0"
+"targetname" "{targetname}"
+"zhlt_noclip" "1"
+"target" "_mts_{iid()}_t"
+"_mess_spawnflag1" "{start_on}"
+{
+( 65 193 65 ) ( 65 193 63 ) ( 65 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 191 65 ) ( 63 191 63 ) ( 63 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 65 191 65 ) ( 65 191 63 ) ( 63 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 65 ) ( 63 193 63 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 63 ) ( 63 191 63 ) ( 65 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 65 191 65 ) ( 63 191 65 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "func_train"
+"spawnflags" "8"
+"volume" "0"
+"skin" "0"
+"dmg" "0"
+"speed" "64"
+"stopsnd" "0"
+"movesnd" "0"
+"zhlt_lightflags" "0"
+"targetname" "_mts_{iid()}_t"
+"target" "_mts_{iid()}_{start_on ? 'on' : 'off'}"
+"zhlt_noclip" "1"
+{
+( 65 193 65 ) ( 65 193 63 ) ( 65 191 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 191 65 ) ( 63 191 63 ) ( 63 193 65 ) NULL [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 65 191 65 ) ( 65 191 63 ) ( 63 191 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 65 ) ( 63 193 63 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1
+( 63 193 63 ) ( 63 191 63 ) ( 65 193 63 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+( 65 191 65 ) ( 63 191 65 ) ( 65 193 65 ) NULL [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1
+}
+}
+{
+"classname" "macro_insert"
+"instance_count" "2"
+"template_map" "{map_dir()}/target_pattern_handler.map"
+"target" "{[target_on, target_off][nth()]}"
+"origin" "64 192 64"
+}

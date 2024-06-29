@@ -1,0 +1,20 @@
+// This entity can trigger one target when it is turned on, and another target when it is turned off.
+// Triggering this entity will toggle it between its on and off state, but it can also be sent an 'on' or 'off' signal
+// with a trigger_relay, or by using the '+target' and '-target' patterns.
+//
+// @MESS REWRITE:
+// "classname": "macro_insert"
+// "template_map": "{ted_dir() + '/mtl_trigger_switch.map'}"
+// @MESS;
+@PointClass size(-8 -8 -8, 8 8 8) color(255 127 0) iconsprite("{ted_dir()}/mtl_trigger_switch.spr") = mtl_trigger_switch
+[
+    targetname(target_source) : "Name"
+
+    target_on(target_destination) : "Target (on)"
+    target_off(target_destination) : "Target (off)"
+
+    spawnflags(flags) =
+    [
+        1 : "Start on" : 0
+    ]
+]
