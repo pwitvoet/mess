@@ -139,13 +139,19 @@ namespace MESS.EntityRewriting
             context.MoveNext();
 
             var buffer = new StringBuilder();
-            while (!context.IsExhausted && context.Current != '\n')
+            while (!context.IsExhausted && context.Current != '\n' && context.Current != '\r')
             {
                 buffer.Append(context.Current);
                 context.MoveNext();
             }
 
-            context.MoveNext(); // Consume the \n
+            // Consume the line ending characters:
+            if (context.Current == '\r')
+                context.MoveNext();
+
+            if (context.Current == '\n')
+                context.MoveNext();
+
             return new Token(line, offset, TokenType.Comment, buffer.ToString());
         }
 
