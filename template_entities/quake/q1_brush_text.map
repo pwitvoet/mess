@@ -14,6 +14,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -49,6 +50,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -84,6 +86,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -119,6 +122,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -154,6 +158,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -189,6 +194,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -224,6 +230,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -259,6 +266,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -294,6 +302,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -329,6 +338,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -364,6 +374,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -399,6 +410,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -434,6 +446,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -469,6 +482,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -504,6 +518,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -539,6 +554,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -574,6 +590,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -609,6 +626,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -644,6 +662,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -679,6 +698,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -714,6 +734,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -749,6 +770,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -784,6 +806,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -819,6 +842,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -854,6 +878,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -889,6 +914,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -924,6 +950,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -937,6 +964,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -994,6 +1022,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1029,6 +1058,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1064,6 +1094,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1099,6 +1130,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1134,6 +1166,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1169,6 +1202,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1204,6 +1238,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1239,6 +1274,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1274,6 +1310,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1309,6 +1346,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1344,6 +1382,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1379,6 +1418,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1414,6 +1454,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1449,6 +1490,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1484,6 +1526,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1519,6 +1562,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1554,6 +1598,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1589,6 +1634,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1624,6 +1670,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1659,6 +1706,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1694,6 +1742,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1729,6 +1778,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1764,6 +1814,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1799,6 +1850,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1834,6 +1886,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1869,6 +1922,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1904,6 +1958,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1939,6 +1994,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -1974,6 +2030,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2009,6 +2066,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2044,6 +2102,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2079,6 +2138,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2114,6 +2174,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2149,6 +2210,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2184,6 +2246,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2219,6 +2282,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2272,6 +2336,7 @@
 "cap_height" "48"
 "texture_replacements" "{{skip: 'skip', '': get_font_texture(font, color)}}"
 "font" "{font}"
+"custom_attributes" "{get_attr().filter(kv => !['classname', 'origin', 'template_map', 'text', 'font', 'color', 'entity_classname', 'line_height', 'char_spacing', 'space_width', 'font_size', 'angles', 'horizontal_alignment', 'vertical_alignment'].contains(kv.key) && !kv.key.startswith('_tb_'))}"
 }
 {
 "classname" "macro_insert"
@@ -2284,6 +2349,7 @@
 "merge_name" "{merge_name}"
 "entity_classname" "{entity_classname}"
 "texture_replacements" "{texture_replacements}"
+"custom_attributes" "{custom_attributes}"
 }
 {
 "classname" "macro_template"
@@ -2344,6 +2410,7 @@
 "space_width" "{space_width}"
 "texture_replacements" "{texture_replacements}"
 "font" "{font}"
+"custom_attributes" "{custom_attributes}"
 }
 {
 "classname" "macro_template"
@@ -2369,6 +2436,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2404,6 +2472,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2439,6 +2508,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2474,6 +2544,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2509,6 +2580,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2544,6 +2616,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2579,6 +2652,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2614,6 +2688,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2649,6 +2724,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2684,6 +2760,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2719,6 +2796,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2754,6 +2832,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2789,6 +2868,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2824,6 +2904,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2859,6 +2940,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2894,6 +2976,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2929,6 +3012,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2964,6 +3048,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -2999,6 +3084,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3034,6 +3120,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3069,6 +3156,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3104,6 +3192,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3139,6 +3228,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3174,6 +3264,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3209,6 +3300,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3244,6 +3336,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3279,6 +3372,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3292,6 +3386,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3349,6 +3444,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3384,6 +3480,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3419,6 +3516,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3454,6 +3552,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3489,6 +3588,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3524,6 +3624,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3559,6 +3660,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3594,6 +3696,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3629,6 +3732,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3664,6 +3768,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3699,6 +3804,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3734,6 +3840,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3769,6 +3876,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3804,6 +3912,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3839,6 +3948,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3874,6 +3984,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3909,6 +4020,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3944,6 +4056,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -3979,6 +4092,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4014,6 +4128,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4049,6 +4164,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4084,6 +4200,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4119,6 +4236,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4154,6 +4272,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4189,6 +4308,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4224,6 +4344,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4259,6 +4380,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4294,6 +4416,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4329,6 +4452,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4364,6 +4488,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4399,6 +4524,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4434,6 +4560,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4469,6 +4596,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4504,6 +4632,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4539,6 +4668,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4574,6 +4704,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4631,6 +4762,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4666,6 +4798,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4701,6 +4834,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4736,6 +4870,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4771,6 +4906,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4806,6 +4942,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4841,6 +4978,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4876,6 +5014,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4911,6 +5050,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4946,6 +5086,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -4981,6 +5122,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5016,6 +5158,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5051,6 +5194,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5086,6 +5230,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5121,6 +5266,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5156,6 +5302,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5191,6 +5338,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5226,6 +5374,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5261,6 +5410,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5296,6 +5446,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5331,6 +5482,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5366,6 +5518,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5401,6 +5554,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5436,6 +5590,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5471,6 +5626,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5506,6 +5662,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5541,6 +5698,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5554,6 +5712,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5611,6 +5770,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5646,6 +5806,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5681,6 +5842,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5716,6 +5878,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5751,6 +5914,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5786,6 +5950,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5821,6 +5986,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5856,6 +6022,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5891,6 +6058,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5926,6 +6094,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5961,6 +6130,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -5996,6 +6166,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6031,6 +6202,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6066,6 +6238,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6101,6 +6274,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6136,6 +6310,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6171,6 +6346,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6206,6 +6382,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6241,6 +6418,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6276,6 +6454,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6311,6 +6490,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6346,6 +6526,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6381,6 +6562,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6416,6 +6598,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6451,6 +6634,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6486,6 +6670,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6521,6 +6706,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6556,6 +6742,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6591,6 +6778,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6626,6 +6814,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6661,6 +6850,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6696,6 +6886,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6731,6 +6922,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6766,6 +6958,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6801,6 +6994,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6836,6 +7030,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6915,6 +7110,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6928,6 +7124,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6985,6 +7182,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -6998,6 +7196,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7033,6 +7232,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7112,6 +7312,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7191,6 +7392,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7204,6 +7406,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7261,6 +7464,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7296,6 +7500,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7309,6 +7514,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7322,6 +7528,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7335,6 +7542,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7348,6 +7556,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7427,6 +7636,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7462,6 +7672,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7475,6 +7686,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7598,6 +7810,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7611,6 +7824,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7690,6 +7904,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7703,6 +7918,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7738,6 +7954,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7751,6 +7968,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7764,6 +7982,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7777,6 +7996,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7856,6 +8076,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7891,6 +8112,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7904,6 +8126,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7961,6 +8184,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7974,6 +8198,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -7987,6 +8212,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8000,6 +8226,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8079,6 +8306,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8092,6 +8320,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8127,6 +8356,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8206,6 +8436,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8241,6 +8472,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8254,6 +8486,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8267,6 +8500,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8324,6 +8558,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8337,6 +8572,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8372,6 +8608,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8451,6 +8688,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8464,6 +8702,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8477,6 +8716,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8512,6 +8752,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8547,6 +8788,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8582,6 +8824,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8617,6 +8860,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8630,6 +8874,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8665,6 +8910,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8722,6 +8968,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8735,6 +8982,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8858,6 +9106,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8871,6 +9120,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8906,6 +9156,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8919,6 +9170,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8954,6 +9206,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -8967,6 +9220,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9046,6 +9300,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9059,6 +9314,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9116,6 +9372,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9151,6 +9408,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9164,6 +9422,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9199,6 +9458,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9234,6 +9494,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9269,6 +9530,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9304,6 +9566,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9361,6 +9624,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9374,6 +9638,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9387,6 +9652,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9444,6 +9710,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9457,6 +9724,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9492,6 +9760,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9527,6 +9796,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9562,6 +9832,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9575,6 +9846,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9632,6 +9904,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9711,6 +9984,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9746,6 +10020,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9759,6 +10034,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9794,6 +10070,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9807,6 +10084,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9842,6 +10120,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9877,6 +10156,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9912,6 +10192,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9969,6 +10250,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -9982,6 +10264,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10017,6 +10300,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10030,6 +10314,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10087,6 +10372,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10122,6 +10408,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10135,6 +10422,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10214,6 +10502,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10249,6 +10538,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10306,6 +10596,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10319,6 +10610,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10332,6 +10624,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10389,6 +10682,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10424,6 +10718,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10459,6 +10754,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10538,6 +10834,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10573,6 +10870,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10586,6 +10884,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10643,6 +10942,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10678,6 +10978,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10713,6 +11014,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10726,6 +11028,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10761,6 +11064,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10774,6 +11078,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10787,6 +11092,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10866,6 +11172,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10901,6 +11208,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10914,6 +11222,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10927,6 +11236,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10940,6 +11250,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -10975,6 +11286,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11032,6 +11344,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11067,6 +11380,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11146,6 +11460,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11159,6 +11474,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11172,6 +11488,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11207,6 +11524,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11242,6 +11560,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11321,6 +11640,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11334,6 +11654,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11391,6 +11712,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11426,6 +11748,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11439,6 +11762,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11496,6 +11820,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11531,6 +11856,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11588,6 +11914,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11601,6 +11928,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11614,6 +11942,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11737,6 +12066,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11750,6 +12080,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11785,6 +12116,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11820,6 +12152,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11855,6 +12188,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11890,6 +12224,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11903,6 +12238,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11916,6 +12252,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -11995,6 +12332,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12008,6 +12346,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12043,6 +12382,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12078,6 +12418,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12113,6 +12454,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12126,6 +12468,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12205,6 +12548,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12284,6 +12628,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12297,6 +12642,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12332,6 +12678,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12345,6 +12692,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12402,6 +12750,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12415,6 +12764,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12450,6 +12800,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12485,6 +12836,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12520,6 +12872,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12577,6 +12930,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12590,6 +12944,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12625,6 +12980,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12660,6 +13016,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12695,6 +13052,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12708,6 +13066,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12721,6 +13080,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12800,6 +13160,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12813,6 +13174,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12870,6 +13232,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12883,6 +13246,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12962,6 +13326,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -12975,6 +13340,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13054,6 +13420,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13111,6 +13478,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13124,6 +13492,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13137,6 +13506,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13150,6 +13520,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13163,6 +13534,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13176,6 +13548,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13211,6 +13584,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13268,6 +13642,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13281,6 +13656,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13316,6 +13692,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13351,6 +13728,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13408,6 +13786,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13443,6 +13822,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13456,6 +13836,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13513,6 +13894,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13526,6 +13908,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13561,6 +13944,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13574,6 +13958,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13587,6 +13972,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
@@ -13644,6 +14030,7 @@
 }
 {
 "classname" "{entity_classname}"
+"{custom_attributes.map(kv => kv.key)}" "{custom_attributes.map(kv => kv.value)}"
 "_mess_merge_entity_id" "{merge_name}"
 "_mess_replace_texture" "{texture_replacements}"
 {
