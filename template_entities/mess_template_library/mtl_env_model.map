@@ -1,0 +1,14 @@
+{
+"classname" "worldspawn"
+"mapversion" "220"
+"_mess_allow_rewrite_rules" "{}"
+"start_invisible" "{hasflag(0)}"
+"attributes" "{get_attr().filter(a => !a.key.match('^(?:classname|origin|angles|spawnflags)$'))}"
+}
+{
+"classname" "env_sprite"
+"origin" "0 0 0"
+"angles" "0 0 0"
+"{attributes.map(a => a.key)}" "{attributes.map(a => a.value)}"
+"spawnflags" "{setflag(0, start_invisible ? 0 : 1, spawnflags)}"
+}

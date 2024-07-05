@@ -12,8 +12,8 @@
 // Of course, if you're making a mod, you can add a real env_model to your game-code and remove these MESS rewrite rules entirely.
 // 
 // @MESS REWRITE FOR "mtl_env_model":
-// "classname": "env_sprite"
-// "spawnflags": "{setflag(0, hasflag(0) ? 0 : 1)}"
+// "classname": "macro_insert"
+// "template_map": "{ted_dir() + '/mtl_env_model.map'}"
 // @MESS;
 @PointClass size(-16 -16 0, 16 16 32) color(255 127 0) studio() = mtl_env_model : "Prop model"
 [
