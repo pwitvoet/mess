@@ -273,7 +273,7 @@ namespace MESS
             templateDirectories = templateDirectories.GetSafeEnumerable();
             foreach (var templatesDirectory in templateDirectories)
             {
-                logger.Info($"Loading .ted files from '{templatesDirectory}'.");
+                logger.Verbose($"Loading .ted files from '{templatesDirectory}'.");
 
                 if (!Directory.Exists(templatesDirectory))
                 {
@@ -304,7 +304,7 @@ namespace MESS
                                 fgdOutput.WriteLine();
                                 fgdOutput.WriteLine();
 
-                                logger.Info($"{rewriteDirectives.Length} rewrite directives read from '{path}'.");
+                                logger.Verbose($"{rewriteDirectives.Length} rewrite directives read from '{path}'.");
 
                                 return rewriteDirectives;
                             }

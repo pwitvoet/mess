@@ -112,7 +112,7 @@ namespace MESS.Macros
         {
             foreach (var templatesDirectory in templateDirectories)
             {
-                Logger.Info($"Loading .mscript files from '{templatesDirectory}'.");
+                Logger.Verbose($"Loading .mscript files from '{templatesDirectory}'.");
 
                 if (!Directory.Exists(templatesDirectory))
                     continue;
