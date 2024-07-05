@@ -56,7 +56,7 @@ namespace MESS
 
                 var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log");
                 var logLevel = commandLineSettings.LogLevel ?? LogLevel.Info;
-                using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
+                using (var logger = CreateLogger(logLevel, logPath))
                 {
                     var configFilePath = commandLineSettings.ConfigFilePath ?? DefaultConfigFilePath;
                     if (string.IsNullOrEmpty(Path.GetExtension(configFilePath)))
@@ -214,6 +214,14 @@ namespace MESS
 
             foreach (var kv in commandLineSettings.Globals)
                 settings.Globals[kv.Key] = kv.Value;
+        }
+
+        private static ILogger CreateLogger(LogLevel logLevel, string logPath)
+        {
+            if (logLevel == LogLevel.Off)
+                return new ConsoleLogger(logLevel);
+
+            return new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel));
         }
 
         private static void ShowHelp(CommandLine commandLine)
