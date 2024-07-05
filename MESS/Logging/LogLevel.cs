@@ -10,7 +10,7 @@
         /// <summary>
         /// Only a few important messages are logged.
         /// </summary>
-        Important,
+        Minimal,
 
         /// <summary>
         /// Only critical errors are logged.

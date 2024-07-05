@@ -8,7 +8,7 @@
         void Info(string message);
         void Warning(string message, Exception? exception = null);
         void Error(string message, Exception? exception = null);
-        void Important(string message);
+        void Minimal(string message);
 
         void Log(LogLevel level, string message);
         void Log(LogLevel level, string message, Exception? exception);

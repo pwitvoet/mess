@@ -89,11 +89,11 @@ namespace MESS
                 var logLevel = settings.LogLevel ?? LogLevel.Info;
                 using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
                 {
-                    logger.Important($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
-                    logger.Important("----- CONVERT MODE -----");
-                    logger.Important($"Command line: {Environment.CommandLine}");
-                    logger.Important($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
-                    logger.Important("");
+                    logger.Minimal($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
+                    logger.Minimal("----- CONVERT MODE -----");
+                    logger.Minimal($"Command line: {Environment.CommandLine}");
+                    logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+                    logger.Minimal("");
 
                     try
                     {
@@ -155,10 +155,10 @@ namespace MESS
                     }
                     finally
                     {
-                        logger.Important("");
-                        logger.Important($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
-                        logger.Important("");
-                        logger.Important("----- END MESS -----");
+                        logger.Minimal("");
+                        logger.Minimal($"Finished in {stopwatch.ElapsedMilliseconds / 1000f:0.##} seconds.");
+                        logger.Minimal("");
+                        logger.Minimal("----- END MESS -----");
                     }
                 }
             }

@@ -23,7 +23,7 @@
 
         public void Error(string message, Exception? exception = null) => Log(LogLevel.Error, message, exception);
 
-        public void Important(string message) => Log(LogLevel.Important, message);
+        public void Minimal(string message) => Log(LogLevel.Minimal, message);
 
 
         public void Log(LogLevel level, string message)
