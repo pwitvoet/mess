@@ -103,8 +103,24 @@
         /// <summary>
         /// How a multi-inserting macro entity will orient instances.
         /// This attribute will be evaluated again for each instance.
+        /// See <see cref="Macros.Orientation"/>.
         /// </summary>
         public const string InstanceOrientation = "instance_orientation";
+
+
+        // Instance positioning and scaling, used by macro_insert:
+
+        /// <summary>
+        /// This attribute determines whether the <see cref="InstanceOffset"/> property is used as an offset or as an absolute position.
+        /// See <see cref="Macros.Positioning"/>.
+        /// </summary>
+        public const string InstancePositioning = "instance_positioning";
+
+        /// <summary>
+        /// This attribute determines whether the <see cref="InstanceScale"/> property is used as a relative or as an absolute scale.
+        /// See <see cref="Macros.Scaling"/>.
+        /// </summary>
+        public const string InstanceScaling = "instance_scaling";
 
 
         // Template-referencing attributes, used by macro_insert, macro_cover, macro_fill and macro_brush:
