@@ -7,14 +7,14 @@ _mtl_get_target_pattern_template_name = targetname =>
     // The on, off and kill patterns generate a trigger_relay, which supports setting a delay:
     (targetname.startswith('+') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_ON_PATTERN')) ? '+_template' :
     (targetname.startswith('-') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_OFF_PATTERN')) ? '-_template' :
-    (targetname.startswith('kill') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_KILL_PATTERN')) ? 'kill_template' :
+    (targetname.startswith('kill ') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_KILL_PATTERN')) ? 'kill_template' :
     
     // The rest of the patterns create entities that do not support delays, so the delay pattern has to take care of that first:
     (targetname.contains(':') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_DELAY_PATTERN')) ? 'delay_template' :
     
     // Here are all the patterns that cannot handle a delay by themselves:
-    (targetname.startswith('show') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_SHOW_PATTERN')) ? 'show_template' :
-    (targetname.startswith('hide') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_HIDE_PATTERN')) ? 'hide_template' :
+    (targetname.startswith('show ') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_SHOW_PATTERN')) ? 'show_template' :
+    (targetname.startswith('hide ') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_HIDE_PATTERN')) ? 'hide_template' :
     (targetname.contains('->') && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_CHANGETARGET_PATTERN')) ? '->_template' :
     (targetname.trim().startswith('set ') && targetname.trim().split().length == 3 && !getglobal('MTL_TRIGGER_PATTERNS_DISABLE_SET_PATTERN')) ? 'set_template' :
     
