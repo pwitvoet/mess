@@ -1,6 +1,7 @@
 ﻿using MESS.Common;
 using MESS.EntityRewriting;
 using MESS.Logging;
+using MESS.Macros.Functions;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;
@@ -62,8 +63,8 @@ namespace MESS.Macros
         private ILogger Logger { get; }
 
         /// <summary>
-        /// Global variables are used by the <see cref="MacroExpanderFunctions.getglobal(string?)"/>, <see cref="MacroExpanderFunctions.setglobal(string?, object?)"/>
-        /// and <see cref="MacroExpanderFunctions.useglobal(string?)"/> MScript functions. They are useful for things like avoiding duplicate template instantiation,
+        /// Global variables are used by the <see cref="ExpansionSettingsFunctions.getglobal(string?)"/>, <see cref="ExpansionSettingsFunctions.setglobal(string?, object?)"/>
+        /// and <see cref="ExpansionSettingsFunctions.useglobal(string?)"/> MScript functions. They are useful for things like avoiding duplicate template instantiation,
         /// but should be used with care.
         /// </summary>
         private Dictionary<string, object?> Globals { get; }
@@ -93,9 +94,9 @@ namespace MESS.Macros
 
             Globals = settings.Globals;
 
-            var macroExpanderFunctions = new MacroExpanderFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, Globals, logger);
+            var expansionSettingsFunctions = new ExpansionSettingsFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, Globals, logger);
             BaseEvaluationContext = Evaluation.DefaultContext();
-            NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, macroExpanderFunctions);
+            NativeUtils.RegisterInstanceMethods(BaseEvaluationContext, expansionSettingsFunctions);
 
             TopLevelEvaluationContext = Evaluation.ContextWithBindings(settings.Variables ?? new(), 0, 0, 0, new Random(0), "", Logger, BaseEvaluationContext);
 
@@ -231,7 +232,7 @@ namespace MESS.Macros
             var unevaluatedProperties = entityProperties.ToDictionary(
                 property => property.Key,
                 property => Evaluation.ParseMScriptValue(property.Value));
-            var context = Evaluation.ContextWithBindings(unevaluatedProperties, entityID, 0, entityID, random, mapPath, Logger, TopLevelEvaluationContext);
+            var context = Evaluation.RewriteRuleContextWithBindings(unevaluatedProperties, random, mapPath, rewriteDirective.SourceFilePath, Settings.TemplateEntityDirectories.ToArray(), Logger, TopLevelEvaluationContext);
 
             if (rewriteDirective.Condition != null)
             {
@@ -241,8 +242,6 @@ namespace MESS.Macros
             }
 
             Logger.Verbose($"Applying directive from '{rewriteDirective.SourceFilePath}' to {entityProperties.GetString(Attributes.Classname)}.");
-
-            NativeUtils.RegisterInstanceMethods(context, new RewriteDirectiveFunctions(rewriteDirective.SourceFilePath, Settings.TemplateEntityDirectories.ToArray(), Logger));
 
             foreach (var ruleGroup in rewriteDirective.RuleGroups)
             {
@@ -1347,7 +1346,7 @@ namespace MESS.Macros
         }
 
 
-        private static string? GetTemplateEntityFile(string relativePath, string[] templateEntityDirectories)
+        public static string? GetTemplateEntityFile(string relativePath, string[] templateEntityDirectories)
         {
             if (Path.IsPathRooted(relativePath))
                 return relativePath;
@@ -1359,126 +1358,6 @@ namespace MESS.Macros
                     return absolutePath;
             }
             return null;
-        }
-
-
-        /// <summary>
-        /// These functions are available during macro expansion but also to MScript expressions inside .ted files.
-        /// </summary>
-        public class MacroExpanderFunctions
-        {
-            private string _templatesDirectory;
-            private string[] _templateEntityDirectories;
-            private string _messDirectory;
-            private IDictionary<string, object?> _globals;
-            private ILogger _logger;
-
-
-            public MacroExpanderFunctions(string templatesDirectory, string[] templateEntityDirectories, string messDirectory, IDictionary<string, object?> globals, ILogger logger)
-            {
-                _templatesDirectory = templatesDirectory;
-                _templateEntityDirectories = templateEntityDirectories;
-                _messDirectory = messDirectory;
-                _globals = globals;
-                _logger = logger;
-            }
-
-
-            // Directories & paths:
-            public string dir() => _templatesDirectory;  // TODO: Make this obsolete!
-
-            public string templates_dir() => _templatesDirectory;
-            public object?[] ted_dirs() => _templateEntityDirectories.Cast<object?>().ToArray();
-            public string? ted_path(string relative_path) => GetTemplateEntityFile(relative_path, _templateEntityDirectories);
-            public string mess_dir() => _messDirectory;
-
-            // Globals:
-            public object? getglobal(string? name) => _globals.TryGetValue(name ?? "", out var value) ? value : null;
-            public object? setglobal(string? name, object? value)
-            {
-                _globals[name ?? ""] = value;
-                return value;
-            }
-            public bool useglobal(string? name)
-            {
-                if (_globals.TryGetValue(name ?? "", out var value) && value != null)
-                    return true;
-
-                _globals[name ?? ""] = 1.0;
-                return false;
-            }
-            public double incglobal(string? name)
-            {
-                if (!_globals.TryGetValue(name ?? "", out var value) || value is not double count)
-                    count = 0;
-                _globals[name ?? ""] = count + 1;
-                return count;
-            }
-
-            // Debugging:
-            public object? trace(object? value, string? message = null)
-            {
-                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace).");
-                return value;
-            }
-        }
-
-
-        /// <summary>
-        /// These functions are available to MScript expressions inside .ted files.
-        /// </summary>
-        public class RewriteDirectiveFunctions
-        {
-            private string _sourceFilePath;
-            private string[] _templateEntityDirectories;
-            private ILogger _logger;
-
-
-            public RewriteDirectiveFunctions(string sourceFilePath, string[] templateEntityDirectories, ILogger logger)
-            {
-                _sourceFilePath = sourceFilePath;
-                _templateEntityDirectories = templateEntityDirectories;
-                _logger = logger;
-            }
-
-
-            // Current bundle file or directory:
-            public string? ted_dir() => Path.GetDirectoryName(_sourceFilePath);
-
-            // Current .ted file path, or path to another file in a template entity directory:
-            public string? ted_path(string? relative_path = null)
-            {
-                if (relative_path == null)
-                    return _sourceFilePath;
-
-                return GetTemplateEntityFile(relative_path, _templateEntityDirectories);
-            }
-
-
-            // Flags:
-            public bool hasflag(double flag, double flags)
-            {
-                var bit = (int)flag;
-                if (bit < 0 || bit > 31)
-                    return false;
-
-                return (((int)flags >> bit) & 1) == 1;
-            }
-
-            public double setflag(double flag, double set, double flags)
-            {
-                if (set != 0)
-                    return (int)flags | (1 << (int)flag);
-                else
-                    return (int)flags & ~(1 << (int)flag);
-            }
-
-            // Debugging:
-            public object? trace(object? value, string? message = null)
-            {
-                _logger.Info($"'{Interpreter.Print(value)}' ('{message}', trace from '{_sourceFilePath}').");
-                return value;
-            }
         }
     }
 }

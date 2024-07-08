@@ -10,6 +10,7 @@ using MESS.Util;
 using MScript;
 using MESS.Mapping;
 using MESS.Formats;
+using MESS.Macros.Functions;
 
 namespace MESS
 {
@@ -90,7 +91,7 @@ namespace MESS
                     var rewriteDirectivesEvaluationContext = Evaluation.DefaultContext();
                     NativeUtils.RegisterInstanceMethods(
                         rewriteDirectivesEvaluationContext,
-                        new MacroExpander.MacroExpanderFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, settings.Globals, logger));
+                        new ExpansionSettingsFunctions(settings.TemplateMapsDirectory, settings.TemplateEntityDirectories.ToArray(), AppContext.BaseDirectory, settings.Globals, logger));
                     var rewriteDirectives = LoadTedRewriteDirectives(settings.TemplateEntityDirectories, settings.MessFgdFilePath, rewriteDirectivesEvaluationContext, logger);
 
                     try
@@ -302,7 +303,7 @@ namespace MESS
                                 fgdOutput.WriteLine();
 
                                 var tedEvaluationContext = new EvaluationContext(parentContext: baseEvaluationContext);
-                                NativeUtils.RegisterInstanceMethods(tedEvaluationContext, new MacroExpander.RewriteDirectiveFunctions(path, templateDirectories.ToArray(), logger));
+                                NativeUtils.RegisterInstanceMethods(tedEvaluationContext, new RewriteDirectiveFunctions(path, templateDirectories.ToArray(), logger));
 
                                 // Then read the rewrite rules, and copy the .ted file contents into mess.fgd:
                                 var rewriteDirectives = RewriteDirectiveParser.ParseRewriteDirectives(file, fgdOutput, tedEvaluationContext).ToArray();
