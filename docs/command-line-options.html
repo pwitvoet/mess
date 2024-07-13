@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>3.2. Command-line options - MESS 1.2.2 documentation</title>
+    <title>3.2. Command-line options - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -11,7 +11,7 @@
   <body>
     <div class="root-container">
       <nav>
-        <h1><a class="home-link" href="index.html">MESS 1.2.2</a></h1>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
         <ul>
           <li>
 <a href="index.html">1. Getting started</a>
@@ -27,6 +27,7 @@
 <li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
 <li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
 <li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
 <li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
 </ul>
 </li>
@@ -40,13 +41,15 @@
 <li>
 <a href="template-entities.html">4. Template entities</a>
 <ul class="toc">
-<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
-<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
-<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
-<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
-<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
-<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
-<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
 <li>
@@ -81,6 +84,12 @@
 <li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
 </ul>
 </li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
 
         </ul>
       </nav>
@@ -102,11 +111,17 @@ All other command-line arguments must be placed before the input and output map 
 <p>
 For additional settings, it's better to use <a href="configuration-files.html">configuration files</a>.</p>
 <h2 id="available-arguments">Available arguments</h2>
+<h3 id="modes:">Modes:</h3>
 <ul>
 <li>
 <a href="#-help">-help</a></li>
 <li>
+<a href="#-convert">-convert</a></li>
+<li>
 <a href="#-repl">-repl</a></li>
+</ul>
+<h3 id="settings:">Settings:</h3>
+<ul>
 <li>
 <a href="#-dir-path">-dir PATH</a></li>
 <li>
@@ -117,12 +132,23 @@ For additional settings, it's better to use <a href="configuration-files.html">c
 <a href="#-vars-assignments">-vars ASSIGNMENTS</a></li>
 <li>
 <a href="#-globals-assignments">-globals ASSIGNMENTS</a></li>
+</ul>
+<h3 id="limits:">Limits:</h3>
+<ul>
 <li>
 <a href="#-maxrecursion-n">-maxrecursion N</a></li>
 <li>
 <a href="#-maxinstances-n">-maxinstances N</a></li>
 <li>
+<a href="#-norewrite">-norewrite</a></li>
+</ul>
+<h3 id="logging:">Logging:</h3>
+<ul>
+<li>
 <a href="#-log-log_level">-log LOG_LEVEL</a></li>
+</ul>
+<h3 id="arguments:">Arguments:</h3>
+<ul>
 <li>
 <a href="#input_path">INPUT_PATH</a></li>
 <li>
@@ -131,9 +157,14 @@ For additional settings, it's better to use <a href="configuration-files.html">c
 <h2 id="-help"><code>-help</code></h2>
 <p>
 When this special argument is set, MESS will show a list of available arguments and then quit. All other arguments will be ignored.</p>
+<h2 id="-convert"><code>-convert</code></h2>
+<p>
+This switch enables file conversion mode. In this mode, map files can be converted to different formats. Supported formats are <code>.map</code> (both 'normal' and TrenchBroom files), <code>.rmf</code> (Hammer) and <code>.jmf</code> (J.A.C.K.). This mode also supports cordon areas and VIS group filtering. See <a href="file-conversion.html">File conversion</a> for more information.</p>
+<p>
+Use <code>-convert -help</code> to show a list of available arguments for the convert mode.</p>
 <h2 id="-repl"><code>-repl</code></h2>
 <p>
-This special argument enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop) that can be used to try out MScript, the scripting language that is embedded in MESS. If this argument is set, then all other arguments will be ignored.</p>
+This switch enables the interactive MScript interpreter mode. This starts a REPL (read-evaluate-print loop) that can be used to try out MScript, the scripting language that is embedded in MESS. If this argument is set, then all other arguments will be ignored.</p>
 <p>
 While MScript is almost entirely expression-based, REPL mode supports assignments. For example, <code>a = 4 + 5</code> will store the result of the <code>4 + 5</code> expression in the variable named <code>a</code>. For convenience, the latest evaluation result is also stored in a special variable named <code>_</code>.</p>
 <p>
@@ -153,12 +184,12 @@ This selects a different config file. The <code>.config</code> extension can be 
 <h2 id="-fgd-path">-<code>fgd PATH</code></h2>
 <p>
 This overrides the <code>mess.fgd</code> file path setting from the current configuration file. See <a href="configuration-files.html#fgd-path">configuration file: fgd-path</a> for more information.</p>
-<h2 id="-vars-"assignments""><code>-vars "ASSIGNMENTS"</code></h2>
+<h2 id="-vars-assignments"><code>-vars "ASSIGNMENTS"</code></h2>
 <p>
 These variables will be available in MScript expressions in the map properties and top-level entities of the input map. The input format is <code>"name1 = expression; name2 = expression;"</code>, and so on.</p>
 <p>
 These variables are added to the ones from the current configuration file. If multiple variables with the same name are specified, then the last value wins. Variables provided via the command-line always overwrite variables from the configuration file if they have the same name. See <a href="configuration-files.html#variables">configuration file: variables</a> for more information.</p>
-<h2 id="-globals-"assignments""><code>-globals "ASSIGNMENTS"</code></h2>
+<h2 id="-globals-assignments"><code>-globals "ASSIGNMENTS"</code></h2>
 <p>
 Global variables are available in MScript expressions anywhere, via the <code>getglobal</code>, <code>setglobal</code> and <code>useglobal</code> functions. Unlike variables, which are only available in the map properties and in top-level entities, globals are also available inside templates and template maps. The input format is <code>"name1 = expression; name2 = expression;"</code>, and so on.</p>
 <p>
@@ -169,23 +200,26 @@ This overrides the maximum recursion setting from the current configuration file
 <h2 id="-maxinstances-n"><code>-maxinstances N</code></h2>
 <p>
 This overrides the maximum instances setting from the current configuration file. See <a href="configuration-files.html#max-instances">configuration file: max-instances</a> for more information.</p>
+<h2 id="-norewrite"><code>-norewrite</code></h2>
+<p>
+This disables rewrite rules. Without rewrite rules, template entities won't be rewritten to macro entities, and template behaviors won't be applied, so this setting is mostly for testing and debugging.</p>
 <h2 id="-log-log_level"><code>-log LOG_LEVEL</code></h2>
 <p>
 This overrides the log level setting from the current configuration file. Available log levels are <code>off</code>, <code>minimal</code>, <code>error</code>, <code>warning</code>, <code>info</code> (the default level) and <code>verbose</code>. See <a href="configuration-files.html#log-level">configuration file: log-level</a> for more information.</p>
 <h2 id="input_path"><code>INPUT_PATH</code></h2>
 <p>
-This specifies the map file that must be processed by MESS. Supported formats are <code>.map</code>, <code>.rmf</code> and <code>.jmf</code>. The output format is always <code>.map</code>. This argument must come after all the other arguments (but before <code>OUTPUT_PATH</code>).</p>
+This specifies the map file that must be processed by MESS. Supported formats are: <code>.map</code>, <code>.rmf</code> and <code>.jmf</code>. This argument must come after all the other arguments (but before <code>OUTPUT_PATH</code>).</p>
 <p>
-If the input file is a <code>.map</code> file and if no output path is set, then the input file will be overwritten.</p>
+If the input file is a <code>.map</code> file and if no output path is set, then the input file will be overwritten. If the input file is a different format and if no output path is set, then a <code>.map</code> file with the same name as the input file will be created.</p>
 <h2 id="output_path"><code>OUTPUT_PATH</code></h2>
 <p>
-This tells where MESS will save the resulting map file. Specifying a custom output path is useful if you want to prevent MESS from overwriting the input file. This argument must come after all the other arguments.</p>
+This tells where MESS will save the resulting map file. Specifying a custom output path is useful if you want to prevent MESS from overwriting the input file. This argument must come after all the other arguments. Supported formats are: <code>.map</code>, <code>.rmf</code> and <code>.jmf</code>.</p>
 
           </article>
         </main>
 
         <footer>
-          © copyright 2023, Pieter Witvoet
+          © copyright 2024, Pieter Witvoet
         </footer>
       </div>
     </div>

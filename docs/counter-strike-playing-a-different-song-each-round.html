@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Counter-Strike&colon; Playing a different song each round - MESS 1.2.3 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li class="current-page"><a class="current-page" href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+<li><a href="scrolling-texture-speed.html">5.5. Scrolling texture speed</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="counter-strike:-playing-a-different-song-each-round">Counter-Strike: playing a different song each round</h1>
+<p>
+<figure>
+<img src="images/playing_different_song_header.png" alt="'Ah inseparabile - d'amore il Dio'" title="'Ah inseparabile - d'amore il Dio'">
+<figcaption>'Ah inseparabile - d'amore il Dio'</figcaption>
+</figure>
+</p>
+<p>
+<strong>Table of contents:</strong></p>
+<ul>
+<li>
+<a href="#introduction">1. Introduction</a></li>
+<li>
+<a href="#setting-up-the-songs">2. Setting up the songs</a></li>
+<li>
+<a href="#stopping-the-songs">3. Stopping the songs</a></li>
+<li>
+<a href="#starting-the-next-song">4. Starting the next song</a></li>
+<li>
+<a href="#starting-a-song-when-a-new-round-starts">5. Starting a song when a new round starts</a></li>
+<li>
+<a href="#notes">6. Notes</a></li>
+<li>
+<a href="#example-map">7. Example map</a></li>
+</ul>
+<h2 id="introduction">1. Introduction</h2>
+<p>
+In this tutorial we'll make a destructible radio like the one in cs_italy, but instead of always playing the same song, we'll make it switch to a different song when a new round starts.</p>
+<p>
+We'll use two MESS template entities for this: <a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a> and <a href="mtl_trigger_counter.html">mtl_trigger_counter</a>, and we will also use <a href="target-patterns.html">target patterns</a>.</p>
+<h2 id="setting-up-the-songs">2. Setting up the songs</h2>
+<p>
+We'll start by creating 4 <code>ambient_generic</code> entities, one for each song:</p>
+<p>
+<figure>
+<img src="images/song_ambient_generics.png" alt="4 ambient_generics" title="4 ambient_generics">
+<figcaption>4 ambient_generics</figcaption>
+</figure>
+</p>
+<p>
+First create a single <code>ambient_generic</code> entity and set its properties as following:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> song1</td></tr>
+<tr>
+<td> Path/filename </td><td> ambience/Opera.wav</td></tr>
+<tr>
+<td> Volume </td><td> 10</td></tr>
+<tr>
+<td> Start volume </td><td> 10</td></tr>
+<tr>
+<td> Flags </td><td> Medium Radius, Start Silent</td></tr>
+</tbody>
+</table>
+<p>
+Then create 3 copies of this entity, and change their name and path/filename to the following:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> song2</td></tr>
+<tr>
+<td> Path/filename </td><td> ambience/chimes.wav</td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> song3</td></tr>
+<tr>
+<td> Path/filename </td><td> ambience/arabmusic.wav</td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> song4</td></tr>
+<tr>
+<td> Path/filename </td><td> ambience/guit1.wav</td></tr>
+</tbody>
+</table>
+<h2 id="stopping-the-songs">3. Stopping the songs</h2>
+<p>
+The next step is a way to stop the songs, and of course a breakable radio:</p>
+<p>
+<figure>
+<img src="images/radio_and_stop_songs.png" alt="Stopping the song... by breaking the radio!" title="Stopping the song... by breaking the radio!">
+<figcaption>Stopping the song... by breaking the radio!</figcaption>
+</figure>
+</p>
+<p>
+When a new round starts, we need to stop the previous song and start the next. However, Counter-Strike entities can be quirky: when a new round starts, an <code>ambient_generic</code> will start playing even when its 'Start Silent' flag is set. So instead of stopping only the previous song, we need to stop <em>all</em> songs.</p>
+<p>
+To do that, create a <code>multi_manager</code>, set its name to <code>stop_songs</code>, then disable SmartEdit mode and add the following keys and values:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>targetname</code></td><td><code>stop_songs</code></td></tr>
+<tr>
+<td><code>-song1</code></td><td><code>0</code></td></tr>
+<tr>
+<td><code>-song2</code></td><td><code>0</code></td></tr>
+<tr>
+<td><code>-song3</code></td><td><code>0</code></td></tr>
+<tr>
+<td><code>-song4</code></td><td><code>0</code></td></tr>
+</tbody>
+</table>
+<p>
+The minus (<code>-</code>) in front of the song entity names is a 'target pattern' that will cause MESS to generate a <code>trigger_relay</code> that sends an 'off' signal to that entity. This means that we can be certain that the songs will be turned off instead of being toggled (which might accidentally turn them on).</p>
+<p>
+For the radio, create a <code>func_breakable</code> and set its target to <code>stop_songs</code>. This will stop the current song when the radio gets destroyed.</p>
+<h2 id="starting-the-next-song">4. Starting the next song</h2>
+<p>
+To play a different song each round, we're going to use a counter:</p>
+<p>
+<figure>
+<img src="images/cycle_to_the_next_song.png" alt="Selecting the next song with a counter" title="Selecting the next song with a counter">
+<figcaption>Selecting the next song with a counter</figcaption>
+</figure>
+</p>
+<p>
+Create an <code>mtl_trigger_counter</code> and give it the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Targetname </td><td> play_next_song</td></tr>
+<tr>
+<td> Trigger mode </td><td> Increment when triggered</td></tr>
+<tr>
+<td> Initial counter value </td><td> 0</td></tr>
+<tr>
+<td> Reset counter at </td><td> 4</td></tr>
+</tbody>
+</table>
+<p>
+Then disable SmartEdit mode and add the following keys and values:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+song1</code></td><td><code>1</code></td></tr>
+<tr>
+<td><code>+song2</code></td><td><code>2</code></td></tr>
+<tr>
+<td><code>+song3</code></td><td><code>3</code></td></tr>
+<tr>
+<td><code>+song4</code></td><td><code>4</code></td></tr>
+</tbody>
+</table>
+<p>
+Again, we're using a 'target pattern' here: the plus (<code>+</code>) tells MESS to generate a <code>trigger_relay</code> that sends an 'on' signal to that entity, so instead of toggling a song, this will always turn it on.</p>
+<p>
+This <code>mtl_trigger_counter</code> will start the next song from its list each time it is triggered, and it will cycle back to the first song after all four songs have been played.</p>
+<h2 id="starting-a-song-when-a-new-round-starts">5. Starting a song when a new round starts</h2>
+<p>
+The final step is to actually start a song (and stop the others) when a new round starts:</p>
+<p>
+<figure>
+<img src="images/start_song_on_round_start.png" alt="Starting a new song each round" title="Starting a new song each round">
+<figcaption>Starting a new song each round</figcaption>
+</figure>
+</p>
+<p>
+Create a <code>cs_trigger_roundstart</code> entity with the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Target </td><td> stop_songs, play_next_song: 0.1</td></tr>
+<tr>
+<td> Delay (first round) </td><td> 2</td></tr>
+<tr>
+<td> Delay </td><td> 0</td></tr>
+</tbody>
+</table>
+<p>
+We're using yet another target pattern here: the comma between 'stop_songs' and 'play_next_song: 0.1' tells MESS to generate a <code>multi_manager</code> with two targets: 'stop_songs', which will be triggered immediately, and 'play_next_song', which will be triggered after a 0.1 second delay.</p>
+<p>
+The delay for the first round is set to 2 seconds because of another Counter-Strike quirk. Without this delay, no song will play during the first round. Apparently an <code>ambient_generic</code> can't be triggered too soon after a game has started. This only affects the first round however, so the delay for subsequent rounds should be 0.</p>
+<p>
+And that's it! You can now compile your map and hear the results for yourself in-game:</p>
+<p>
+<figure>
+<img src="images/playing_different_songs_result.png" alt="The end result" title="The end result">
+<figcaption>The end result</figcaption>
+</figure>
+</p>
+<h2 id="notes">6. Notes</h2>
+<p>
+If you want to add more songs, you'll need to create more <code>ambient_generic</code> entities, and add them as targets to the 'stop_songs' <code>multimanager</code> and to the 'play_next_song' <code>mtl_trigger_counter</code>. You also need to update the <code>mtl_trigger_counter</code>'s 'Reset counter at' value to match the number of songs.</p>
+<p>
+If you want to use custom songs, place your .wav files somewhere in your <code>cstrike_addon/sound</code> folder and replace the 'Path/filename' of the <code>ambient_generic</code> entities with the path of your own .wav files (relative to the <code>cstrike_addon/sound</code> folder). Don't forget to include the sounds in your map's .res file - a tool like <a href="https://github.com/wootguy/resguy/releases">ResGuy</a> should be able to do that automatically.</p>
+<p>
+To select a new song randomly instead of always cycling to the next song, replace the <code>mtl_trigger_counter</code> with an <a href="mtl_trigger_random.html">mtl_trigger_random</a> entity and give it the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> Name </td><td> play_next_song</td></tr>
+<tr>
+<td> Trigger mode </td><td> Fire one target</td></tr>
+</tbody>
+</table>
+<p>
+Then disable SmartEdit mode and add the following keys:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+song1</code></td><td></td></tr>
+<tr>
+<td><code>+song2</code></td><td></td></tr>
+<tr>
+<td><code>+song3</code></td><td></td></tr>
+<tr>
+<td><code>+song4</code></td><td></td></tr>
+</tbody>
+</table>
+<h2 id="example-map">7. Example map</h2>
+<h4 id="example-map:">Example map:</h4>
+<ul>
+<li>
+<a href="files/cs_roundstart_songs_tutorial.zip">cs_roundstart_songs_tutorial.zip</a></li>
+</ul>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2024, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

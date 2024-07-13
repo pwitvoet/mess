@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>7.1. Entity properties - MESS 1.2.2 documentation</title>
+    <title>7.1. Entity properties - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -11,7 +11,7 @@
   <body>
     <div class="root-container">
       <nav>
-        <h1><a class="home-link" href="index.html">MESS 1.2.2</a></h1>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
         <ul>
           <li>
 <a href="index.html">1. Getting started</a>
@@ -27,6 +27,7 @@
 <li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
 <li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
 <li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
 <li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
 </ul>
 </li>
@@ -40,13 +41,15 @@
 <li>
 <a href="template-entities.html">4. Template entities</a>
 <ul class="toc">
-<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
-<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
-<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
-<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
-<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
-<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
-<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
 <li>
@@ -79,6 +82,12 @@
 <li><a href="standard-functions.html">7.4. Standard functions</a></li>
 <li><a href="template-functions.html">7.5. Template functions</a></li>
 <li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
 </ul>
 </li>
 
@@ -194,6 +203,8 @@ The following properties can be added to entities to trigger special behavior in
 <a href="#_mess_allow_rewrite_rules">_mess_allow_rewrite_rules</a></li>
 <li>
 <a href="#_mess_deny_rewrite_rules">_mess_deny_rewrite_rules</a></li>
+<li>
+<a href="#_mess_replace_texture">_mess_replace_texture</a></li>
 </ul>
 <hr>
 <h3 id="_mess_spawnflagn">_mess_spawnflagN</h3>
@@ -278,7 +289,7 @@ For example, the following two entities will be merged into a single one. Becaus
 <hr>
 <h3 id="_mess_merge_entity_master">_mess_merge_entity_master</h3>
 <p>
-An entity that contains this property will be marked as a master. When merging entities (see the above <code>_mess_merge_entity_id</code> property), the resulting entity will get the properties of the first master entity in that group.</p>
+An entity that contains this property will be marked as a master if the value of this property is true (any value other than leaving it empty or setting it to <code>0</code>). When merging entities (see the above <code>_mess_merge_entity_id</code> property), the resulting entity will get the properties of the first master entity in that group.</p>
 <p>
 For example, the following entity is the master of the <code>courtyard_grass</code> group, and the resulting entity will get the properties of this entity (minus the <code>_mess_merge_entity_id</code> and <code>_mess_merge_entity_master</code> properties):</p>
 <table>
@@ -294,7 +305,7 @@ For example, the following entity is the master of the <code>courtyard_grass</co
 <tr>
 <td><code>_mess_merge_entity_id</code></td><td><code>courtyard_grass</code></td></tr>
 <tr>
-<td><code>_mess_merge_entity_master</code></td><td><code>{}</code></td></tr>
+<td><code>_mess_merge_entity_master</code></td><td><code>1</code></td></tr>
 </tbody>
 </table>
 <hr>
@@ -350,6 +361,8 @@ This property is similar to <code>_mess_attached_template_map</code>, except tha
 <p>
 Adding this property to a (template) map will block rewrite directives from all .ted files, except for the paths listed in this property. Paths can cover specific files or entire directories, and do not need to contain a .ted extension. This property is removed afterwards.</p>
 <p>
+Relative paths are relative to the directory that contains the current (template) map. Multiple paths must be separated by comma's (<code>,</code>). Use the <a href="template-functions.html#ted_path"><code>ted_path(relative_path)</code></a> function to reference .ted files from other template entity directories.</p>
+<p>
 This is a specific property that is intended for template entity authors. A common use-case is to disallow rewrite rules from all .ted files by setting an empty value:</p>
 <table>
 <thead>
@@ -375,7 +388,85 @@ Some editors will remove custom properties if their value is empty, hence the us
 <p>
 Adding this property to a (template) map will block rewrite directives from the .ted file paths listed in this property. Paths can cover specific files or entire directories, and do not need to contain a .ted extension. This property is removed afterwards.</p>
 <p>
-This is a specific property that is intended for template entity authors.</p>
+Relative paths are relative to the directory that contains the current (template) map. Multiple paths must be separated by comma's (<code>,</code>). Use the <a href="template-functions.html#ted_path"><code>ted_path(relative_path)</code></a> function to reference .ted files from other template entity directories.</p>
+<p>
+This is a specific property that is intended for template entity authors. For example, this blocks the rewrite rule that enables target patterns:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>worldspawn</code></td></tr>
+<tr>
+<td><code>_mess_deny_rewrite_rules</code></td><td><code>{ted_path('target_pattern_handler.ted')}</code></td></tr>
+</tbody>
+</table>
+<hr>
+<h3 id="_mess_replace_texture">_mess_replace_texture</h3>
+<p>
+This is a set of properties that can be used to replace textures on a brush entity. As with all the other special properties, they are removed from an entity after any textures have been replaced.</p>
+<p>
+There are several ways to use this property. The most basic usage is as following:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>_mess_replace_texture redwall</code></td><td><code>bluewall</code></td></tr>
+<tr>
+<td><code>_mess_replace_texture redfloor</code></td><td><code>bluefloor</code></td></tr>
+<tr>
+<td><code>_mess_replace_texture</code></td><td><code>null</code></td></tr>
+</tbody>
+</table>
+<p>
+This will replace the 'redwall' texture with 'bluewall', the 'redfloor' texture with 'bluefloor', and any other texture with 'null'. If the last property was left out, then only the 'redwall' and 'redfloor' textures would be replaced - any other textures would remain unchanged. Note that texture name comparisons are case-insensitive, so 'redwall' also matches 'REDWALL' and 'REDwall'.</p>
+<p>
+An alternative to the above is to use a single MScript object that contains multiple replacement rules. For example, this achieves the same as the previous set of properties:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>_mess_replace_texture</code></td><td><code>{{redwall: 'bluewall', redfloor: 'bluefloor', '': 'null'}}</code></td></tr>
+</tbody>
+</table>
+<p>
+Finally, it's also possible to use an MScript function to decides which textures to replace:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classname</code></td><td><code>func_wall</code></td></tr>
+<tr>
+<td><code>_mess_replace_texture</code></td><td><code>{name => name.contains('red') ? name.replace('red', 'blue') : name.contains('grey') ? 'null' : ''}</code></td></tr>
+</tbody>
+</table>
+<p>
+This replaces any texture whose name contains 'red' by replacing the 'red' in their name with 'blue', so not only does it replace 'redwall' with 'bluewall' and 'redfloor' with 'bluefloor', it also replaces 'redceiling' with 'blueceiling' and 'credit' with 'cbluedit'. Any texture that does not contain 'red' but does contain 'grey' will be replaced with 'null', and any other textures are left unchanged.</p>
+<p>
+MScript string comparisons are case-sensitive by default, so to avoid problems, texture names are converted to lowercase before being passed into the replacement function.</p>
 <hr>
 <h2 id="lifted-properties">7.1.3. Lifted properties</h2>
 <p>
@@ -617,7 +708,7 @@ The last property shows how the <code>?:</code> conditional operator can be used
         </main>
 
         <footer>
-          © copyright 2023, Pieter Witvoet
+          © copyright 2024, Pieter Witvoet
         </footer>
       </div>
     </div>

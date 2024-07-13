@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>7.5. Template functions - MESS 1.2.2 documentation</title>
+    <title>7.5. Template functions - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -11,7 +11,7 @@
   <body>
     <div class="root-container">
       <nav>
-        <h1><a class="home-link" href="index.html">MESS 1.2.2</a></h1>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
         <ul>
           <li>
 <a href="index.html">1. Getting started</a>
@@ -27,6 +27,7 @@
 <li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
 <li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
 <li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
 <li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
 </ul>
 </li>
@@ -40,13 +41,15 @@
 <li>
 <a href="template-entities.html">4. Template entities</a>
 <ul class="toc">
-<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
-<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
-<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
-<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
-<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
-<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
-<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
 <li>
@@ -81,6 +84,12 @@
 <li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
 </ul>
 </li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
 
         </ul>
       </nav>
@@ -110,6 +119,16 @@ The following functions are available inside entity properties:</p>
 <h2 id="instance-id">7.5.1. Instance ID</h2>
 <p>
 When creating multiple instances of the same template, entities in different instances often need to have distinct names. For example, a landmine template that contains a <code>trigger_once</code> and an <code>env_explosion</code> should produce triggers that only activate the explosion of the current landmine, not the explosions of all landmines.</p>
+<ul>
+<li>
+<a href="#id"><code>id()</code></a></li>
+<li>
+<a href="#iid"><code>iid()</code></a></li>
+<li>
+<a href="#parentid"><code>parentid()</code></a></li>
+<li>
+<a href="#nth"><code>nth()</code></a></li>
+</ul>
 <hr>
 <h4 id="id"><code><span class="keyword">string</span> id()</code></h4>
 <p>
@@ -142,6 +161,14 @@ This function can also be used in the macro entity itself: setting the <code>ins
 An easy way to add variety is to use randomness. For example, randomizing the angles and scale of props can help to make them look less repetitive.</p>
 <p>
 Randomness in MESS is determistic, which means that compiling the exact same map will always produce the same output. Random numbers are affected by the <code>random_seed</code> property of the current instance-creating macro entity - the same seed will always produce the same sequence of numbers.</p>
+<ul>
+<li>
+<a href="#rand"><code>rand(min, max, step)*</code></a></li>
+<li>
+<a href="#randi"><code>randi(min, max, step)*</code></a></li>
+<li>
+<a href="#randitem"><code>randitem(items, weights)*</code></a></li>
+</ul>
 <hr>
 <h4 id="rand"><code><span class="keyword">number</span> rand()</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> min, <span class="keyword">number</span> max)</code><br/><code><span class="keyword">number</span> rand(<span class="keyword">number</span> min, <span class="keyword">number</span> max, <span class="keyword">number</span> step)</code></h4>
 <p>
@@ -190,6 +217,12 @@ Some entities rely on custom properties. For example, <code>multi_manager</code>
 The opposite - adding a variable number of properties to an entity - can be done with arrays. An entity property whose name consists of a single MScript expression that returns an array will be turned into multiple properties. The property value should also be a single MScript expression that returns an array, so that each property can be given a value.</p>
 <p>
 For example, a property with the name <code>{['a', 'b', 'c']}</code> and a value of <code>{range(1, 4)}</code> (an expression that returns the array <code>[1, 2, 3]</code>) will be turned into 3 separate properties: <code>a</code> with value <code>1</code>, <code>b</code> with value <code>2</code> and <code>c</code> with value <code>3</code>.</p>
+<ul>
+<li>
+<a href="#attr_count"><code>attr_count()</code></a></li>
+<li>
+<a href="#get_attr"><code>get_attr(index|name)*</code></a></li>
+</ul>
 <hr>
 <h4 id="attr_count"><code><span class="keyword">number</span> attr_count()</code></h4>
 <p>
@@ -210,6 +243,12 @@ In the above situation, <code>get_attr(0)</code> would return <code>{key: 'class
 The special <code>spawnflags</code> property contains all the flags of an entity. Its value is the sum of the values of the enabled flags. The first flag has value <code>1</code>, and each subsequent flag's value is double that of the previous flag: <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, and so on.</p>
 <p>
 Because this property can only be adjusted via checkboxes, its value cannot be directly controlled with scripting. That is why MESS recognizes special <code>_mess_spawnflagN</code> properties, where <code>N</code> is a number from 0 to 31, to set specific flags. These special properties are removed after the <code>spawnflags</code> property has been updated.</p>
+<ul>
+<li>
+<a href="#hasflag"><code>hasflag(flag, flags)*</code></a></li>
+<li>
+<a href="#setflag"><code>setflag(flag, set, flags)*</code></a></li>
+</ul>
 <hr>
 <h4 id="hasflag"><code><span class="keyword">bool</span> hasflag(<span class="keyword">number</span> flag)</code><br/><code><span class="keyword">bool</span> hasflag(<span class="keyword">number</span> flag, <span class="keyword">number</span> flags)</code></h4>
 <p>
@@ -236,6 +275,20 @@ The directory where the current map file is located.</li>
 </ul>
 <p>
 It is often not necessary to reference these directories in scripts, but they are available via the following functions just in case.</p>
+<ul>
+<li>
+<a href="#map_path"><code>map_path()</code></a></li>
+<li>
+<a href="#map_dir"><code>map_dir()</code></a></li>
+<li>
+<a href="#templates_dir"><code>templates_dir()</code></a></li>
+<li>
+<a href="#ted_dirs"><code>ted_dirs()</code></a></li>
+<li>
+<a href="#ted_path"><code>ted_path(relative_path)</code></a></li>
+<li>
+<a href="#mess_dir"><code>mess_dir()</code></a></li>
+</ul>
 <hr>
 <h4 id="map_path"><code><span class="keyword">string</span> map_path()</code></h4>
 <p>
@@ -251,9 +304,21 @@ For example, <code>map_dir()</code> may return something like <code>'C:\HL\my ma
 <hr>
 <h4 id="templates_dir"><code><span class="keyword">string</span> templates_dir()</code></h4>
 <p>
-Returns the templates directory. By default, this is the <code>templates</code> folder next to MESS.exe, but it can also be set explicitly in the config file or via a command-line option.</p>
+Returns the templates directory. By default, this is the <code>templates</code> folder next to MESS.exe, but it can also be set explicitly in the config file or via a command-line option. See <a href="configuration-files.html#template-maps-directory">Configuration files: template-maps-directory</a> for more information.</p>
 <p>
-For example, <code>templates_dir()</code> may return something like <code>'C:\HL\Tools\MESS\templates'</code>.</p>
+For example, <code>templates_dir()</code> may return something like <code>'C:\HL\Tools\MESS\templates'</code>, depending on the current configuration file.</p>
+<hr>
+<h4 id="ted_dirs"><code><span class="keyword">array</span> ted_dirs()</code></h4>
+<p>
+Returns the template entity directories as an array. See <a href="configuration-files.html#template-entity-directories">Configuration files: template-entity-directories</a> for more information.</p>
+<p>
+For example, <code>ted_dirs()</code> may return <code>['C:\HL\Tools\MESS\template_entities\mess_core_entities', 'C:\HL\Tools\MESS\template_entities\mess_template_library', 'C:\HL\Tools\MESS\template_entities\cs', 'C:\HL\Tools\MESS\template_entities\custom']</code>, depending on the current configuration file.</p>
+<hr>
+<h4 id="ted_path"><code><span class="keyword">string</span> ted_path(<span class="keyword">string</span> relative_path)</code></h4>
+<p>
+Searches through all template entity directories for the given relative path and returns the full path of the first file that it can find.</p>
+<p>
+For example, <code>ted_path('target_pattern_handler.map')</code> may return <code>'C:\HL\Tools\MESS\template_entities\mess_template_entity\target_pattern_handler.map'</code>, depending on the current configuration file. See <a href="configuration-files.html#template-entity-directories">Configuration files: template-entity-directories</a> for more information.</p>
 <hr>
 <h4 id="mess_dir"><code><span class="keyword">string</span> mess_dir()</code></h4>
 <p>
@@ -264,6 +329,16 @@ For example, <code>mess_dir()</code> may return something like <code>'C:\HL\Tool
 <h2 id="globals">7.5.6. Globals</h2>
 <p>
 Sometimes it's useful to share information between entities across multiple template instances. This can be useful for templates that contain parts that only need to be inserted once, or for keeping track of how many times a certain template has been instantiated so far, or for controlling the behavior of certain templates via a config file.</p>
+<ul>
+<li>
+<a href="#getglobal"><code>getglobal(name)</code></a></li>
+<li>
+<a href="#setglobal"><code>setglobal(name, value)</code></a></li>
+<li>
+<a href="#useglobal"><code>useglobal(name)</code></a></li>
+<li>
+<a href="#incglobal"><code>incglobal(name)</code></a></li>
+</ul>
 <hr>
 <h4 id="getglobal"><code><span class="keyword">any</span> getglobal(<span class="keyword">string</span> name)</code></h4>
 <p>
@@ -283,9 +358,19 @@ If the specified global variable does not yet exist (or if it has a <code><span 
 <p>
 For example, <code>useglobal('landmine_brush_model')</code> will return <code><span class="keyword">none</span></code> the first time it is called, and it will return <code>1</code> on subsequent calls. This is useful for templates that contain content that does not need to be duplicated for each instance.</p>
 <hr>
+<h4 id="incglobal"><code><span class="keyword">number</span> incglobal(<span class="keyword">string</span> name)</code></h4>
+<p>
+Increments the specified global variable, and returns the previous value. If the global variable does not yet exist, it will be set to <code>1</code>, and the function will return <code>0</code>.</p>
+<p>
+For example, calling <code>incglobal('test')</code> 3 times in a row will return <code>0</code>, <code>1</code> and <code>2</code> respectively, and the value of <code>test</code> global variable will be <code>3</code> at the end.</p>
+<hr>
 <h2 id="debugging">7.5.7. Debugging</h2>
 <p>
 Sometimes a script or a template doesn't work as expected. In that case it can be helpful to see the values of specific properties.</p>
+<ul>
+<li>
+<a href="#trace"><code>trace(value, message)</code></a></li>
+</ul>
 <hr>
 <h4 id="trace"><code><span class="keyword">any</span> trace(<span class="keyword">any</span> value)</code><br/><code><span class="keyword">any</span> trace(<span class="keyword">any</span> value, <span class="keyword">string</span> message)</code></h4>
 <p>
@@ -297,7 +382,7 @@ For example, <code>trace(targetname, 'Landmine name')</code> may write something
         </main>
 
         <footer>
-          © copyright 2023, Pieter Witvoet
+          © copyright 2024, Pieter Witvoet
         </footer>
       </div>
     </div>

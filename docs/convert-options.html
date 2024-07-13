@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>8.1. Convert options - MESS 1.2.3 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li>
+<a href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+<li><a href="scrolling-texture-speed.html">5.5. Scrolling texture speed</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li class="current-page"><a class="current-page" href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="convert-options">8.1. Convert options</h1>
+<p>
+<figure>
+<img src="images/mess_convert_command_line.png" alt="MESS convert command-line" title="MESS convert command-line">
+<figcaption>MESS convert command-line</figcaption>
+</figure>
+</p>
+<p>
+The <code>-convert</code> mode has its own specific command-line arguments. The most important arguments are <a href="#input_path">INPUT_PATH</a> and <a href="#output_path">OUTPUT_PATH</a>, which specify the input and output file. Both are required. Supported file formats are <code>.map</code>, <code>.rmf</code> and <code>.jmf</code> (and the backup variants <code>.rmx</code> and <code>.jmx</code>). All other command-line arguments must be placed before the input and output map paths.</p>
+<h2 id="available-options">Available options</h2>
+<h3 id="input-options:">Input options:</h3>
+<ul>
+<li>
+<a href="#-duplicatekeys-duplicate_key_handling">-duplicatekeys DUPLICATE_KEY_HANDLING</a></li>
+<li>
+<a href="#-rmfspawnflagproperty-rmf_spawnflags_handling">-rmfspawnflagproperty RMF_SPAWNFLAGS_HANDLING</a></li>
+<li>
+<a href="#-tbfuncgroup-funcgroup_handling">-tbfuncgroup FUNCGROUP_HANDLING</a></li>
+</ul>
+<h3 id="output-options:">Output options:</h3>
+<ul>
+<li>
+<a href="#-keyvaluetoolong-long_keyvalue_handling">-keyvaluetoolong LONG_KEYVALUE_HANDLING</a></li>
+<li>
+<a href="#-texturenametoolong-long_texture_handling">-texturenametoolong LONG_TEXTURE_HANDLING</a></li>
+<li>
+<a href="#-invalidkeyvalue-invalid_keyvalue_handling">-invalidkeyvalue INVALID_KEYVALUE_HANDLING</a></li>
+<li>
+<a href="#-keyvaluereplacement-text">-keyvaluereplacement TEXT</a></li>
+<li>
+<a href="#-invalidtexturename-invalid_texture_handling">-invalidtexturename INVALID_TEXTURE_HANDLING</a></li>
+<li>
+<a href="#-texturenamereplacement-text">-texturenamereplacement TEXT</a></li>
+<li>
+<a href="#-visgroups-visgroup_assignment">-visgroups VISGROUP_ASSIGNMENT</a></li>
+</ul>
+<h3 id="-jmf-output:">.jmf output:</h3>
+<ul>
+<li>
+<a href="#-jmfversion-version">-jmfversion VERSION</a></li>
+</ul>
+<h3 id="-rmf-output:">.rmf output:</h3>
+<ul>
+<li>
+<a href="#-rmfversion-version">-rmfversion VERSION</a></li>
+</ul>
+<h3 id="-map-output:">.map output:</h3>
+<ul>
+<li>
+<a href="#-mapdecimals-n">-mapdecimals N</a></li>
+<li>
+<a href="#-mapformat-format">-mapformat FORMAT</a></li>
+<li>
+<a href="#-tbgame-name">-tbgame NAME</a></li>
+<li>
+<a href="#-wad-names">-wad NAMES</a></li>
+</ul>
+<h3 id="vis-group-filtering:">VIS group filtering:</h3>
+<ul>
+<li>
+<a href="#-onlyvisgroups-names">-onlyvisgroups NAMES</a></li>
+<li>
+<a href="#-notvisgroups-names">-notvisgroups NAMES</a></li>
+<li>
+<a href="#-onlyvisgroupobjects">-onlyvisgroupobjects</a></li>
+<li>
+<a href="#-noinvisiblevisgroups">-noinvisiblevisgroups</a></li>
+<li>
+<a href="#-novisiblevisgroups">-novisiblevisgroups</a></li>
+<li>
+<a href="#-noomittedlayers">-noomittedlayers</a></li>
+</ul>
+<h3 id="cordoning:">Cordoning:</h3>
+<ul>
+<li>
+<a href="#-cordonarea-area">-cordonarea AREA</a></li>
+<li>
+<a href="#-jmfcordonarea">-jmfcordonarea</a></li>
+<li>
+<a href="#-cordontexture-texture">-cordontexture TEXTURE</a></li>
+<li>
+<a href="#-cordonpadding-n">-cordonpadding N</a></li>
+<li>
+<a href="#-cordonthickness-n">-cordonthickness N</a></li>
+</ul>
+<h3 id="logging:">Logging:</h3>
+<ul>
+<li>
+<a href="#-log-option">-log OPTION</a></li>
+</ul>
+<h3 id="input-&-output-files:">Input & output files:</h3>
+<ul>
+<li>
+<a href="#input_path">INPUT_PATH</a></li>
+<li>
+<a href="#output_path">OUTPUT_PATH</a></li>
+</ul>
+<h3 id="option-descriptions">Option descriptions</h3>
+<h2 id="-duplicatekeys-duplicate_key_handling"><code>-duplicatekeys DUPLICATE_KEY_HANDLING</code></h2>
+<p>
+Most editors don't allow entities to have duplicate property keys, and MESS doesn't support it either. If a map does contain entities with duplicate keys, then this option determines what will happen to those entities. Available options are:</p>
+<ul>
+<li>
+<code>usefirst</code> - Uses the value of the first property. This is the default behavior.</li>
+<li>
+<code>uselast</code> - Uses the value of the last property. Previous values are ignored.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message.</li>
+</ul>
+<h2 id="-rmfspawnflagproperty-rmf_spawnflags_handling"><code>-rmfspawnflagproperty RMF_SPAWNFLAGS_HANDLING</code></h2>
+<p>
+Hammer saves entity spawnflags as part of an entity object in an .rmf file, but J.A.C.K. saves them as a property (key-value pair). This can cause inconsistencies when an .rmf file is opened and saved by J.A.C.K., and then opened in Hammer again.</p>
+<p>
+This option determines what MESS should do when it encounters an entity with a <code>spawnflags</code> property in an .rmf file. Available options are:</p>
+<ul>
+<li>
+<code>ignore</code> - Ignores the <code>spawnflags</code> property, like Hammer does.</li>
+<li>
+<code>use</code> - Uses the <code>spawnflags</code> property, like J.A.C.K. does. This is the default behavior.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message.</li>
+</ul>
+<h2 id="-tbfuncgroup-funcgroup_handling"><code>-tbfuncgroup FUNCGROUP_HANDLING</code></h2>
+<p>
+TrenchBroom stores groups and layers (VIS groups) as <code>func_group</code> entities with special properties. This option determines how these <code>func_group</code> entities should be treated:</p>
+<ul>
+<li>
+<code>converttogroup</code> - Converts them to groups and VIS groups. This is the default behavior.</li>
+<li>
+<code>leaveasentity</code> - Leaves them as entities.</li>
+</ul>
+<h2 id="-keyvaluetoolong-long_keyvalue_handling"><code>-keyvaluetoolong LONG_KEYVALUE_HANDLING</code></h2>
+<p>
+In .rmf files, entity keys and values are limited to 255 characters. This option determines what should happen if a map contains keys or values that are longer:</p>
+<ul>
+<li>
+<code>truncate</code> - The key or value is truncated, and a warning is logged.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message. This is the default behavior.</li>
+</ul>
+<h2 id="-texturenametoolong-long_texture_handling"><code>-texturenametoolong LONG_TEXTURE_HANDLING</code></h2>
+<p>
+In .rmf files, texture names are limited to 260 characters (40 characters in v1.6 and older). In .jmf files, they are limited to 64 characters. This option determines what should happen if a map contains texture names that are longer:</p>
+<ul>
+<li>
+<code>truncate</code> - The texture name is truncated, and a warning is logged.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message. This is the default behavior.</li>
+</ul>
+<h2 id="-invalidkeyvalue-invalid_keyvalue_handling"><code>-invalidkeyvalue INVALID_KEYVALUE_HANDLING</code></h2>
+<p>
+Because of how entity data is stored in .map and .bsp files, keys and values should not contain double quotes (<code>"</code>). This option determines what should happen if a key or value does contain a double quote:</p>
+<ul>
+<li>
+<code>replace</code>- Invalid characters are replaced by the value of <code>-keyvaluereplacement</code> (which by default is a single quote: <code>'</code>). This is the default behavior.</li>
+<li>
+<code>ignore</code> - Invalid characters are ignored. If the output format is .map, the resulting .map file will be invalid.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message.</li>
+</ul>
+<h2 id="-keyvaluereplacement-text"><code>-keyvaluereplacement TEXT</code></h2>
+<p>
+If <code>-invalidkeyvalue</code> is set to <code>replace</code> (the default behavior), invalid characters in keys and values are replaced with the value of this setting. The default value is a single quote (<code>'</code>). Setting this to an empty string (<code>-keyvaluereplacement ""</code>) will cause invalid characters to be removed.</p>
+<h2 id="-invalidtexturename-invalid_texture_handling"><code>-invalidtexturename INVALID_TEXTURE_HANDLING</code></h2>
+<p>
+The .map file format does not allow texture names to contain spaces. This option determines what should happen if a texture name does contain a space:</p>
+<ul>
+<li>
+<code>replace</code> - Spaces are replaced by the value of <code>-texturenamereplacement</code> (which by default is an underscore: <code>_</code>). This is the default behavior.</li>
+<li>
+<code>ignore</code> - Spaces are ignored. If the output format is .map, the resulting .map file will be invalid.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message.</li>
+</ul>
+<h2 id="-texturenamereplacement-text"><code>-texturenamereplacement TEXT</code></h2>
+<p>
+If <code>-invalidtexturename</code> is set to <code>replace</code> (the default behavior), spaces in texture names are replaced with the value of this setting. The default value is an underscore (<code>_</code>). Setting this to an empty string (<code>-texturenamereplacement ""</code>) will cause spaces to be removed.</p>
+<h2 id="-visgroups-visgroup_assignment"><code>-visgroups VISGROUP_ASSIGNMENT</code></h2>
+<p>
+In .jmf files, objects can belong to multiple VIS groups. In .rmf and TrenchBroom .map files, objects can belong to at most one VIS group. This option determines what should happen when an object belongs to multiple VIS groups, but the output format only supports one VIS group:</p>
+<ul>
+<li>
+<code>usefirst</code> - The object is put in the first VIS group that it was part of. This is the default behavior.</li>
+<li>
+<code>uselast</code> - The object is put in the last VIS group that it was part of.</li>
+<li>
+<code>fail</code> - File conversion will fail with an error message.</li>
+</ul>
+<h2 id="-jmfversion-version"><code>-jmfversion VERSION</code></h2>
+<p>
+The output .jmf file version. Available options are:</p>
+<ul>
+<li>
+<code>v121</code> - The most common version, before the J.A.C.K. 1.1.3773 update.</li>
+<li>
+<code>v122</code> - The latest version as of early 2024, which introduces background images for the 2D views. This is the default version.</li>
+</ul>
+<h2 id="-rmfversion-version"><code>-rmfversion VERSION</code></h2>
+<p>
+The output .rmf file version. Available options are:</p>
+<ul>
+<li>
+<code>v1_6</code> - Used by Worldcraft 1.5b.</li>
+<li>
+<code>v1_8</code> - Used by Worldcraft 1.6 to 2.1. This version increases the maximum length of texture names to 260.</li>
+<li>
+<code>v2_2</code> - Used by Worldcraft 3.3 and Hammer 3.4 and 3.5. This version adds support for texture UV axis. This is the default version.</li>
+</ul>
+<h2 id="-mapdecimals-n"><code>-mapdecimals N</code></h2>
+<p>
+The precision of numbers in the output .map file. This should be zero or higher. By default, a roundtrip format is used that uses the minimum number of decimals that still uniquely 'identifies' a given floating point value. This roundtrip format may use scientific notation.</p>
+<h2 id="-mapformat-format"><code>-mapformat FORMAT</code></h2>
+<p>
+The output .map format. Available options are:</p>
+<ul>
+<li>
+<code>valve220</code> - The 'standard' valve220 .map format. This is the default value.</li>
+<li>
+<code>trenchbroomvalve220</code> - The TrenchBroom variant of the standard valve220 format. This file format uses <code>func_group</code> entities and TrenchBroom-specific properties to store groups and layers (VIS groups).</li>
+</ul>
+<h2 id="-tbgame-name"><code>-tbgame NAME</code></h2>
+<p>
+When exporting to a TrenchBroom .map file, this determines the game name that is stored at the start of the file. This affects which game configuration TrenchBroom uses when opening the file. Use <code>-tbgame Half-Life</code> for Half-Life maps.</p>
+<h2 id="-wad-names"><code>-wad NAMES</code></h2>
+<p>
+When exporting to a .map file, this setting sets the <code>wad</code> map property (a special property in the <code>worldspawn</code> entity). This property tells the game which .wad files to load. Multiple wad names must be separated by semicolons.</p>
+<p>
+.map files that are meant to be compiled only need to contain .wad filenames: <code>halflife.wad;liquids.wad</code>. .map files that are meant to be edited by TrenchBroom should use relative or absolute paths: <code>valve/halflife.wad;valve/liquids.wad</code>.</p>
+<h2 id="-onlyvisgroups-names"><code>-onlyvisgroups NAMES</code></h2>
+<p>
+Only objects that belong to one of the listed VIS groups will be included in the output map. VIS group names can contain wildcards (<code>*</code>). Multiple names must be separated by commas. This setting does not exclude objects that do not belong to any VIS group - use <code>-onlyvisgroupobjects</code> to exclude those objects.</p>
+<p>
+For example, if a map contains the following VIS groups: <code>buttons</code>, <code>doors</code>, <code>area1_triggers</code> and <code>area2_triggers</code>, then <code>-onlyvisgroups doors,*triggers</code> will only include objects from the <code>doors</code>, <code>area1_triggers</code> and <code>area2_triggers</code> VIS groups.</p>
+<h2 id="-notvisgroups-names"><code>-notvisgroups NAMES</code></h2>
+<p>
+Objects that belong to one of the listed VIS groups will be excluded from the output map. VIS group names can contain wildcards (<code>*</code>). Multiple names must be separated by commas.</p>
+<p>
+For example, if a map contains the following VIS groups: <code>buttons</code>, <code>doors</code>, <code>area1_triggers</code> and <code>area2_triggers</code>, then <code>notvisgroups buttons,*triggers</code> will exclude objects from the <code>button</code>, <code>area1_triggers</code> and <code>area2_triggers</code> VIS groups.</p>
+<h2 id="-onlyvisgroupobjects"><code>-onlyvisgroupobjects</code></h2>
+<p>
+This switch causes all objects that do not belong to a VIS group to be excluded from the output map.</p>
+<h2 id="-noinvisiblevisgroups"><code>-noinvisiblevisgroups</code></h2>
+<p>
+This switch causes all objects that belong to an invisible VIS group to be excluded from the output map.</p>
+<h2 id="-novisiblevisgroups"><code>-novisiblevisgroups</code></h2>
+<p>
+This switch causes all objects that belong to a visible VIS group to be excluded from the output map.</p>
+<h2 id="-noomittedlayers"><code>-noomittedlayers</code></h2>
+<p>
+This switch causes all objects that belong to a TrenchBroom layer that is marked as 'omitted from export' to be excluded from the output map.</p>
+<h2 id="-cordonarea-area"><code>-cordonarea AREA</code></h2>
+<p>
+This sets a cordon area. Anything that is completely outside the cordon area is excluded from the output map. The cordon area is sealed off with brushes to ensure that no leaks will occur.</p>
+<p>
+The format is <code>-cordonarea "min_x min_y min_z max_x max_y max_z"</code>. For example, <code>-cordonarea "-512 -512 -128 512 512 128"</code> will take a 1024x1024x256 box from the center of the map.</p>
+<h2 id="-jmfcordonarea"><code>-jmfcordonarea</code></h2>
+<p>
+If this switch is set, and the input file is a .jmf file that contains a cordon area, then that cordon area is used to exclude anything outside the cordon area.</p>
+<h2 id="-cordontexture-texture"><code>-cordontexture TEXTURE</code></h2>
+<p>
+The texture that will be applied to the cordon brushes. The default value is <code>"BLACK"</code>.</p>
+<h2 id="-cordonpadding-n"><code>-cordonpadding N</code></h2>
+<p>
+This setting determines how far the cordon brushes should extend beyond the map's leftover content. The default value is 16. This is the default behavior. It guarantees that cordoning will not cause leaks, and it matches how Hammer creates cordon brushes.</p>
+<h2 id="-cordonthickness-n"><code>-cordonthickness N</code></h2>
+<p>
+This setting gives cordon brushes a fixed thickness. This may cause leaks, because not all of the map's leftover content may be covered. This matches how J.A.C.K. creates cordon brushes.</p>
+<h2 id="-log-option"><code>-log OPTION</code></h2>
+<p>
+This determines how much information will be logged. Available log levels are <code>off</code>, <code>minimal</code>, <code>error</code>, <code>warning</code>, <code>info</code> (the default level) and <code>verbose</code>. See <a href="configuration-files.html#log-level">configuration file: log-level</a> for more information.</p>
+<h2 id="input_path"><code>INPUT_PATH</code></h2>
+<p>
+The input map file. Supported formats are:</p>
+<ul>
+<li>
+<code>.map</code> - The export format for all editors, and the native format for TrenchBroom. Only the valve220 format is supported.</li>
+<li>
+<code>.rmf</code> - The native format for Hammer. The backup variant, <code>.rmx</code>, is also supported.</li>
+<li>
+<code>.jmf</code> - The native format for J.A.C.K. The backup variant, <code>.jmx</code>, is also supported.</li>
+</ul>
+<h2 id="output_path"><code>OUTPUT_PATH</code></h2>
+<p>
+The output map file. Supported formats are <code>.map</code>, <code>.rmf</code> and <code>.jmf</code>.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2024, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

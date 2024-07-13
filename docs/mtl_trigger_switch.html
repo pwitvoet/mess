@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>5. Template behaviors - MESS 1.2.3 documentation</title>
+    <title>mtl_trigger_switch - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -38,8 +38,8 @@
 <li><a href="command-line-options.html">3.2. Command-line options</a></li>
 </ul>
 </li>
-<li>
-<a href="template-entities.html">4. Template entities</a>
+<li class="current-page">
+<a class="current-page" href="template-entities.html">4. Template entities</a>
 <ul class="toc">
 <li><a href="mtl_env_model.html">mtl_env_model</a></li>
 <li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
@@ -47,13 +47,13 @@
 <li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
 <li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
 <li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
-<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li class="current-page"><a class="current-page" href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
 <li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
 <li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
-<li class="current-page">
-<a class="current-page" href="template-behaviors.html">5. Template behaviors</a>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
 <ul class="toc">
 <li><a href="target-patterns.html">5.1. Target patterns</a></li>
 <li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
@@ -97,21 +97,30 @@
       <div class="main-container">
         <main>
           <article>
-            <h1 id="template-behaviors">5.Template behaviors</h1>
+            <h1 id="mtl_trigger_switch">mtl_trigger_switch</h1>
 <p>
-MESS also contains a few template-based 'behaviors' that make existing entities more powerful and help to avoid certain issues. Unlike template entities, behaviors aren't explicitly added to a level. Instead, they change the behavior of existing entities by modifying their properties, inserting extra entities or even replacing them with different entities when a map is compiled.</p>
-<h2 id="available-template-behaviors">Available template behaviors</h2>
+<img src="images/mtl_trigger_switch_icon.png" alt="mtl_trigger_switch icon">
+</p>
+<p>
+An entity that can trigger one target when it is turned on, and another when it is turned off. It remembers its own state, so sending an 'on' or 'off' signal to this entity when it's already in that state won't do anything. This entity works well with the <code>+targetname</code> and <code>-targetname</code> <a href="target-patterns.html" title="Target patterns">target patterns</a>. Triggering this entity in a 'normal' way will toggle it.</p>
+<h2 id="properties">Properties</h2>
 <ul>
 <li>
-<a href="target-patterns.html">Target patterns</a> -- Use target patterns like <code>+door</code> or <code>set score 5</code> instead of manually creating and triggering intermediate entities like <code>trigger_relay</code> or <code>game_counter_set</code>.</li>
+<strong>Name</strong> <em>(targetname)</em> -- The name of this entity.</li>
 <li>
-<a href="multi_manager-expansion.html">multi_manager expansion</a> -- No more target limits for <code>multi_manager</code>.</li>
+<strong>Target (on)</strong> <em>(target_on)</em> -- The target that will be triggered when this entity is turned on.</li>
 <li>
-<a href="env_sprite-angles-fix.html">env_sprite angles fix</a> -- No more <code>env_sprite</code> orientation problems.</li>
+<strong>Target (off)</strong> <em>(target_off)</em> -- The target that will be triggered when this entity is turned off.</li>
+</ul>
+<h2 id="flags">Flags</h2>
+<ul>
 <li>
-<a href="linked-group-ids.html">Linked group IDs</a> -- Use the special <code>_tb_group</code> property to automatically create unique entity names in TrenchBroom linked group copies.</li>
+<strong>Start on</strong> <em>(1)</em> -- If enabled, the <code>mtl_trigger_switch</code> will start in the 'on' state.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
 <li>
-<a href="scrolling-texture-speed.html">Scrolling texture speed</a> -- Control the speed of scrolling textures in any brush entity, not just <code>func_conveyor</code>.</li>
+This entity generates a tiny <code>button_target</code>, which is one of the few entities that reacts to 'on' and 'off' signals. This entity reacts to damage however, so to prevent it from being triggered accidentally by nearby explosions it is automatically placed in the far corner of the map.</li>
 </ul>
 
           </article>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>q1_brush_text - MESS 1.2.3 documentation</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="images/mess_icon.png"/>
+  </head>
+
+  <body>
+    <div class="root-container">
+      <nav>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
+        <ul>
+          <li>
+<a href="index.html">1. Getting started</a>
+<ul class="toc">
+<li><a href="jack-&-hammer-setup.html">1.1. JACK & Hammer setup</a></li>
+<li><a href="trenchbroom-setup.html">1.2. TrenchBroom setup</a></li>
+</ul>
+</li>
+<li>
+<a href="tutorials.html">2. Tutorials</a>
+<ul class="toc">
+<li><a href="covering-terrain-with-props.html">Covering terrain with props</a></li>
+<li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
+<li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
+<li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
+<li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
+</ul>
+</li>
+<li>
+<a href="configuration.html">3. Configuration</a>
+<ul class="toc">
+<li><a href="configuration-files.html">3.1. Configuration files</a></li>
+<li><a href="command-line-options.html">3.2. Command-line options</a></li>
+</ul>
+</li>
+<li class="current-page">
+<a class="current-page" href="template-entities.html">4. Template entities</a>
+<ul class="toc">
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li class="current-page"><a class="current-page" href="q1_brush_text.html">q1_brush_text</a></li>
+</ul>
+</li>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
+<ul class="toc">
+<li><a href="target-patterns.html">5.1. Target patterns</a></li>
+<li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
+<li><a href="env_sprite-angles-fix.html">5.3. env_sprite angles fix</a></li>
+<li><a href="linked-group-ids.html">5.4. Linked group IDs</a></li>
+<li><a href="scrolling-texture-speed.html">5.5. Scrolling texture speed</a></li>
+</ul>
+</li>
+<li>
+<a href="macro-entities.html">6. Macro entities</a>
+<ul class="toc">
+<li><a href="macro_insert.html">6.1. macro_insert</a></li>
+<li><a href="macro_cover.html">6.2. macro_cover</a></li>
+<li><a href="macro_fill.html">6.3. macro_fill</a></li>
+<li><a href="macro_brush.html">6.4. macro_brush</a></li>
+<li><a href="macro_template.html">6.5. macro_template</a></li>
+<li><a href="macro_remove_if.html">6.6. macro_remove_if</a></li>
+</ul>
+</li>
+<li>
+<a href="scripting.html">7. Scripting</a>
+<ul class="toc">
+<li><a href="entity-properties.html">7.1. Entity properties</a></li>
+<li><a href="data-types.html">7.2. Data types</a></li>
+<li><a href="operators.html">7.3. Operators</a></li>
+<li><a href="standard-functions.html">7.4. Standard functions</a></li>
+<li><a href="template-functions.html">7.5. Template functions</a></li>
+<li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
+</ul>
+</li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
+
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <main>
+          <article>
+            <h1 id="q1_brush_text">q1_brush_text</h1>
+<p>
+<img src="images/q1_brush_text_icon.png" alt="q1_brush_text icon">
+</p>
+<p>
+This is an entity for Quake. It uses a text property to generate brushes that are covered with one of Makkon's <code>techdc</code> font textures. Makkon's textures can be found <a href="https://www.slipseer.com/index.php?resources/makkon-textures.28/">on slipseer.com</a> (search for <code>makkon_tech.zip</code> in the list of downloads).</p>
+<p>
+The 'symbol' fonts (techdc1, techdc2 and techdc3) are monospace, the 'normal' fonts (techdc4, techdc5 and techdc6) are proportional.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li>
+<strong>Text</strong> <em>(text)</em> -- The text that will be displayed. Each character will produce one brush. Use <code>\n</code> to insert newlines. Supported characters are <code>a-z</code>, <code>A-Z</code>, <code>0-9</code>, <code>-</code>, <code>#</code> and spaces.</li>
+<li>
+<strong>Font</strong> <em>(font)</em><ul>
+<li>
+<strong>Makkon symbols (large)</strong> <em>(techdc1)</em></li>
+<li>
+<strong>Makkon symbols (medium)</strong> <em>(techdc2)</em></li>
+<li>
+<strong>Makkon symbols (small)</strong> <em>(techdc3)</em></li>
+<li>
+<strong>Makkon text (large)</strong> <em>(techdc4)</em> -- This is the default font.</li>
+<li>
+<strong>Makkon text (medium)</strong> <em>(techdc5)</em></li>
+<li>
+<strong>Makkon text (small)</strong> <em>(techdc6)</em></li>
+</ul>
+</li>
+<li>
+<strong>Color</strong> <em>(color)</em><ul>
+<li>
+<strong>Black 1</strong> <em>(blk1)</em></li>
+<li>
+<strong>Black 1.1 (symbols only)</strong> <em>(blk1_1)</em></li>
+<li>
+<strong>Black 2</strong> <em>(blk2)</em></li>
+<li>
+<strong>Black 3 (symbols only)</strong> <em>(blk3)</em></li>
+<li>
+<strong>Blue 1</strong> <em>(blu1)</em></li>
+<li>
+<strong>Blue 1.1 (medium and large text only)</strong> <em>(blu1_1)</em></li>
+<li>
+<strong>Blue 2 (symbols and small text only)</strong> <em>(blu2)</em></li>
+<li>
+<strong>Brown 1</strong> <em>(brwn1)</em></li>
+<li>
+<strong>Brown 2</strong> <em>(brwn2)</em></li>
+<li>
+<strong>Grey 1</strong> <em>(grey1)</em></li>
+<li>
+<strong>Grey 2</strong> <em>(grey2)</em> -- This is the default color.</li>
+<li>
+<strong>Green 1</strong> <em>(grn1)</em></li>
+<li>
+<strong>Green 3 (text only)</strong> <em>(grn3)</em></li>
+<li>
+<strong>Green 4</strong> <em>(grn4)</em></li>
+<li>
+<strong>Orange</strong> <em>(orn1)</em></li>
+<li>
+<strong>Purple</strong> <em>(prpl1)</em></li>
+<li>
+<strong>Red 1</strong> <em>(red1)</em></li>
+<li>
+<strong>Red 2</strong> <em>(red2)</em></li>
+<li>
+<strong>Teal 1</strong> <em>(teal1)</em></li>
+<li>
+<strong>Teal 2</strong> <em>(teal2)</em></li>
+<li>
+<strong>Yellow 1</strong> <em>(ylw1)</em></li>
+<li>
+<strong>Yellow 2</strong> <em>(ylw2)</em></li>
+</ul>
+</li>
+<li>
+<strong>Resulting entity classname</strong> <em>(entity_classname)</em> -- The resulting brushes are combined into a single entity. This property sets the classname of that entity. The default is <code>func_detail_illusionary</code>.</li>
+<li>
+<strong>Line height</strong> <em>(line_height)</em> -- The distance between each line, in units. The default is 56. For medium fonts, 28 is a better choice, and for small fonts, 14 is better.</li>
+<li>
+<strong>Character spacing</strong> <em>(char_spacing)</em> -- The distance between neighboring characters, in units. The default is 3.</li>
+<li>
+<strong>Space width</strong> <em>(space_width)</em> -- The width of a space character. The default is 32. For the large symbols font, 53 will give spaces the same width as other characters.</li>
+<li>
+<strong>Font size</strong> <em>(font_size)</em> -- The overall scale of the text. This also affects line height, character spacing and space width. The default scale is 1.</li>
+<li>
+<strong>Angles (pitch yaw roll)</strong> <em>(angles)</em> -- Text can be rotated to align it with walls or other surfaces. By default, the text will run along the x axis.</li>
+<li>
+<strong>Horizontal alignment</strong> <em>(horizontal_alignment)</em><ul>
+<li>
+<strong>Left</strong> <em>(left)</em> -- This is the default.</li>
+<li>
+<strong>Center</strong> <em>(center)</em></li>
+<li>
+<strong>Right</strong> <em>(right)</em></li>
+</ul>
+</li>
+<li>
+<strong>Vertical alignment</strong> <em>(vertical_alignment)</em><ul>
+<li>
+<strong>Baseline</strong> <em>(baseline)</em> -- This is the default.</li>
+<li>
+<strong>Top</strong> <em>(top)</em></li>
+<li>
+<strong>Center</strong> <em>(center)</em></li>
+<li>
+<strong>Bottom</strong> <em>(bottom)</em></li>
+</ul>
+</li>
+</ul>
+<h2 id="custom-properties">Custom properties</h2>
+<p>
+Any additional custom properties will be added to the resulting brush entity.</p>
+
+          </article>
+        </main>
+
+        <footer>
+          © copyright 2024, Pieter Witvoet
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

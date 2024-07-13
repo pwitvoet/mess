@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>7.6. Rewrite rules - MESS 1.2.2 documentation</title>
+    <title>7.6. Rewrite rules - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -11,7 +11,7 @@
   <body>
     <div class="root-container">
       <nav>
-        <h1><a class="home-link" href="index.html">MESS 1.2.2</a></h1>
+        <h1><a class="home-link" href="index.html">MESS 1.2.3</a></h1>
         <ul>
           <li>
 <a href="index.html">1. Getting started</a>
@@ -27,6 +27,7 @@
 <li><a href="covering-terrain-advanced-template-selection.html">Covering terrain&colon; advanced template selection</a></li>
 <li><a href="covering-terrain-optimization.html">Covering terrain&colon; optimization</a></li>
 <li><a href="making-a-kill-counter-with-mtl_trigger_counter.html">Making a kill counter with mtl_trigger_counter</a></li>
+<li><a href="counter-strike-playing-a-different-song-each-round.html">Counter-Strike&colon; Playing a different song each round</a></li>
 <li><a href="creating-interactive-linked-groups-in-trenchbroom.html">Creating interactive linked groups in TrenchBroom</a></li>
 </ul>
 </li>
@@ -40,13 +41,15 @@
 <li>
 <a href="template-entities.html">4. Template entities</a>
 <ul class="toc">
-<li><a href="mtl_env_model.html">4.1. mtl_env_model</a></li>
-<li><a href="mtl_trigger_area.html">4.2. mtl_trigger_area</a></li>
-<li><a href="mtl_trigger_counter.html">4.3. mtl_trigger_counter</a></li>
-<li><a href="mtl_trigger_periodic.html">4.4. mtl_trigger_periodic</a></li>
-<li><a href="mtl_trigger_random.html">4.5. mtl_trigger_random</a></li>
-<li><a href="mtl_trigger_sequence.html">4.6. mtl_trigger_sequence</a></li>
-<li><a href="cs_trigger_roundstart.html">4.7. cs_trigger_roundstart</a></li>
+<li><a href="mtl_env_model.html">mtl_env_model</a></li>
+<li><a href="mtl_trigger_area.html">mtl_trigger_area</a></li>
+<li><a href="mtl_trigger_counter.html">mtl_trigger_counter</a></li>
+<li><a href="mtl_trigger_periodic.html">mtl_trigger_periodic</a></li>
+<li><a href="mtl_trigger_random.html">mtl_trigger_random</a></li>
+<li><a href="mtl_trigger_sequence.html">mtl_trigger_sequence</a></li>
+<li><a href="mtl_trigger_switch.html">mtl_trigger_switch</a></li>
+<li><a href="cs_trigger_roundstart.html">cs_trigger_roundstart</a></li>
+<li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
 <li>
@@ -81,6 +84,12 @@
 <li class="current-page"><a class="current-page" href="rewrite-rules.html">7.6. Rewrite rules</a></li>
 </ul>
 </li>
+<li>
+<a href="file-conversion.html">8. File conversion</a>
+<ul class="toc">
+<li><a href="convert-options.html">8.1. Convert options</a></li>
+</ul>
+</li>
 
         </ul>
       </nav>
@@ -101,7 +110,9 @@ Rewrite rules are the glue that enable template entities and behaviors. They can
 </ul>
 <h2 id="-ted-files">7.6.1. .ted files</h2>
 <p>
-<code>.ted</code> files are similar to <code>.fgd</code> files. They typically contain a single entity definition and some rewrite rules that are related to that entity. MESS combines all <code>.ted</code> files in the <a href="configuration-files.html#templates-directory">templates directory</a> into a single <code>.fgd</code> file, <a href="configuration-files.html#fgd-path">mess.fgd</a>. This makes it easier to share template entities and behaviors with other people: place their <code>.ted</code> and <code>.map</code> files in the templates directory, run MESS.exe, and restart your editor (or reload the fgd) to get access to new template entities.</p>
+<code>.ted</code> files are similar to <code>.fgd</code> files. They typically contain a single entity definition and some rewrite rules that are related to that entity. MESS combines all <code>.ted</code> files in the <a href="configuration-files.html#templates-directory">templates directory</a> into a single <code>.fgd</code> file, <a href="configuration-files.html#fgd-path">mess.fgd</a>. This makes it easier to share template entities and behaviors with other people: place their <code>.ted</code>, <code>.map</code> and <code>.mscript</code> files in the templates directory, run MESS.exe, and restart your editor (or reload the fgd) to get access to new template entities.</p>
+<p>
+Strings inside entity definitions can contain MScript expressions. This enables things like using custom editor sprites and models.</p>
 <h2 id="rewrite-rule-syntax">7.6.2. Rewrite rule syntax</h2>
 <p>
 Rewrite rule blocks start with a <code>// @MESS REWRITE:</code> line, and end with a <code>// @MESS;</code> line. Every rule line starts with a <code>//</code>, so they will be ignored by fgd-readers.</p>
@@ -159,7 +170,13 @@ By default, rewrite rules are applied before macro entities are processed. This 
 This can be useful for cleaning up unwanted properties, or for automatically fixing problematic property values.</p>
 <h2 id="rewrite-rule-functions">7.6.3. Rewrite rule functions</h2>
 <p>
-The following MScript functions are only available in rewrite rules.</p>
+MScript expressions inside .ted files have access to <a href="standard-functions.html">standard functions</a> and <a href="template-functions.html">template functions</a> (except for the instance ID functions). There are also a few functions that are only available in .ted files:</p>
+<ul>
+<li>
+<a href="#ted_dir"><code>ted_dir()</code></a></li>
+<li>
+<a href="#ted_path"><code>ted_path()*</code></a></li>
+</ul>
 <hr>
 <h4 id="ted_dir"><code><span class="keyword">string</span> ted_dir()</code></h4>
 <p>
@@ -167,17 +184,19 @@ Returns the directory or .zip file path that contains the .ted file that contain
 <p>
 For example, <code>ted_dir()</code> may return something like <code>'C:\HL\Tools\MESS\template_entities\my_templates.zip'</code>, if the current .ted file is stored in a .zip file, or <code>'C:\HL\Tools\MESS\template_entities\my_templates'</code> if it's stored in a directory.</p>
 <hr>
-<h4 id="ted_path"><code><span class="keyword">string</span> ted_path()</code></h4>
+<h4 id="ted_path"><code><span class="keyword">string</span> ted_path()</code><br/><code><span class="keyword">string</span> ted_path(<span class="keyword">string</span> relative_path)</code></h4>
 <p>
-Returns the absolute path of the .ted file that contains the current rewrite rule. If the .ted file is stored in a .zip file, then the path will contain the .zip filename as if it were a directory.</p>
+If no relative path is given, then this function will return the absolute path of the .ted file that contains the current rewrite rule. If the .ted file is stored in a .zip file, then the path will contain the .zip filename as if it were a directory.</p>
 <p>
-For example, <code>ted_path()</code> may return something like <code>'C:\HL\Tools\MESS\template_entities\my_templates.zip\landmine.ted'</code>.</p>
+If a relative path is given, then this function will search through all template entity directories for the given relative path, and it will return the full path of the first file that it can find.</p>
+<p>
+For example, <code>ted_path()</code> may return something like <code>'C:\HL\Tools\MESS\template_entities\my_templates.zip\landmine.ted'</code>, and <code>ted_path('target_pattern_handler.map')</code> may return <code>'C:\HL\Tools\MESS\template_entities\mess_template_entity\target_pattern_handler.map'</code>, depending on the current configuration file. See <a href="configuration-files.html#template-entity-directories">Configuration files: template-entity-directories</a> for more information.</p>
 
           </article>
         </main>
 
         <footer>
-          © copyright 2023, Pieter Witvoet
+          © copyright 2024, Pieter Witvoet
         </footer>
       </div>
     </div>

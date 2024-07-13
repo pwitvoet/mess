@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>5. Template behaviors - MESS 1.2.3 documentation</title>
+    <title>8. File conversion - MESS 1.2.3 documentation</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/mess_icon.png"/>
@@ -52,8 +52,8 @@
 <li><a href="q1_brush_text.html">q1_brush_text</a></li>
 </ul>
 </li>
-<li class="current-page">
-<a class="current-page" href="template-behaviors.html">5. Template behaviors</a>
+<li>
+<a href="template-behaviors.html">5. Template behaviors</a>
 <ul class="toc">
 <li><a href="target-patterns.html">5.1. Target patterns</a></li>
 <li><a href="multi_manager-expansion.html">5.2. multi_manager expansion</a></li>
@@ -84,8 +84,8 @@
 <li><a href="rewrite-rules.html">7.6. Rewrite rules</a></li>
 </ul>
 </li>
-<li>
-<a href="file-conversion.html">8. File conversion</a>
+<li class="current-page">
+<a class="current-page" href="file-conversion.html">8. File conversion</a>
 <ul class="toc">
 <li><a href="convert-options.html">8.1. Convert options</a></li>
 </ul>
@@ -97,22 +97,17 @@
       <div class="main-container">
         <main>
           <article>
-            <h1 id="template-behaviors">5.Template behaviors</h1>
+            <h1 id="file-conversion">8. File conversion</h1>
 <p>
-MESS also contains a few template-based 'behaviors' that make existing entities more powerful and help to avoid certain issues. Unlike template entities, behaviors aren't explicitly added to a level. Instead, they change the behavior of existing entities by modifying their properties, inserting extra entities or even replacing them with different entities when a map is compiled.</p>
-<h2 id="available-template-behaviors">Available template behaviors</h2>
-<ul>
-<li>
-<a href="target-patterns.html">Target patterns</a> -- Use target patterns like <code>+door</code> or <code>set score 5</code> instead of manually creating and triggering intermediate entities like <code>trigger_relay</code> or <code>game_counter_set</code>.</li>
-<li>
-<a href="multi_manager-expansion.html">multi_manager expansion</a> -- No more target limits for <code>multi_manager</code>.</li>
-<li>
-<a href="env_sprite-angles-fix.html">env_sprite angles fix</a> -- No more <code>env_sprite</code> orientation problems.</li>
-<li>
-<a href="linked-group-ids.html">Linked group IDs</a> -- Use the special <code>_tb_group</code> property to automatically create unique entity names in TrenchBroom linked group copies.</li>
-<li>
-<a href="scrolling-texture-speed.html">Scrolling texture speed</a> -- Control the speed of scrolling textures in any brush entity, not just <code>func_conveyor</code>.</li>
-</ul>
+Besides being a map processing tool, MESS also supports conversion between different map file formats. This can be useful when migrating to a different editor, or for automating <code>.map</code> exports.</p>
+<hr>
+<p>
+For example, the following converts a <code>.jmf</code> file to a TrenchBroom <code>.map</code> file, with groups and VIS groups properly converted to TrenchBroom <code>func_group</code> groups and layers. It also sets the TrenchBroom game name and the map's <code>wad</code> property:</p>
+<p>
+<code>MESS.exe -convert -mapformat trenchbroomvalve220 -tbgame "Half-Life" -wad "halflife.wad;liquids.wad" input_file.jmf output_file.map</code></p>
+<hr>
+<p>
+For all available options, see <a href="convert-options.html">Convert options</a>.</p>
 
           </article>
         </main>
