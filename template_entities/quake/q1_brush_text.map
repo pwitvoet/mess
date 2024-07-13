@@ -10,7 +10,7 @@
 "char_spacing" "{char_spacing or 3}"
 "entity_classname" "{entity_classname or 'func_detail_illusionary'}"
 "font" "{font or 'techdc4'}"
-"color" "{color or 'grey2'}"
+"color" "{is_func(color) || !color ? 'grey2' : str(color)}"
 }
 {
 "classname" "{entity_classname}"
