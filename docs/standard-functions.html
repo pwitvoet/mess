@@ -377,7 +377,7 @@ For example, <code>rad2deg(PI)</code> returns <code>180</code>.</p>
 <p>
 Returns the numeric Unicode value of a specific character in the given string. The first character is chosen if no index is provided. Returns <code><span class="keyword">none</span></code> if the index is out of range or if the given string is <code><span class="keyword">none</span></code>.</p>
 <p>
-For example, <code>ord('a')</code> returns <code>97</code>, and <code>ord(4)</code> returns <code>52</code>.</p>
+For example, <code>ord('a')</code> returns <code>97</code>, and <code>ord('4')</code> returns <code>52</code>.</p>
 <hr>
 <h4 id="chr"><code><span class="keyword">string</span> chr(<span class="keyword">number</span> value)</code></h4>
 <p>
@@ -485,7 +485,7 @@ For example, <code>func_args(pow)</code> returns <code>['value', 'power']</code>
 <p>
 Returns an object with information about the specified function parameter, or <code><span class="keyword">none</span></code> if the given function is <code><span class="keyword">none</span></code> or if the parameter does not exist.</p>
 <p>
-For example, <code>func_arg(range, 'step')</code> returns <code>{name: 'step', type: 'Number', optional: 1, default_value: <span class="keyword">none</span>}</code>.</p>
+For example, <code>func_arg(range, 'step')</code> returns <code>{name: 'step', type: '<span class="keyword">number</span>', optional: 1, default_value: <span class="keyword">none</span>}</code>.</p>
 <hr>
 <h4 id="func_apply"><code><span class="keyword">object</span> func_apply(<span class="keyword">function</span> func, <span class="keyword">array</span> arguments)</code></h4>
 <p>
@@ -502,7 +502,7 @@ For example, <code>func_apply(min, [3, 4])</code> returns <code>3</code>.</p>
 <p>
 Returns an array of 3 values (red, green and blue) if the given array contains 3 values or less. Returns an array of 4 values (red, green, blue and brightness) if the given array contains 4 values or more. The first 3 values are clamped to the 0-255 range (inclusive), and all values are rounded to the nearest integer value. If a value can't be converted or is missing, <code>0</code> is used instead. This function can be used to 'sanitize' colors.</p>
 <p>
-For example, <code>color('100', 300, 150.4)</code> returns <code>[100, 255, 150]</code>.</p>
+For example, <code>color(['100', 300, 150.4])</code> returns <code>[100, 255, 150]</code>.</p>
 <h2 id="debugging">7.4.10. Debugging</h2>
 <ul>
 <li>

@@ -300,7 +300,7 @@ For example, <code>'Hello there'.upper()</code> returns <code>'HELLO THERE'</cod
 <p>
 Returns a copy of this string, with all characters turned into lowercase characters.</p>
 <p>
-For example, <code>'This is GOOD'.upper()</code> returns <code>'this is good'</code>.</p>
+For example, <code>'This is GOOD'.lower()</code> returns <code>'this is good'</code>.</p>
 <hr>
 <h4 id="splitting-and-joining">Splitting and joining</h4>
 <h4 id="string-split"> <code><span class="keyword">array</span> split(<span class="keyword">any</span> delimiters = <span class="keyword">none</span>, <span class="keyword">number</span> count = <span class="keyword">none</span>)</code></h4>
@@ -319,7 +319,7 @@ For example, <code>'apple---pear_-_banana &nbsp; orange'.splitr('[-_\\s]+')</cod
 <p>
 Combines the string representation of the values in the given array, while inserting this string in-between each pair of values.</p>
 <p>
-For example, <code>';'.join('apple', 'pear', 'banana')</code> returns <code>'apple;pear;banana'</code>.</p>
+For example, <code>';'.join(['apple', 'pear', 'banana'])</code> returns <code>'apple;pear;banana'</code>.</p>
 <hr>
 <h4 id="regular-expressions">Regular expressions</h4>
 <h4 id="string-match"> <code><span class="keyword">bool</span> match(<span class="keyword">string</span> pattern)</code></h4>
@@ -373,7 +373,7 @@ Once more, these properties return the first, second, third and fourth items res
 <p>
 Returns the item at the given index, or <code><span class="keyword">none</span></code> if the index is out of range. Negative indexes start counting from the end of the array. For example, <code>-1</code> will return the last item in the array.</p>
 <p>
-For example, <code>['A, 'B', 'C'][1]</code> returns <code>'B'</code>.</p>
+For example, <code>['A', 'B', 'C'][1]</code> returns <code>'B'</code>.</p>
 <h3 id="array-member-functions"> Member functions</h3>
 <ul>
 <li>
@@ -472,7 +472,7 @@ For example, <code>['A', 'B', 'C'].first()</code> returns <code>'A'</code>.</p>
 <p>
 Returns the last item from the array, or <code><span class="keyword">none</span></code> if the array is empty.</p>
 <p>
-For example, <code>['A', 'B', 'C'].first()</code> returns <code>'C'</code>.</p>
+For example, <code>['A', 'B', 'C'].last()</code> returns <code>'C'</code>.</p>
 <hr>
 <h4 id="array-concat"> <code><span class="keyword">array</span> concat(<span class="keyword">array</span> other)</code></h4>
 <p>
@@ -556,7 +556,7 @@ Combines items from two arrays by calling <code>zipper</code> with the first ite
 <p>
 <code>zipper</code> must be a function that takes two arguments: <code>(<span class="keyword">any</span> value, <span class="keyword">any</span> otherValue) => <span class="keyword">any</span></code>.</p>
 <p>
-For example, <code>[1, 2, 3, 4].zip(['A', 'B', 'C'].zip((n, s) => n + s)</code> returns <code>['1A', '2B', '3C']</code>.</p>
+For example, <code>[1, 2, 3, 4].zip(['A', 'B', 'C'], (n, s) => n + s)</code> returns <code>['1A', '2B', '3C']</code>.</p>
 <hr>
 <h4 id="array-sort"> <code><span class="keyword">array</span> sort(<span class="keyword">function</span> sort_by)</code></h4>
 <p>
@@ -586,7 +586,7 @@ Checks if all items in the array match the given predicate.</p>
 <p>
 <code>predicate</code> can either be <code><span class="keyword">none</span></code>, or a function that takes one argument: <code>(<span class="keyword">any</span> value) => <span class="keyword">bool</span></code>.</p>
 <p>
-For example, <code>[4, 5, 6].<span class="keyword">any</span>(n => n > 5)</code> returns <code><span class="keyword">none</span></code> (false).</p>
+For example, <code>[4, 5, 6].all(n => n > 5)</code> returns <code><span class="keyword">none</span></code> (false).</p>
 <hr>
 <h4 id="numerical">Numerical</h4>
 <h4 id="array-max"> <code><span class="keyword">number</span>|<span class="keyword">none</span> max(funtion selector = <span class="keyword">none</span>)</code></h4>
