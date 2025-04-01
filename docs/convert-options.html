@@ -210,7 +210,7 @@ Most editors don't allow entities to have duplicate property keys, and MESS does
 <p>
 Hammer saves entity spawnflags as part of an entity object in an .rmf file, but J.A.C.K. saves them as a property (key-value pair). This can cause inconsistencies when an .rmf file is opened and saved by J.A.C.K., and then opened in Hammer again.</p>
 <p>
-This option determines what MESS should do when it encounters an entity with a <code>spawnflags</code> property in an .rmf file. Available options are:</p>
+This option determines what MESS should do when it encounters an entity with a mismatch between its spawnflag field and a <code>spawnflags</code> property (key-value pair) in an .rmf file. Available options are:</p>
 <ul>
 <li>
 <code>ignore</code> - Ignores the <code>spawnflags</code> property, like Hammer does.</li>

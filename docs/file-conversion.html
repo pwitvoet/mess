@@ -99,12 +99,22 @@
           <article>
             <h1 id="file-conversion">8. File conversion</h1>
 <p>
-Besides being a map processing tool, MESS also supports conversion between different map file formats. This can be useful when migrating to a different editor, or for automating <code>.map</code> exports.</p>
+Besides being a map processing tool, MESS also supports conversion between different map file formats. This can be useful when migrating to a different editor, or for automating <code>.map</code> exports. It's also possible to exclude specific VIS groups or layers, and to exclude anything outside a specific area (cordoning).</p>
 <hr>
+<h3 id="converting-a-map-file-to-rmf-or-jmf">Converting a map file to rmf or jmf</h3>
 <p>
-For example, the following converts a <code>.jmf</code> file to a TrenchBroom <code>.map</code> file, with groups and VIS groups properly converted to TrenchBroom <code>func_group</code> groups and layers. It also sets the TrenchBroom game name and the map's <code>wad</code> property:</p>
+To convert a <code>.map</code> file to <code>.rmf</code> or <code>.jmf</code>, open a command-line window (or create a batch file) and call MESS as following:</p>
+<p>
+<code>MESS.exe -convert input_file.map output_file.jmf</code></p>
+<p>
+If the input is a TrenchBroom <code>.map</code> file, any groups and layers will automatically be converted to Hammer or J.A.C.K. groups and VIS groups.</p>
+<h3 id="converting-a-rmf-or-jmf-to-a-trenchbroom-map-file">Converting a rmf or jmf to a TrenchBroom map file</h3>
+<p>
+To convert a <code>.jmf</code> file to a TrenchBroom <code>.map</code> file, call MESS as following:</p>
 <p>
 <code>MESS.exe -convert -mapformat trenchbroomvalve220 -tbgame "Half-Life" -wad "halflife.wad;liquids.wad" input_file.jmf output_file.map</code></p>
+<p>
+The <code>-mapformat trenchbroomvalve220</code> option tells MESS that it should convert groups and VIS groups to TrenchBroom-specific <code>func_group</code> entities, instead of discarding any group and VIS group information. The <code>-tbgame</code> option sets the TrenchBroom game name, and the <code>-wad</code> option sets the map's <code>wad</code> property.</p>
 <hr>
 <p>
 For all available options, see <a href="convert-options.html">Convert options</a>.</p>
