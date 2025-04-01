@@ -113,6 +113,8 @@ MScript, like most languages, provides several operators for working with number
 <a href="#binary">7.3.5. Binary</a></li>
 <li>
 <a href="#unary-operators">7.3.6. Unary operators</a></li>
+<li>
+<a href="#conditional-operators">7.3.7. Conditional operators</a></li>
 </ul>
 <h2 id="arithmetic">7.3.1. Arithmetic</h2>
 <p>
@@ -294,6 +296,17 @@ For example, <code>-max(4, 5)</code> returns <code>-5</code>, and <code>-[4, 5]<
 The <code>!</code> operator (which can also be written as <code>not</code>) returns <code>1</code> (true) if the expression is false, or <code><span class="keyword">none</span></code> (false) otherwise.</p>
 <p>
 For example, <code>!'name'.contains('a')</code> returns <code><span class="keyword">none</span></code>.</p>
+<hr>
+<h2 id="conditional-operators">7.3.7. Conditional operators</h2>
+<p>
+The conditional operators are ternary operators, which take 3 operands: a condition, a true and a false expression. They are used to choose between two expressions.</p>
+<hr>
+<p>
+<strong><code>c ? t : f</code></strong> ( or  <strong><code>t if c else f</code></strong>)</p>
+<p>
+The <code>?:</code> operator (and the <code>if-else</code> variant) first evaluates the condition expression (<code>c</code>). If that is true, it then evaluates the true-expression (<code>t</code>) and returns that as its result. Else, it will evaluate the false-expression (<code>f</code>) and return that result.</p>
+<p>
+For example, <code>4 == 4 ? 'good' : 'bad'</code> returns <code>'good'</code>. This can also be written as <code>'good' if 4 == 4 else 'bad'</code>.</p>
 
           </article>
         </main>
