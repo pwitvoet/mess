@@ -117,7 +117,7 @@ This setup guide assumes that you're making maps for Half-Life or Counter-Strike
 </div>
 <h2 id="downloading-mess">1.2.1. Downloading MESS</h2>
 <p>
-This guide assumes that you have <a href="https://github.com/pwitvoet/mess/releases/tag/1.2.3">downloaded MESS 1.2.3</a> and extracted the contents of the zip file to <code>C:\HL\Tools\MESS\</code>. You should see the following files:</p>
+This guide assumes that you have <a href="https://github.com/pwitvoet/mess/releases/tag/1.2.3">downloaded MESS 1.2.3</a> and extracted the contents of the zip file to a folder, for example <code>C:\HL\Tools\MESS\</code>. You should see the following files:</p>
 <p>
 <figure>
 <img src="images/mess_folder_contents.png" alt="MESS folder contents" title="MESS folder contents">
@@ -207,8 +207,10 @@ MESS contains a number of template entities and behaviors (automation scripts) t
 <li>
 Create a copy of <code>mess.config</code> and give it the name of the game you're mapping for, for example <code>quake.config</code>.</li>
 <li>
-Open this new config file in a text editor and search for the line that says <code>template-entity-directories:</code>. There are several directories listed below that line. Remove the <code>mess_template_library</code> and <code>cs</code> lines and save your config file.: <img src="images/quake_config_file.png" alt="">
+Open this new config file in a text editor and search for the line that says <code>template-entity-directories:</code>. There are several directories listed below that line. The <code>mess_template_library</code> and <code>cs</code> folders contain Half-Life and Counter-Strike specific entities, so you can remove those lines: <img src="images/quake_config_file.png" alt="">
 </li>
+<li>
+If you choose to remove the <code>mess_template_library</code> line from your config file, you'll need to copy the <code>tb_linked_group_id_handler.ted</code> file from the <code>template_entities\mess_template_library</code> folder into your <code>template_entities\quake</code> folder. This file ensures that TrenchBroom group IDs aren't interpreted as MScript expressions.</li>
 <li>
 In TrenchBroom, open the Compile window and add <code>-config quake</code> to the parameters in the <code>MESS.exe</code> task. The parameters box should now contain: <code>-config quake "${WORK_DIR_PATH}/${MAP_BASE_NAME}-compile.map"</code>: <img src="images/trenchbroom_compile_quake_map.png" alt="">
 </li>
