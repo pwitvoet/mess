@@ -274,7 +274,7 @@ namespace MESS.Formats.MAP.Trenchbroom
                 else
                 {
                     // Top-level groups can be linked to layers:
-                    var visGroup = SelectVisGroup(group);
+                    var visGroup = DetermineVisGroupForGroup(group);
                     if (visGroup != null)
                         groupEntities[group.ID].Properties[TB.Layer] = visGroup.ID.ToString(CultureInfo.InvariantCulture);
                 }
@@ -292,7 +292,7 @@ namespace MESS.Formats.MAP.Trenchbroom
                 }
                 else
                 {
-                    var visGroup = DetermineVisGroup(brush);
+                    var visGroup = DetermineVisGroupForBrushOrEntity(brush);
                     if (visGroup != null && layerEntities.TryGetValue(visGroup.ID, out var layerEntity))
                     {
                         layerEntity.AddBrush(brush);
@@ -314,7 +314,7 @@ namespace MESS.Formats.MAP.Trenchbroom
                 }
                 else
                 {
-                    var visGroup = DetermineVisGroup(entity);
+                    var visGroup = DetermineVisGroupForBrushOrEntity(entity);
                     if (visGroup != null)
                     {
                         entity.Properties[TB.Layer] = visGroup.ID.ToString(CultureInfo.InvariantCulture);
@@ -339,7 +339,31 @@ namespace MESS.Formats.MAP.Trenchbroom
             map.AddEntities(layerEntities.Values);
 
 
-            VisGroup? DetermineVisGroup(MapObject mapObject)
+            VisGroup? DetermineVisGroupForGroup(Group group)
+            {
+                switch (map.VisGroupAssignment)
+                {
+                    case VisGroupAssignment.PerGroup: return SelectVisGroup(group);
+                    case VisGroupAssignment.PerObject: return SelectVisGroup(group, GatherChildObjectsVisGroups(group));
+                    default: throw new NotImplementedException($"Unknown VIS group assignment approach: {map.VisGroupAssignment}.");
+                }
+            }
+
+            IReadOnlyList<VisGroup> GatherChildObjectsVisGroups(Group group)
+            {
+                var visGroups = new List<VisGroup>();
+                foreach (var mapObject in group.Objects)
+                {
+                    switch (mapObject)
+                    {
+                        case Group childGroup: visGroups.AddRange(GatherChildObjectsVisGroups(childGroup)); break;
+                        default: visGroups.AddRange(mapObject.VisGroups); break;
+                    }
+                }
+                return visGroups;
+            }
+
+            VisGroup? DetermineVisGroupForBrushOrEntity(MapObject mapObject)
             {
                 switch (map.VisGroupAssignment)
                 {
@@ -349,18 +373,19 @@ namespace MESS.Formats.MAP.Trenchbroom
                 }
             }
 
-            VisGroup? SelectVisGroup(MapObject mapObject)
+            VisGroup? SelectVisGroup(MapObject mapObject, IReadOnlyList<VisGroup>? visGroups = null)
             {
-                switch (mapObject.VisGroups.Count)
+                visGroups ??= mapObject.VisGroups;
+                switch (visGroups.Count)
                 {
                     case 0: return null;
-                    case 1: return mapObject.VisGroups[0];
+                    case 1: return visGroups[0];
                     default:
                         switch (tooManyVisGroupsHandling)
                         {
                             default:
-                            case TooManyVisGroupsHandling.UseFirst: return mapObject.VisGroups.First();
-                            case TooManyVisGroupsHandling.UseLast: return mapObject.VisGroups.Last();
+                            case TooManyVisGroupsHandling.UseFirst: return visGroups.First();
+                            case TooManyVisGroupsHandling.UseLast: return visGroups.Last();
 
                             case TooManyVisGroupsHandling.Fail:
                                 onVisGroupFailure(mapObject);
