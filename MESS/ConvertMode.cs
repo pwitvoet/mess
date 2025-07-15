@@ -89,7 +89,7 @@ namespace MESS
                 var logLevel = settings.LogLevel ?? LogLevel.Info;
                 using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
                 {
-                    logger.Minimal($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
+                    logger.Minimal($"MESS v{Program.MessVersion}: Macro Entity Scripting System");
                     logger.Minimal("----- CONVERT MODE -----");
                     logger.Minimal($"Command line: {Environment.CommandLine}");
                     logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
@@ -357,7 +357,7 @@ namespace MESS
             using (var output = Console.OpenStandardOutput())
             using (var writer = new StreamWriter(output, leaveOpen: true))
             {
-                writer.WriteLine($"MESS v{Program.MessVersion}: Macro Entity Substitution System");
+                writer.WriteLine($"MESS v{Program.MessVersion}: Macro Entity Scripting System");
                 writer.WriteLine();
                 writer.WriteLine("Conversion mode");
                 writer.WriteLine();

@@ -82,7 +82,7 @@ namespace MESS
                         logger.LogLevel = settings.LogLevel;
 
 
-                    logger.Minimal($"MESS v{MessVersion}: Macro Entity Substitution System");
+                    logger.Minimal($"MESS v{MessVersion}: Macro Entity Scripting System");
                     logger.Minimal("----- BEGIN MESS -----");
                     logger.Minimal($"Command line: {Environment.CommandLine}");
                     logger.Minimal($"Arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
@@ -230,7 +230,7 @@ namespace MESS
             using (var output = Console.OpenStandardOutput())
             using (var writer = new StreamWriter(output, leaveOpen: true))
             {
-                writer.WriteLine($"MESS v{MessVersion}: Macro Entity Substitution System");
+                writer.WriteLine($"MESS v{MessVersion}: Macro Entity Scripting System");
                 commandLine.ShowDescriptions(writer);
             }
         }
