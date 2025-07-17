@@ -9,7 +9,7 @@ foreach ($platform in $platforms) {
 }
 
 # Create release zip files:
-$version = (Get-Item .\MESS\bin\Release\net6.0\publish\win-x64\MESS.exe).VersionInfo.ProductVersion
+$version = (Get-Item .\MESS\bin\Release\net6.0\publish\win-x64\MESS.exe).VersionInfo.FileVersion
 foreach ($platform in $platforms) {
     # Create output directory:
     $output_dir = (Join-Path (Get-Location) "Releases\${version}\mess_${version}_$($platform.name)")
