@@ -28,6 +28,24 @@ namespace MESS.Macros
             var expander = new MacroExpander(settings, rewriteDirectives, logger);
             expander.LoadMScriptFiles(settings.TemplateEntityDirectories, expander.BaseEvaluationContext);
 
+            // Load a map-specific .mscript file, if present (this is useful for storing map-specific variables and functions):
+            var mscriptPath = Path.ChangeExtension(path, ".mscript");
+            if (File.Exists(mscriptPath))
+            {
+                logger.Info($"Found map-specific MScript file: '{mscriptPath}'.");
+                try
+                {
+                    using (var file = File.Open(mscriptPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        Interpreter.LoadAssignmentsFile(file, expander.BaseEvaluationContext);
+
+                    logger.Info($"Successfully loaded '{mscriptPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning($"Failed to load '{mscriptPath}':", ex);
+                }
+            }
+
             var mainTemplate = expander.GetMapTemplate(path);
 
             var templateMapPaths = Array.Empty<string>();
