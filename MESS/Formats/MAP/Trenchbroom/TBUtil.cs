@@ -184,13 +184,17 @@ namespace MESS.Formats.MAP.Trenchbroom
             {
                 var parentID = entity.Properties.GetInteger(TB.Group);
                 if (parentID != null && groups.TryGetValue(parentID.Value, out var parentGroup))
+                {
                     parentGroup.AddObject(entity);
-
-                var layerID = entity.Properties.GetInteger(TB.Layer);
-                if (layerID != null && layers.TryGetValue(layerID.Value, out var parentLayer))
-                    parentLayer.AddObject(entity);
+                }
                 else
-                    defaultLayer.AddObject(entity);
+                {
+                    var layerID = entity.Properties.GetInteger(TB.Layer);
+                    if (layerID != null && layers.TryGetValue(layerID.Value, out var parentLayer))
+                        parentLayer.AddObject(entity);
+                    else
+                        defaultLayer.AddObject(entity);
+                }
 
                 entity.Properties.Remove(TB.Group);
                 entity.Properties.Remove(TB.Layer);
