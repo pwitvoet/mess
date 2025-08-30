@@ -100,6 +100,18 @@
             <h1 id="file-conversion">8. File conversion</h1>
 <p>
 Besides being a map processing tool, MESS also supports conversion between different map file formats. This can be useful when migrating to a different editor, or for automating <code>.map</code> exports. It's also possible to exclude specific VIS groups or layers, and to exclude anything outside a specific area (cordoning).</p>
+<p>
+See below for some common use-cases:</p>
+<ul>
+<li>
+<a href="#converting-a-map-file-to-rmf-or-jmf">Converting a map file to rmf or jmf</a></li>
+<li>
+<a href="#converting-a-rmf-or-jmf-to-a-trenchbroom-map-file">Converting a rmf or jmf to a TrenchBroom map file</a></li>
+<li>
+<a href="#exporting-and-cleaning-a-trenchbroom-map-file">Exporting and cleaning a TrenchBroom map file</a></li>
+</ul>
+<p>
+For all available options, see <a href="convert-options.html">Convert options</a>.</p>
 <hr>
 <h3 id="converting-a-map-file-to-rmf-or-jmf">Converting a map file to rmf or jmf</h3>
 <p>
@@ -115,9 +127,13 @@ To convert a <code>.jmf</code> file to a TrenchBroom <code>.map</code> file, cal
 <code>MESS.exe -convert -mapformat trenchbroomvalve220 -tbgame "Half-Life" -wad "halflife.wad;liquids.wad" input_file.jmf output_file.map</code></p>
 <p>
 The <code>-mapformat trenchbroomvalve220</code> option tells MESS that it should convert groups and VIS groups to TrenchBroom-specific <code>func_group</code> entities, instead of discarding any group and VIS group information. The <code>-tbgame</code> option sets the TrenchBroom game name, and the <code>-wad</code> option sets the map's <code>wad</code> property.</p>
-<hr>
+<h3 id="exporting-and-cleaning-a-trenchbroom-map-file">Exporting and cleaning a TrenchBroom map file</h3>
 <p>
-For all available options, see <a href="convert-options.html">Convert options</a>.</p>
+TrenchBroom <code>.map</code> files store layer and (linked) group information in <code>func_group</code> entities and <code>_tb</code>-prefixed properties. When exporting a map from TrenchBroom, any layers that are marked as 'omit from export' are excluded, but the <code>func_group</code> entities and <code>_tb</code> properties are still present, which may cause in-game warnings. To remove this TrenchBroom-specific information from a map file, call MESS as following:</p>
+<p>
+<code>MESS.exe -convert -noomittedlayers input_file.map output_file.map</code></p>
+<p>
+The <code>-noomittedlayers</code> option will remove all layers that are marked as 'omit from export'. Because the default map output format is <code>valve220</code>, which does not support group and layer information, the output map won't contain any TrenchBroom-specific data.</p>
 
           </article>
         </main>
