@@ -1139,7 +1139,7 @@ namespace MESS.Macros
             }
             evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
             GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out var templateMapPaths, out var templateNames);
-            ApplyTextureReplacementRules(evaluatedProperties, normalEntity);
+            ApplyTextureAdjustmentRules(evaluatedProperties, normalEntity);
 
 
             normalEntity.Properties.Clear();
@@ -1208,95 +1208,13 @@ namespace MESS.Macros
         /// This checks for <see cref="Attributes.ReplaceTexture"/> attributes and replaces textures in the given entity accordingly.
         /// The <see cref="Attributes.ReplaceTexture"/> attributes are removed from the given properties.
         /// </summary>
-        private void ApplyTextureReplacementRules(IDictionary<string, object?> evaluatedProperties, Entity entity)
+        private void ApplyTextureAdjustmentRules(IDictionary<string, object?> evaluatedProperties, Entity entity)
         {
-            var replacementTextures = new Dictionary<string, string>();
-            IFunction? replacementFunction = null;
-            string? defaultReplacementTexture = null;
+            var textureAdjustmentRules = TextureAdjustmentRules.GetFromProperties(evaluatedProperties, Logger);
+            if (textureAdjustmentRules is null)
+                return;
 
-            foreach (var property in evaluatedProperties.Where(property => property.Key.StartsWith(Attributes.ReplaceTexture)).ToArray())
-            {
-                var parts = property.Key.Split();
-                if (parts.Length > 1)
-                {
-                    evaluatedProperties.Remove(property.Key);
-
-                    var replacementTexture = Interpreter.Print(property.Value);
-                    if (!string.IsNullOrEmpty(replacementTexture))
-                        replacementTextures[parts[1].ToLowerInvariant()] = replacementTexture;
-                }
-            }
-
-            if (evaluatedProperties.TryGetValue(Attributes.ReplaceTexture, out var defaultProperty))
-            {
-                evaluatedProperties.Remove(Attributes.ReplaceTexture);
-                switch (defaultProperty)
-                {
-                    case MObject obj:
-                        foreach (var field in obj.Fields)
-                        {
-                            if (string.IsNullOrEmpty(field.Key))
-                            {
-                                if (field.Value is IFunction function)
-                                {
-                                    SetReplacementFunction(function);
-                                }
-                                else
-                                {
-                                    var replacementTexture = Interpreter.Print(field.Value);
-                                    if (!string.IsNullOrEmpty(replacementTexture))
-                                        defaultReplacementTexture = replacementTexture;
-                                }
-                            }
-                            else
-                            {
-                                var replacementTexture = Interpreter.Print(field.Value);
-                                if (!string.IsNullOrEmpty(replacementTexture))
-                                    replacementTextures[field.Key.ToLowerInvariant()] = replacementTexture;
-                            }
-                        }
-                        break;
-
-                    case IFunction function:
-                        SetReplacementFunction(function);
-                        break;
-
-                    default:
-                        defaultReplacementTexture = Interpreter.Print(defaultProperty);
-                        break;
-                }
-            }
-
-            // NOTE: Simple replacement rules are case-insensitive, but the replacement function is not.
-            foreach (var brush in entity.Brushes)
-            {
-                foreach (var face in brush.Faces)
-                {
-                    if (replacementTextures.TryGetValue(face.TextureName.ToLowerInvariant(), out var replacementTexture))
-                    {
-                        face.TextureName = replacementTexture;
-                    }
-                    else if (replacementFunction != null)
-                    {
-                        replacementTexture = Interpreter.Print(replacementFunction.Apply(new[] { face.TextureName.ToLowerInvariant() }));
-                        if (!string.IsNullOrEmpty(replacementTexture))
-                            face.TextureName = replacementTexture;
-                    }
-                    else if (!string.IsNullOrEmpty(defaultReplacementTexture))
-                    {
-                        face.TextureName = defaultReplacementTexture;
-                    }
-                }
-            }
-
-
-            void SetReplacementFunction(IFunction function)
-            {
-                if (function.Parameters.Count == 1)
-                    replacementFunction = function;
-                else
-                    Logger.Warning($"A texture replacement function must take 1 argument, not {function.Parameters.Count} (entity of type '{evaluatedProperties.GetString(Attributes.Classname)}', name: '{evaluatedProperties.GetString(Attributes.Targetname)}').");
-            }
+            textureAdjustmentRules.ApplyToBrushes(entity.Brushes, Logger);
         }
 
 

@@ -294,6 +294,53 @@
         /// </summary>
         public const string RemoveIf = "_mess_remove_if";
 
+
+        // Texture adjustment:
+
+        /// <summary>
+        /// This attribute can be used to adjust the texture properties of a face. Like other special attributes, it is removed afterwards.
+        /// The 'adjust' attribute takes priority over the other single-property texture attributes. It can be used in a few different ways:
+        /// <para>
+        /// To adjust faces with a specific texture: "_mess_adjust_texture wall1" "{{texture: 'wall2', offset: [0, 0], angle: 90, scale: [1, 1]}}".
+        /// This is called a 'named rule'.
+        /// </para>
+        /// <para>
+        /// To adjust the properties of all faces that don't match any named rule: "_mess_adjust_texture" "{{texture: 'default'}}".
+        /// This is a 'default rule'. Note that all fields are optional in the MScript object that defines the new face properties.
+        /// This rule only replaces the texture, it does not modify the offset, angle or scale.
+        /// </para>
+        /// <para>
+        /// To create multiple named rules with a single key: "_mess_adjust_texture" "{{wall1: {texture: 'wall2'}, floor1: {texture: 'floor2'}, '': {texture: 'default'}}".
+        /// Each field produces a separate named rule. The empty string key produces a default rule.
+        /// </para>
+        /// Besides static values, it's also possible to provide an MScript function that takes a face-info object as argument.
+        /// This makes it possible to adjust existing values instead of blindly replacing them.
+        /// For example: "_mess_adjust_texture" "{face => face.texture.contains('blue') ? {texture: face.texture.replace('blue', 'red'), offset: face.offset + [16, 0]} : none}".
+        /// This only adjust faces whose texture name contains the text 'blue'. It also shifts the texture 16 units to the right, instead of setting the offset to 16,0.
+        /// </summary>
+        public const string AdjustTexture = "_mess_adjust_texture";
+
+        /// <summary>
+        /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture name of a face.
+        /// </summary>
+        public const string ReplaceTexture = "_mess_replace_texture";
+
+        /// <summary>
+        /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture offset of a face.
+        /// </summary>
+        public const string ShiftTexture = "_mess_shift_texture";
+
+        /// <summary>
+        /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture angle of a face.
+        /// </summary>
+        public const string RotateTexture = "_mess_rotate_texture";
+
+        /// <summary>
+        /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture scale of a face.
+        /// </summary>
+        public const string ScaleTexture = "_mess_scale_texture";
+
+
         /// <summary>
         /// This attribute (or set of attributes) can be used to replace specific textures on the current brush entity.
         /// It can be used in a few different ways.

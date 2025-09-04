@@ -75,5 +75,16 @@ namespace MESS.Mathematics
                 }
             }
         }
+
+
+        /// <summary>
+        /// Rotates this vector around the given axis. The angle is in radians.
+        /// </summary>
+        public static Vector3D RotateAroundAxis(this Vector3D vector, Vector3D axis, float angle)
+        {
+            return (vector * (float)Math.Cos(angle)) +
+                (axis.CrossProduct(vector) * (float)Math.Sin(angle)) +
+                (axis * axis.DotProduct(vector) * (1 - (float)Math.Cos(angle)));
+        }
     }
 }
