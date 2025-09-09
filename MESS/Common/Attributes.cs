@@ -339,21 +339,5 @@
         /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture scale of a face.
         /// </summary>
         public const string ScaleTexture = "_mess_scale_texture";
-
-
-        /// <summary>
-        /// This attribute (or set of attributes) can be used to replace specific textures on the current brush entity.
-        /// It can be used in a few different ways.
-        /// <para>
-        /// To replace specific textures, use keys of the form "_mess_replace_texture OLD_TEXTURE", with the associated value being the new texture name.
-        /// </para>
-        /// <para>
-        /// To replace all textures, use "_mess_replace_texture" without an old texture name. The associated value contains the new texture name for all faces.
-        /// If the value is an object, then its keys are treated as old texture names, and its values as new texture names.
-        /// If the value is a function, then it should take a single argument (the old texture name) and return a new texture name (or 'none' or an empty string, if the texture should not be replaced).
-        /// </para>
-        /// These attributes are removed afterwards.
-        /// </summary>
-        public const string ReplaceTexture = "_mess_replace_texture";
     }
 }
