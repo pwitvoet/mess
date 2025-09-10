@@ -345,13 +345,13 @@ namespace MESS.Macros
                     isTextureNameSet = SetFaceProperty(adjustmentValues.TextureNameFunction, adjustmentValues.TextureName, TextureAdjustmentValues.ConvertToString, name => face.TextureName = name, faceInfo, "texture", logger);
 
                 if (!isTextureOffsetSet)
-                    isTextureOffsetSet = SetFaceProperty(adjustmentValues.OffsetFunction, adjustmentValues.Offset, TextureAdjustmentValues.ConvertToVector2, offset => face.TextureShift = offset, faceInfo, "texture offset", logger);
+                    isTextureOffsetSet = SetFaceProperty(adjustmentValues.OffsetFunction, adjustmentValues.Offset, TextureAdjustmentValues.ConvertToVector2, offset => face.TextureShift += offset, faceInfo, "texture offset", logger);
 
                 if (!isTextureAngleSet)
-                    isTextureAngleSet = SetFaceProperty(adjustmentValues.AngleFunction, adjustmentValues.Angle, TextureAdjustmentValues.ConvertToFloat, angle => ApplyNewAngle(face, angle), faceInfo, "texture angle", logger);
+                    isTextureAngleSet = SetFaceProperty(adjustmentValues.AngleFunction, adjustmentValues.Angle, TextureAdjustmentValues.ConvertToFloat, angle => ApplyNewAngle(face, face.TextureAngle + angle), faceInfo, "texture angle", logger);
 
                 if (!isTextureScaleSet)
-                    isTextureScaleSet = SetFaceProperty(adjustmentValues.ScaleFunction, adjustmentValues.Scale, TextureAdjustmentValues.ConvertToVector2, scale => face.TextureScale = scale, faceInfo, "texture scale", logger);
+                    isTextureScaleSet = SetFaceProperty(adjustmentValues.ScaleFunction, adjustmentValues.Scale, TextureAdjustmentValues.ConvertToVector2, scale => face.TextureScale = new Vector2D(face.TextureScale.X * scale.X, face.TextureScale.Y * scale.Y), faceInfo, "texture scale", logger);
 
 
                 // If all properties are set then we're finished:

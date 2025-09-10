@@ -1214,6 +1214,21 @@ namespace MESS.Macros
             if (textureAdjustmentRules is null)
                 return;
 
+            if (Logger.IsEnabled(LogLevel.Verbose))
+            {
+                Logger.Verbose($"Texture adjustment rules for {entity.ClassName}:");
+                if (textureAdjustmentRules.DefaultValues is not null)
+                    Logger.Verbose($"- default values: {GetLogRepresentation(textureAdjustmentRules.DefaultValues)}");
+
+                foreach (var kv in textureAdjustmentRules.NamedRuleValues)
+                    Logger.Verbose($"- {kv.Key}: {GetLogRepresentation(kv.Value)}");
+
+
+                // Logging helper:
+                string GetLogRepresentation(TextureAdjustmentValues values)
+                    => $"(texture: {(values.TextureNameFunction is not null ? "<function>" : values.TextureName)}, offset: {(values.OffsetFunction is not null ? "<function>" : values.Offset)}, angle: {(values.AngleFunction is not null ? "<function>" : values.Angle)}, scale: {(values.ScaleFunction is not null ? "<function>" : values.Scale)})";
+            }
+
             textureAdjustmentRules.ApplyToBrushes(entity.Brushes, Logger);
         }
 
