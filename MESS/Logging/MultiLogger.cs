@@ -27,6 +27,8 @@
         }
 
 
+        public bool IsEnabled(LogLevel level) => _loggers.Any(logger => logger.IsEnabled(level));
+
         public void Verbose(string message)
         {
             foreach (var logger in _loggers)

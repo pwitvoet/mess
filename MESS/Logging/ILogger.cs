@@ -4,6 +4,8 @@
     {
         LogLevel LogLevel { get; set; }
 
+        bool IsEnabled(LogLevel level);
+
         void Verbose(string message);
         void Info(string message);
         void Warning(string message, Exception? exception = null);

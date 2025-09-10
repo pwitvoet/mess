@@ -24,6 +24,8 @@ namespace MESS.Logging
         }
 
 
+        public bool IsEnabled(LogLevel level) => level <= LogLevel;
+
         public void Verbose(string message) => Log(LogLevel.Verbose, message);
 
         public void Info(string message) => Log(LogLevel.Info, message);
@@ -37,7 +39,7 @@ namespace MESS.Logging
 
         public void Log(LogLevel level, string message)
         {
-            if (level > LogLevel)
+            if (!IsEnabled(level))
                 return;
 
             _writer.WriteLine(FormatMessage(level, message));
@@ -45,7 +47,7 @@ namespace MESS.Logging
 
         public void Log(LogLevel level, string message, Exception? exception)
         {
-            if (level > LogLevel)
+            if (!IsEnabled(level))
                 return;
 
 
