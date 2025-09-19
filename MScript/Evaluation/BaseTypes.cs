@@ -199,7 +199,7 @@ namespace MScript.Evaluation
                 if (delimiters is string delimiter)
                     splitPattern = Regex.Escape(delimiter);
                 else if (delimiters is object?[] delimitersArray)
-                    splitPattern = string.Join("|", delimitersArray.Select(Operations.ToString));
+                    splitPattern = string.Join("|", delimitersArray.Select(delimiter => Regex.Escape(Operations.ToString(delimiter))));
 
                 return Split(self, splitPattern, count);
             }
