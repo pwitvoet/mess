@@ -22,5 +22,23 @@ namespace MESS.Mapping
         public Vector2D TextureShift { get; set; }
         public float TextureAngle { get; set; }
         public Vector2D TextureScale { get; set; }
+
+
+        public Face Copy()
+        {
+            var copy = new Face {
+                PlanePoints = PlanePoints.ToArray(),
+                Plane = Plane,
+                TextureName = TextureName,
+                TextureRightAxis = TextureRightAxis,
+                TextureDownAxis = TextureDownAxis,
+                TextureShift = TextureShift,
+                TextureAngle = TextureAngle,
+                TextureScale = TextureScale,
+            };
+            copy.Vertices.AddRange(Vertices);
+
+            return copy;
+        }
     }
 }

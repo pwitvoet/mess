@@ -90,6 +90,11 @@ namespace MESS.Macros
         /// </summary>
         public EvaluationContext EvaluationContext { get; }
 
+        /// <summary>
+        /// These texture adjustment rules must be applied when copying world brushes from this template.
+        /// </summary>
+        public TextureAdjustmentRules? TextureAdjustmentRules { get; }
+
 
         private ILogger _logger;
         private Random _random;
@@ -147,6 +152,9 @@ namespace MESS.Macros
             var mapPath = parentTemplate.Name;
             var outerEvaluationContext = Evaluation.ContextWithBindings(insertionEntityProperties, ID, parentID, SequenceNumber, _random, mapPath, _logger, baseEvaluationContext);
             var evaluatedTemplateProperties = template.Map.Properties.EvaluateToMScriptValues(outerEvaluationContext);
+
+            TextureAdjustmentRules = TextureAdjustmentRules.GetFromProperties(evaluatedTemplateProperties, logger);
+
             handleTemplateProperties?.Invoke(evaluatedTemplateProperties);
 
             EvaluationContext = new EvaluationContext(evaluatedTemplateProperties, outerEvaluationContext);

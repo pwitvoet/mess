@@ -533,8 +533,17 @@ namespace MESS.Macros
                 if (excludedObjects.Contains(brush))
                     continue;
 
-                context.OutputMap.AddBrush(brush.Copy(context.Transform));
+                // NOTE: Texture adjustment rules are applied before transforming a brush.
+                //       This affects face information that is passed to MScript adjustment functions:
+                var outputBrush = brush.Copy();
+                context.TextureAdjustmentRules?.ApplyToBrush(outputBrush, Logger);
+                outputBrush.ApplyTransform(context.Transform);
+
+                context.OutputMap.AddBrush(outputBrush);
             }
+
+            if (context.TextureAdjustmentRules is not null)
+                Logger.Verbose($"Applied {context.TextureAdjustmentRules.NamedRuleValues.Count + (context.TextureAdjustmentRules.DefaultValues is null ? 0 : 1)} texture adjustment rules to instance #{context.ID}.");
         }
 
 

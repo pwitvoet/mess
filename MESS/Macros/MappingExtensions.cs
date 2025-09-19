@@ -52,8 +52,8 @@ namespace MESS.Macros
         /// <summary>
         /// Creates a copy of this brush, adjusted by the given offset. Ignores VIS-group and group relationships.
         /// </summary>
-        public static Brush Copy(this Brush brush, Vector3D offset)
-            => brush.Copy(new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset));
+        public static Brush Copy(this Brush brush, Vector3D? offset = null)
+            => brush.Copy(new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset ?? new Vector3D()));
 
         /// <summary>
         /// Creates a copy of this brush, adjusted by the given transform. Ignores VIS-group and group relationships.
@@ -64,43 +64,9 @@ namespace MESS.Macros
 
             Face CopyFace(Face face)
             {
-                var copy = new Face();
-
-                // If an odd number of axis has a negative scale, then we need to flip faces around (otherwise we'd get an 'inside-out' or 'inverted' brush):
-                var flipFace = transform.GeometryScale.X < 0;
-                if (transform.GeometryScale.Y < 0)
-                    flipFace = !flipFace;
-                if (transform.GeometryScale.Z < 0)
-                    flipFace = !flipFace;
-
-                if (flipFace)
-                {
-                    copy.Vertices.AddRange(face.Vertices.Select(transform.Apply).Reverse());
-                    copy.PlanePoints = face.PlanePoints.Select(transform.Apply).Reverse().ToArray();
-                }
-                else
-                {
-                    copy.Vertices.AddRange(face.Vertices.Select(transform.Apply));
-                    copy.PlanePoints = face.PlanePoints.Select(transform.Apply).ToArray();
-                }
-
-                var newTextureRightAxis = transform.Rotation * (face.TextureRightAxis * (1f / transform.GeometryScale));
-                var newTextureDownAxis = transform.Rotation * (face.TextureDownAxis * (1f / transform.GeometryScale));
-                var rightScaleFactor = newTextureRightAxis.Length();
-                var downScaleFactor = newTextureDownAxis.Length();
-
-                copy.TextureName = face.TextureName;
-                copy.TextureRightAxis = newTextureRightAxis.Normalized();
-                copy.TextureDownAxis = newTextureDownAxis.Normalized();
-                copy.TextureAngle = face.TextureAngle;
-                copy.TextureScale = new Vector2D(face.TextureScale.X / rightScaleFactor, face.TextureScale.Y / downScaleFactor);
-
-                // Apply 'texture lock' while moving:
-                var oldTextureCoordinates = GetTextureCoordinates(face.PlanePoints[0], face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
-                var newTextureCoordinates = GetTextureCoordinates(copy.PlanePoints[flipFace ? copy.PlanePoints.Length - 1 : 0], copy.TextureDownAxis, copy.TextureRightAxis, copy.TextureScale);
-                copy.TextureShift = (oldTextureCoordinates + face.TextureShift) - newTextureCoordinates;
-
-                return copy;
+                var faceCopy = face.Copy();
+                ApplyTransform(faceCopy, transform);
+                return faceCopy;
             }
         }
 
@@ -134,6 +100,53 @@ namespace MESS.Macros
                 copy.Properties[kv.Key] = kv.Value;
 
             return copy;
+        }
+
+
+        public static void ApplyTransform(this Brush brush, Transform transform)
+        {
+            foreach (var face in brush.Faces)
+                ApplyTransform(face, transform);
+        }
+
+        private static void ApplyTransform(Face face, Transform transform)
+        {
+            var oldPlanePoints = face.PlanePoints;
+            var oldTextureRightAxis = face.TextureRightAxis;
+            var oldTextureDownAxis = face.TextureDownAxis;
+            var oldTextureScale = face.TextureScale;
+
+            // If an odd number of axis has a negative scale, then we need to flip faces around (otherwise we'd get an 'inside-out' or 'inverted' brush):
+            var flipFace = transform.GeometryScale.X < 0;
+            if (transform.GeometryScale.Y < 0)
+                flipFace = !flipFace;
+            if (transform.GeometryScale.Z < 0)
+                flipFace = !flipFace;
+
+            var newVertices = face.Vertices.Select(transform.Apply).ToArray();
+            var newPlanePoints = face.PlanePoints.Select(transform.Apply).ToArray();
+            if (flipFace)
+            {
+                Array.Reverse(newVertices);
+                Array.Reverse(newPlanePoints);
+            }
+            face.Vertices.Clear();
+            face.Vertices.AddRange(newVertices);
+            face.PlanePoints = newPlanePoints;
+
+            var newTextureRightAxis = transform.Rotation * (face.TextureRightAxis * (1f / transform.GeometryScale));
+            var newTextureDownAxis = transform.Rotation * (face.TextureDownAxis * (1f / transform.GeometryScale));
+            var rightScaleFactor = newTextureRightAxis.Length();
+            var downScaleFactor = newTextureDownAxis.Length();
+
+            face.TextureRightAxis = newTextureRightAxis.Normalized();
+            face.TextureDownAxis = newTextureDownAxis.Normalized();
+            face.TextureScale = new Vector2D(face.TextureScale.X / rightScaleFactor, face.TextureScale.Y / downScaleFactor);
+
+            // Apply 'texture lock' while moving:
+            var oldTextureCoordinates = GetTextureCoordinates(oldPlanePoints[0], oldTextureDownAxis, oldTextureRightAxis, oldTextureScale);
+            var newTextureCoordinates = GetTextureCoordinates(face.PlanePoints[flipFace ? face.PlanePoints.Length - 1 : 0], face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
+            face.TextureShift = (oldTextureCoordinates + face.TextureShift) - newTextureCoordinates;
         }
 
 
