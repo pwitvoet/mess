@@ -140,6 +140,14 @@ namespace MESS.Mapping
             }
         }
 
+        public void MoveEntity(Entity entity, int newIndex)
+        {
+            if (!_entities.Remove(entity))
+                return;
+
+            _entities.Insert(newIndex, entity);
+        }
+
 
         public void AddGroup(Group group) => _groups.Add(group);
 

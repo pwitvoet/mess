@@ -294,6 +294,22 @@
         /// </summary>
         public const string RemoveIf = "_mess_remove_if";
 
+        /// <summary>
+        /// Determines in which order entities are processed. Must be an integer, not an expression.
+        /// Entities with a higher value are processed before entities with a lower value.
+        /// Entities with the same value are processed in order of appearance.
+        /// The default value is 0.
+        /// </summary>
+        public const string InputOrder = "_mess_input_order";
+
+        /// <summary>
+        /// Determines the order of entities in the output map. Can be an integer or an expression that evaluates to an integer.
+        /// Entities with higher values are moved to the front.
+        /// Entities with the same value are left in the same order in which they were created.
+        /// The default value is 0.
+        /// </summary>
+        public const string OutputOrder = "_mess_output_order";
+
 
         // Texture adjustment:
 

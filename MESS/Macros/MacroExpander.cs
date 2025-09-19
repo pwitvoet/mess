@@ -72,6 +72,7 @@ namespace MESS.Macros
                 expander.ApplyRewriteDirectives(context.OutputMap, path, ProcessingStage.AfterMacroExpansion, null, null);
 
             expander.MergeEntities(context);
+            expander.OrderEntities(context);
 
             return context.OutputMap;
         }
@@ -355,6 +356,30 @@ namespace MESS.Macros
             }
         }
 
+        private void OrderEntities(InstantiationContext context)
+        {
+            // These properties have no effect in the worldspawn entity, they just need to be removed:
+            context.OutputMap.Properties.Remove(Attributes.InputOrder);
+            context.OutputMap.Properties.Remove(Attributes.OutputOrder);
+
+            var orderedEntities = context.OutputMap.Entities
+                .OrderByDescending(entity => entity.Properties.GetInteger(Attributes.OutputOrder) ?? 0)
+                .ToArray();
+
+            var index = 0;
+            foreach (var entity in orderedEntities)
+            {
+                var outputOrder = entity.Properties.GetInteger(Attributes.OutputOrder) ?? 0;
+                if (outputOrder > 0)
+                    context.OutputMap.MoveEntity(entity, index++);
+                else if (outputOrder < 0)
+                    context.OutputMap.MoveEntity(entity, context.OutputMap.Entities.Count - 1);
+
+                entity.Properties.Remove(Attributes.InputOrder);
+                entity.Properties.Remove(Attributes.OutputOrder);
+            }
+        }
+
 
         /// <summary>
         /// Loads the specified map and returns it as a template. Templates are cached, so maps that are requested multiple times only need to be loaded once.
@@ -519,7 +544,11 @@ namespace MESS.Macros
             Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
 
             // Copy entities:
-            foreach (var entity in context.Template.Map.Entities)
+            var templateMapEntities = context.Template.Map.Entities
+                .OrderByDescending(entity => entity.Properties.GetInteger(Attributes.InputOrder) ?? 0)
+                .ToArray();
+
+            foreach (var entity in templateMapEntities)
             {
                 if (excludedObjects.Contains(entity))
                     continue;
