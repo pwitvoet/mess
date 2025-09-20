@@ -588,14 +588,6 @@ namespace MESS.Macros
             var ignoreTransform = entity.ClassName == MacroEntity.Brush;
             var transform = transformBrushes && !ignoreTransform ? context.Transform : Transform.Identity;
 
-            // Check if we need to remove (skip) this entity:
-            if (entity.Properties.GetString(Attributes.RemoveIf) is string removalCondition)
-            {
-                var removal = Evaluation.EvaluateInterpolatedStringOrExpression(removalCondition, context);
-                if (Interpreter.IsTrue(removal) && removal is not 0.0)
-                    return;
-            }
-
             try
             {
                 var entityCopy = entity.Copy(transform);
@@ -615,6 +607,13 @@ namespace MESS.Macros
                     context = context.GetChildContextWithLiftedProperties(liftedProperties);
                 }
 
+                // Check if we need to remove (skip) this entity:
+                if (entity.Properties.GetString(Attributes.RemoveIf) is string removalCondition)
+                {
+                    var removal = Evaluation.EvaluateInterpolatedStringOrExpression(removalCondition, context);
+                    if (Interpreter.IsTrue(removal) && removal is not 0.0)
+                        return;
+                }
                 entityCopy.Properties.Remove(Attributes.RemoveIf);
 
                 switch (entityCopy.ClassName)
