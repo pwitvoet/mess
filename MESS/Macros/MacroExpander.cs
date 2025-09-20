@@ -1,5 +1,6 @@
 ﻿using MESS.Common;
 using MESS.EntityRewriting;
+using MESS.Formats.MAP;
 using MESS.Logging;
 using MESS.Macros.Functions;
 using MESS.Mapping;
@@ -394,7 +395,12 @@ namespace MESS.Macros
 
                 // NOTE: Entity rewrite directives are applied after entity path expansion, so rewriting will also affect these entities.
                 //       Rewriting happens before template detection, so rewriting something to a macro_template entity will work as expected:
-                var map = MapFile.Load(path);
+
+                // Retain TB-specific properties - '_tb_group' specifically is useful as a lifted property:
+                var mapLoadSettings = new MapFileLoadSettings {
+                    TrenchbroomGroupHandling = TrenchbroomGroupHandling.LeaveAsEntity,
+                };
+                var map = MapFile.Load(path, mapLoadSettings);
                 map.ExpandPaths();
 
                 if (Settings.ApplyRewriteRules)
