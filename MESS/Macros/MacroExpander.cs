@@ -608,7 +608,7 @@ namespace MESS.Macros
                 }
 
                 // Check if we need to remove (skip) this entity:
-                if (entity.Properties.GetString(Attributes.RemoveIf) is string removalCondition)
+                if (entityCopy.Properties.GetString(Attributes.RemoveIf) is string removalCondition)
                 {
                     var removal = Evaluation.EvaluateInterpolatedStringOrExpression(removalCondition, context);
                     if (Interpreter.IsTrue(removal) && removal is not 0.0)
