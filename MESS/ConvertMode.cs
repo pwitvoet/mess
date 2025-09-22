@@ -324,12 +324,7 @@ namespace MESS
 
 
             string[] ParseCommaSeparatedList(string input)
-            {
-                return input
-                    .Split(',')
-                    .Select(part => part.Trim())
-                    .ToArray();
-            }
+                => Macros.Util.ParseCommaSeparatedList(input).ToArray();
 
             BoundingBox ParseBoundingBox(string input)
             {
