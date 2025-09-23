@@ -198,7 +198,7 @@ namespace MESS.Macros
             do
             {
                 if (adjustmentValues.HasFunctions && faceInfo is null)
-                    faceInfo = CreateFaceInfoObject(face);
+                    faceInfo = face.CreateFaceInfoMObject();
 
 
                 // First call the adjustment function (if provided), which can return values for all properties:
@@ -262,18 +262,6 @@ namespace MESS.Macros
                     break;
             }
             while (adjustmentValues != null);
-        }
-
-
-        private static MObject CreateFaceInfoObject(Face face)
-        {
-            return new MObject(new[] {
-                new KeyValuePair<string, object?>("texture", face.TextureName),
-                new KeyValuePair<string, object?>("offset", new object?[] { (double)face.TextureShift.X, (double)face.TextureShift.Y }),
-                new KeyValuePair<string, object?>("angle", (double)face.TextureAngle),
-                new KeyValuePair<string, object?>("scale", new object?[] { (double)face.TextureScale.X, (double)face.TextureScale.Y }),
-                new KeyValuePair<string, object?>("normal", new object?[] { (double)face.Plane.Normal.X, (double)face.Plane.Normal.Y, (double)face.Plane.Normal.Z }),
-            });
         }
 
 

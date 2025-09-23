@@ -9,6 +9,7 @@ using MESS.Mathematics.Spatial;
 using MESS.Util;
 using MScript;
 using MScript.Evaluation;
+using System.Text.RegularExpressions;
 
 namespace MESS.Macros
 {
@@ -720,15 +721,49 @@ namespace MESS.Macros
             }
         }
 
+        private Func<Face, bool> GetMacroCoverFaceFilter(InstantiationContext context, Entity coverEntity)
+        {
+            var faceSkipFilter = coverEntity.Properties.GetString(Attributes.FaceSkipFilter);
+            if (faceSkipFilter is null)
+                return GetDefaultMacroCoverFaceFilter();
+
+            var filter = Evaluation.EvaluateInterpolatedStringOrExpression(faceSkipFilter, context);
+            switch (filter)
+            {
+                // A texture name or list of texture names that must be skipped:
+                case string textureNames:
+                    var skipFacePattern = Util.CreateWildcardNamesPattern(Util.ParseCommaSeparatedList(textureNames).ToArray());
+                    return face => !Regex.IsMatch(face.TextureName, skipFacePattern, RegexOptions.IgnoreCase);
+
+                // A function that returns true for faces that must be skipped:
+                case IFunction filterFunction:
+                    return face => !Interpreter.IsTrue(filterFunction.Apply(new object?[] { face.CreateFaceInfoMObject() }));
+
+                default:
+                    return GetDefaultMacroCoverFaceFilter();
+            }
+
+            Func<Face, bool> GetDefaultMacroCoverFaceFilter()
+            {
+                var skipFacePattern = Util.CreateWildcardNamesPattern(Settings.MacroCoverSkipTextures);
+                return face => !Regex.IsMatch(face.TextureName, skipFacePattern, RegexOptions.IgnoreCase);
+            }
+        }
+
         private void HandleMacroCoverEntity(InstantiationContext context, Entity coverEntity)
         {
             Logger.Verbose($"Processing a {coverEntity.ClassName} entity for instance #{context.ID}.");
 
-            // TODO: Also ignore other 'special' textures?
+            // Most properties will be evaluated again for each template instance that this entity creates,
+            // but there are a few that are needed up-front, so these will only be evaluated once:
+            EvaluateAndUpdateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
+            SetBrushEntityOriginProperty(coverEntity);
+
             // Triangulate all non-NULL faces, creating a list of triangles weighted by surface area:
+            var faceFilter = GetMacroCoverFaceFilter(context, coverEntity);
             var candidateFaces = coverEntity.Brushes
                 .SelectMany(brush => brush.Faces)
-                .Where(face => face.TextureName.ToUpper() != Textures.Null)
+                .Where(faceFilter)
                 .SelectMany(face => face.GetTriangleFan().Select(triangle => new {
                     Triangle = triangle,
                     Area = triangle.GetSurfaceArea(),
@@ -741,12 +776,6 @@ namespace MESS.Macros
             }
 
             var totalArea = candidateFaces.Sum(candidate => candidate.Area);
-
-
-            // Most properties will be evaluated again for each template instance that this entity creates,
-            // but there are a few that are needed up-front, so these will only be evaluated once:
-            EvaluateAndUpdateProperties(context, coverEntity, Attributes.MaxInstances, Attributes.Radius, Attributes.RandomSeed, Attributes.BrushBehavior);
-            SetBrushEntityOriginProperty(coverEntity);
 
             var parentID = context.GetNextParentID();
             var maxInstances = coverEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;

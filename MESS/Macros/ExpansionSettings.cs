@@ -1,4 +1,5 @@
-﻿using MESS.Logging;
+﻿using MESS.Common;
+using MESS.Logging;
 
 namespace MESS.Macros
 {
@@ -19,5 +20,6 @@ namespace MESS.Macros
         public List<string> LiftedProperties { get; } = new();
 
         public string? InvertedPitchPredicate { get; set; }
+        public string[] MacroCoverSkipTextures { get; set; } = new[] { Textures.Null, Textures.Caulk };
     }
 }

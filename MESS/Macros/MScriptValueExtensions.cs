@@ -1,6 +1,7 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using MScript;
+using MScript.Evaluation;
 
 namespace MESS.Macros
 {
@@ -70,6 +71,22 @@ namespace MESS.Macros
         /// </summary>
         public static void SetAngles(this IDictionary<string, object?> mscriptValues, string name, Angles value)
             => mscriptValues[name] = new object?[] { (double)value.Pitch, (double)value.Yaw, (double)value.Roll };
+
+
+        /// <summary>
+        /// Creates a MScript object from the given face, of the form {'texture': string, 'offset': array, 'angle': number, 'scale': array, 'normal': array},
+        /// where each array contains 2 or 3 numbers, depending on the corresponding vector type.
+        /// </summary>
+        public static MObject CreateFaceInfoMObject(this Face face)
+        {
+            return new MObject(new[] {
+                new KeyValuePair<string, object?>("texture", face.TextureName),
+                new KeyValuePair<string, object?>("offset", new object?[] { (double)face.TextureShift.X, (double)face.TextureShift.Y }),
+                new KeyValuePair<string, object?>("angle", (double)face.TextureAngle),
+                new KeyValuePair<string, object?>("scale", new object?[] { (double)face.TextureScale.X, (double)face.TextureScale.Y }),
+                new KeyValuePair<string, object?>("normal", new object?[] { (double)face.Plane.Normal.X, (double)face.Plane.Normal.Y, (double)face.Plane.Normal.Z }),
+            });
+        }
 
 
         private static bool TryConvertToDouble(object? mscriptValue, out double number)

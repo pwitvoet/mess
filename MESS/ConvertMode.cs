@@ -363,8 +363,8 @@ namespace MESS
 
         private static void ApplyVisGroupFiltering(Map map, ConvertSettings settings, ILogger logger)
         {
-            var includeNamePattern = CreateWildcardNamesPattern(settings.OnlyVisGroups);
-            var excludeNamePattern = CreateWildcardNamesPattern(settings.NotVisGroups);
+            var includeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.OnlyVisGroups);
+            var excludeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.NotVisGroups);
 
             var excludedVisGroups = new List<VisGroup>();
             foreach (var visGroup in map.VisGroups)
@@ -398,30 +398,6 @@ namespace MESS
                 map.RemoveEntities(excludedEntities);
 
                 logger.Info($"Excluded {excludedBrushes.Length} brushes and {excludedEntities.Length} entities that did not belong to any VIS group.");
-            }
-
-
-            string? CreateWildcardNamesPattern(string[]? wildcardNames)
-            {
-                if (wildcardNames == null)
-                    return null;
-
-                return string.Join("|", wildcardNames.Select(CreateSingleNamePattern));
-            }
-
-            string CreateSingleNamePattern(string wildcardName)
-            {
-                var pattern = Regex.Replace(
-                    wildcardName,
-                    @"\\\*|\*|[^*]+",
-                    match => match.Value switch
-                    {
-                        @"\*" => Regex.Escape("*"),
-                        "*" => ".*",
-                        _ => Regex.Escape(match.Value)
-                    });
-
-                return "^" + pattern + "$";
             }
         }
 

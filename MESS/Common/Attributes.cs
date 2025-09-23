@@ -179,6 +179,14 @@
         public const string BrushBehavior = "brush_behavior";
 
         /// <summary>
+        /// A filter that decides which faces will be skipped by a macro_cover.
+        /// Can be a texture name or comma-separated list of texture names that will be skipped (names can contain wildcards (*)),
+        /// or an MScript function that is called for each face (faces for which it returns true will be skipped).
+        /// If left empty, only NULL faces are skipped.
+        /// </summary>
+        public const string FaceSkipFilter = "face_skip_filter";
+
+        /// <summary>
         /// How a macro_fill entity will determine instance positions. See <see cref="Macros.FillMode"/>.
         /// This attribute will only be evaluated once.
         /// </summary>

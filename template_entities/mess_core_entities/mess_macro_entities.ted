@@ -80,6 +80,10 @@
         2 : "Leave as func_detail"
     ]
 
+    // Faces with these texture(s) will not be covered with instances.
+    // Can also be an MScript function that takes a face-info object and returns true if a face must be skipped.
+    face_skip_filter(string) : "Face skip filter"
+
 
     // Between 0 and 1, this acts as a 'coverage factor'. Above 1, it's the maximum number of instances that this entity will attempt to insert.
     max_instances(string) : "Coverage (<1) or max instance count (>=1)" : "0.5"

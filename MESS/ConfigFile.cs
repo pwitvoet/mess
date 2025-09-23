@@ -82,6 +82,10 @@ namespace MESS
                         settings.InvertedPitchPredicate = ReadString(rest.Trim());
                         return true;
 
+                    case "macro-cover-skip-textures":
+                        settings.MacroCoverSkipTextures = Macros.Util.ParseCommaSeparatedList(value).ToArray();
+                        return true;
+
                     case "template-maps-directory":
                         settings.TemplateMapsDirectory = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(rest.Trim()), evaluationContext));
                         return true;

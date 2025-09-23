@@ -1,4 +1,7 @@
-﻿namespace MESS.Macros
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
+
+namespace MESS.Macros
 {
     public class Util
     {
@@ -49,6 +52,36 @@
 
                 yield return (name, weight);
             }
+        }
+
+        /// <summary>
+        /// Creates a regular expression that matches all of the given names. Names can contain wildcards (*), which match any number of any character.
+        /// </summary>
+        [return: NotNullIfNotNull(nameof(wildcardNames))]
+        public static string? CreateWildcardNamesPattern(string[]? wildcardNames)
+        {
+            if (wildcardNames == null)
+                return null;
+
+            return string.Join("|", wildcardNames.Select(CreateSingleWildcardNamePattern));
+        }
+
+        /// <summary>
+        /// Creates a regular expression that matches the given name. The name can contain wildcards (*), which match any number of any character.
+        /// </summary>
+        public static string CreateSingleWildcardNamePattern(string wildcardName)
+        {
+            var pattern = Regex.Replace(
+                wildcardName,
+                @"\\\*|\*|[^*]+",
+                match => match.Value switch
+                {
+                    @"\*" => Regex.Escape("*"),
+                    "*" => ".*",
+                    _ => Regex.Escape(match.Value)
+                });
+
+            return "^" + pattern + "$";
         }
     }
 }

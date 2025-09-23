@@ -8,6 +8,11 @@
         public const string Null = "NULL";
 
         /// <summary>
+        /// The Quake equivalent of <see cref="Null"/>.
+        /// </summary>
+        public const string Caulk = "caulk";
+
+        /// <summary>
         /// Brush entities can use a brush covered with this texture to specify their origin. Often used for rotating entities.
         /// </summary>
         public const string Origin = "ORIGIN";
