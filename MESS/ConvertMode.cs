@@ -87,7 +87,7 @@ namespace MESS
 
                 var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(settings.InputPath) ? "mess-convert.log" : $"{settings.InputPath}.mess-convert.log");
                 var logLevel = settings.LogLevel ?? LogLevel.Info;
-                using (var logger = new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel)))
+                using (var logger = CreateLogger(logLevel, logPath))
                 {
                     logger.Minimal($"MESS v{Program.MessVersion}: Macro Entity Scripting System");
                     logger.Minimal("----- CONVERT MODE -----");
@@ -164,7 +164,8 @@ namespace MESS
             }
             catch (Exception ex)
             {
-                using (var errorLogger = new MultiLogger(new ConsoleLogger(LogLevel.Error), new FileLogger(FileSystem.GetFullPath("mess-convert.log"), LogLevel.Error)))
+                var noLogFile = settings.LogLevel == LogLevel.Off;
+                using (var errorLogger = CreateLogger(LogLevel.Error, noLogFile ? null : FileSystem.GetFullPath("mess-convert.log")))
                     errorLogger.Error($"A problem has occurred: {ex.GetType().Name}: '{ex.Message}'.");
 
                 ShowHelp(commandLineParser);
@@ -345,6 +346,14 @@ namespace MESS
 
             string ToString<TEnum>(TEnum value) where TEnum : struct, Enum
                 => value.ToString().ToLowerInvariant();
+        }
+
+        private static ILogger CreateLogger(LogLevel logLevel, string? logPath)
+        {
+            if (logLevel == LogLevel.Off || string.IsNullOrEmpty(logPath))
+                return new ConsoleLogger(logLevel);
+
+            return new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel));
         }
 
         private static void ShowHelp(CommandLine commandLine)

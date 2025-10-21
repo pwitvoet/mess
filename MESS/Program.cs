@@ -124,7 +124,8 @@ namespace MESS
             }
             catch (Exception ex)
             {
-                using (var errorLogger = new MultiLogger(new ConsoleLogger(LogLevel.Error), new FileLogger(FileSystem.GetFullPath("mess.log"), LogLevel.Error)))
+                var noLogFile = commandLineSettings.LogLevel == LogLevel.Off;
+                using (var errorLogger = CreateLogger(LogLevel.Error, noLogFile ? null : FileSystem.GetFullPath("mess.log")))
                     errorLogger.Error($"A problem has occurred: {ex.GetType().Name}: '{ex.Message}'.");
 
                 ShowHelp(commandLineParser);
@@ -217,9 +218,9 @@ namespace MESS
                 settings.Globals[kv.Key] = kv.Value;
         }
 
-        private static ILogger CreateLogger(LogLevel logLevel, string logPath)
+        private static ILogger CreateLogger(LogLevel logLevel, string? logPath)
         {
-            if (logLevel == LogLevel.Off)
+            if (logLevel == LogLevel.Off || string.IsNullOrEmpty(logPath))
                 return new ConsoleLogger(logLevel);
 
             return new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel));
