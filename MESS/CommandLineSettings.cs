@@ -8,6 +8,7 @@ namespace MESS
         public int? InstanceLimit { get; set; }
         public bool? NoRewriteRules { get; set; }
         public LogLevel? LogLevel { get; set; }
+        public string? LogPath { get; set; }
 
         public string? InputPath { get; set; }
         public string? OutputPath { get; set; }

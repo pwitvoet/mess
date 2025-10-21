@@ -59,6 +59,7 @@ namespace MESS
 
         // Other settings:
         public LogLevel? LogLevel { get; set; }
+        public string? LogPath { get; set; }
 
         // Input/output file paths: = "";
         public string InputPath { get; set; } = "";
@@ -85,7 +86,7 @@ namespace MESS
 
                 commandLineParser.Parse(args.Where(arg => arg != "-convert").ToArray());
 
-                var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(settings.InputPath) ? "mess-convert.log" : $"{settings.InputPath}.mess-convert.log");
+                var logPath = settings.LogPath ?? FileSystem.GetFullPath(string.IsNullOrEmpty(settings.InputPath) ? "mess-convert.log" : $"{settings.InputPath}.mess-convert.log");
                 var logLevel = settings.LogLevel ?? LogLevel.Info;
                 using (var logger = CreateLogger(logLevel, logPath))
                 {
@@ -314,6 +315,10 @@ namespace MESS
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                     $"Sets the log level. Valid options are: {GetOptions<LogLevel>()}. Default value is {ToString(LogLevel.Info)}.")
+                .Option(
+                    "-log-path",
+                    s => settings.LogPath = s,
+                    "Sets the log file path. The default is INPUT_PATH.mess-convert.log.")
 
                 // Input/output paths:
                 .Argument(

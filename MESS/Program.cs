@@ -55,7 +55,7 @@ namespace MESS
 
                 commandLineParser.Parse(args);
 
-                var logPath = FileSystem.GetFullPath(string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log");
+                var logPath = commandLineSettings.LogPath ?? FileSystem.GetFullPath(string.IsNullOrEmpty(commandLineSettings.InputPath) ? "mess.log" : $"{commandLineSettings.InputPath}.mess.log");
                 var logLevel = commandLineSettings.LogLevel ?? LogLevel.Info;
                 using (var logger = CreateLogger(logLevel, logPath))
                 {
@@ -191,6 +191,10 @@ namespace MESS
                     "-log",
                     s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
                     $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {LogLevel.Info.ToString().ToLowerInvariant()}.")
+                .Option(
+                    "-log-path",
+                    s => settings.LogPath = s,
+                    "Sets the log file path. The default is INPUT_PATH.mess.log.")
                 .Argument(
                     s => { settings.InputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
                     "Input map file.")
