@@ -24,6 +24,7 @@ namespace MESS
             Console.WriteLine($"MScript interpreter v{Program.MessVersion}.");
             Console.WriteLine("Enter 'quit' to quit the interpreter.");
             Console.WriteLine("Bindings can be created with 'name = expression'.");
+            Console.WriteLine(".mscript files can be loaded and evaluated with 'load PATH'.");
             Console.WriteLine("============================================================");
             Console.WriteLine();
             Console.ResetColor();
