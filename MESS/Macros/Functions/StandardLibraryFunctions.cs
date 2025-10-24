@@ -229,22 +229,85 @@ namespace MESS.Macros.Functions
                 result = new object?[] { 0.0, 0.0, 0.0, 0.0 };
 
             for (int i = 0; i < color.Length && i < 3; i++)
-                result[i] = clamp(Math.Round(GetNumber(i)), 0, 255);
+                result[i] = clamp(Math.Round(GetNumberOrZero(color[i])), 0, 255);
 
             if (result.Length > 3)
-                result[3] = Math.Round(GetNumber(3));
+                result[3] = Math.Round(GetNumberOrZero(color[3]));
 
             return result;
+        }
 
-            double GetNumber(int index) => color[index] switch
+        public static MObject? rgb_to_hsv(object?[] rgb)
+        {
+            if (rgb.Length < 3 || rgb.Length > 4)
+                return null;
+
+            var r = GetNumberOrZero(rgb[0]) / 255.0;
+            var g = GetNumberOrZero(rgb[1]) / 255.0;
+            var b = GetNumberOrZero(rgb[2]) / 255.0;
+
+            var min = Math.Min(r, Math.Min(g, b));
+            var max = Math.Max(r, Math.Max(g, b));
+            var chroma = max - min;
+
+            var value = max;
+            var saturation = (max == 0) ? 0 : chroma / max;
+            var hue = 60 * (chroma == 0 ? 0 :
+                               max == r ? ((g - b) / chroma) % 6 :
+                               max == g ? ((b - r) / chroma) + 2 :
+                                          ((r - g) / chroma) + 4);
+            if (hue < 0)
+                hue += 360;
+
+            return new MObject(new[] {
+                KeyValuePair.Create<string, object?>("hue", hue),
+                KeyValuePair.Create<string, object?>("saturation", saturation),
+                KeyValuePair.Create<string, object?>("value", value),
+            });
+        }
+
+        public static object?[]? hsv_to_rgb(MObject? hsv)
+        {
+            if (hsv == null ||
+                !hsv.Fields.TryGetValue("hue", out var rawHue) || rawHue is not double hue ||
+                !hsv.Fields.TryGetValue("saturation", out var rawSaturation) || rawSaturation is not double saturation ||
+                !hsv.Fields.TryGetValue("value", out var rawValue) || rawValue is not double value)
+                return null;
+
+            var chroma = saturation * value;
+            var max = value;
+            var min = max - chroma;
+            var other = chroma * (1 - Math.Abs((hue / 60) % 20 - 1));
+
+            var r = min;
+            var g = min;
+            var b = min;
+            var sextant = (int)Math.Floor(hue / 60) % 6;
+            switch (sextant)
             {
+                default:
+                case 0: r += chroma; g += other; break;
+                case 1: r += other; g += chroma; break;
+                case 2: g += chroma; b += other; break;
+                case 3: g += other; b += chroma; break;
+                case 4: r += other; b += chroma; break;
+                case 5: r += chroma; b += other; break;
+            }
+
+            return new object?[] { Math.Round(r * 255), Math.Round(g * 255), Math.Round(b * 255) };
+        }
+
+        // Debugging:
+        public static bool assert(object? condition, string? message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
+
+
+        private static double GetNumberOrZero(object? value)
+        {
+            return value switch {
                 double number => number,
                 string str => double.TryParse(str, out var number) ? number : 0.0,
                 _ => 0.0,
             };
         }
-
-        // Debugging:
-        public static bool assert(object? condition, string? message = null) => Interpreter.IsTrue(condition) ? true : throw new AssertException(message);
     }
 }
