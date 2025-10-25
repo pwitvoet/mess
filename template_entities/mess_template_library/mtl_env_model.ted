@@ -51,4 +51,8 @@
 
     //body(integer) : "Body"                                // Only supported by cycler, cycler_sprite, monster_furniture and monster_generic
     //skin(integer) : "Skin"                                // Same restrictions as with 'body'.
+
+    // Color remapping:
+    _mess_top_color(color255) : "Top color (remap)"
+    _mess_bottom_color(color255) : "Bottom color (remap)"
 ]

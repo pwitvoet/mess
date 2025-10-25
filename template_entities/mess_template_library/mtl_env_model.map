@@ -3,7 +3,8 @@
 "mapversion" "220"
 "_mess_allow_rewrite_rules" "{}"
 "start_invisible" "{hasflag(0)}"
-"attributes" "{get_attr().filter(a => !a.key.match('^(?:classname|origin|angles|spawnflags)$'))}"
+"attributes" "{get_attr().filter(a => !a.key.match('^(?:classname|origin|angles|spawnflags|template_map|_mess_.*)$'))}"
+"has_colormap" "{_mess_top_color || _mess_bottom_color}"
 }
 {
 "classname" "env_sprite"
@@ -11,4 +12,5 @@
 "angles" "0 0 0"
 "{attributes.map(a => a.key)}" "{attributes.map(a => a.value)}"
 "spawnflags" "{setflag(0, start_invisible ? 0 : 1, spawnflags)}"
+"{has_colormap ? 'colormap' : none}" "{has_colormap ? round(rgb_to_hsv(color(_mess_bottom_color)).hue / 360 * 255) * 256 + round(rgb_to_hsv(color(_mess_top_color)).hue / 360 * 255) : none}"
 }
