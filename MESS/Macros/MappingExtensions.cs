@@ -210,6 +210,9 @@ namespace MESS.Macros
         }
 
 
+        public static Vector2D GetTextureCoordinates(this Face face, Vector3D point)
+            => GetTextureCoordinates(point, face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
+
         private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureScale)
         {
             var texturePlaneNormal = textureDownAxis.CrossProduct(textureRightAxis);

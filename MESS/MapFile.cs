@@ -1,6 +1,7 @@
 ﻿using MESS.Formats;
 using MESS.Formats.JMF;
 using MESS.Formats.MAP;
+using MESS.Formats.Obj;
 using MESS.Formats.RMF;
 using MESS.Logging;
 using MESS.Mapping;
@@ -12,6 +13,9 @@ namespace MESS
         Map,
         Rmf,
         Jmf,
+
+        // Export only:
+        Obj,
     }
 
 
@@ -49,7 +53,7 @@ namespace MESS
         }
 
         /// <summary>
-        /// Saves the given map to the specified file path. Supports .map (Valve 220), .rmf and .jmf formats.
+        /// Saves the given map to the specified file path. Supports .map (Valve 220), .rmf, .jmf and .obj formats.
         /// </summary>
         public static void Save(Map map, string path, FileSaveSettings? settings = null, ILogger? logger = null)
         {
@@ -69,6 +73,13 @@ namespace MESS
                 case MapFileFormat.Jmf:
                     using (var file = File.Create(path))
                         JmfFormat.Save(map, file, settings as JmfFileSaveSettings ?? new JmfFileSaveSettings(settings), logger);
+                    break;
+
+
+                // Export only:
+                case MapFileFormat.Obj:
+                    using (var file = File.Create(path))
+                        ObjFormat.Export(map, file, path, settings as ObjFileSaveSettings ?? new ObjFileSaveSettings(settings), logger);
                     break;
 
                 default:
@@ -91,6 +102,9 @@ namespace MESS
                 case ".jmf":
                 case ".jmx":
                     return MapFileFormat.Jmf;
+
+                case ".obj":
+                    return MapFileFormat.Obj;
 
                 default:
                     return null;

@@ -3,6 +3,7 @@ using MESS.Formats;
 using MESS.Formats.JMF;
 using MESS.Formats.MAP;
 using MESS.Formats.MAP.Trenchbroom;
+using MESS.Formats.Obj;
 using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
@@ -41,6 +42,15 @@ namespace MESS
         public MapFileVariant? MapFormat { get; set; }
         public string? TrenchBroomGameName { get; set; }
         public string? MapWadProperty { get; set; }
+
+        // Obj-specific:
+        public string? ObjMtlFilePath { get; set; }
+        public string? ObjTexturePathFormat { get; set; }
+        public ObjObjectGrouping? ObjObjectGrouping { get; set; }
+        public string? ObjObjectNameFormat { get; set; }
+        public HashSet<string> ObjSkipTextures { get; set; } = new();
+        public float? ObjScale { get; set; }
+        public ObjUpAxis? ObjUpAxis { get; set; }
 
         // VIS group filtering:
         public string[]? OnlyVisGroups { get; set; }
@@ -258,6 +268,41 @@ namespace MESS
                     "-wad",
                     s => settings.MapWadProperty = s,
                     "This sets the special 'wad' map property in the output .map file.")
+
+                // Obj output:
+                .Section("Obj format output:")
+                .Option(
+                    "-mtlfilepath",
+                    s => settings.ObjMtlFilePath = s,
+                    "The location of the associated .mtl file. By default, it will have the same name as the .obj file.")
+                .Option(
+                    "-mtltexturepathformat",
+                    s => settings.ObjTexturePathFormat = s,
+                    "The map_Kd path format. Use {texturename} as placeholder. The default format is \"{texturename}.png\".")
+                .Option(
+                    "-objectgrouping",
+                    s => settings.ObjObjectGrouping = ParseOption<ObjObjectGrouping>(s),
+                    $"How to divide the map content into objects. Valid options are: {GetOptions<ObjObjectGrouping>()}. Default is {ToString(ObjObjectGrouping.Brush)}.")
+                .Option(
+                    "-objectnameformat",
+                    s => settings.ObjObjectNameFormat = s,
+                    "The name format for object names. Available placeholders are {layername}, {layerid}, {groupid}, {entityid}, {brushid} and {entity.<property>}. The default format depends on the object grouping mode.")
+                .Option(
+                    "-objskiptextures",
+                    s =>
+                    {
+                        foreach (var textureName in s.Split(','))
+                            settings.ObjSkipTextures.Add(textureName.Trim());
+                    },
+                    "A comma-separated list of textures. Faces with these textures will be excluded in the output .obj file.")
+                .Option(
+                    "-objscale",
+                    s => settings.ObjScale = float.Parse(s),
+                    "All geometry will be scaled by this factor. Default is 1.")
+                .Option(
+                    "-objupaxis",
+                    s => settings.ObjUpAxis = ParseOption<ObjUpAxis>(s),
+                    $"Which axis is the up-axis. Valid options are: {GetOptions<ObjUpAxis>()}. The default is {ToString(ObjUpAxis.Y)}.")
 
                 // VIS group filtering:
                 .Section("VIS group filtering:")
@@ -526,6 +571,7 @@ namespace MESS
                 case MapFileFormat.Map: return CreateMapFileSaveSettings(settings);
                 case MapFileFormat.Rmf: return CreateRmfFileSaveSettings(settings);
                 case MapFileFormat.Jmf: return CreateJmfFileSaveSettings(settings);
+                case MapFileFormat.Obj: return CreateObjFileSaveSettings(settings);
             }
 
             var fileSaveSettings = new FileSaveSettings();
@@ -559,6 +605,24 @@ namespace MESS
             SetFileSaveSettings(fileSaveSettings, settings);
 
             if (settings.JmfVersion != null) fileSaveSettings.FileVersion = settings.JmfVersion.Value;
+            return fileSaveSettings;
+        }
+
+        private static ObjFileSaveSettings CreateObjFileSaveSettings(ConvertSettings settings)
+        {
+            var fileSaveSettings = new ObjFileSaveSettings();
+            SetFileSaveSettings(fileSaveSettings, settings);
+
+            if (settings.ObjMtlFilePath != null) fileSaveSettings.MtlFilePath = settings.ObjMtlFilePath;
+            if (settings.ObjTexturePathFormat != null) fileSaveSettings.TexturePathFormat = settings.ObjTexturePathFormat;
+            if (settings.ObjObjectGrouping != null) fileSaveSettings.ObjectGrouping = settings.ObjObjectGrouping.Value;
+            if (settings.ObjObjectNameFormat != null) fileSaveSettings.ObjectNameFormat = settings.ObjObjectNameFormat;
+            if (settings.ObjScale != null) fileSaveSettings.Scale = settings.ObjScale.Value;
+            if (settings.ObjUpAxis != null) fileSaveSettings.UpAxis = settings.ObjUpAxis.Value;
+
+            foreach (var textureName in settings.ObjSkipTextures)
+                fileSaveSettings.SkipTextures.Add(textureName);
+
             return fileSaveSettings;
         }
 
