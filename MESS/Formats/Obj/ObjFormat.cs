@@ -1,7 +1,9 @@
-﻿using MESS.Logging;
+﻿using MESS.Common;
+using MESS.Logging;
 using MESS.Macros;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
+using MESS.Util;
 using System.Globalization;
 using System.Text;
 
@@ -44,6 +46,7 @@ namespace MESS.Formats.Obj
             private string FloatFormat { get; }
             private float Scale { get; }
 
+            private Dictionary<string, TextureInfo> TextureDimensions = new();
             private Dictionary<Vector3D, int> Vertices = new();
             private Dictionary<Vector3D, int> Normals = new();
             private Dictionary<Vector2D, int> UvCoordinates = new();
@@ -75,39 +78,14 @@ namespace MESS.Formats.Obj
             {
                 // Create the mtl file:
                 if (Settings.MtlFilePath != "")
-                {
-                    var mtlFilePath = Settings.MtlFilePath ?? Path.ChangeExtension(FilePath, ".mtl");
-                    if (!Path.IsPathRooted(mtlFilePath))
-                        mtlFilePath = Path.Combine(Path.GetDirectoryName(FilePath) ?? "", mtlFilePath);
+                    WriteMtlFile(map);
 
-                    var mtlDirectory = Path.GetDirectoryName(mtlFilePath);
-                    if (!string.IsNullOrEmpty(mtlDirectory))
-                        Directory.CreateDirectory(mtlDirectory);
 
-                    using (var mtlFile = File.Create(mtlFilePath))
-                    using (var mtlWriter = new StreamWriter(mtlFile, new UTF8Encoding(false)))
-                    {
-                        var textureNames = map.WorldGeometry
-                            .Concat(map.Entities.SelectMany(entity => entity.Brushes))
-                            .SelectMany(brush => brush.Faces)
-                            .Select(face => face.TextureName)
-                            .Distinct()
-                            .Where(textureName => !SkipTextures.Contains(textureName.ToLowerInvariant()))
-                            .ToArray();
-
-                        foreach (var textureName in textureNames)
-                        {
-                            mtlWriter.WriteLine();
-                            mtlWriter.WriteLine($"newmtl {textureName}");
-
-                            var texturePath = TexturePathFormat.Replace($"{{{TextureNamePlaceholder}}}", textureName);
-                            mtlWriter.WriteLine($"map_Kd {texturePath}");
-                        }
-                    }
-
-                    var relativeMtlPath = Path.GetRelativePath(Path.GetDirectoryName(FilePath) ?? "", mtlFilePath);
-                    Writer.WriteLine($"mtllib {relativeMtlPath}");
-                }
+                // Prepare texture size information, for normalizing UV coordinates:
+                if (map.Worldspawn.Properties.TryGetValue(Attributes.Wad, out var wadValue))
+                    TextureDimensions = ReadTexturDimensions(wadValue);
+                else
+                    Logger.Warning("Map file contains no 'wad' property. UV coordinates will not be normalized.");
 
 
                 // Prepare data (note that .obj file indices start at 1, not at 0):
@@ -123,7 +101,7 @@ namespace MESS.Formats.Obj
                             if (!Vertices.ContainsKey(vertex))
                                 Vertices[vertex] = Vertices.Count + 1;
 
-                            var uv = face.GetTextureCoordinates(vertex);
+                            var uv = GetNormalizedUVCoordinates(face, vertex);
                             if (!UvCoordinates.ContainsKey(uv))
                                 UvCoordinates[uv] = UvCoordinates.Count + 1;
                         }
@@ -147,7 +125,6 @@ namespace MESS.Formats.Obj
                 Writer.WriteLine("# UV coordinates");
                 foreach (var kv in UvCoordinates.OrderBy(kv => kv.Value))
                 {
-                    // TODO: This must be divided by texture dimensions to get normalized UV coordinates!
                     var uv = kv.Key;
                     Writer.WriteLine($"vt {FormatFloat(uv.X)} {FormatFloat(uv.Y)}");
                 }
@@ -161,7 +138,6 @@ namespace MESS.Formats.Obj
                 }
 
 
-                // TODO: Skip objects that do not have any visible faces!
                 // Write objects and their faces:
                 Writer.WriteLine();
                 Writer.WriteLine("# Objects");
@@ -278,6 +254,95 @@ namespace MESS.Formats.Obj
                 }
             }
 
+            private void WriteMtlFile(Map map)
+            {
+                var mtlFilePath = Settings.MtlFilePath ?? Path.ChangeExtension(FilePath, ".mtl");
+                if (!Path.IsPathRooted(mtlFilePath))
+                    mtlFilePath = Path.Combine(Path.GetDirectoryName(FilePath) ?? "", mtlFilePath);
+
+                var mtlDirectory = Path.GetDirectoryName(mtlFilePath);
+                if (!string.IsNullOrEmpty(mtlDirectory))
+                    Directory.CreateDirectory(mtlDirectory);
+
+                Logger.Info($"Creating '{mtlFilePath}'.");
+
+                using (var mtlFile = File.Create(mtlFilePath))
+                using (var mtlWriter = new StreamWriter(mtlFile, new UTF8Encoding(false)))
+                {
+                    var textureNames = map.WorldGeometry
+                        .Concat(map.Entities.SelectMany(entity => entity.Brushes))
+                        .SelectMany(brush => brush.Faces)
+                        .Select(face => face.TextureName)
+                        .Distinct()
+                        .Where(textureName => !SkipTextures.Contains(textureName.ToLowerInvariant()))
+                        .ToArray();
+
+                    foreach (var textureName in textureNames)
+                    {
+                        mtlWriter.WriteLine();
+                        mtlWriter.WriteLine($"newmtl {textureName}");
+
+                        var texturePath = TexturePathFormat.Replace($"{{{TextureNamePlaceholder}}}", textureName);
+                        mtlWriter.WriteLine($"map_Kd {texturePath}");
+                    }
+
+                    Logger.Info($"Written {textureNames.Length} texture entries to '{mtlFilePath}'.");
+                }
+
+                var relativeMtlPath = Path.GetRelativePath(Path.GetDirectoryName(FilePath) ?? "", mtlFilePath);
+                Writer.WriteLine($"mtllib {relativeMtlPath}");
+            }
+
+            private Dictionary<string, TextureInfo> ReadTexturDimensions(string wadPaths)
+            {
+                var textures = new Dictionary<string, TextureInfo>();
+                foreach (var path in wadPaths.Split(';'))
+                {
+                    var resolved = false;
+                    foreach (var wadPath in GetPossibleWadFilePaths(path.Trim()))
+                    {
+                        if (File.Exists(wadPath))
+                        {
+                            Logger.Info($"Reading texture information from '{wadPath}'.");
+                            foreach (var textureInfo in Wad.GetTextureInfo(wadPath))
+                                textures[textureInfo.Name.ToLowerInvariant()] = textureInfo;
+
+                            resolved = true;
+                            break;
+                        }
+                    }
+
+                    if (!resolved)
+                        Logger.Warning($"Failed to resolve '{path}'.");
+                }
+                return textures;
+
+
+                IEnumerable<string> GetPossibleWadFilePaths(string path)
+                {
+                    if (Path.IsPathRooted(path))
+                    {
+                        yield return path;
+                    }
+                    else
+                    {
+                        foreach (var textureDirectory in Settings.TexturesDirectories)
+                            yield return Path.Combine(textureDirectory, path);
+                    }
+                }
+            }
+
+
+            private Vector2D GetNormalizedUVCoordinates(Face face, Vector3D vertex)
+            {
+                var uv = face.GetTextureCoordinates(vertex);
+                uv.Y = -uv.Y;
+
+                if (TextureDimensions.TryGetValue(face.TextureName.ToLowerInvariant(), out var textureInfo))
+                    return new Vector2D(uv.X / textureInfo.Width, uv.Y / textureInfo.Height);
+                else
+                    return uv;
+            }
 
             private IEnumerable<Brush> GetBrushes(IEnumerable<MapObject> mapObjects)
             {
@@ -352,7 +417,7 @@ namespace MESS.Formats.Obj
                     foreach (var vertex in face.Vertices)
                     {
                         var vertexID = Vertices[vertex];
-                        var uvID = UvCoordinates[face.GetTextureCoordinates(vertex)];
+                        var uvID = UvCoordinates[GetNormalizedUVCoordinates(face, vertex)];
                         var normalID = Normals[face.Plane.Normal];
                         Writer.Write($" {vertexID}/{uvID}/{normalID}");
                     }

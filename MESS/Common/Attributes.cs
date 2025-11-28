@@ -5,6 +5,11 @@
         // Standard Half-Life entity attributes:
 
         /// <summary>
+        /// A worldspawn property that stores a list of .wad file paths, which contain the textures that are used in this map.
+        /// </summary>
+        public const string Wad = "wad";
+
+        /// <summary>
         /// The type name of an entity.
         /// </summary>
         public const string Classname = "classname";

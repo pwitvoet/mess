@@ -48,6 +48,7 @@ namespace MESS
         public string? ObjTexturePathFormat { get; set; }
         public ObjObjectGrouping? ObjObjectGrouping { get; set; }
         public string? ObjObjectNameFormat { get; set; }
+        public List<string> TextureDirectories { get; set; } = new();
         public HashSet<string> ObjSkipTextures { get; set; } = new();
         public float? ObjScale { get; set; }
         public ObjUpAxis? ObjUpAxis { get; set; }
@@ -138,7 +139,7 @@ namespace MESS
 
                         // Wad property:
                         if (!string.IsNullOrEmpty(settings.MapWadProperty))
-                            map.Properties["wad"] = settings.MapWadProperty;
+                            map.Properties[Attributes.Wad] = settings.MapWadProperty;
 
 
                         // Save output map:
@@ -287,6 +288,10 @@ namespace MESS
                     "-objectnameformat",
                     s => settings.ObjObjectNameFormat = s,
                     "The name format for object names. Available placeholders are {layername}, {layerid}, {groupid}, {entityid}, {brushid} and {entity.<property>}. The default format depends on the object grouping mode.")
+                .Option(
+                    "-texturedirs",
+                    s => settings.TextureDirectories.AddRange(s.Split(';').Select(dir => dir.Trim())),
+                    "A semicolon-separated list of directories that contain the map's .wad files. This is used to resolve relative wad paths, and is needed for normalizing UV coordinates. If the input file does not contain wad information, use the -wad option to specify a list of wad files. Directories are tried in the specified order. The input map's directory is tried as fallback.")
                 .Option(
                     "-objskiptextures",
                     s =>
@@ -619,6 +624,9 @@ namespace MESS
             if (settings.ObjObjectNameFormat != null) fileSaveSettings.ObjectNameFormat = settings.ObjObjectNameFormat;
             if (settings.ObjScale != null) fileSaveSettings.Scale = settings.ObjScale.Value;
             if (settings.ObjUpAxis != null) fileSaveSettings.UpAxis = settings.ObjUpAxis.Value;
+
+            fileSaveSettings.TexturesDirectories.AddRange(settings.TextureDirectories);
+            fileSaveSettings.TexturesDirectories.Add(Path.GetDirectoryName(settings.InputPath) ?? "");
 
             foreach (var textureName in settings.ObjSkipTextures)
                 fileSaveSettings.SkipTextures.Add(textureName);

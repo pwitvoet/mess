@@ -52,6 +52,11 @@
         public string? ObjectNameFormat { get; set; }
 
         /// <summary>
+        /// These directories are used to resolve relative .wad file paths, which is needed for normalized UV coordinates.
+        /// </summary>
+        public List<string> TexturesDirectories { get; } = new();
+
+        /// <summary>
         /// Faces that have one of these textures will be omitted from the .obj file.
         /// </summary>
         public HashSet<string> SkipTextures { get; } = new();

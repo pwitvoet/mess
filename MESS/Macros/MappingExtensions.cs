@@ -144,8 +144,8 @@ namespace MESS.Macros
             face.TextureScale = new Vector2D(face.TextureScale.X / rightScaleFactor, face.TextureScale.Y / downScaleFactor);
 
             // Apply 'texture lock' while moving:
-            var oldTextureCoordinates = GetTextureCoordinates(oldPlanePoints[0], oldTextureDownAxis, oldTextureRightAxis, oldTextureScale);
-            var newTextureCoordinates = GetTextureCoordinates(face.PlanePoints[flipFace ? face.PlanePoints.Length - 1 : 0], face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
+            var oldTextureCoordinates = GetTextureCoordinates(oldPlanePoints[0], oldTextureDownAxis, oldTextureRightAxis, face.TextureShift, oldTextureScale);
+            var newTextureCoordinates = GetTextureCoordinates(face.PlanePoints[flipFace ? face.PlanePoints.Length - 1 : 0], face.TextureDownAxis, face.TextureRightAxis, face.TextureShift, face.TextureScale);
             face.TextureShift = (oldTextureCoordinates + face.TextureShift) - newTextureCoordinates;
         }
 
@@ -211,9 +211,9 @@ namespace MESS.Macros
 
 
         public static Vector2D GetTextureCoordinates(this Face face, Vector3D point)
-            => GetTextureCoordinates(point, face.TextureDownAxis, face.TextureRightAxis, face.TextureScale);
+            => GetTextureCoordinates(point, face.TextureDownAxis, face.TextureRightAxis, face.TextureShift, face.TextureScale);
 
-        private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureScale)
+        private static Vector2D GetTextureCoordinates(Vector3D point, Vector3D textureDownAxis, Vector3D textureRightAxis, Vector2D textureShift, Vector2D textureScale)
         {
             var texturePlaneNormal = textureDownAxis.CrossProduct(textureRightAxis);
             var projectedPoint = point - (point.DotProduct(texturePlaneNormal) * texturePlaneNormal);
@@ -221,8 +221,8 @@ namespace MESS.Macros
             var x = projectedPoint.DotProduct(textureRightAxis);
             var y = projectedPoint.DotProduct(textureDownAxis);
             return new Vector2D(
-                x / textureScale.X,
-                y / textureScale.Y);
+                (x / textureScale.X) + textureShift.X,
+                (y / textureScale.Y) + textureShift.Y);
         }
     }
 }
