@@ -9,6 +9,8 @@ namespace MESS.Formats
 
         public static int ReadInt(this Stream stream) => BitConverter.ToInt32(stream.ReadBytes(4), 0);
 
+        public static uint ReadUint(this Stream stream) => BitConverter.ToUInt32(stream.ReadBytes(4), 0);
+
         public static float ReadFloat(this Stream stream) => BitConverter.ToSingle(stream.ReadBytes(4), 0);
 
         public static double ReadDouble(this Stream stream) => BitConverter.ToDouble(stream.ReadBytes(8), 0);
