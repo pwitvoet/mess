@@ -145,6 +145,8 @@ namespace MESS.Formats.Obj
                 {
                     case ObjObjectGrouping.Map:
                     {
+                        Logger.Info("Creating a single object for the entire map.");
+
                         Writer.WriteLine();
                         WriteObjectName(entity: map.Worldspawn);
                         foreach (var brush in map.WorldGeometry.Concat(map.Entities.SelectMany(entity => entity.Brushes)))
@@ -154,6 +156,8 @@ namespace MESS.Formats.Obj
 
                     case ObjObjectGrouping.Layer:
                     {
+                        Logger.Info("Creating an object for each VIS-group/layer in the map.");
+
                         foreach (var visGroup in map.VisGroups)
                         {
                             var brushes = GetBrushes(visGroup.Objects);
@@ -183,6 +187,8 @@ namespace MESS.Formats.Obj
 
                     case ObjObjectGrouping.Group:
                     {
+                        Logger.Info("Creating an object for each group in the map.");
+
                         foreach (var group in map.Groups.Where(group => group.Group is null))
                         {
                             var brushes = GetBrushes(group.Objects);
@@ -213,6 +219,8 @@ namespace MESS.Formats.Obj
 
                     case ObjObjectGrouping.Entity:
                     {
+                        Logger.Info("Creating an object for each entity in the map.");
+
                         var entityID = 0;
                         foreach (var entity in map.Entities.Prepend(map.Worldspawn))
                         {
@@ -232,6 +240,8 @@ namespace MESS.Formats.Obj
                     default:
                     case ObjObjectGrouping.Brush:
                     {
+                        Logger.Info("Creating an object for each brush in the map.");
+
                         var entityID = 0;
                         foreach (var entity in map.Entities.Prepend(map.Worldspawn))
                         {
