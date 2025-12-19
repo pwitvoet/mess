@@ -24,16 +24,6 @@ namespace MESS.Formats.Obj
 
         class ObjSaver : IDisposable
         {
-            private const string TextureNamePlaceholder = "texturename";
-
-            private const string LayerNamePlaceholder = "layername";
-            private const string LayerIdPlaceholder = "layerid";
-            private const string GroupIdPlaceholder = "groupid";
-            private const string EntityIdPlaceholder = "entityid";
-            private const string BrushIdPlaceholder = "brushid";
-            private const string EntityPropertyPlaceholderPrefix = "entity.";
-
-
             public TextWriter Writer { get; }
             public string FilePath { get; }
             public ObjFileSaveSettings Settings { get; }
@@ -59,7 +49,7 @@ namespace MESS.Formats.Obj
                 Settings = settings ?? new ObjFileSaveSettings();
                 Logger = logger ?? new MultiLogger();
 
-                TexturePathFormat = Settings.TexturePathFormat ?? $"{{{TextureNamePlaceholder}}}.png";
+                TexturePathFormat = Settings.TexturePathFormat ?? $"{{{Placeholders.TextureName}}}.png";
                 ObjectNameFormat = Settings.ObjectNameFormat ?? GetDefaultObjectNameFormat(Settings.ObjectGrouping);
 
                 foreach (var skipTexture in Settings.SkipTextures)
@@ -292,7 +282,7 @@ namespace MESS.Formats.Obj
                         mtlWriter.WriteLine();
                         mtlWriter.WriteLine($"newmtl {textureName}");
 
-                        var texturePath = TexturePathFormat.Replace($"{{{TextureNamePlaceholder}}}", textureName);
+                        var texturePath = TexturePathFormat.Replace($"{{{Placeholders.TextureName}}}", textureName);
                         mtlWriter.WriteLine($"map_Kd {texturePath}");
                     }
 
@@ -393,16 +383,16 @@ namespace MESS.Formats.Obj
                     var placeholder = match.Groups[1].Value;
                     switch (placeholder)
                     {
-                        case LayerNamePlaceholder: return layer?.Name ?? "";
-                        case LayerIdPlaceholder: return layer?.ID.ToString() ?? "";
-                        case GroupIdPlaceholder: return group?.ID.ToString() ?? "";
-                        case EntityIdPlaceholder: return entityID?.ToString() ?? "";
-                        case BrushIdPlaceholder: return brushID?.ToString() ?? "";
+                        case Placeholders.LayerName: return layer?.Name ?? "";
+                        case Placeholders.LayerId: return layer?.ID.ToString() ?? "";
+                        case Placeholders.GroupId: return group?.ID.ToString() ?? "";
+                        case Placeholders.EntityId: return entityID?.ToString() ?? "";
+                        case Placeholders.BrushId: return brushID?.ToString() ?? "";
                     }
 
-                    if (placeholder.StartsWith(EntityPropertyPlaceholderPrefix) && entity is not null)
+                    if (placeholder.StartsWith(Placeholders.EntityPropertyPrefix) && entity is not null)
                     {
-                        var key = placeholder.Substring(EntityPropertyPlaceholderPrefix.Length);
+                        var key = placeholder.Substring(Placeholders.EntityPropertyPrefix.Length);
                         return entity.Properties.TryGetValue(key, out var value) ? value : "";
                     }
 
@@ -441,12 +431,12 @@ namespace MESS.Formats.Obj
                 switch (grouping)
                 {
                     case ObjObjectGrouping.Map: return "map";
-                    case ObjObjectGrouping.Layer: return $"layer_{{{LayerNamePlaceholder}}}";
-                    case ObjObjectGrouping.Group: return $"group_{{{GroupIdPlaceholder}}}";
-                    case ObjObjectGrouping.Entity: return $"entity_{{{EntityIdPlaceholder}}}";
+                    case ObjObjectGrouping.Layer: return $"layer_{{{Placeholders.LayerName}}}";
+                    case ObjObjectGrouping.Group: return $"group_{{{Placeholders.GroupId}}}";
+                    case ObjObjectGrouping.Entity: return $"entity_{{{Placeholders.EntityId}}}";
 
                     default:
-                    case ObjObjectGrouping.Brush: return $"entity_{{{EntityIdPlaceholder}}}_brush_{{{BrushIdPlaceholder}}}";
+                    case ObjObjectGrouping.Brush: return $"entity_{{{Placeholders.EntityId}}}_brush_{{{Placeholders.BrushId}}}";
                 }
             }
 
