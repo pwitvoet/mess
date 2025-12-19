@@ -150,7 +150,9 @@ namespace MESS.Formats.Obj
 
                         foreach (var visGroup in map.VisGroups)
                         {
-                            var brushes = GetBrushes(visGroup.Objects);
+                            // NOTE: In .jmf files, objects can be part of multiple VIS groups (layers).
+                            //       To prevent duplicate geometry, we'll only take the first VIS group into account:
+                            var brushes = GetBrushes(visGroup.Objects).Where(brush => brush.VisGroups.FirstOrDefault() == visGroup);
                             if (HasVisibleFaces(brushes))
                             {
                                 Writer.WriteLine();
@@ -390,8 +392,11 @@ namespace MESS.Formats.Obj
                         case Placeholders.BrushId: return brushID?.ToString() ?? "";
                     }
 
-                    if (placeholder.StartsWith(Placeholders.EntityPropertyPrefix) && entity is not null)
+                    if (placeholder.StartsWith(Placeholders.EntityPropertyPrefix))
                     {
+                        if (entity is null)
+                            return "";
+
                         var key = placeholder.Substring(Placeholders.EntityPropertyPrefix.Length);
                         return entity.Properties.TryGetValue(key, out var value) ? value : "";
                     }
