@@ -57,6 +57,11 @@ namespace MESS
         /// </summary>
         public static void Save(Map map, string path, FileSaveSettings? settings = null, ILogger? logger = null)
         {
+            var directoryPath = Path.GetDirectoryName(path);
+            if (directoryPath != null && !Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+
+
             var fileFormat = GetMapFileFormat(path);
             switch (fileFormat)
             {
