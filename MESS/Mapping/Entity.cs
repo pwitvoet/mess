@@ -98,6 +98,8 @@ namespace MESS.Mapping
                 _brushes.Add(brush);
                 boundingBoxes.Add(brush.BoundingBox);
             }
+            if (!boundingBoxes.Any())
+                return;
 
             var brushesBoundingBox = BoundingBox.FromBoundingBoxes(boundingBoxes);
             BoundingBox = wasEmpty ? brushesBoundingBox : BoundingBox.CombineWith(brushesBoundingBox);
