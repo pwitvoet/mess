@@ -16,7 +16,7 @@ namespace MESS.Mapping
 
         /// <summary>
         /// <para>
-        /// Entities and brushes can be linked to multiple VIS group, on an individual basis.
+        /// Entities and brushes can be linked to multiple VIS groups, on an individual basis.
         /// Groups are not linked to VIS groups.
         /// </para>
         /// This approach is used by J.A.C.K.
@@ -79,7 +79,10 @@ namespace MESS.Mapping
         public IReadOnlyList<Group> Groups => _groups;
 
         /// <summary>
-        /// A list of all visibility groups in this map. Visibility groups are used in level editors to quickly hide or show related objects.
+        /// A list of all visibility groups (or layers) in this map. Visibility groups are used in level editors to quickly hide or show related objects.
+        /// If <see cref="VisGroupAssignment"/> is <see cref="VisGroupAssignment.PerGroup"/>, VIS groups will contain brushes, entities and groups.
+        /// If <see cref="VisGroupAssignment"/> is <see cref="VisGroupAssignment.PerObject"/>, VIS groups will only contain brushes and entities,
+        /// and the same brush or entity may be part of multiple VIS groups.
         /// </summary>
         public IReadOnlyList<VisGroup> VisGroups => _visGroups;
 
