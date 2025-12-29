@@ -98,6 +98,18 @@ namespace MESS.Mapping
         private List<VisGroup> _visGroups = new();
 
 
+        /// <summary>
+        /// Creates a copy of this map that includes editor format-specific data and worldspawn properties,
+        /// but excludes any brushes, entities, entity paths, groups and VIS groups.
+        /// </summary>
+        public virtual Map PartialCopy()
+        {
+            var copy = new Map();
+            PartialCopyTo(copy);
+            return copy;
+        }
+
+
         public void AddBrush(Brush brush) => Worldspawn.AddBrush(brush);
 
         public void AddBrushes(IEnumerable<Brush> brushes) => Worldspawn.AddBrushes(brushes);
@@ -225,6 +237,20 @@ namespace MESS.Mapping
                 while (visGroup.Objects.Any())
                     visGroup.RemoveObject(visGroup.Objects[0]);
             }
+        }
+
+
+        protected void PartialCopyTo(Map other)
+        {
+            other.VisGroupAssignment = VisGroupAssignment;
+            other.HasColorInformation = HasColorInformation;
+
+            foreach (var kv in Properties)
+                other.Properties[kv.Key] = kv.Value;
+
+            other.CordonArea = CordonArea;
+            other.Cameras.AddRange(Cameras.Select(camera => camera.Copy()));
+            other.ActiveCameraIndex = ActiveCameraIndex;
         }
     }
 }

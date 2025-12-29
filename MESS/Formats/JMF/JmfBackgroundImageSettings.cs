@@ -10,6 +10,21 @@
         public int OffsetX { get; set; }
         public int OffsetY { get; set; }
         public byte[]? UnknownData { get; set; }
+
+
+        public JmfBackgroundImageSettings Copy()
+        {
+            return new JmfBackgroundImageSettings {
+                ImagePath = ImagePath,
+                Scale = Scale,
+                Luminance = Luminance,
+                Filtering = Filtering,
+                InvertColors = InvertColors,
+                OffsetX = OffsetX,
+                OffsetY = OffsetY,
+                UnknownData = UnknownData,
+            };
+        }
     }
 
     public enum ImageFiltering

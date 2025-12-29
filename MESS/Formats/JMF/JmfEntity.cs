@@ -30,5 +30,33 @@ namespace MESS.Formats.JMF
             : base(brushes)
         {
         }
+
+        public override Entity PartialCopy()
+        {
+            var copy = new JmfEntity();
+            PartialCopyTo(copy);
+
+            copy.JmfFlags = JmfFlags;
+            copy.JmfOrigin = JmfOrigin;
+            copy.SpecialAttributeNames.AddRange(SpecialAttributeNames);
+            copy.JmfSpawnflags = JmfSpawnflags;
+            copy.JmfAngles = JmfAngles;
+            copy.JmfRendering = JmfRendering;
+
+            copy.JmfFxColor = JmfFxColor;
+            copy.JmfRenderMode = JmfRenderMode;
+            copy.JmfRenderFX = JmfRenderFX;
+            copy.JmfBody = JmfBody;
+            copy.JmfSkin = JmfSkin;
+            copy.JmfSequence = JmfSequence;
+            copy.JmfFramerate = JmfFramerate;
+            copy.JmfScale = JmfScale;
+            copy.JmfRadius = JmfRadius;
+            copy.UnknownData = UnknownData?.ToArray();
+
+            copy.JmfProperties.AddRange(JmfProperties);
+
+            return copy;
+        }
     }
 }

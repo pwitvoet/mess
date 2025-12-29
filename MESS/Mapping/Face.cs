@@ -24,21 +24,28 @@ namespace MESS.Mapping
         public Vector2D TextureScale { get; set; }
 
 
-        public Face Copy()
+        /// <summary>
+        /// Creates a copy of this face that includes editor format-specific data.
+        /// </summary>
+        public virtual Face Copy()
         {
-            var copy = new Face {
-                PlanePoints = PlanePoints.ToArray(),
-                Plane = Plane,
-                TextureName = TextureName,
-                TextureRightAxis = TextureRightAxis,
-                TextureDownAxis = TextureDownAxis,
-                TextureShift = TextureShift,
-                TextureAngle = TextureAngle,
-                TextureScale = TextureScale,
-            };
-            copy.Vertices.AddRange(Vertices);
-
+            var copy = new Face();
+            CopyTo(copy);
             return copy;
+        }
+
+        protected void CopyTo(Face other)
+        {
+            other.Vertices.AddRange(Vertices);
+            other.PlanePoints = PlanePoints.ToArray();
+            other.Plane = Plane;
+
+            other.TextureName = TextureName;
+            other.TextureRightAxis = TextureRightAxis;
+            other.TextureDownAxis = TextureDownAxis;
+            other.TextureShift = TextureShift;
+            other.TextureAngle = TextureAngle;
+            other.TextureScale = TextureScale;
         }
     }
 }

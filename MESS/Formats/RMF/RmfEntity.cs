@@ -15,6 +15,18 @@ namespace MESS.Formats.RMF
             : base(brushes)
         {
         }
+
+        public override Entity PartialCopy()
+        {
+            var copy = new RmfEntity();
+            PartialCopyTo(copy);
+
+            copy.RmfIndex = RmfIndex;
+            copy.UnknownData1 = UnknownData1?.ToArray();
+            copy.EntityType = EntityType;
+            copy.UnknownData2 = UnknownData2;
+            return copy;
+        }
     }
 
     public enum RmfEntityType

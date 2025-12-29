@@ -8,5 +8,17 @@ namespace MESS.Formats.MAP.Trenchbroom
 
         public string? LinkedGroupID { get; set; }
         public string? LinkedGroupTransformation { get; set; }
+
+
+        public override Group PartialCopy()
+        {
+            var copy = new TBGroup();
+            PartialCopyTo(copy);
+
+            copy.Name = Name;
+            copy.LinkedGroupID = LinkedGroupID;
+            copy.LinkedGroupTransformation = LinkedGroupTransformation;
+            return copy;
+        }
     }
 }

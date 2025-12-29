@@ -16,6 +16,17 @@
         public override Group? TopLevelGroup => Group?.TopLevelGroup ?? this;
 
 
+        /// <summary>
+        /// Creates a copy of this group that includes editor format-specific data.
+        /// The copy will not contain any map objects.
+        /// </summary>
+        public virtual Group PartialCopy()
+        {
+            var copy = new Group();
+            PartialCopyTo(copy);
+            return copy;
+        }
+
         public void AddObject(MapObject mapObject)
         {
             if (mapObject.Group != null)
@@ -35,6 +46,14 @@
         {
             _objects.Remove(mapObject);
             mapObject.SetGroup(null);
+        }
+
+
+        protected void PartialCopyTo(Group other)
+        {
+            other.ID = ID;
+            other.IsSelected = IsSelected;
+            other.IsHidden = IsHidden;
         }
     }
 }

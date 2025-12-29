@@ -12,5 +12,16 @@ namespace MESS.Formats.JMF
             : base(faces)
         {
         }
+
+        public override Brush PartialCopy()
+        {
+            var copy = new JmfBrush(Array.Empty<Face>());
+            PartialCopyTo(copy);
+
+            copy.JmfFlags = JmfFlags;
+            copy.Patch = Patch?.Copy();
+
+            return copy;
+        }
     }
 }

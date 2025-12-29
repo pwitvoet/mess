@@ -80,6 +80,17 @@ namespace MESS.Mapping
                 BoundingBox = new BoundingBox(Origin, Origin);
         }
 
+        /// <summary>
+        /// Creates a copy of this entity that includes editor format-specific data.
+        /// Brushes will be copied, but group and VIS group information is excluded.
+        /// </summary>
+        public virtual Entity PartialCopy()
+        {
+            var copy = new Entity();
+            PartialCopyTo(copy);
+            return copy;
+        }
+
         public void AddBrush(Brush brush)
         {
             var wasEmpty = _brushes.Count == 0;
@@ -119,6 +130,20 @@ namespace MESS.Mapping
             RecalculateBoundingBox();
         }
 
+
+        protected void PartialCopyTo(Entity other)
+        {
+            other.Color = Color;
+
+            foreach (var kv in Properties)
+                other.Properties[kv.Key] = kv.Value;
+
+            other._brushes.AddRange(Brushes.Select(brush => brush.PartialCopy()));
+            other.BoundingBox = BoundingBox;
+
+            other.IsSelected = IsSelected;
+            other.IsHidden = IsHidden;
+        }
 
         private void RecalculateBoundingBox()
         {

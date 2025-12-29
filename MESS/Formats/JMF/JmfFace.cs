@@ -13,6 +13,24 @@ namespace MESS.Formats.JMF
 
         public List<Vector2D> VertexUVCoordinates { get; } = new();
         public List<JmfVertexSelection> VertexSelectionState { get; } = new();
+
+
+        public override Face Copy()
+        {
+            var copy = new JmfFace();
+            CopyTo(copy);
+
+            copy.RenderFlags = RenderFlags;
+            copy.TextureAlignment = TextureAlignment;
+            copy.UnknownData = UnknownData?.ToArray();
+            copy.Contents = Contents;
+            copy.AxisAlignment = AxisAlignment;
+
+            copy.VertexUVCoordinates.AddRange(VertexUVCoordinates);
+            copy.VertexSelectionState.AddRange(VertexSelectionState);
+
+            return copy;
+        }
     }
 
     [Flags]

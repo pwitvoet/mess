@@ -11,5 +11,14 @@ namespace MESS.Formats.RMF
             : base(faces)
         {
         }
+
+        public override Brush PartialCopy()
+        {
+            var copy = new RmfBrush(Array.Empty<Face>());
+            PartialCopyTo(copy);
+
+            copy.RmfIndex = RmfIndex;
+            return copy;
+        }
     }
 }

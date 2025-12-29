@@ -7,8 +7,8 @@ namespace MESS.Mapping
     /// </summary>
     public class Brush : MapObject
     {
-        public IReadOnlyList<Face> Faces { get; }
-        public BoundingBox BoundingBox { get; }
+        public IReadOnlyList<Face> Faces { get; private set; }
+        public BoundingBox BoundingBox { get; private set; }
 
 
         // Editor state:
@@ -23,6 +23,26 @@ namespace MESS.Mapping
             InitializePlanes();
             InitializeVertices();
             BoundingBox = BoundingBox.FromPoints(Faces.SelectMany(face => face.Vertices));
+        }
+
+        /// <summary>
+        /// Creates a copy of this brush that includes editor format-specific data.
+        /// Faces will be copied, but group and VIS group information is excluded.
+        /// </summary>
+        public virtual Brush PartialCopy()
+        {
+            var copy = new Brush(Array.Empty<Face>());
+            PartialCopyTo(copy);
+            return copy;
+        }
+
+        protected void PartialCopyTo(Brush other)
+        {
+            other.Color = Color;
+            other.Faces = Faces.Select(face => face.Copy()).ToArray();
+            other.BoundingBox = BoundingBox;
+            other.IsSelected = IsSelected;
+            other.IsHidden = IsHidden;
         }
 
 

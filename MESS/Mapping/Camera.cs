@@ -11,5 +11,15 @@ namespace MESS.Mapping
         public Vector3D LookAtPosition { get; set; }
 
         public Color Color { get; set; } = new Color(255, 255, 255);
+
+
+        public Camera Copy()
+        {
+            return new Camera {
+                EyePosition = EyePosition,
+                LookAtPosition = LookAtPosition,
+                Color = Color,
+            };
+        }
     }
 }

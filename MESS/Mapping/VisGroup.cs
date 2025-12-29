@@ -23,6 +23,18 @@
         public IReadOnlyList<MapObject> Objects => _objects;
 
 
+        /// <summary>
+        /// Creates a copy of this VIS group that includes editor format-specific data.
+        /// The copy will not contain any map objects.
+        /// </summary>
+        public virtual VisGroup PartialCopy()
+        {
+            var copy = new VisGroup();
+            PartialCopyTo(copy);
+            return copy;
+        }
+
+
         public void AddObject(MapObject mapObject)
         {
             _objects.Add(mapObject);
@@ -39,6 +51,15 @@
         {
             _objects.Remove(mapObject);
             mapObject.RemoveVisGroup(this);
+        }
+
+
+        protected void PartialCopyTo(VisGroup other)
+        {
+            other.ID = ID;
+            other.Name = Name;
+            other.Color = Color;
+            other.IsVisible = IsVisible;
         }
     }
 }
