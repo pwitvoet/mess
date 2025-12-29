@@ -6,12 +6,6 @@
         Z,
     }
 
-    public enum ObjCoordinateSystem
-    {
-        RightHanded,
-        LeftHanded,
-    }
-
     public enum ObjObjectGrouping
     {
         Map,
