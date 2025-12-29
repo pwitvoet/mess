@@ -153,13 +153,17 @@ namespace MESS.Formats.MAP.Trenchbroom
 
                 var parentID = groupEntity.Properties.GetInteger(TB.Group);
                 if (parentID != null)
+                {
                     parenting[group.ID] = parentID.Value;
-
-                var layerID = groupEntity.Properties.GetInteger(TB.Layer);
-                if (layerID != null && layers.TryGetValue(layerID.Value, out var parentLayer))
-                    parentLayer.AddObject(group);
+                }
                 else
-                    defaultLayer.AddObject(group);
+                {
+                    var layerID = groupEntity.Properties.GetInteger(TB.Layer);
+                    if (layerID != null && layers.TryGetValue(layerID.Value, out var parentLayer))
+                        parentLayer.AddObject(group);
+                    else
+                        defaultLayer.AddObject(group);
+                }
 
                 // Groups can safely be added in the order that they appear:
                 map.AddGroup(group);
