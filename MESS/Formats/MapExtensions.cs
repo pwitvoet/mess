@@ -5,6 +5,9 @@ namespace MESS.Formats
 {
     static class MapExtensions
     {
+        /// <summary>
+        /// Generates a series of entities from the given path.
+        /// </summary>
         public static IEnumerable<Entity> GenerateEntities(this EntityPath path)
         {
             // NOTE: This always yields the previous entity, because its target may have been updated by the current entity,

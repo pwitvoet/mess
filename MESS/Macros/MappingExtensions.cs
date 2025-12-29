@@ -50,13 +50,13 @@ namespace MESS.Macros
 
 
         /// <summary>
-        /// Creates a copy of this brush, adjusted by the given offset. Ignores VIS-group and group relationships.
+        /// Creates a copy of this brush, adjusted by the given offset. Ignores editor format-specific data, VIS-group and group relationships.
         /// </summary>
         public static Brush Copy(this Brush brush, Vector3D? offset = null)
             => brush.Copy(new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset ?? new Vector3D()));
 
         /// <summary>
-        /// Creates a copy of this brush, adjusted by the given transform. Ignores VIS-group and group relationships.
+        /// Creates a copy of this brush, adjusted by the given transform. Ignores editor format-specific data, VIS-group and group relationships.
         /// </summary>
         public static Brush Copy(this Brush brush, Transform transform)
         {
@@ -73,7 +73,7 @@ namespace MESS.Macros
         /// <summary>
         /// Creates a copy of this entity, with its position adjusted by the given offset.
         /// No other transformations are applied, and no expressions are evaluated.
-        /// Ignores VIS-group and group relationships.
+        /// Ignores editor format-specific data, VIS-group and group relationships.
         /// </summary>
         public static Entity Copy(this Entity entity, Vector3D offset)
         {
@@ -91,7 +91,7 @@ namespace MESS.Macros
 
         /// <summary>
         /// Creates a copy of this entity. The brushwork will be rotated, translated and scaled using the given transform.
-        /// Ignores VIS-group and group relationships.
+        /// Ignores editor format-specific data, VIS-group and group relationships.
         /// </summary>
         public static Entity Copy(this Entity entity, Transform transform)
         {
