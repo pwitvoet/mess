@@ -7,6 +7,7 @@ using MESS.Formats.Obj;
 using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
+using MESS.Macros;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using MESS.Util;
@@ -15,6 +16,14 @@ using System.Text.RegularExpressions;
 
 namespace MESS
 {
+    enum SplitOutput
+    {
+        NoSplit,
+        Layer,
+        Group,
+        Entity,
+    }
+
     class ConvertSettings
     {
         // Input:
@@ -30,6 +39,7 @@ namespace MESS
         public InvalidCharacterHandling? InvalidTextureName { get; set; }
         public string TextureNameReplacement { get; set; } = "_";
         public TooManyVisGroupsHandling? VisGroups { get; set; }
+        public SplitOutput SplitOutput { get; set; }
 
         // Jmf-specific:
         public JmfFileVersion? JmfVersion { get; set; }
@@ -142,27 +152,38 @@ namespace MESS
                             map.Properties[Attributes.Wad] = settings.MapWadProperty;
 
 
-                        // Save output map:
-                        try
-                        {
-                            logger.Info($"Saving to '{settings.OutputPath}'.");
+                        // Save output map(s):
+                        var outputExtension = Path.GetFileNameWithoutExtension(settings.OutputPath);
+                        var outputFilePaths = new Dictionary<string, int>();
 
-                            var fileSaveSettings = CreateFileSaveSettings(settings);
-                            MapFile.Save(map, settings.OutputPath, fileSaveSettings, logger);
-
-                            logger.Info($"Map saved. Map contains {map.WorldGeometry.Count} brushes and {map.Entities.Count} entities.");
-                            return 0;
-                        }
-                        catch (Exception ex)
+                        foreach ((var outputMap, var outputPath) in SplitMap(map, settings.SplitOutput, Path.GetFileNameWithoutExtension(settings.InputPath), settings.OutputPath))
                         {
-                            logger.Error($"Failed to save '{settings.OutputPath}'.", ex);
-                            var innerException = ex.InnerException;
-                            while (innerException != null)
+                            // Ensure that each output map has a unique filename:
+                            var outputFilePath = outputPath;
+                            var count = 0;
+                            if (outputFilePaths.TryGetValue(outputFilePath, out count))
+                                outputFilePath = Path.Combine(Path.GetDirectoryName(outputFilePath) ?? "", $"{Path.GetFileNameWithoutExtension(outputFilePath)} ({count}){Path.GetExtension(outputFilePath)}");
+                            outputFilePaths[outputFilePath] = count + 1;
+
+                            try
                             {
-                                logger.Error("Inner exception:", innerException);
-                                innerException = innerException.InnerException;
+                                logger.Info($"Saving to '{outputFilePath}'.");
+
+                                var fileSaveSettings = CreateFileSaveSettings(settings);
+                                MapFile.Save(outputMap, outputFilePath, fileSaveSettings, logger);
+
+                                logger.Info($"Map saved. Map contains {outputMap.WorldGeometry.Count} brushes and {outputMap.Entities.Count} entities.");
                             }
-                            return -1;
+                            catch (Exception ex)
+                            {
+                                logger.Error($"Failed to save '{outputFilePath}'.", ex);
+                                var innerException = ex.InnerException;
+                                while (innerException != null)
+                                {
+                                    logger.Error("Inner exception:", innerException);
+                                    innerException = innerException.InnerException;
+                                }
+                            }
                         }
                     }
                     finally
@@ -183,6 +204,8 @@ namespace MESS
                 ShowHelp(commandLineParser);
                 return -1;
             }
+
+            return 0;
         }
 
         /// <summary>
@@ -236,6 +259,11 @@ namespace MESS
                     "-visgroups",
                     s => settings.VisGroups = ParseOption<TooManyVisGroupsHandling>(s),
                     $"How to handle VIS group assignment if an object is part of multiple VIS groups, but the output format only supports one. Valid options are: {GetOptions<TooManyVisGroupsHandling>()}. Default behavior is {ToString(TooManyVisGroupsHandling.UseFirst)}.")
+                .Option(
+                    "-split",
+                    s => settings.SplitOutput = ParseOption<SplitOutput>(s),
+                    $"How to split the input map into multiple output files. Valid options are: {GetOptions<SplitOutput>()}. Default behavior is {ToString(SplitOutput.NoSplit)}, which converts the entire map to a single output file." +
+                    $"The following placeholders can be used in the output file path: {{{Placeholders.MapName}}}, {{{Placeholders.LayerName}}}, {{{Placeholders.LayerId}}}, {{{Placeholders.GroupId}}}, {{{Placeholders.EntityId}}} and {{{Placeholders.EntityPropertyPrefix}.<property>}}, depending on the chosen split mode.")
 
                 // Jmf output:
                 .Section("Jmf format output:")
@@ -527,6 +555,76 @@ namespace MESS
                 Shapes.Block(new BoundingBox(new Vector3D(outer.Min.X, inner.Min.Y, inner.Min.Z), new Vector3D(inner.Min.X, inner.Max.Y, inner.Max.Z)), cordonTexture), // Left
             };
             map.AddBrushes(cordonBrushes);
+        }
+
+
+        private static IEnumerable<(Map, string)> SplitMap(Map map, SplitOutput splitMode, string inputMapName, string outputFilePathFormat)
+        {
+            switch (splitMode)
+            {
+                default:
+                case SplitOutput.NoSplit:
+                    yield return (map, GetOutputFilePath(outputFilePathFormat, entity: map.Worldspawn));
+                    break;
+
+                case SplitOutput.Layer:
+                    foreach ((var outputMap, var visGroup) in MapSplitter.SplitByVisGroup(map))
+                    {
+                        var outputFilePath = GetOutputFilePath(outputFilePathFormat, layer: visGroup, noLayer: visGroup is null);
+                        yield return (outputMap, outputFilePath);
+                    }
+                    break;
+
+                case SplitOutput.Group:
+                    foreach ((var outputMap, var group) in MapSplitter.SplitByGroup(map))
+                    {
+                        var outputFilePath = GetOutputFilePath(outputFilePathFormat, group: group, noGroup: group is null);
+                        yield return (outputMap, outputFilePath);
+                    }
+                    break;
+
+                case SplitOutput.Entity:
+                    var entityID = 0;
+                    foreach ((var outputMap, var entity) in MapSplitter.SplitByEntity(map))
+                    {
+                        var outputFilePath = GetOutputFilePath(outputFilePathFormat, entity: entity, entityID: entityID);
+                        entityID += 1;
+
+                        yield return (outputMap, outputFilePath);
+                    }
+                    break;
+            }
+
+
+            string GetOutputFilePath(string outputFilePathFormat, VisGroup? layer = null, Mapping.Group? group = null, Entity? entity = null, int? entityID = null, int? brushID = null, bool noLayer = false, bool noGroup = false)
+            {
+                var mapName = Regex.Replace(outputFilePathFormat, @"\{([^\}]+)\}", match =>
+                {
+                    var placeholder = match.Groups[1].Value;
+                    switch (placeholder)
+                    {
+                        case Placeholders.MapName: return inputMapName;
+                        case Placeholders.LayerName: return layer?.Name ?? (noLayer ? "no_layer" : "");
+                        case Placeholders.LayerId: return layer?.ID.ToString() ?? (noLayer ? "no_layer" : "");
+                        case Placeholders.GroupId: return group?.ID.ToString() ?? (noGroup ? "no_group" : "");
+                        case Placeholders.EntityId: return entityID?.ToString() ?? "";
+                        case Placeholders.BrushId: return brushID?.ToString() ?? "";
+                    }
+
+                    if (placeholder.StartsWith(Placeholders.EntityPropertyPrefix))
+                    {
+                        if (entity is null)
+                            return "";
+
+                        var key = placeholder.Substring(Placeholders.EntityPropertyPrefix.Length);
+                        return entity.Properties.TryGetValue(key, out var value) ? value : "";
+                    }
+
+                    return match.Value;
+                });
+
+                return mapName;
+            }
         }
 
 

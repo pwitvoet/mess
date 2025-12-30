@@ -8,6 +8,7 @@
     {
         public const string TextureName = "texturename";
 
+        public const string MapName = "mapname";
         public const string LayerName = "layername";
         public const string LayerId = "layerid";
         public const string GroupId = "groupid";
