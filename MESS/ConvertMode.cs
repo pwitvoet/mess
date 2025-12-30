@@ -195,7 +195,7 @@ namespace MESS
                 .Section("Input:")
                 .Option(
                     "-duplicatekeys",
-                    s => settings.DuplicateKeys =  ParseOption<DuplicateKeyHandling>(s),
+                    s => settings.DuplicateKeys = ParseOption<DuplicateKeyHandling>(s),
                     $"How to handle duplicate keys in the input file. Valid options are: {GetOptions<DuplicateKeyHandling>()}. Default behavior is {ToString(DuplicateKeyHandling.UseFirst)}.")
                 .Option(
                     "-rmfspawnflagproperty",
@@ -287,7 +287,7 @@ namespace MESS
                 .Option(
                     "-objectnameformat",
                     s => settings.ObjObjectNameFormat = s,
-                    "The name format for object names. Available placeholders are {layername}, {layerid}, {groupid}, {entityid}, {brushid} and {entity.<property>}. The default format depends on the object grouping mode.")
+                    $"The name format for object names. Available placeholders are {{{Placeholders.LayerName}}}, {{{Placeholders.LayerId}}}, {{{Placeholders.GroupId}}}, {{{Placeholders.EntityId}}}, {{{Placeholders.BrushId}}} and {{{Placeholders.EntityPropertyPrefix}.<property>}}. The default format depends on the object grouping mode.")
                 .Option(
                     "-texturedirs",
                     s => settings.TextureDirectories.AddRange(s.Split(';').Select(dir => dir.Trim())),
@@ -296,7 +296,7 @@ namespace MESS
                     "-objskiptextures",
                     s =>
                     {
-                        foreach (var textureName in s.Split(','))
+                        foreach (var textureName in ParseCommaSeparatedList(s))
                             settings.ObjSkipTextures.Add(textureName.Trim());
                     },
                     "A comma-separated list of textures. Faces with these textures will be excluded in the output .obj file.")
