@@ -1077,99 +1077,108 @@ namespace MESS.Macros
         {
             Logger.Verbose($"Processing a {brushEntity.ClassName} entity for instance #{context.ID}.");
 
-            // This function creates a brush-copying instance, so it also counts towards the (failsafe) limits:
-            _instanceCount += 1;
-            if (_instanceCount > Settings.InstanceLimit)
-                throw new InvalidOperationException("Instance limit exceeded.");
-
-            if (context.RecursionDepth > Settings.RecursionLimit)
-                throw new InvalidOperationException("Recursion limit exceeded.");
-
-
-            // A macro_brush only creates a single 'instance' of its template, so all properties are evaluated up-front, once:
+            // Most properties will be evaluated again for each template instance that this entity creates,
+            // but there are a few that are needed up-front, so these will only be evaluated once:
+            EvaluateAndUpdateProperties(context, brushEntity, Attributes.InstanceCount, Attributes.RandomSeed);
             SetBrushEntityOriginProperty(brushEntity);
-            var evaluatedProperties = brushEntity.Properties.EvaluateToMScriptValues(context);
-            evaluatedProperties.UpdateTransformProperties(context.Transform);
 
-            var template = ResolveTemplate(evaluatedProperties.GetString(Attributes.TemplateMap), evaluatedProperties.GetString(Attributes.TemplateName), context);
-            if (template == null)
-                return;
-
-
-            // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
-            // based on the world brushes and brush entities in the template. Another way of looking at it is
-            // that the brushes and entities in the template take on the 'shape' of this macro_brush.
-
-            // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
-            //       Verify that this works correctly now!!!
             var parentID = context.GetNextParentID();
-            var anchor = brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom;
-            if (anchor == TemplateAreaAnchor.OriginBrush && brushEntity.GetOrigin() == null)
-                Logger.Warning($"{brushEntity.ClassName} '{brushEntity.Properties.GetString(Attributes.Targetname)}' in instance #{context.ID} has no origin brush! Add an origin brush, or use a different anchor point.");
-
-            var anchorPoint = brushEntity.GetAnchorPoint(anchor);
-            var anchorOffset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
-
-            var transform = new Transform(context.Transform.Scale, context.Transform.GeometryScale, context.Transform.Rotation, context.Transform.Apply(anchorPoint + anchorOffset));
-            var pointContext = context.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID);
-            var brushContext = context.GetTemplateInstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, parentID, instanceID: pointContext.ID);
-
-            var excludedObjects = GetExcludedObjects(brushContext, Logger);
-            Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
-
-            // World brushes:
-            foreach (var templateBrush in template.Map.WorldGeometry)
+            var instanceCount = brushEntity.Properties.GetInteger(Attributes.InstanceCount) ?? 1;
+            for (int i = 0; i < instanceCount; i++)
             {
-                if (excludedObjects.Contains(templateBrush))
+                // This function creates a brush-copying instance, so it also counts towards the (failsafe) limits:
+                _instanceCount += 1;
+                if (_instanceCount > Settings.InstanceLimit)
+                    throw new InvalidOperationException("Instance limit exceeded.");
+
+                if (context.RecursionDepth > Settings.RecursionLimit)
+                    throw new InvalidOperationException("Recursion limit exceeded.");
+
+
+                // Evaluating properties again for each instance allows for iterating (nth function) and randomization (rand/randi functions):
+                var sequenceContext = context.GetChildContextWithSequenceNumber(i);
+                var evaluatedProperties = brushEntity.Properties.EvaluateToMScriptValues(sequenceContext);
+                evaluatedProperties.UpdateTransformProperties(sequenceContext.Transform);
+
+                var template = ResolveTemplate(evaluatedProperties.GetString(Attributes.TemplateMap), evaluatedProperties.GetString(Attributes.TemplateName), sequenceContext);
+                if (template == null)
                     continue;
 
-                // Discard world brushes with multiple textures:
-                if (templateBrush.Faces.Select(face => face.TextureName).Distinct().Count() != 1)
+
+                // The brushes of this macro_brush entity are copied and given a texture and/or entity attributes
+                // based on the world brushes and brush entities in the template. Another way of looking at it is
+                // that the brushes and entities in the template take on the 'shape' of this macro_brush.
+
+                // TODO: Transform! A macro_brush can be part of a normal template, and so it should propagate transform to its entities!
+                //       Verify that this works correctly now!!!
+                var anchor = brushEntity.Properties.GetEnum<TemplateAreaAnchor>(Attributes.Anchor) ?? TemplateAreaAnchor.Bottom;
+                if (anchor == TemplateAreaAnchor.OriginBrush && brushEntity.GetOrigin() == null)
+                    Logger.Warning($"{brushEntity.ClassName} '{brushEntity.Properties.GetString(Attributes.Targetname)}' in instance #{sequenceContext.ID} has no origin brush! Add an origin brush, or use a different anchor point.");
+
+                var anchorPoint = brushEntity.GetAnchorPoint(anchor);
+                var anchorOffset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
+
+                var transform = new Transform(sequenceContext.Transform.Scale, sequenceContext.Transform.GeometryScale, sequenceContext.Transform.Rotation, sequenceContext.Transform.Apply(anchorPoint + anchorOffset));
+                var pointContext = sequenceContext.GetTemplateInstantiationContext(template, Logger, transform, evaluatedProperties, parentID);
+                var brushContext = sequenceContext.GetTemplateInstantiationContext(template, Logger, Transform.Identity, evaluatedProperties, parentID, instanceID: pointContext.ID);
+
+                var excludedObjects = GetExcludedObjects(brushContext, Logger);
+                Logger.Verbose($"A total of {excludedObjects.Count} objects will be excluded.");
+
+                // World brushes:
+                foreach (var templateBrush in template.Map.WorldGeometry)
                 {
-                    Logger.Warning($"{brushEntity.ClassName} encountered a template brush with multiple textures. No copy will be made for this brush.");
-                    continue;
-                }
+                    if (excludedObjects.Contains(templateBrush))
+                        continue;
 
-                var textureName = templateBrush.Faces[0].TextureName;
-                foreach (var copy in CopyBrushes(textureName, excludeOriginBrushes: true))
-                    context.OutputMap.AddBrush(copy);
-            }
-
-            // Entities:
-            foreach (var templateEntity in template.Map.Entities)
-            {
-                if (excludedObjects.Contains(templateEntity))
-                    continue;
-
-                if (!templateEntity.IsPointBased)
-                {
-                    // Brush entities take on the 'shape' of the macro_brush.
-
-                    // Origin brushes are only copied if the template entity also contains an origin brush.
-                    var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
-                    var templateTextureNames = templateEntity.Brushes
-                        .Where(brush => !brush.IsOriginBrush())
-                        .SelectMany(brush => brush.Faces)
-                        .Select(face => face.TextureName)
-                        .Distinct();
-                    if (templateTextureNames.Count() != 1)
+                    // Discard world brushes with multiple textures:
+                    if (templateBrush.Faces.Select(face => face.TextureName).Distinct().Count() != 1)
                     {
-                        Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
+                        Logger.Warning($"{brushEntity.ClassName} encountered a template brush with multiple textures. No copy will be made for this brush.");
                         continue;
                     }
 
-                    var textureName = templateTextureNames.First();
-                    var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
-                    foreach (var kv in templateEntity.Properties)
-                        entityCopy.Properties[kv.Key] = kv.Value;   // NOTE: Expression evaluation is taken care of by HandleEntity.
-
-                    // The copy already has its final orientation, so we don't want it to be transformed again:
-                    HandleEntity(brushContext, entityCopy, transformBrushes: false);
+                    var textureName = templateBrush.Faces[0].TextureName;
+                    foreach (var copy in CopyBrushes(textureName, excludeOriginBrushes: true))
+                        sequenceContext.OutputMap.AddBrush(copy);
                 }
-                else
+
+                // Entities:
+                foreach (var templateEntity in template.Map.Entities)
                 {
-                    // Point entities are copied relative to the macro_brush's anchor point:
-                    HandleEntity(pointContext, templateEntity);
+                    if (excludedObjects.Contains(templateEntity))
+                        continue;
+
+                    if (!templateEntity.IsPointBased)
+                    {
+                        // Brush entities take on the 'shape' of the macro_brush.
+
+                        // Origin brushes are only copied if the template entity also contains an origin brush.
+                        var templateHasOrigin = templateEntity.Brushes.FirstOrDefault(brush => brush.IsOriginBrush()) != null;
+                        var templateTextureNames = templateEntity.Brushes
+                            .Where(brush => !brush.IsOriginBrush())
+                            .SelectMany(brush => brush.Faces)
+                            .Select(face => face.TextureName)
+                            .Distinct();
+                        if (templateTextureNames.Count() != 1)
+                        {
+                            Logger.Warning($"{brushEntity.ClassName} encountered a '{templateEntity.ClassName}' template entity with multiple textures. No copy will be made for this entity.");
+                            continue;
+                        }
+
+                        var textureName = templateTextureNames.First();
+                        var entityCopy = new Entity(CopyBrushes(textureName, excludeOriginBrushes: !templateHasOrigin));
+                        foreach (var kv in templateEntity.Properties)
+                            entityCopy.Properties[kv.Key] = kv.Value;   // NOTE: Expression evaluation is taken care of by HandleEntity.
+
+                        // The copy already has its final orientation, so we don't want it to be transformed again:
+                        HandleEntity(brushContext, entityCopy, transformBrushes: false);
+                    }
+                    else
+                    {
+                        // Point entities are copied relative to the macro_brush's anchor point:
+                        HandleEntity(pointContext, templateEntity);
+                    }
                 }
             }
 
