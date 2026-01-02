@@ -164,6 +164,10 @@
     // Random seed value, used for deterministic semi-randomness. This affects `rand` and `randi` function calls. Defaults to 0.
     random_seed(integer) : "Random seed"
 
+
+    // The number of instances to create. The default is 1.
+    instance_count(integer) : "Instance count" : 1
+
     // Point entities in the chosen template will be placed relative to the anchor point of the macro_brush.
     anchor(choices) : "Point entity anchor position" : 0 =
     [
