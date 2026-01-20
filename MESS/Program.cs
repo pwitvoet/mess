@@ -197,10 +197,10 @@ namespace MESS
                     "Sets the log file path. The default is INPUT_PATH.mess.log.")
                 .Argument(
                     s => { settings.InputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
-                    "Input map file.")
+                    "Input map file. Accepted formats are .map (valve220), .rmf and .jmf.")
                 .OptionalArgument(
                     s => { settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
-                    "Output map file. If not specified, the input map file will be overwritten.");
+                    "Output map file. If not specified, the input map file will be overwritten. Accepted formats are .map, .rmf, .jmf and .obj.");
         }
 
         private static void MergeSettings(ExpansionSettings settings, CommandLineSettings commandLineSettings)

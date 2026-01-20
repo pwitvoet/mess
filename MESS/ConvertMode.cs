@@ -7,7 +7,6 @@ using MESS.Formats.Obj;
 using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
-using MESS.Macros;
 using MESS.Mapping;
 using MESS.Mathematics.Spatial;
 using MESS.Util;
@@ -404,7 +403,7 @@ namespace MESS
                     "Input map file. Accepted formats are .map (valve220), .rmf and .jmf.")
                 .Argument(
                     s => settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
-                    "Output map file. Accepted formats are .map, .rmf and .jmf.");
+                    "Output map file. Accepted formats are .map, .rmf, .jmf and .obj.");
 
 
             string[] ParseCommaSeparatedList(string input)
