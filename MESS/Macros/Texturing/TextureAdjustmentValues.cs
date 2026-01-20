@@ -4,7 +4,7 @@ using MESS.Mathematics.Spatial;
 using MScript.Evaluation;
 using MScript;
 
-namespace MESS.Macros
+namespace MESS.Macros.Texturing
 {
     /// <summary>
     /// A set of values and value-providing functions, which can be used to change the various texture-related properties of a face.

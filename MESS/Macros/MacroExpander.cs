@@ -3,6 +3,7 @@ using MESS.EntityRewriting;
 using MESS.Formats.MAP;
 using MESS.Logging;
 using MESS.Macros.Functions;
+using MESS.Macros.Texturing;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MESS.Mathematics.Spatial;

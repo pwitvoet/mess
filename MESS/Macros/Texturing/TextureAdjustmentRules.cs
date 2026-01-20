@@ -6,7 +6,7 @@ using MESS.Mathematics.Spatial;
 using MScript.Evaluation;
 using System.Diagnostics.CodeAnalysis;
 
-namespace MESS.Macros
+namespace MESS.Macros.Texturing
 {
     public class TextureAdjustmentRules
     {

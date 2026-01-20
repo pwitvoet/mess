@@ -1,5 +1,6 @@
 ﻿using MESS.Common;
 using MESS.Logging;
+using MESS.Macros.Texturing;
 using MESS.Mapping;
 using MESS.Mathematics;
 using MScript;
