@@ -21,10 +21,12 @@ namespace MESS.Macros.Texturing
             // Find the best texture orientation - with the smallest bounding box, and being as up-right as possible:
             var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
             var possibleProjections = GetPossibleFaceProjections(face).ToArray();
-            var bestProjection = possibleProjections  //GetPossibleFaceProjections(face)
-                    .OrderBy(projection => projection.BoundingBox.Surface)                                                  // Select the smallest bounding boxes
-                    .ThenByDescending(projection => Math.Abs(isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z))   // Select the projection that best aligns with our up axis
-                    .ThenBy(projection => isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z)                       // Take upright over upside-down
+            var smallestSurface = possibleProjections.Min(projection => projection.BoundingBox.Surface);
+
+            var bestProjection = possibleProjections
+                .Where(projection => projection.BoundingBox.Surface < smallestSurface * 1.01)                           // Select the projections with the smallest bounding boxes (with some wiggle room to account for numeric precision issues)
+                .OrderByDescending(projection => Math.Abs(isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z))  // Select the projection that best aligns with our up axis
+                .ThenBy(projection => isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z)                       // Upright is better than upside-down
                 .First();
 
             // Rotate the projection by 180 degrees if it's upside down:
