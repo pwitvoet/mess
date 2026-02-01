@@ -85,7 +85,7 @@ namespace MESS.Macros.Texturing
             // Take the best hotspots:
             var bestScore = candidates.First().score;
             var bestHotspots = candidates
-                .TakeWhile(candidate => candidate.score == bestScore)
+                .TakeWhile(candidate => candidate.score > bestScore * 0.99f)
                 .Select(candidate => candidate.hotspotRectangle)
                 .ToArray();
 
