@@ -3,16 +3,59 @@ using MESS.Mathematics.Spatial;
 
 namespace MESS.Macros.Texturing
 {
+    public class HotspotSettings
+    {
+        /// <summary>
+        /// The default texture scale. Hotspotting will try to stay as close as possible to this scale.
+        /// </summary>
+        public float DefaultTextureScale { get; set; } = 1f;
+
+        /// <summary>
+        /// When false, rectangles will not be rotated, even if they are marked with 'enable rotation'.
+        /// </summary>
+        public bool AllowRotation { get; set; } = true;
+
+        /// <summary>
+        /// When false, rectangles will not be (randomly) mirrored, even if they are marked with 'enable mirroring'.
+        /// </summary>
+        public bool AllowMirroring { get; set; } = true;
+
+        /// <summary>
+        /// When true, only rectangles that are marked as 'alternate' will be used. Otherwise only non-alternate rectangles are used.
+        /// This can be used to divide textures into two groups, such as two different kinds of materials.
+        /// </summary>
+        public bool UseAlternateRectangles { get; set; } = false;
+
+        /// <summary>
+        /// When false, tiling rectangles will not be used.
+        /// </summary>
+        public bool AllowTilingRectangles { get; set; } = true;
+
+        /// <summary>
+        /// When true, non-tiling rectangles will always be chosen instead of tiling rectangles
+        /// if they are an equally good match.
+        /// </summary>
+        public bool PreferNonTilingRectangles { get; set; } = true;
+
+        /// <summary>
+        /// When false, tiling rectangles will only be scaled along their non-tiling side, to fit the faces they are applied to.
+        /// Otherwise, they will be scaled equally along their tiling side as well.
+        /// </summary>
+        public bool UniformScalingForTilingRectangles { get; set; } = true;
+    }
+
+
     public class HotspotTexturing
     {
-        public static void ApplyHotspotTexturing(Face face, HotspotData hotspotData, bool useAlternate, Random random)
+        public static void ApplyHotspotTexturing(Face face, HotspotData hotspotData, HotspotSettings settings, Random random)
         {
             var availableHotspotRectangles = hotspotData.GetHotspotRectanglesForTexture(face.TextureName);
             if (availableHotspotRectangles is null)
                 return;
 
             availableHotspotRectangles = availableHotspotRectangles
-                .Where(hotspotRectangle => hotspotRectangle.IsAlternate == useAlternate)
+                .Where(hotspotRectangle => hotspotRectangle.IsAlternate == settings.UseAlternateRectangles)
+                .Where(hotspotRectangle => hotspotRectangle.TilingMode == TilingMode.None || settings.AllowTilingRectangles)
                 .ToArray();
             if (!availableHotspotRectangles.Any())
                 return;
@@ -35,7 +78,7 @@ namespace MESS.Macros.Texturing
 
             // Order hotspots based on how suitable they are. Generally speaking, the less we need to scale a rect, the better:
             var candidates = availableHotspotRectangles
-                .Select(hotspotRectangle => new { hotspotRectangle, score = GetHotspotScore(bestProjection.BoundingBox, hotspotRectangle) })
+                .Select(hotspotRectangle => new { hotspotRectangle, score = GetHotspotScore(bestProjection.BoundingBox, hotspotRectangle, settings) })
                 .OrderByDescending(candidate => candidate.score)
                 .ToArray();
 
@@ -46,13 +89,17 @@ namespace MESS.Macros.Texturing
                 .Select(candidate => candidate.hotspotRectangle)
                 .ToArray();
 
-            // Reject tiling hotspots if we also have non-tiling hotspots:
-            if (bestHotspots.Any(hotspot => hotspot.TilingMode != TilingMode.None) && bestHotspots.Any(hotspot => hotspot.TilingMode == TilingMode.None))
-                bestHotspots = bestHotspots.Where(hotspot => hotspot.TilingMode == TilingMode.None).ToArray();
+            var bestHotspotsOld = bestHotspots.ToArray();
+            if (settings.PreferNonTilingRectangles)
+            {
+                // Reject tiling hotspots if we also have non-tiling hotspots:
+                if (bestHotspots.Any(hotspot => hotspot.TilingMode != TilingMode.None) && bestHotspots.Any(hotspot => hotspot.TilingMode == TilingMode.None))
+                    bestHotspots = bestHotspots.Where(hotspot => hotspot.TilingMode == TilingMode.None).ToArray();
+            }
 
             // Randomly select a hotspot from the ones that are left over, and apply it to the given face:
             var selectedHotspot = SelectRandomHotspotRectangle(bestHotspots, random);
-            ApplyHotspotRectangleToFace(face, bestProjection, selectedHotspot, random);
+            ApplyHotspotRectangleToFace(face, bestProjection, selectedHotspot, settings, random);
         }
 
         public enum Axis
@@ -145,33 +192,43 @@ namespace MESS.Macros.Texturing
             => FlipFaceProjection(faceProjection, true, true);
 
         // Returns a score that indicates how good of a match the given hotspot rectangle is for the given bounding box.
-        private static float GetHotspotScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle)
+        private static float GetHotspotScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
-            var score = GetNonRotatedScore(boundingBox, hotspotRectangle);
-            if (hotspotRectangle.AllowRotation)
-                score = Math.Max(score, GetNonRotatedScore(new Rectangle(0, 0, boundingBox.Height, boundingBox.Width), hotspotRectangle));
+            var score = GetNonRotatedScore(boundingBox, hotspotRectangle, settings);
+            if (settings.AllowRotation && hotspotRectangle.AllowRotation)
+                score = Math.Max(score, GetNonRotatedScore(new Rectangle(0, 0, boundingBox.Height, boundingBox.Width), hotspotRectangle, settings));
             return score;
         }
 
-        private static float GetNonRotatedScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle)
+        private static float GetNonRotatedScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
             // NOTE: Tiling textures should have *some* penalty so that they score less than a perfect fitting rectangle, but not so much of a penalty that they'll be avoided altogether!
             var widthScore = 0.75f;
             if (hotspotRectangle.TilingMode != TilingMode.Horizontal)
             {
-                if (boundingBox.Width < hotspotRectangle.Rectangle.Width)
-                    widthScore = boundingBox.Width / hotspotRectangle.Rectangle.Width;
+                var scaledRectangleWidth = hotspotRectangle.Rectangle.Width * settings.DefaultTextureScale;
+                if (boundingBox.Width < scaledRectangleWidth)
+                    widthScore = boundingBox.Width / scaledRectangleWidth;
                 else
-                    widthScore = hotspotRectangle.Rectangle.Width / boundingBox.Width;
+                    widthScore = scaledRectangleWidth / boundingBox.Width;
             }
 
             var heightScore = 0.75f;
             if (hotspotRectangle.TilingMode != TilingMode.Vertical)
             {
-                if (boundingBox.Height < hotspotRectangle.Rectangle.Height)
-                    heightScore = boundingBox.Height / hotspotRectangle.Rectangle.Height;
+                var scaledRectangleHeight = hotspotRectangle.Rectangle.Height * settings.DefaultTextureScale;
+                if (boundingBox.Height < scaledRectangleHeight)
+                    heightScore = boundingBox.Height / scaledRectangleHeight;
                 else
-                    heightScore = hotspotRectangle.Rectangle.Height / boundingBox.Height;
+                    heightScore = scaledRectangleHeight / boundingBox.Height;
+            }
+
+            if (settings.UniformScalingForTilingRectangles)
+            {
+                if (hotspotRectangle.TilingMode == TilingMode.Horizontal)
+                    widthScore = heightScore;
+                else if (hotspotRectangle.TilingMode == TilingMode.Vertical)
+                    heightScore = widthScore;
             }
 
             // NOTE: Squaring each side's score should favor square pixel over stretched ones?
@@ -191,12 +248,12 @@ namespace MESS.Macros.Texturing
             return hotspotRectangles.Last();
         }
 
-        private static void ApplyHotspotRectangleToFace(Face face, FaceProjection faceProjection, HotspotRectangle hotspotRectangle, Random random)
+        private static void ApplyHotspotRectangleToFace(Face face, FaceProjection faceProjection, HotspotRectangle hotspotRectangle, HotspotSettings settings, Random random)
         {
-            if (hotspotRectangle.AllowRotation)
+            if (settings.AllowRotation && hotspotRectangle.AllowRotation)
             {
-                var defaultScore = GetNonRotatedScore(faceProjection.BoundingBox, hotspotRectangle);
-                var rotatedScore = GetNonRotatedScore(new Rectangle(0, 0, faceProjection.BoundingBox.Height, faceProjection.BoundingBox.Width), hotspotRectangle);
+                var defaultScore = GetNonRotatedScore(faceProjection.BoundingBox, hotspotRectangle, settings);
+                var rotatedScore = GetNonRotatedScore(new Rectangle(0, 0, faceProjection.BoundingBox.Height, faceProjection.BoundingBox.Width), hotspotRectangle, settings);
                 if (rotatedScore > defaultScore)
                 {
                     var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
@@ -205,7 +262,7 @@ namespace MESS.Macros.Texturing
                 }
             }
 
-            if (hotspotRectangle.AllowMirroring)
+            if (settings.AllowMirroring && hotspotRectangle.AllowMirroring)
             {
                 faceProjection = FlipFaceProjection(
                     faceProjection,
@@ -221,9 +278,9 @@ namespace MESS.Macros.Texturing
             var scaleY = faceProjection.BoundingBox.Height / hotspotRectangle.Rectangle.Height;
 
             if (hotspotRectangle.TilingMode == TilingMode.Horizontal)
-                scaleX = 1f;
+                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1f;
             else if (hotspotRectangle.TilingMode == TilingMode.Vertical)
-                scaleY = 1f;
+                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1f;
 
             face.TextureScale = new Vector2D(scaleX, scaleY);
             face.TextureShift = new Vector2D(
