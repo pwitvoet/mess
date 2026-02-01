@@ -54,7 +54,7 @@ namespace MESS.Macros.Texturing
 
                     Expect(context, "}");
 
-                    var hotspotRectangle = new HotspotRectangle(new Rectangle(min.X, min.Y, max.X - min.X, max.Y - min.Y), allowMirroring, allowRotation, isAlternate, tilingMode, selectionWeight);
+                    var hotspotRectangle = new HotspotRectangle(new Rectangle(min.X, min.Y, max.X - min.X, max.Y - min.Y), allowRotation, allowMirroring, isAlternate, tilingMode, selectionWeight);
                     hotspotRectangles.Add(hotspotRectangle);
                 }
 
