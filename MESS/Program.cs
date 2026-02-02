@@ -43,6 +43,10 @@ namespace MESS
                 {
                     return ConvertMode.Run(args);
                 }
+                else if (args.Contains("-hotspot"))
+                {
+                    return HotspotMode.Run(args);
+                }
                 else if (args.Contains("-repl"))
                 {
                     return ReplMode.Run();
