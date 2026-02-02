@@ -82,7 +82,7 @@ namespace MESS.Macros.Texturing
                 .OrderByDescending(candidate => candidate.score)
                 .ToArray();
 
-            // Take the best hotspots:
+            // Take the best hotspots (with some wiggle room to account for numerical precision issues):
             var bestScore = candidates.First().score;
             var bestHotspots = candidates
                 .TakeWhile(candidate => candidate.score > bestScore * 0.99f)
@@ -170,8 +170,8 @@ namespace MESS.Macros.Texturing
                     faceProjection.DownAxis,
                     -faceProjection.RightAxis,
                     new Rectangle(
-                        -faceProjection.BoundingBox.Y,
-                        faceProjection.BoundingBox.X,
+                        faceProjection.BoundingBox.Y,
+                        -faceProjection.BoundingBox.X - faceProjection.BoundingBox.Width,
                         faceProjection.BoundingBox.Height,
                         faceProjection.BoundingBox.Width));
             }
@@ -181,8 +181,8 @@ namespace MESS.Macros.Texturing
                     -faceProjection.DownAxis,
                     faceProjection.RightAxis,
                     new Rectangle(
-                        faceProjection.BoundingBox.Y,
-                        -faceProjection.BoundingBox.X,
+                        -faceProjection.BoundingBox.Y - faceProjection.BoundingBox.Height,
+                        faceProjection.BoundingBox.X,
                         faceProjection.BoundingBox.Height,
                         faceProjection.BoundingBox.Width));
             }
