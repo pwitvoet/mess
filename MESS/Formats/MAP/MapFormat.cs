@@ -203,7 +203,7 @@ namespace MESS.Formats.MAP
                     if (line is null)
                         throw new InvalidDataException($"Expected key-value pair, brush or end of entity, but found end of file.");
 
-                    if (line.StartsWith("//"))
+                    if (string.IsNullOrEmpty(line) || line.StartsWith("//"))
                     {
                         continue;
                     }
@@ -275,7 +275,7 @@ namespace MESS.Formats.MAP
                     if (line is null)
                         throw new InvalidDataException($"Expected face or end of brush, but found end of file.");
 
-                    if (line.StartsWith("//"))
+                    if (string.IsNullOrEmpty(line) || line.StartsWith("//"))
                         continue;
                     else if (line.StartsWith("("))
                         faces.Add(ReadFace(line));
