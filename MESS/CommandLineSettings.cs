@@ -1,4 +1,5 @@
-﻿using MESS.Logging;
+﻿using MESS.Formats.MAP;
+using MESS.Logging;
 
 namespace MESS
 {
@@ -17,5 +18,6 @@ namespace MESS
         public string? TemplateMapsDirectory { get; set; }
         public Dictionary<string, object?> Variables { get; } = new();
         public Dictionary<string, object?> Globals { get; } = new();
+        public InvalidBrushHandling? InvalidBrushHandling { get; set; }
     }
 }

@@ -25,6 +25,14 @@ namespace MESS.Mapping
             BoundingBox = BoundingBox.FromPoints(Faces.SelectMany(face => face.Vertices));
         }
 
+        public bool IsValid()
+            => Faces.Count >= 4 && Faces.All(face => face.Vertices.Count >= 3);
+
+        public void RemoveInvalidFaces()
+        {
+            Faces = Faces.Where(face => face.Vertices.Count >= 3).ToArray();
+        }
+
         /// <summary>
         /// Creates a copy of this brush that includes editor format-specific data.
         /// Faces will be copied, but group and VIS group information is excluded.
@@ -87,6 +95,9 @@ namespace MESS.Mapping
             // Store vertices in clockwise order:
             foreach (var face in Faces)
             {
+                if (!face.Vertices.Any())
+                    continue;
+
                 var center = new Vector3D();
                 foreach (var vertex in face.Vertices)
                     center += vertex;

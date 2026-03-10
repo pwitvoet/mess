@@ -11,6 +11,7 @@ using MScript;
 using MESS.Mapping;
 using MESS.Formats;
 using MESS.Macros.Functions;
+using MESS.Formats.MAP;
 
 namespace MESS
 {
@@ -175,6 +176,10 @@ namespace MESS
                     "-globals",
                     s => { ParseVariables(s, settings.Globals); },
                     $"Global variables are available in any expressions, via the getglobal, setglobal and useglobal functions. Input format is \"name1 = expression; name2 = expression; ...\".")
+                .Option(
+                    "-invalidbrush",
+                    s => settings.InvalidBrushHandling = ParseOption<InvalidBrushHandling>(s),
+                    $"How to deal with invalid brushes. Valid options are: {GetOptions<InvalidBrushHandling>()}. Default value is {ToString(InvalidBrushHandling.Fail)}.")
 
                 .Section("Limits:")
                 .Option(
@@ -193,8 +198,8 @@ namespace MESS
                 .Section("Logging:")
                 .Option(
                     "-log",
-                    s => { settings.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), s, true); },
-                    $"Sets the log level. Valid options are: {string.Join(", ", Enum.GetValues(typeof(LogLevel)).OfType<LogLevel>().Select(level => level.ToString().ToLowerInvariant()))}. Default value is {LogLevel.Info.ToString().ToLowerInvariant()}.")
+                    s => settings.LogLevel = ParseOption<LogLevel>(s),
+                    $"Sets the log level. Valid options are: {GetOptions<LogLevel>()}. Default value is {ToString(LogLevel.Info)}.")
                 .Option(
                     "-log-path",
                     s => settings.LogPath = s,
@@ -205,6 +210,16 @@ namespace MESS
                 .OptionalArgument(
                     s => { settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()); },
                     "Output map file. If not specified, the input map file will be overwritten. Accepted formats are .map, .rmf, .jmf and .obj.");
+
+
+            TEnum ParseOption<TEnum>(string input) where TEnum : struct, Enum
+                => (TEnum)Enum.Parse(typeof(TEnum), input, true);
+
+            string GetOptions<TEnum>() where TEnum : struct, Enum
+                => string.Join(", ", Enum.GetValues<TEnum>().Select(value => value.ToString().ToLowerInvariant()));
+
+            string ToString<TEnum>(TEnum value) where TEnum : struct, Enum
+                => value.ToString().ToLowerInvariant();
         }
 
         private static void MergeSettings(ExpansionSettings settings, CommandLineSettings commandLineSettings)
@@ -218,6 +233,7 @@ namespace MESS
             if (commandLineSettings.OutputPath != null) settings.OutputPath = commandLineSettings.OutputPath;
             if (commandLineSettings.TemplateMapsDirectory != null) settings.TemplateMapsDirectory = commandLineSettings.TemplateMapsDirectory;
             if (commandLineSettings.MessFgdFilePath != null) settings.MessFgdFilePath = commandLineSettings.MessFgdFilePath;
+            if (commandLineSettings.InvalidBrushHandling != null) settings.InvalidBrushHandling = commandLineSettings.InvalidBrushHandling.Value;
 
             foreach (var kv in commandLineSettings.Variables)
                 settings.Variables[kv.Key] = kv.Value;

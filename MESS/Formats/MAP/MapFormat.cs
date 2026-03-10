@@ -217,13 +217,40 @@ namespace MESS.Formats.MAP
                     }
                     else if (line.StartsWith("{"))
                     {
+                        var lineNumber = Context.CurrentLineNumber;
+
                         try
                         {
-                            brushes.Add(ReadBrush());
+                            var brush = ReadBrush();
+                            var isValid = brush.IsValid();
+
+                            // Should we try to salvage invalid brushes by removing invalid faces?
+                            if (!isValid && Settings.InvalidBrushHandling == InvalidBrushHandling.DiscardFaces)
+                            {
+                                Logger.Warning($"Invalid brush at line {lineNumber}, invalid faces will be discarded.");
+
+                                brush.RemoveInvalidFaces();
+                                isValid = brush.IsValid();
+                            }
+
+                            if (isValid)
+                            {
+                                brushes.Add(brush);
+                            }
+                            else
+                            {
+                                if (Settings.InvalidBrushHandling == InvalidBrushHandling.Fail)
+                                    throw new InvalidDataException("Invalid brush.");
+
+                                Logger.Warning($"Invalid brush at line {lineNumber}, brush will be discarded.");
+                            }
                         }
                         catch (Exception ex)
                         {
-                            throw new InvalidDataException($"Failed to parse brush #{brushes.Count}.", ex);
+                            if (Settings.InvalidBrushHandling == InvalidBrushHandling.Fail)
+                                throw new InvalidDataException($"Failed to parse brush #{brushes.Count}.", ex);
+                            else
+                                Logger.Warning($"Failed to parse brush #{brushes.Count} at line {lineNumber}.");
                         }
                     }
                     else if (line.StartsWith("}"))

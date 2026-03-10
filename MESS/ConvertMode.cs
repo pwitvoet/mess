@@ -29,6 +29,7 @@ namespace MESS
         public DuplicateKeyHandling? DuplicateKeys { get; set; }
         public RmfSpawnflagsPropertyHandling? RmfSpawnflagProperty { get; set; }
         public TrenchbroomGroupHandling? TrenchBroomFuncGroup { get; set; }
+        public InvalidBrushHandling? InvalidBrushHandling { get; set; }
 
         // Output:
         public ValueTooLongHandling? KeyValueTooLong { get; set; }
@@ -227,6 +228,10 @@ namespace MESS
                     "-tbfuncgroup",
                     s => settings.TrenchBroomFuncGroup = ParseOption<TrenchbroomGroupHandling>(s),
                     $"Decides whether func_group entities in TrenchBroom .map files should be read as groups and VIS groups, or left as entities. Valid options are: {GetOptions<TrenchbroomGroupHandling>()}. Default behavior is {ToString(TrenchbroomGroupHandling.ConvertToGroup)}.")
+                .Option(
+                    "-invalidbrush",
+                    s => settings.InvalidBrushHandling = ParseOption<InvalidBrushHandling>(s),
+                    $"How to deal with invalid brushes. Valid options are: {GetOptions<InvalidBrushHandling>()}. Default value is {ToString(InvalidBrushHandling.Fail)}.")
 
                 // Output-related options:
                 .Section("Output:")
@@ -647,6 +652,7 @@ namespace MESS
             SetFileLoadSettings(fileLoadSettings, settings);
 
             if (settings.TrenchBroomFuncGroup != null) fileLoadSettings.TrenchbroomGroupHandling = settings.TrenchBroomFuncGroup.Value;
+            if (settings.InvalidBrushHandling != null) fileLoadSettings.InvalidBrushHandling = settings.InvalidBrushHandling.Value;
             return fileLoadSettings;
         }
 

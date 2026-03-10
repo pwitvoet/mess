@@ -400,9 +400,10 @@ namespace MESS.Macros
 
                 // Retain TB-specific properties - '_tb_group' specifically is useful as a lifted property:
                 var mapLoadSettings = new MapFileLoadSettings {
+                    InvalidBrushHandling = Settings.InvalidBrushHandling,
                     TrenchbroomGroupHandling = TrenchbroomGroupHandling.LeaveAsEntity,
                 };
-                var map = MapFile.Load(path, mapLoadSettings);
+                var map = MapFile.Load(path, mapLoadSettings, Logger);
                 map.ExpandPaths();
 
                 if (Settings.ApplyRewriteRules)

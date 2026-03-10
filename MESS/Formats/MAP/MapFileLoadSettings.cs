@@ -1,5 +1,24 @@
 ﻿namespace MESS.Formats.MAP
 {
+    public enum InvalidBrushHandling
+    {
+        /// <summary>
+        /// The map parser will fail when it encounters an invalid brush.
+        /// </summary>
+        Fail,
+
+        /// <summary>
+        /// The map parser will try to salvage invalid brushes by discarding invalid faces.
+        /// Brush that are still invalid will be discarded.
+        /// </summary>
+        DiscardFaces,
+
+        /// <summary>
+        /// The map parser will discard invalid brushes.
+        /// </summary>
+        DiscardBrush,
+    }
+
     public enum TrenchbroomGroupHandling
     {
         /// <summary>
@@ -16,6 +35,11 @@
 
     public class MapFileLoadSettings : FileLoadSettings
     {
+        /// <summary>
+        /// What to do when an invalid brush is encountered.
+        /// </summary>
+        public InvalidBrushHandling InvalidBrushHandling { get; set; }
+
         /// <summary>
         /// How to handle Trenchbroom groups and layers, which are stored as func_group entities with Trenchbroom-specific properties.
         /// </summary>

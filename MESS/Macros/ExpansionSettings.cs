@@ -1,4 +1,5 @@
 ﻿using MESS.Common;
+using MESS.Formats.MAP;
 using MESS.Logging;
 
 namespace MESS.Macros
@@ -21,5 +22,6 @@ namespace MESS.Macros
 
         public string? InvertedPitchPredicate { get; set; }
         public string[] MacroCoverSkipTextures { get; set; } = new[] { Textures.Null, Textures.Caulk };
+        public InvalidBrushHandling InvalidBrushHandling { get; set; } = InvalidBrushHandling.Fail;
     }
 }
