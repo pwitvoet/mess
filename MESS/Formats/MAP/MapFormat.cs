@@ -237,6 +237,11 @@ namespace MESS.Formats.MAP
                             {
                                 brushes.Add(brush);
                             }
+                            else if (Settings.InvalidBrushHandling == InvalidBrushHandling.KeepBrush)
+                            {
+                                Logger.Warning($"Invalid brush at line {lineNumber}, keeping brush.");
+                                brushes.Add(brush);
+                            }
                             else
                             {
                                 if (Settings.InvalidBrushHandling == InvalidBrushHandling.Fail)

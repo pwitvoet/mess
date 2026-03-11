@@ -17,6 +17,11 @@
         /// The map parser will discard invalid brushes.
         /// </summary>
         DiscardBrush,
+
+        /// <summary>
+        /// The map parser will keep invalid brushes and faces. This minimizes data loss, but may cause problems later on when processing the map.
+        /// </summary>
+        KeepBrush,
     }
 
     public enum TrenchbroomGroupHandling
