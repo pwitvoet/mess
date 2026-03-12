@@ -19,7 +19,6 @@ namespace MESS.Mapping
         public Brush(IEnumerable<Face> faces)
         {
             Faces = faces.ToArray();
-
             InitializePlanes();
             InitializeVertices();
             BoundingBox = BoundingBox.FromPoints(Faces.SelectMany(face => face.Vertices));
@@ -92,6 +91,9 @@ namespace MESS.Mapping
                 }
             }
 
+            // Merge vertices that are within a certain distance of each other:
+            MergeNearbyVertices(1f / 64);
+
             // Store vertices in clockwise order:
             foreach (var face in Faces)
             {
@@ -120,6 +122,27 @@ namespace MESS.Mapping
                     .ToArray();
                 face.Vertices.Clear();
                 face.Vertices.AddRange(clockwiseVertices);
+            }
+        }
+
+        private void MergeNearbyVertices(float threshold)
+        {
+            var squaredThreshold = threshold * threshold;
+            foreach (var face in Faces)
+            {
+                for (int i = 0; i < face.Vertices.Count; i++)
+                {
+                    var vertex = face.Vertices[i];
+                    for (int j = i + 1; j < face.Vertices.Count; j++)
+                    {
+                        var otherVertex = face.Vertices[j];
+                        if ((vertex - otherVertex).SquaredLength() < squaredThreshold)
+                        {
+                            face.Vertices.RemoveAt(j);
+                            j -= 1;
+                        }
+                    }
+                }
             }
         }
     }
