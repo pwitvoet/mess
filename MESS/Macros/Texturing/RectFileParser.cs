@@ -31,6 +31,7 @@ namespace MESS.Macros.Texturing
                     var isAlternate = false;
                     var tilingMode = TilingMode.None;
                     var selectionWeight = 1f;
+                    var concaveEdges = ConcaveEdges.None;
 
                     while (context.Current != "}")
                     {
@@ -46,6 +47,7 @@ namespace MESS.Macros.Texturing
                             case "alt": isAlternate = ReadBool(context); break;
                             case "tiling": tilingMode = ReadTilingMode(context); break;
                             case "weight": selectionWeight = ReadFloat(context); break;
+                            case "concave": concaveEdges = ReadConcaveEdges(context); break;
 
                             default:
                                 throw new InvalidDataException($"Unknown rectangle key: '{key}'.");
@@ -54,7 +56,7 @@ namespace MESS.Macros.Texturing
 
                     Expect(context, "}");
 
-                    var hotspotRectangle = new HotspotRectangle(new Rectangle(min.X, min.Y, max.X - min.X, max.Y - min.Y), allowRotation, allowMirroring, isAlternate, tilingMode, selectionWeight);
+                    var hotspotRectangle = new HotspotRectangle(new Rectangle(min.X, min.Y, max.X - min.X, max.Y - min.Y), allowRotation, allowMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges);
                     hotspotRectangles.Add(hotspotRectangle);
                 }
 
@@ -142,6 +144,9 @@ namespace MESS.Macros.Texturing
         private static TilingMode ReadTilingMode(Context context)
             => ReadValue(context, s => (Enum.TryParse<TilingMode>(s, true, out var value), value), "tiling mode");
 
+        private static ConcaveEdges ReadConcaveEdges(Context context)
+            => ReadValue(context, s => (TryParseConcaveEdges(s, out var value), value), "concave edges");
+
         private static TValue ReadValue<TValue>(Context context, Func<string, (bool, TValue)> parse, string typeName)
         {
             if (context.IsExhausted)
@@ -168,6 +173,29 @@ namespace MESS.Macros.Texturing
                 result = default;
                 return false;
             }
+        }
+
+        private static bool TryParseConcaveEdges(string str, out ConcaveEdges result)
+        {
+            result = ConcaveEdges.None;
+
+            str = str.ToLowerInvariant();
+            if (str == "none")
+                return true;
+
+            var parts = str.Split(',').Select(part => part.Trim()).ToArray();
+            foreach (var part in parts)
+            {
+                switch (part)
+                {
+                    case "top": result |= ConcaveEdges.Top; break;
+                    case "right": result |= ConcaveEdges.Right; break;
+                    case "bottom": result |= ConcaveEdges.Bottom; break;
+                    case "left": result |= ConcaveEdges.Left; break;
+                    default: return false;
+                }
+            }
+            return true;
         }
 
 

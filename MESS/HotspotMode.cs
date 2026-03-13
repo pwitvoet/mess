@@ -156,6 +156,15 @@ namespace MESS
                     "-nonuniformtiling",
                     () => settings.HotspotSettings.UniformScalingForTilingRectangles = false,
                     "Allow non-uniform scaling of tiling rectangles.")
+                .Option(
+                    "-ignoretextures",
+                    s =>
+                    {
+                        var textures = Macros.Util.ParseCommaSeparatedList(s);
+                        foreach (var texture in textures)
+                            settings.HotspotSettings.IgnoreTextures.Add(texture);
+                    },
+                    "Faces with these textures will not be hotspotted, and their edges are treated as concave, which affects hotspotting on neighboring faces.")
 
                 // Logging:
                 .Section("Logging:")
@@ -232,12 +241,31 @@ namespace MESS
             }
 
             // Apply hotspots:
-            foreach (var brush in map.WorldGeometry.Concat(map.Entities.SelectMany(entity => entity.Brushes)))
+            var entityIndex = 0;
+            foreach (var entity in map.Entities.Prepend(map.Worldspawn))
             {
-                foreach (var face in brush.Faces)
+                var brushIndex = 0;
+                foreach (var brush in entity.Brushes)
                 {
-                    HotspotTexturing.ApplyHotspotTexturing(face, hotspotData, settings.HotspotSettings, random);
+                    var faceIndex = 0;
+                    foreach (var face in brush.Faces)
+                    {
+                        try
+                        {
+                            HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Warning($"Failed to apply hotspot texturing to entity #{entityIndex}, brush #{brushIndex}, face #{faceIndex}:", ex);
+                        }
+
+                        faceIndex += 1;
+                    }
+
+                    brushIndex += 1;
                 }
+
+                entityIndex += 1;
             }
         }
 

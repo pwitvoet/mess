@@ -42,13 +42,23 @@ namespace MESS.Macros.Texturing
         /// Otherwise, they will be scaled equally along their tiling side as well.
         /// </summary>
         public bool UniformScalingForTilingRectangles { get; set; } = true;
+
+        /// <summary>
+        /// These textures will be ignored by the hotspotting algorithm.
+        /// Any edge that borders a face with one of these textures will be considered a concave edge,
+        /// which affects rectangle selection.
+        /// </summary>
+        public HashSet<string> IgnoreTextures { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
     }
 
 
     public class HotspotTexturing
     {
-        public static void ApplyHotspotTexturing(Face face, HotspotData hotspotData, HotspotSettings settings, Random random)
+        public static void ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
         {
+            if (settings.IgnoreTextures.Contains(face.TextureName))
+                return;
+
             var availableHotspotRectangles = hotspotData.GetHotspotRectanglesForTexture(face.TextureName);
             if (availableHotspotRectangles is null)
                 return;
@@ -76,30 +86,30 @@ namespace MESS.Macros.Texturing
             if (isFlatFace ? bestProjection.DownAxis.Y > 0 : bestProjection.DownAxis.Z > 0)
                 bestProjection = RotateFaceProjection180Degrees(bestProjection);
 
+            var edgeConstraints = GetEdgeConstraints(face, parentBrush, bestProjection, settings);
+
             // Order hotspots based on how suitable they are. Generally speaking, the less we need to scale a rect, the better:
             var candidates = availableHotspotRectangles
-                .Select(hotspotRectangle => new { hotspotRectangle, score = GetHotspotScore(bestProjection.BoundingBox, hotspotRectangle, settings) })
-                .OrderByDescending(candidate => candidate.score)
+                .Select(hotspotRectangle => GetBestHotspotScore(bestProjection.BoundingBox, edgeConstraints, hotspotRectangle, settings))
+                .OrderByDescending(candidate => candidate.Score)
                 .ToArray();
 
             // Take the best hotspots (with some wiggle room to account for numerical precision issues):
-            var bestScore = candidates.First().score;
-            var bestHotspots = candidates
-                .TakeWhile(candidate => candidate.score > bestScore * 0.99f)
-                .Select(candidate => candidate.hotspotRectangle)
+            var bestScore = candidates.First();
+            var bestHotspotScores = candidates
+                .TakeWhile(candidate => candidate.Score > bestScore.Score * 0.99f)
                 .ToArray();
 
-            var bestHotspotsOld = bestHotspots.ToArray();
             if (settings.PreferNonTilingRectangles)
             {
                 // Reject tiling hotspots if we also have non-tiling hotspots:
-                if (bestHotspots.Any(hotspot => hotspot.TilingMode != TilingMode.None) && bestHotspots.Any(hotspot => hotspot.TilingMode == TilingMode.None))
-                    bestHotspots = bestHotspots.Where(hotspot => hotspot.TilingMode == TilingMode.None).ToArray();
+                if (bestHotspotScores.Any(candidate => candidate.HotspotRectangle.TilingMode != TilingMode.None) && bestHotspotScores.Any(candidate => candidate.HotspotRectangle.TilingMode == TilingMode.None))
+                    bestHotspotScores = bestHotspotScores.Where(hotspot => hotspot.HotspotRectangle.TilingMode == TilingMode.None).ToArray();
             }
 
             // Randomly select a hotspot from the ones that are left over, and apply it to the given face:
-            var selectedHotspot = SelectRandomHotspotRectangle(bestHotspots, random);
-            ApplyHotspotRectangleToFace(face, bestProjection, selectedHotspot, settings, random);
+            var selectedHotspotScore = SelectRandomHotspotRectangleScore(bestHotspotScores, random);
+            ApplyHotspotRectangleToFace(face, bestProjection, selectedHotspotScore, settings, random);
         }
 
         public enum Axis
@@ -135,18 +145,56 @@ namespace MESS.Macros.Texturing
                 var minY = float.MaxValue;
                 var maxX = float.MinValue;
                 var maxY = float.MinValue;
-                foreach (var vertex in face.Vertices)
+                var edgeVertices = new int[4];     // Top, right, down, left.
+
+                var projectedVertices = face.Vertices
+                    .Select(vertex => new Vector2D(vertex.DotProduct(rightAxis), vertex.DotProduct(downAxis)))
+                    .ToArray();
+                for (int j = 0; j < projectedVertices.Length; j++)
                 {
-                    var x = vertex.DotProduct(rightAxis);
-                    var y = vertex.DotProduct(downAxis);
+                    var x = projectedVertices[j].X;
+                    var y = projectedVertices[j].Y;
+
+                    // Keep track of the most extreme vertices in order to find aligned edges later:
+                    if (x < minX) edgeVertices[FaceProjection.Left] = j;
+                    if (x > maxX) edgeVertices[FaceProjection.Right] = j;
+                    if (y < minY) edgeVertices[FaceProjection.Top] = j;
+                    if (y > maxY) edgeVertices[FaceProjection.Bottom] = j;
 
                     minX = Math.Min(x, minX);
                     minY = Math.Min(y, minY);
                     maxX = Math.Max(x, maxX);
                     maxY = Math.Max(y, maxY);
                 }
+
                 var boundingBox = new Rectangle(minX, minY, maxX - minX, maxY - minY);
-                yield return new FaceProjection(rightAxis, downAxis, boundingBox);
+                var alignedEdges = FindAlignedEdges(projectedVertices, boundingBox, edgeVertices);
+                yield return new FaceProjection(rightAxis, downAxis, boundingBox, alignedEdges);
+            }
+
+            int[] FindAlignedEdges(Vector2D[] projectedVertices, Rectangle boundingBox, int[] edgeVertices, float threshold = 0.5f)
+            {
+                return new int[] {
+                    GetAlignedEdge(projectedVertices, edgeVertices[FaceProjection.Top], v => v.Y, threshold),
+                    GetAlignedEdge(projectedVertices, edgeVertices[FaceProjection.Right], v => v.X, threshold),
+                    GetAlignedEdge(projectedVertices, edgeVertices[FaceProjection.Bottom], v => v.Y, threshold),
+                    GetAlignedEdge(projectedVertices, edgeVertices[FaceProjection.Left], v => v.X, threshold),
+                };
+            }
+
+            int GetAlignedEdge(Vector2D[] projectedVertices, int index, Func<Vector2D, float> getValue, float threshold)
+            {
+                var edgeValue = getValue(projectedVertices[index]);
+
+                var prevIndex = GetPreviousVertexIndex(face, index);
+                if (Math.Abs(edgeValue - getValue(projectedVertices[prevIndex])) < threshold)
+                    return prevIndex;
+
+                var nextIndex = GetNextVertexIndex(face, index);
+                if (Math.Abs(edgeValue - getValue(projectedVertices[nextIndex])) < threshold)
+                    return index;
+
+                return FaceProjection.NoEdge;
             }
         }
 
@@ -159,7 +207,13 @@ namespace MESS.Macros.Texturing
                     horizontal ? -(faceProjection.BoundingBox.X + faceProjection.BoundingBox.Width) : faceProjection.BoundingBox.X,
                     vertical ? -(faceProjection.BoundingBox.Y + faceProjection.BoundingBox.Height) : faceProjection.BoundingBox.Y,
                     faceProjection.BoundingBox.Width,
-                    faceProjection.BoundingBox.Height));
+                    faceProjection.BoundingBox.Height),
+                new int[] {
+                    faceProjection.AlignedEdges[vertical   ? FaceProjection.Bottom : FaceProjection.Top],
+                    faceProjection.AlignedEdges[horizontal ? FaceProjection.Left : FaceProjection.Right],
+                    faceProjection.AlignedEdges[vertical   ? FaceProjection.Top : FaceProjection.Bottom],
+                    faceProjection.AlignedEdges[horizontal ? FaceProjection.Right : FaceProjection.Left],
+                });
         }
 
         private static FaceProjection RotateFaceProjection90Degrees(FaceProjection faceProjection, bool clockwise)
@@ -173,7 +227,8 @@ namespace MESS.Macros.Texturing
                         faceProjection.BoundingBox.Y,
                         -faceProjection.BoundingBox.X - faceProjection.BoundingBox.Width,
                         faceProjection.BoundingBox.Height,
-                        faceProjection.BoundingBox.Width));
+                        faceProjection.BoundingBox.Width),
+                    faceProjection.AlignedEdges.Skip(1).Append(faceProjection.AlignedEdges[0]).ToArray());
             }
             else
             {
@@ -184,23 +239,214 @@ namespace MESS.Macros.Texturing
                         -faceProjection.BoundingBox.Y - faceProjection.BoundingBox.Height,
                         faceProjection.BoundingBox.X,
                         faceProjection.BoundingBox.Height,
-                        faceProjection.BoundingBox.Width));
+                        faceProjection.BoundingBox.Width),
+                    faceProjection.AlignedEdges.Take(3).Prepend(faceProjection.AlignedEdges[3]).ToArray());
             }
         }
 
         private static FaceProjection RotateFaceProjection180Degrees(FaceProjection faceProjection)
             => FlipFaceProjection(faceProjection, true, true);
 
-        // Returns a score that indicates how good of a match the given hotspot rectangle is for the given bounding box.
-        private static float GetHotspotScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        private static HotspotRectangleScore SelectRandomHotspotRectangleScore(HotspotRectangleScore[] hotspotRectangleScores, Random random)
         {
-            var score = GetNonRotatedScore(boundingBox, hotspotRectangle, settings);
-            if (settings.AllowRotation && hotspotRectangle.AllowRotation)
-                score = Math.Max(score, GetNonRotatedScore(new Rectangle(0, 0, boundingBox.Height, boundingBox.Width), hotspotRectangle, settings));
-            return score;
+            var totalWeight = hotspotRectangleScores.Sum(hotspot => hotspot.HotspotRectangle.SelectionWeight);
+            var selection = (float)(random.NextDouble() * totalWeight);
+            foreach (var hotspotRectangleScore in hotspotRectangleScores)
+            {
+                selection -= hotspotRectangleScore.HotspotRectangle.SelectionWeight;
+                if (selection <= 0)
+                    return hotspotRectangleScore;
+            }
+            return hotspotRectangleScores.Last();
         }
 
-        private static float GetNonRotatedScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        private static void ApplyHotspotRectangleToFace(Face face, FaceProjection faceProjection, HotspotRectangleScore hotspotRectangleScore, HotspotSettings settings, Random random)
+        {
+            var orientation = hotspotRectangleScore.Orientations[random.Next(hotspotRectangleScore.Orientations.Length)];
+
+            switch (orientation & HotspotOrientations.RotationMask)
+            {
+                case HotspotOrientations.Rotate90Degrees: faceProjection = RotateFaceProjection90Degrees(faceProjection, false); break;
+                case HotspotOrientations.Rotate180Degrees: faceProjection = RotateFaceProjection180Degrees(faceProjection); break;
+                case HotspotOrientations.Rotate270Degrees: faceProjection = RotateFaceProjection90Degrees(faceProjection, true); break;
+            }
+
+            switch (orientation & HotspotOrientations.MirrorMask)
+            {
+                case HotspotOrientations.MirrorHorizontally: faceProjection = FlipFaceProjection(faceProjection, true, false); break;
+                case HotspotOrientations.MirrorVertically: faceProjection = FlipFaceProjection(faceProjection, false, true); break;
+            }
+
+
+            face.TextureRightAxis = faceProjection.RightAxis;
+            face.TextureDownAxis = faceProjection.DownAxis;
+
+            var scaleX = faceProjection.BoundingBox.Width / hotspotRectangleScore.HotspotRectangle.Rectangle.Width;
+            var scaleY = faceProjection.BoundingBox.Height / hotspotRectangleScore.HotspotRectangle.Rectangle.Height;
+
+            if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Horizontal)
+                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1f;
+            else if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Vertical)
+                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1f;
+
+            face.TextureScale = new Vector2D(scaleX, scaleY);
+            face.TextureShift = new Vector2D(
+                (-faceProjection.BoundingBox.X / scaleX) + hotspotRectangleScore.HotspotRectangle.Rectangle.X,
+                (-faceProjection.BoundingBox.Y / scaleY) + hotspotRectangleScore.HotspotRectangle.Rectangle.Y);
+            face.TextureAngle = 0;
+        }
+
+
+        // Edge constraints:
+
+        // TODO: Store face neighbor information inside Brush (it can be determined when creating a brush from face planes anyway)!
+        private static ConcaveEdges GetEdgeConstraints(Face face, Brush parentBrush, FaceProjection faceProjection, HotspotSettings settings)
+        {
+            var edgeConstraints = ConcaveEdges.None;
+            for (int i = 0; i < 4; i++)
+            {
+                var edge = faceProjection.AlignedEdges[i];
+                if (edge == FaceProjection.NoEdge)
+                    continue;
+
+                var neighboringFace = GetNeighboringFace(face, parentBrush, edge);
+                if (neighboringFace is null)
+                    continue;
+
+                // Edges with textures that are on the skip list are treated as concave:
+                if (settings.IgnoreTextures.Contains(neighboringFace.TextureName))
+                    edgeConstraints |= (ConcaveEdges)(1 << i);
+            }
+            return edgeConstraints;
+        }
+
+        // TODO: What's a good threshold?? 1/N (where N is a power of two, maybe 32 or 64 or so)?
+        // NOTE: Edge is the index of the start vertex of the shared edge, in the given face -- so the edge from face.Vertices[startVertex] to face.Vertices[GetNextVertexIndex(face, startVertex)]
+        private static Face? GetNeighboringFace(Face face, Brush parentBrush, int edge, float threshold = 0.125f)
+        {
+            // NOTE: In the neighboring face, start and end vertices are inverted!
+            var startVertex = face.Vertices[edge];
+            var endVertex = face.Vertices[GetNextVertexIndex(face, edge)];
+
+            foreach (var otherFace in parentBrush.Faces)
+            {
+                if (otherFace == face)
+                    continue;
+
+                for (int i = 0; i < otherFace.Vertices.Count; i++)
+                {
+                    if (IsSameVertex(endVertex, otherFace.Vertices[i], threshold))
+                    {
+                        if (IsSameVertex(startVertex, otherFace.Vertices[GetNextVertexIndex(otherFace, i)], threshold))
+                            return otherFace;
+                        else
+                            break;
+                    }
+                }
+            }
+
+            return null;
+
+
+            bool IsSameVertex(Vector3D vertex1, Vector3D vertex2, float threshold)
+                => Math.Abs(vertex1.X - vertex2.X) < threshold && Math.Abs(vertex1.Y - vertex2.Y) < threshold && Math.Abs(vertex1.Z - vertex2.Z) < threshold;
+        }
+
+        private static int GetPreviousVertexIndex(Face face, int index)
+            => index == 0 ? face.Vertices.Count - 1 : index - 1;
+
+        private static int GetNextVertexIndex(Face face, int index)
+            => index == face.Vertices.Count - 1 ? 0 : index + 1;
+
+
+        // Scoring:
+
+        // Returns a score that indicates how good of a match the given hotspot rectangle is for the given bounding box.
+        private static HotspotRectangleScore GetBestHotspotScore(Rectangle boundingBox, ConcaveEdges edgeConstraints, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        {
+            var score = GetHotspotScoreWithoutRotation(boundingBox, edgeConstraints, hotspotRectangle, settings);
+            var orientations = new List<HotspotOrientations> { HotspotOrientations.NoRotation | score.Orientations[0] };
+
+            if (settings.AllowRotation && hotspotRectangle.AllowRotation)
+            {
+                var rotated180Score = GetHotspotScoreWithoutRotation(boundingBox, edgeConstraints.Rotate180(), hotspotRectangle, settings);
+                var rotated180Orientation = rotated180Score.Orientations[0] | HotspotOrientations.Rotate180Degrees;
+                if (rotated180Score.Score > score.Score)
+                {
+                    score = rotated180Score;
+                    orientations = new List<HotspotOrientations> { rotated180Orientation };
+                }
+                else if (rotated180Score.Score == score.Score)
+                {
+                    orientations.Add(rotated180Orientation);
+                }
+
+                var rotatedBoundingBox = new Rectangle(0, 0, boundingBox.Height, boundingBox.Width);
+                var rotatedLeftScore = GetHotspotScoreWithoutRotation(rotatedBoundingBox, edgeConstraints.Rotate270(), hotspotRectangle, settings);
+                var rotatedLeftOrientation = rotatedLeftScore.Orientations[0] | HotspotOrientations.Rotate270Degrees;
+                if (rotatedLeftScore.Score > score.Score)
+                {
+                    score = rotatedLeftScore;
+                    orientations = new List<HotspotOrientations> { rotatedLeftOrientation };
+                }
+                else if (rotatedLeftScore.Score == score.Score)
+                {
+                    orientations.Add(rotatedLeftOrientation);
+                }
+
+                var rotatedRightScore = GetHotspotScoreWithoutRotation(rotatedBoundingBox, edgeConstraints.Rotate90(), hotspotRectangle, settings);
+                var rotatedRightOrientation = rotatedRightScore.Orientations[0] | HotspotOrientations.Rotate90Degrees;
+                if (rotatedRightScore.Score > score.Score)
+                {
+                    score = rotatedRightScore;
+                    orientations = new List<HotspotOrientations> { rotatedRightOrientation };
+                }
+                else if (rotatedRightScore.Score == score.Score)
+                {
+                    orientations.Add(rotatedRightOrientation);
+                }
+            }
+
+            return new HotspotRectangleScore(hotspotRectangle, score.Score, orientations);
+        }
+
+        // NOTE: This will try to mirror the rectangle to see if it can better match the given edge constraints, but it won't try different rotations.
+        private static HotspotRectangleScore GetHotspotScoreWithoutRotation(Rectangle boundingBox, ConcaveEdges edgeConstraints, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        {
+            var texelScalingScore = GetTexelScalingScore(boundingBox, hotspotRectangle, settings);
+            var edgeConstraintScore = GetEdgeConstraintScore(edgeConstraints, hotspotRectangle.ConcaveEdges);
+
+            var mirroring = HotspotOrientations.NoMirroring;
+            if (settings.AllowMirroring && hotspotRectangle.AllowMirroring)
+            {
+                var mirrorHorizontallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorHorizontally(), hotspotRectangle.ConcaveEdges);
+                if (mirrorHorizontallyScore > edgeConstraintScore)
+                {
+                    edgeConstraintScore = mirrorHorizontallyScore;
+                    mirroring = HotspotOrientations.MirrorHorizontally;
+                }
+                else if (mirrorHorizontallyScore == edgeConstraintScore)
+                {
+                    mirroring |= HotspotOrientations.MirrorHorizontally;
+                }
+
+                var mirrorVerticallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorVertically(), hotspotRectangle.ConcaveEdges);
+                if (mirrorVerticallyScore > edgeConstraintScore)
+                {
+                    edgeConstraintScore = mirrorVerticallyScore;
+                    mirroring = HotspotOrientations.MirrorVertically;
+                }
+                else if (mirrorVerticallyScore == edgeConstraintScore)
+                {
+                    mirroring |= HotspotOrientations.MirrorVertically;
+                }
+            }
+
+            return new HotspotRectangleScore(hotspotRectangle, GetTotalScore(texelScalingScore, edgeConstraintScore), new[] { mirroring });
+        }
+
+        // 1 = perfect match, lower = more texel stretching/scaling. Score should always be above 0.
+        private static float GetTexelScalingScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
             // NOTE: Tiling textures should have *some* penalty so that they score less than a perfect fitting rectangle, but not so much of a penalty that they'll be avoided altogether!
             var widthScore = 0.75f;
@@ -235,72 +481,81 @@ namespace MESS.Macros.Texturing
             return (widthScore * widthScore) * (heightScore * heightScore);
         }
 
-        private static HotspotRectangle SelectRandomHotspotRectangle(HotspotRectangle[] hotspotRectangles, Random random)
+        // 1 = perfect match, 0.5 = no match at all. Score should always be above 0.
+        private static float GetEdgeConstraintScore(ConcaveEdges edgeConstraints, ConcaveEdges hotspotRectangleEdges)
         {
-            var totalWeight = hotspotRectangles.Sum(hotspot => hotspot.SelectionWeight);
-            var selection = (float)(random.NextDouble() * totalWeight);
-            foreach (var hotspotRectangle in hotspotRectangles)
-            {
-                selection -= hotspotRectangle.SelectionWeight;
-                if (selection <= 0)
-                    return hotspotRectangle;
-            }
-            return hotspotRectangles.Last();
+            var score = 1f;
+
+            var penalty = 0.125f;
+            if (edgeConstraints.HasFlag(ConcaveEdges.Top) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Top)) score -= penalty;
+            if (edgeConstraints.HasFlag(ConcaveEdges.Right) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Right)) score -= penalty;
+            if (edgeConstraints.HasFlag(ConcaveEdges.Bottom) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Bottom)) score -= penalty;
+            if (edgeConstraints.HasFlag(ConcaveEdges.Left) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Left)) score -= penalty;
+
+            return score;
         }
 
-        private static void ApplyHotspotRectangleToFace(Face face, FaceProjection faceProjection, HotspotRectangle hotspotRectangle, HotspotSettings settings, Random random)
-        {
-            if (settings.AllowRotation && hotspotRectangle.AllowRotation)
-            {
-                var defaultScore = GetNonRotatedScore(faceProjection.BoundingBox, hotspotRectangle, settings);
-                var rotatedScore = GetNonRotatedScore(new Rectangle(0, 0, faceProjection.BoundingBox.Height, faceProjection.BoundingBox.Width), hotspotRectangle, settings);
-                if (rotatedScore > defaultScore)
-                {
-                    var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
-                    var rotateClockwise = (isFlatFace ? faceProjection.RightAxis.Z : faceProjection.RightAxis.Y) >= 0;
-                    faceProjection = RotateFaceProjection90Degrees(faceProjection, rotateClockwise);
-                }
-            }
-
-            if (settings.AllowMirroring && hotspotRectangle.AllowMirroring)
-            {
-                faceProjection = FlipFaceProjection(
-                    faceProjection,
-                    horizontal: random.Next(2) == 1,
-                    vertical: random.Next(2) == 1);
-            }
-
-
-            face.TextureRightAxis = faceProjection.RightAxis;
-            face.TextureDownAxis = faceProjection.DownAxis;
-
-            var scaleX = faceProjection.BoundingBox.Width / hotspotRectangle.Rectangle.Width;
-            var scaleY = faceProjection.BoundingBox.Height / hotspotRectangle.Rectangle.Height;
-
-            if (hotspotRectangle.TilingMode == TilingMode.Horizontal)
-                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1f;
-            else if (hotspotRectangle.TilingMode == TilingMode.Vertical)
-                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1f;
-
-            face.TextureScale = new Vector2D(scaleX, scaleY);
-            face.TextureShift = new Vector2D(
-                (-faceProjection.BoundingBox.X / scaleX) + hotspotRectangle.Rectangle.X,
-                (-faceProjection.BoundingBox.Y / scaleY) + hotspotRectangle.Rectangle.Y);
-            face.TextureAngle = 0;
-        }
+        // TODO: Maybe have a setting slider for adjusting the weight of each individual score?
+        private static float GetTotalScore(float texelScalingScore, float edgeConstraintScore)
+            => texelScalingScore * edgeConstraintScore;
 
 
         class FaceProjection
         {
+            public const int NoEdge = -1;
+
+            public const int Top = 0;
+            public const int Right = 1;
+            public const int Bottom = 2;
+            public const int Left = 3;
+
+
             public Vector3D RightAxis { get; }
             public Vector3D DownAxis { get; }
             public Rectangle BoundingBox { get; }
 
-            public FaceProjection(Vector3D rightAxis, Vector3D downAxis, Rectangle boundingBox)
+            // This must contain 4 values: [top, right, bottom, left]. Each value is either -1 (no matching edge) or the index of the starting vertex of an edge.
+            public int[] AlignedEdges { get; }
+
+
+            public FaceProjection(Vector3D rightAxis, Vector3D downAxis, Rectangle boundingBox, int[] alignedEdges)
             {
                 RightAxis = rightAxis;
                 DownAxis = downAxis;
                 BoundingBox = boundingBox;
+                AlignedEdges = alignedEdges.ToArray();
+            }
+        }
+
+        [Flags]
+        public enum HotspotOrientations : uint
+        {
+            NoRotation =            1,
+            Rotate90Degrees =       2,
+            Rotate180Degrees =      4,
+            Rotate270Degrees =      8,
+
+            RotationMask = NoRotation | Rotate90Degrees | Rotate180Degrees | Rotate270Degrees,
+
+            NoMirroring =           16,
+            MirrorHorizontally =    32,
+            MirrorVertically =      64,
+
+            MirrorMask = NoMirroring | MirrorHorizontally | MirrorVertically,
+        }
+
+        struct HotspotRectangleScore
+        {
+            public HotspotRectangle HotspotRectangle { get; }
+            public float Score { get; }
+            public HotspotOrientations[] Orientations { get; }
+
+
+            public HotspotRectangleScore(HotspotRectangle hotspotRectangle, float score, IEnumerable<HotspotOrientations> orientations)
+            {
+                HotspotRectangle = hotspotRectangle;
+                Score = score;
+                Orientations = orientations.ToArray();
             }
         }
     }
