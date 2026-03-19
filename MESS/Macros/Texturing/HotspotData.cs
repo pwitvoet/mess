@@ -1,17 +1,19 @@
 ﻿namespace MESS.Macros.Texturing
 {
-    /// <summary>
-    /// This class maps texture names to collections of hotspot rectangles.
-    /// </summary>
     public class HotspotData
     {
-        private Dictionary<string, HotspotRectangle[]> _hotspotRects = new();
+        public HotspotRectangle[] HotspotRectangles { get; }
+
+        public string? FallbackTextureName { get; }
+        public float FallbackScoreThreshold { get; }
 
 
-        public void SetHotspotRectanglesForTexture(string textureName, HotspotRectangle[] hotspotRects)
-            => _hotspotRects[textureName.ToLowerInvariant()] = hotspotRects;
+        public HotspotData(HotspotRectangle[] hotspotRectangles, string? fallbackTextureName = null, float fallbackScoreThreshold = 0f)
+        {
+            HotspotRectangles = hotspotRectangles;
 
-        public HotspotRectangle[] GetHotspotRectanglesForTexture(string textureName)
-            => _hotspotRects.TryGetValue(textureName.ToLowerInvariant(), out var hotspotRects) ? hotspotRects : Array.Empty<HotspotRectangle>();
+            FallbackTextureName = fallbackTextureName;
+            FallbackScoreThreshold = fallbackScoreThreshold;
+        }
     }
 }

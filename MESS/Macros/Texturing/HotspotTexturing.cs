@@ -54,35 +54,24 @@ namespace MESS.Macros.Texturing
 
     public class HotspotTexturing
     {
-        public static void ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
+        /// <summary>
+        /// Applies hotspot texturing to the given face.
+        /// Returns the score of the applied hotspot rectangle.
+        /// </summary>
+        public static float ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
         {
-            if (settings.IgnoreTextures.Contains(face.TextureName))
-                return;
-
-            var availableHotspotRectangles = hotspotData.GetHotspotRectanglesForTexture(face.TextureName);
-            if (availableHotspotRectangles is null)
-                return;
-
-            availableHotspotRectangles = availableHotspotRectangles
+            var availableHotspotRectangles = hotspotData.HotspotRectangles
                 .Where(hotspotRectangle => hotspotRectangle.IsAlternate == settings.UseAlternateRectangles)
                 .Where(hotspotRectangle => hotspotRectangle.TilingMode == TilingMode.None || settings.AllowTilingRectangles)
                 .ToArray();
             if (!availableHotspotRectangles.Any())
-                return;
+                return 0;
 
 
-            // Find the best texture orientation - with the smallest bounding box, and being as up-right as possible:
-            var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
-            var possibleProjections = GetPossibleFaceProjections(face).ToArray();
-            var smallestSurface = possibleProjections.Min(projection => projection.BoundingBox.Surface);
-
-            var bestProjection = possibleProjections
-                .Where(projection => projection.BoundingBox.Surface < smallestSurface * 1.01)                           // Select the projections with the smallest bounding boxes (with some wiggle room to account for numeric precision issues)
-                .OrderByDescending(projection => Math.Abs(isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z))  // Select the projection that best aligns with our up axis
-                .ThenBy(projection => isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z)                       // Upright is better than upside-down
-                .First();
+            var bestProjection = GetBestProjection(face);
 
             // Rotate the projection by 180 degrees if it's upside down:
+            var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
             if (isFlatFace ? bestProjection.DownAxis.Y > 0 : bestProjection.DownAxis.Z > 0)
                 bestProjection = RotateFaceProjection180Degrees(bestProjection);
 
@@ -110,13 +99,32 @@ namespace MESS.Macros.Texturing
             // Randomly select a hotspot from the ones that are left over, and apply it to the given face:
             var selectedHotspotScore = SelectRandomHotspotRectangleScore(bestHotspotScores, random);
             ApplyHotspotRectangleToFace(face, bestProjection, selectedHotspotScore, settings, random);
+
+            return selectedHotspotScore.Score;
         }
 
-        public enum Axis
+        /// <summary>
+        /// Returns the most suitable texture projection axis for the given face.
+        /// </summary>
+        public static (Vector3D rightAxis, Vector3D downAxis) GetBestTextureAxis(Face face)
         {
-            X,
-            Y,
-            Z,
+            var bestProjection = GetBestProjection(face);
+            return (bestProjection.RightAxis, bestProjection.DownAxis);
+        }
+
+        // Finds the best texture orientation - the projection with the smallest bounding box, being as up-right as possible.
+        private static FaceProjection GetBestProjection(Face face)
+        {
+            // Find the best texture orientation - with the smallest bounding box, and being as up-right as possible:
+            var isFlatFace = GetNearestAxis(face.Plane.Normal) == Axis.Z;
+            var possibleProjections = GetPossibleFaceProjections(face).ToArray();
+            var smallestSurface = possibleProjections.Min(projection => projection.BoundingBox.Surface);
+
+            return possibleProjections
+                .Where(projection => projection.BoundingBox.Surface < smallestSurface * 1.01)                           // Select the projections with the smallest bounding boxes (with some wiggle room to account for numeric precision issues)
+                .OrderByDescending(projection => Math.Abs(isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z))  // Select the projection that best aligns with our up axis
+                .ThenBy(projection => isFlatFace ? projection.DownAxis.Y : projection.DownAxis.Z)                       // Upright is better than upside-down
+                .First();
         }
 
         private static Axis GetNearestAxis(Vector3D normal)
@@ -499,6 +507,13 @@ namespace MESS.Macros.Texturing
         private static float GetTotalScore(float texelScalingScore, float edgeConstraintScore)
             => texelScalingScore * edgeConstraintScore;
 
+
+        enum Axis
+        {
+            X,
+            Y,
+            Z,
+        }
 
         class FaceProjection
         {

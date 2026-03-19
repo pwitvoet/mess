@@ -4,8 +4,8 @@ using System.Diagnostics;
 using MESS.Util;
 using MESS.Macros.Texturing;
 using MESS.Common;
-using System.IO.Compression;
 using System.Text;
+using MESS.Mathematics.Spatial;
 
 namespace MESS
 {
@@ -222,17 +222,15 @@ namespace MESS
         {
             var random = settings.RandomSeed is null ? new Random() : new Random(settings.RandomSeed.Value);
 
-            var hotspotData = new HotspotData();
+            var hotspotDataCollection = new HotspotDataCollection();
             var wadPaths = GetAbsoluteWadPaths(map, settings);
             foreach (var wadPath in wadPaths)
             {
                 try
                 {
-                    var wadRectsFilePath = wadPath + ".rects";
-                    if (File.Exists(wadRectsFilePath))
-                        ReadWadRectsFile(wadRectsFilePath, hotspotData, logger);
-                    else if (Directory.Exists(wadRectsFilePath))
-                        ReadWadRectsDirectory(wadRectsFilePath, hotspotData, logger);
+                    var wadHotspotFilePath = wadPath + ".hotspot";
+                    if (File.Exists(wadHotspotFilePath))
+                        ReadWadHotspotFile(wadHotspotFilePath, hotspotDataCollection, logger);
                 }
                 catch (Exception ex)
                 {
@@ -252,7 +250,66 @@ namespace MESS
                     {
                         try
                         {
-                            HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+                            // Do we need to hotspot this face?
+                            if (settings.HotspotSettings.IgnoreTextures.Contains(face.TextureName))
+                                continue;
+
+                            // Does this texture have hotspot data?
+                            var hotspotData = hotspotDataCollection.GetHotspotDataForTexture(face.TextureName);
+                            if (hotspotData == null)
+                                continue;
+
+                            var score = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+
+
+                            // Do we need to try fallback textures?
+                            if (score < hotspotData.FallbackScoreThreshold && !string.IsNullOrEmpty(hotspotData.FallbackTextureName))
+                            {
+                                var previousTextures = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { face.TextureName };
+                                var bestScore = score;
+                                var lastScore = score;
+                                var bestTextureName = face.TextureName;
+                                var ignoreBestMatch = false;
+
+                                while (lastScore < hotspotData.FallbackScoreThreshold &&
+                                    !string.IsNullOrEmpty(hotspotData.FallbackTextureName) &&
+                                    !previousTextures.Contains(hotspotData.FallbackTextureName))
+                                {
+                                    var fallbackTextureName = hotspotData.FallbackTextureName;
+                                    face.TextureName = fallbackTextureName;
+                                    previousTextures.Add(fallbackTextureName);
+
+                                    hotspotData = hotspotDataCollection.GetHotspotDataForTexture(fallbackTextureName);
+                                    if (hotspotData == null)
+                                    {
+                                        // If a fallback texture doesn't have hotspot data, treat it as a tiling texture and use default scale/offset:
+                                        (var rightAxis, var downAxis) = HotspotTexturing.GetBestTextureAxis(face);
+                                        face.TextureRightAxis = rightAxis;
+                                        face.TextureDownAxis = downAxis;
+                                        face.TextureScale = new Vector2D(settings.HotspotSettings.DefaultTextureScale, settings.HotspotSettings.DefaultTextureScale);
+                                        face.TextureShift = new Vector2D(0, 0);
+                                        face.TextureAngle = 0;
+
+                                        ignoreBestMatch = true;
+                                        break;
+                                    }
+
+                                    lastScore = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+                                    if (lastScore > bestScore)
+                                    {
+                                        bestScore = lastScore;
+                                        bestTextureName = fallbackTextureName;
+                                    }
+                                }
+
+                                // Pick the best match if we didn't find a good-enough match:
+                                if (!ignoreBestMatch && lastScore < bestScore)
+                                {
+                                    face.TextureName = bestTextureName;
+                                    hotspotData = hotspotDataCollection.GetHotspotDataForTexture(bestTextureName);
+                                    HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData!, settings.HotspotSettings, random);
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -297,152 +354,22 @@ namespace MESS
             return relativePath;
         }
 
-        private static void ReadWadRectsFile(string wadRectsFilePath, HotspotData hotspotData, ILogger logger)
+        private static void ReadWadHotspotFile(string wadHotspotFilePath, HotspotDataCollection hotspotDataCollection, ILogger logger)
         {
-            logger.Info($"Reading hotspot data from '{wadRectsFilePath}' file.");
+            logger.Info($"Reading hotspot data from '{wadHotspotFilePath}' file.");
 
-            using (var file = File.Open(wadRectsFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var zipArchive = new ZipArchive(file, ZipArchiveMode.Read, true, Encoding.UTF8))
+            using (var file = File.Open(wadHotspotFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                var mappingEntry = zipArchive.GetEntry("rects.mapping");
-                if (mappingEntry is null)
+                try
                 {
-                    logger.Warning($"'{wadRectsFilePath}' does not contain a 'rects.mapping' file that maps hotspot rectangle data to textures.");
-                    return;
+                    var hotspotData = HotspotFileParser.Parse(file);
+                    foreach (var entry in hotspotData)
+                        hotspotDataCollection.SetHotspotDataForTexture(entry.Key, entry.Value);
                 }
-
-                var hotspotRectanglesCache = new Dictionary<string, HotspotRectangle[]?>();
-
-                var rectMappings = Array.Empty<(string, string)>();
-                using (var mappingEntryStream = mappingEntry.Open())
-                    rectMappings = ReadRectsMappingFile(mappingEntryStream, logger).ToArray();
-
-                foreach ((var textureName, var rectFileName) in rectMappings)
+                catch (Exception ex)
                 {
-                    if (!hotspotRectanglesCache.TryGetValue(rectFileName, out var hotspotRectangles))
-                    {
-                        hotspotRectangles = LoadRectFile(zipArchive, rectFileName);
-                        hotspotRectanglesCache[rectFileName] = hotspotRectangles;
-                    }
-
-                    if (hotspotRectangles != null)
-                    {
-                        logger.Verbose($"Found {hotspotRectangles.Length} hotspot rectangles for '{textureName}'.");
-                        hotspotData.SetHotspotRectanglesForTexture(textureName, hotspotRectangles);
-                    }
+                    logger.Warning($"Failed to read hotspot data from '{wadHotspotFilePath}':", ex);
                 }
-            }
-
-
-            HotspotRectangle[]? LoadRectFile(ZipArchive zipArchive, string rectFileName)
-            {
-                var rectEntry = zipArchive.GetEntry(rectFileName);
-                if (rectEntry is null)
-                {
-                    logger.Warning($"'{wadRectsFilePath}' does not contain a '{rectFileName}' file. No hotspot data will be available for textures that reference this rect file.");
-                    return null;
-                }
-                else
-                {
-                    // TODO: Improve this with error detection/reporting/logging!
-                    using (var entryStream = rectEntry.Open())
-                    using (var reader = new StreamReader(entryStream, Encoding.UTF8))
-                    {
-                        var data = reader.ReadToEnd();
-                        return RectFileParser.Parse(data);
-                    }
-                }
-            }
-        }
-
-        private static void ReadWadRectsDirectory(string wadRectsDirectory, HotspotData hotspotData, ILogger logger)
-        {
-            logger.Info($"Reading hotspot data from '{wadRectsDirectory}' directory.");
-
-            var rectsMappingFilePath = Path.Combine(wadRectsDirectory, "rects.mapping");
-            if (!File.Exists(rectsMappingFilePath))
-            {
-                logger.Info($"'{wadRectsDirectory}' does not contain a 'rects.mapping' file that maps hotspot rectangle data to textures.");
-                return;
-            }
-
-            var hotspotRectanglesCache = new Dictionary<string, HotspotRectangle[]?>();
-
-            var rectMappings = Array.Empty<(string, string)>();
-            using (var rectsMappingFile = File.Open(rectsMappingFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                rectMappings = ReadRectsMappingFile(rectsMappingFile, logger).ToArray();
-
-            foreach ((var textureName, var rectFileName) in rectMappings)
-            {
-                if (!hotspotRectanglesCache.TryGetValue(rectFileName, out var hotspotRectangles))
-                {
-                    hotspotRectangles = LoadRectFile(rectFileName);
-                    hotspotRectanglesCache[rectFileName] = hotspotRectangles;
-                }
-
-                if (hotspotRectangles != null)
-                {
-                    logger.Verbose($"Found {hotspotRectangles.Length} hotspot rectangles for '{textureName}'.");
-                    hotspotData.SetHotspotRectanglesForTexture(textureName, hotspotRectangles);
-                }
-            }
-
-
-            HotspotRectangle[]? LoadRectFile(string rectFileName)
-            {
-                var fullRectFilePath = Path.Combine(wadRectsDirectory, rectFileName);
-                if (!File.Exists(fullRectFilePath))
-                {
-                    logger.Warning($"'{wadRectsDirectory}' does not contain a '{rectFileName}' file. No hotspot data will be available for textures that reference this rect file.");
-                    return null;
-                }
-                else
-                {
-                    // TODO: Improve this with error detection/reporting/logging!
-                    using (var fileStream = File.Open(fullRectFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (var reader = new StreamReader(fileStream, Encoding.UTF8))
-                    {
-                        var data = reader.ReadToEnd();
-                        return RectFileParser.Parse(data);
-                    }
-                }
-            }
-        }
-
-
-        private static IEnumerable<(string, string)> ReadRectsMappingFile(Stream stream, ILogger logger)
-        {
-            var rectsMappingLines = ReadLines(stream);
-            for (int i = 0; i < rectsMappingLines.Count; i++)
-            {
-                var line = rectsMappingLines[i].Trim();
-                if (line.StartsWith("//") || string.IsNullOrEmpty(line))
-                    continue;
-
-                var parts = line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length != 2)
-                {
-                    logger.Warning($"rects.mapping line #{i + 1} has invalid format: '{line}'.");
-                }
-                else
-                {
-                    var textureName = parts[0];
-                    var rectFileName = parts[1];
-
-                    yield return (textureName, rectFileName);
-                }
-            }
-
-
-            IReadOnlyList<string> ReadLines(Stream stream)
-            {
-                var lines = new List<string>();
-                using (var reader = new StreamReader(stream))
-                {
-                    while (reader.ReadLine() is string line)
-                        lines.Add(line);
-                }
-                return lines;
             }
         }
     }
