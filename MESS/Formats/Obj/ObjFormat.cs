@@ -34,7 +34,7 @@ namespace MESS.Formats.Obj
 
             private HashSet<string> SkipTextures { get; } = new();
             private string FloatFormat { get; }
-            private float Scale { get; }
+            private double Scale { get; }
 
             private Dictionary<string, TextureInfo> TextureDimensions = new();
             private Dictionary<Vector3D, int> Vertices = new();
@@ -56,7 +56,7 @@ namespace MESS.Formats.Obj
                     SkipTextures.Add(skipTexture.ToLowerInvariant());
 
                 FloatFormat = "r";
-                Scale = Settings.Scale <= 0 ? 1f : Settings.Scale;
+                Scale = Settings.Scale <= 0 ? 1 : Settings.Scale;
             }
 
             public void Dispose()
@@ -108,7 +108,7 @@ namespace MESS.Formats.Obj
                 foreach (var kv in Vertices.OrderBy(kv => kv.Value))
                 {
                     var vertex = ToTargetCoordinateSystem(kv.Key);
-                    Writer.WriteLine($"v {FormatFloat(vertex.X * Scale)} {FormatFloat(vertex.Y * Scale)} {FormatFloat(vertex.Z * Scale)}");
+                    Writer.WriteLine($"v {FormatDouble(vertex.X * Scale)} {FormatDouble(vertex.Y * Scale)} {FormatDouble(vertex.Z * Scale)}");
                 }
 
                 Writer.WriteLine();
@@ -116,7 +116,7 @@ namespace MESS.Formats.Obj
                 foreach (var kv in UvCoordinates.OrderBy(kv => kv.Value))
                 {
                     var uv = kv.Key;
-                    Writer.WriteLine($"vt {FormatFloat(uv.X)} {FormatFloat(uv.Y)}");
+                    Writer.WriteLine($"vt {FormatDouble(uv.X)} {FormatDouble(uv.Y)}");
                 }
 
                 Writer.WriteLine();
@@ -124,7 +124,7 @@ namespace MESS.Formats.Obj
                 foreach (var kv in Normals.OrderBy(kv => kv.Value))
                 {
                     var normal = ToTargetCoordinateSystem(kv.Key);
-                    Writer.WriteLine($"vn {FormatFloat(kv.Key.X)} {FormatFloat(kv.Key.Y)} {FormatFloat(kv.Key.Z)}");
+                    Writer.WriteLine($"vn {FormatDouble(kv.Key.X)} {FormatDouble(kv.Key.Y)} {FormatDouble(kv.Key.Z)}");
                 }
 
 
@@ -456,8 +456,8 @@ namespace MESS.Formats.Obj
                     upY ? -point.Y : point.Z);
             }
 
-            private string FormatFloat(float f)
-                => f.ToString(FloatFormat, CultureInfo.InvariantCulture).Replace('E', 'e');
+            private string FormatDouble(double value)
+                => value.ToString(FloatFormat, CultureInfo.InvariantCulture).Replace('E', 'e');
         }
     }
 }

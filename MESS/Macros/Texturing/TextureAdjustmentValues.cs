@@ -26,7 +26,7 @@ namespace MESS.Macros.Texturing
 
         public string? TextureName { get; set; }
         public Vector2D? Offset { get; set; }
-        public float? Angle { get; set; }
+        public double? Angle { get; set; }
         public Vector2D? Scale { get; set; }
 
 
@@ -44,7 +44,7 @@ namespace MESS.Macros.Texturing
                     {
                         case Attributes.ReplaceTexture: TextureName = ConvertToString(value); break;
                         case Attributes.ShiftTexture: Offset = ConvertToVector2(value); break;
-                        case Attributes.RotateTexture: Angle = ConvertToFloat(value); break;
+                        case Attributes.RotateTexture: Angle = ConvertToDouble(value); break;
                         case Attributes.ScaleTexture: Scale = ConvertToVector2(value); break;
 
                         case Attributes.AdjustTexture:
@@ -97,12 +97,12 @@ namespace MESS.Macros.Texturing
         public static string? ConvertToString(object? mscriptValue)
             => mscriptValue is null ? null : Interpreter.Print(mscriptValue);
 
-        public static float? ConvertToFloat(object? mscriptValue)
+        public static double? ConvertToDouble(object? mscriptValue)
         {
             switch (mscriptValue)
             {
                 case null: return null;
-                case double number: return (float)number;
+                case double number: return number;
                 default: throw new InvalidDataException($"Cannot convert {mscriptValue.GetType().Name} to a floating point number.");
             }
         }
@@ -114,7 +114,7 @@ namespace MESS.Macros.Texturing
 
             // NOTE: This can be simplified in C# 11 (if (mscriptValue is [double x, double y])):
             if (mscriptValue is object?[] array && array.Length == 2 && array[0] is double d1 && array[1] is double d2)
-                return new Vector2D((float)d1, (float)d2);
+                return new Vector2D(d1, d2);
 
             throw new InvalidDataException($"Cannot convert {mscriptValue.GetType().Name} to a {nameof(Vector2D)}.");
         }

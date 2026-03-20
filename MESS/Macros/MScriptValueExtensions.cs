@@ -36,7 +36,7 @@ namespace MESS.Macros
         /// </summary>
         public static Vector3D? GetVector3D(this IDictionary<string, object?> mscriptValues, string name)
             => mscriptValues.TryGetValue(name, out var value) && TryConvertToNumericalArray(value, out var array) && array.Length == 3
-            ? new Vector3D((float)array[0], (float)array[1], (float)array[2])
+            ? new Vector3D(array[0], array[1], array[2])
             : null;
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace MESS.Macros
         /// </summary>
         public static Angles? GetAngles(this IDictionary<string, object?> mscriptValues, string name)
             => mscriptValues.TryGetValue(name, out var value) && TryConvertToNumericalArray(value, out var array) && array.Length == 3
-            ? new Angles((float)array[2], (float)array[0], (float)array[1])
+            ? new Angles(array[2], array[0], array[1])
             : null;
 
 

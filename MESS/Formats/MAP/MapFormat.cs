@@ -328,21 +328,21 @@ namespace MESS.Formats.MAP
                 return new Face
                 {
                     PlanePoints = new[] {
-                    new Vector3D(ParseFloat(parts[1]), ParseFloat(parts[2]), ParseFloat(parts[3])),
-                    new Vector3D(ParseFloat(parts[6]), ParseFloat(parts[7]), ParseFloat(parts[8])),
-                    new Vector3D(ParseFloat(parts[11]), ParseFloat(parts[12]), ParseFloat(parts[13])),
+                    new Vector3D(ParseDouble(parts[1]), ParseDouble(parts[2]), ParseDouble(parts[3])),
+                    new Vector3D(ParseDouble(parts[6]), ParseDouble(parts[7]), ParseDouble(parts[8])),
+                    new Vector3D(ParseDouble(parts[11]), ParseDouble(parts[12]), ParseDouble(parts[13])),
                 },
                     TextureName = parts[15],
-                    TextureRightAxis = new Vector3D(ParseFloat(parts[17]), ParseFloat(parts[18]), ParseFloat(parts[19])),
-                    TextureDownAxis = new Vector3D(ParseFloat(parts[23]), ParseFloat(parts[24]), ParseFloat(parts[25])),
-                    TextureShift = new Vector2D(ParseFloat(parts[20]), ParseFloat(parts[26])),
-                    TextureAngle = ParseFloat(parts[28]),
-                    TextureScale = new Vector2D(ParseFloat(parts[29]), ParseFloat(parts[30])),
+                    TextureRightAxis = new Vector3D(ParseDouble(parts[17]), ParseDouble(parts[18]), ParseDouble(parts[19])),
+                    TextureDownAxis = new Vector3D(ParseDouble(parts[23]), ParseDouble(parts[24]), ParseDouble(parts[25])),
+                    TextureShift = new Vector2D(ParseDouble(parts[20]), ParseDouble(parts[26])),
+                    TextureAngle = ParseDouble(parts[28]),
+                    TextureScale = new Vector2D(ParseDouble(parts[29]), ParseDouble(parts[30])),
                 };
             }
 
 
-            private static float ParseFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+            private static double ParseDouble(string s) => double.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
 
@@ -488,17 +488,17 @@ namespace MESS.Formats.MAP
                 var textureName = Validation.ValidateTextureName(face.TextureName, null, Settings, Logger);
 
                 foreach (var point in face.PlanePoints)
-                    Writer.Write($"( {FormatFloat(point.X)} {FormatFloat(point.Y)} {FormatFloat(point.Z)} ) ");
+                    Writer.Write($"( {FormatDouble(point.X)} {FormatDouble(point.Y)} {FormatDouble(point.Z)} ) ");
 
                 Writer.Write(textureName);
                 Writer.Write(" ");
-                Writer.Write($"[ {FormatFloat(face.TextureRightAxis.X)} {FormatFloat(face.TextureRightAxis.Y)} {FormatFloat(face.TextureRightAxis.Z)} {FormatFloat(face.TextureShift.X)} ] ");
-                Writer.Write($"[ {FormatFloat(face.TextureDownAxis.X)} {FormatFloat(face.TextureDownAxis.Y)} {FormatFloat(face.TextureDownAxis.Z)} {FormatFloat(face.TextureShift.Y)} ] ");
-                Writer.WriteLine($"{FormatFloat(face.TextureAngle)} {FormatFloat(face.TextureScale.X)} {FormatFloat(face.TextureScale.Y)} ");
+                Writer.Write($"[ {FormatDouble(face.TextureRightAxis.X)} {FormatDouble(face.TextureRightAxis.Y)} {FormatDouble(face.TextureRightAxis.Z)} {FormatDouble(face.TextureShift.X)} ] ");
+                Writer.Write($"[ {FormatDouble(face.TextureDownAxis.X)} {FormatDouble(face.TextureDownAxis.Y)} {FormatDouble(face.TextureDownAxis.Z)} {FormatDouble(face.TextureShift.Y)} ] ");
+                Writer.WriteLine($"{FormatDouble(face.TextureAngle)} {FormatDouble(face.TextureScale.X)} {FormatDouble(face.TextureScale.Y)} ");
             }
 
 
-            private string FormatFloat(float f) => f.ToString(FloatFormat, CultureInfo.InvariantCulture).Replace('E', 'e');
+            private string FormatDouble(double value) => value.ToString(FloatFormat, CultureInfo.InvariantCulture).Replace('E', 'e');
 
             private void OnVisGroupFailure(MapObject mapObject)
             {

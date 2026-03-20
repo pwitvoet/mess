@@ -29,12 +29,12 @@ namespace MESS.Mapping
 
         public static Vector3D? GetVector3D(this IDictionary<string, string> properties, string propertyName)
             => properties.TryGetValue(propertyName, out var str) && TryParseNumericalArray(str, out var array) && array.Length == 3
-            ? new Vector3D((float)array[0], (float)array[1], (float)array[2])
+            ? new Vector3D(array[0], array[1], array[2])
             : null;
 
         public static Angles? GetAngles(this IDictionary<string, string> properties, string propertyName)
             => properties.TryGetValue(propertyName, out var str) && TryParseNumericalArray(str, out var array) && array.Length == 3
-            ? new Angles((float)array[2], (float)array[0], (float)array[1])
+            ? new Angles(array[2], array[0], array[1])
             : null;
 
         public static TEnum? GetEnum<TEnum>(this IDictionary<string, string> properties, string propertyName)

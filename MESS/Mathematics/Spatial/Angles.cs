@@ -7,11 +7,11 @@
     /// </summary>
     public struct Angles
     {
-        public float Roll;  // x-axis: Leaning over sidewards to the right (positive) or left (negative)
-        public float Pitch; // y-axis: Looking down (positive) or up (negative) (NOTE: for studio models and light entities, this is inverted!)
-        public float Yaw;   // z-axis: Turning left (positive) or right (negative)
+        public double Roll;  // x-axis: Leaning over sidewards to the right (positive) or left (negative)
+        public double Pitch; // y-axis: Looking down (positive) or up (negative) (NOTE: for studio models and light entities, this is inverted!)
+        public double Yaw;   // z-axis: Turning left (positive) or right (negative)
 
-        public Angles(float roll, float pitch, float yaw)
+        public Angles(double roll, double pitch, double yaw)
         {
             Roll = roll;
             Pitch = pitch;

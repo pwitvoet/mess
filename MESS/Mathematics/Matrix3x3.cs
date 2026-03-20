@@ -7,13 +7,13 @@ namespace MESS.Mathematics
         public static Matrix3x3 Identity => new Matrix3x3(1, 0, 0,    0, 1, 0,    0, 0, 1);
 
 
-        public float r11, r12, r13;
-        public float r21, r22, r23;
-        public float r31, r32, r33;
+        public double r11, r12, r13;
+        public double r21, r22, r23;
+        public double r31, r32, r33;
 
-        public Matrix3x3(float r11, float r12, float r13,
-                         float r21, float r22, float r23,
-                         float r31, float r32, float r33)
+        public Matrix3x3(double r11, double r12, double r13,
+                         double r21, double r22, double r23,
+                         double r31, double r32, double r33)
         {
             this.r11 = r11;
             this.r12 = r12;

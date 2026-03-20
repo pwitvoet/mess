@@ -20,7 +20,7 @@ namespace MESS.Mapping
         public Vector3D TextureRightAxis { get; set; }
         public Vector3D TextureDownAxis { get; set; }
         public Vector2D TextureShift { get; set; }
-        public float TextureAngle { get; set; }
+        public double TextureAngle { get; set; }
         public Vector2D TextureScale { get; set; }
 
 

@@ -72,7 +72,7 @@ namespace MESS.Mapping
                 return entity.Brushes.All(entityBrush => brush.Contains(entityBrush));
         }
 
-        public static bool Contains(this Brush brush, Vector3D point, float epsilon = 0)
+        public static bool Contains(this Brush brush, Vector3D point, double epsilon = 0)
         {
             // A point lies inside a brush if it's on the inside of every face plane:
             foreach (var face in brush.Faces)

@@ -4,9 +4,9 @@ namespace MESS.Mathematics
 {
     static class Extensions
     {
-        public static float ToRadians(this float degrees) => (float)(degrees / 180.0 * Math.PI);
+        public static double ToRadians(this double degrees) => degrees / 180.0 * Math.PI;
 
-        public static float ToDegrees(this float radians) => (float)(radians / Math.PI * 180.0);
+        public static double ToDegrees(this double radians) => radians / Math.PI * 180.0;
 
 
         /// <summary>
@@ -22,17 +22,17 @@ namespace MESS.Mathematics
                 y = -y;
 
             return new Matrix3x3(
-                (float)(Math.Cos(y) * Math.Cos(z)),
-                (float)(Math.Sin(x) * Math.Sin(y) * Math.Cos(z) - Math.Cos(x) * Math.Sin(z)),
-                (float)(Math.Cos(x) * Math.Sin(y) * Math.Cos(z) + Math.Sin(x) * Math.Sin(z)),
+                Math.Cos(y) * Math.Cos(z),
+                Math.Sin(x) * Math.Sin(y) * Math.Cos(z) - Math.Cos(x) * Math.Sin(z),
+                Math.Cos(x) * Math.Sin(y) * Math.Cos(z) + Math.Sin(x) * Math.Sin(z),
 
-                (float)(Math.Cos(y) * Math.Sin(z)),
-                (float)(Math.Sin(x) * Math.Sin(y) * Math.Sin(z) + Math.Cos(x) * Math.Cos(z)),
-                (float)(Math.Cos(x) * Math.Sin(y) * Math.Sin(z) - Math.Sin(x) * Math.Cos(z)),
+                Math.Cos(y) * Math.Sin(z),
+                Math.Sin(x) * Math.Sin(y) * Math.Sin(z) + Math.Cos(x) * Math.Cos(z),
+                Math.Cos(x) * Math.Sin(y) * Math.Sin(z) - Math.Sin(x) * Math.Cos(z),
 
-                (float)(-Math.Sin(y)),
-                (float)(Math.Sin(x) * Math.Cos(y)),
-                (float)(Math.Cos(x) * Math.Cos(y))
+                -Math.Sin(y),
+                Math.Sin(x) * Math.Cos(y),
+                Math.Cos(x) * Math.Cos(y)
             );
         }
 
@@ -46,31 +46,31 @@ namespace MESS.Mathematics
             var m = matrix;
             if (m.r31 != 1) // TODO: With some epsilon!
             {
-                var y = (float)-Math.Asin(m.r31);
-                var x = (float)Math.Atan2(m.r32 / Math.Cos(y), m.r33 / Math.Cos(y));
-                var z = (float)Math.Atan2(m.r21 / Math.Cos(y), m.r11 / Math.Cos(y));
+                var y = -Math.Asin(m.r31);
+                var x = Math.Atan2(m.r32 / Math.Cos(y), m.r33 / Math.Cos(y));
+                var z = Math.Atan2(m.r21 / Math.Cos(y), m.r11 / Math.Cos(y));
                 return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
 
                 // Alternate solution:
-                //var y2 = (float)Math.PI - y;
-                //var x2 = (float)Math.Atan2(m.r32 / Math.Cos(y2), m.r33 / Math.Cos(y2));
-                //var z2 = (float)Math.Atan2(m.r21 / Math.Cos(y2), m.r11 / Math.Cos(y2));
+                //var y2 = Math.PI - y;
+                //var x2 = Math.Atan2(m.r32 / Math.Cos(y2), m.r33 / Math.Cos(y2));
+                //var z2 = Math.Atan2(m.r21 / Math.Cos(y2), m.r11 / Math.Cos(y2));
                 //return new Angles(y2.ToDegrees(), z2.ToDegrees(), x2.ToDegrees());
             }
             else
             {
                 // Gimbal lock:
-                var z = 0f;
+                var z = 0.0;
                 if (m.r31 == -1)
                 {
-                    var y = (float)Math.PI / 2;
-                    var x = z + (float)Math.Atan2(m.r12, m.r13);
+                    var y = Math.PI / 2;
+                    var x = z + Math.Atan2(m.r12, m.r13);
                     return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
                 }
                 else
                 {
-                    var y = (float)-Math.PI / 2;
-                    var x = -z + (float)Math.Atan2(-m.r12, -m.r13);
+                    var y = -Math.PI / 2;
+                    var x = -z + Math.Atan2(-m.r12, -m.r13);
                     return new Angles(x.ToDegrees(), invertedPitch ? -y.ToDegrees() : y.ToDegrees(), z.ToDegrees());
                 }
             }
@@ -80,11 +80,11 @@ namespace MESS.Mathematics
         /// <summary>
         /// Rotates this vector around the given axis. The angle is in radians.
         /// </summary>
-        public static Vector3D RotateAroundAxis(this Vector3D vector, Vector3D axis, float angle)
+        public static Vector3D RotateAroundAxis(this Vector3D vector, Vector3D axis, double angle)
         {
-            return (vector * (float)Math.Cos(angle)) +
-                (axis.CrossProduct(vector) * (float)Math.Sin(angle)) +
-                (axis * axis.DotProduct(vector) * (1 - (float)Math.Cos(angle)));
+            return (vector * Math.Cos(angle)) +
+                (axis.CrossProduct(vector) * Math.Sin(angle)) +
+                (axis * axis.DotProduct(vector) * (1 - Math.Cos(angle)));
         }
     }
 }

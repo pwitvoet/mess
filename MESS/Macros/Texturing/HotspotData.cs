@@ -5,10 +5,10 @@
         public HotspotRectangle[] HotspotRectangles { get; }
 
         public string? FallbackTextureName { get; }
-        public float FallbackScoreThreshold { get; }
+        public double FallbackScoreThreshold { get; }
 
 
-        public HotspotData(HotspotRectangle[] hotspotRectangles, string? fallbackTextureName = null, float fallbackScoreThreshold = 0f)
+        public HotspotData(HotspotRectangle[] hotspotRectangles, string? fallbackTextureName = null, double fallbackScoreThreshold = 0)
         {
             HotspotRectangles = hotspotRectangles;
 

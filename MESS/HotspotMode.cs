@@ -130,7 +130,7 @@ namespace MESS
                     "Sets the random seed. The same seed and map input will always produce the same result. Without a seed, hotspotting may produce different results each time.")
                 .Option(
                     "-scale",
-                    s => settings.HotspotSettings.DefaultTextureScale = float.Parse(s),
+                    s => settings.HotspotSettings.DefaultTextureScale = double.Parse(s),
                     "Default texture scale. Default value is 1.")
                 .Switch(
                     "-norotation",

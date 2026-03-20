@@ -63,7 +63,7 @@
         /// <summary>
         /// This scale is applied to all geometry. The default is 1.
         /// </summary>
-        public float Scale { get; set; } = 1f;
+        public double Scale { get; set; } = 1;
 
 
         public ObjFileSaveSettings(FileSaveSettings? settings = null)

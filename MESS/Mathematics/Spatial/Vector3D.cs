@@ -2,11 +2,11 @@
 {
     public struct Vector3D
     {
-        public float X;
-        public float Y;
-        public float Z;
+        public double X;
+        public double Y;
+        public double Z;
 
-        public Vector3D(float x, float y, float z)
+        public Vector3D(double x, double y, double z)
         {
             X = x;
             Y = y;
@@ -27,13 +27,13 @@
         public override string ToString() => $"({X}, {Y}, {Z})";
 
 
-        public float Length() => (float)Math.Sqrt((X * X) + (Y * Y) + (Z * Z));
+        public double Length() => Math.Sqrt((X * X) + (Y * Y) + (Z * Z));
 
-        public float SquaredLength() => (X * X) + (Y * Y) + (Z * Z);
+        public double SquaredLength() => (X * X) + (Y * Y) + (Z * Z);
 
         public Vector3D Normalized() => this / Length();
 
-        public float DotProduct(Vector3D other) => (X * other.X) + (Y * other.Y) + (Z * other.Z);
+        public double DotProduct(Vector3D other) => (X * other.X) + (Y * other.Y) + (Z * other.Z);
 
         public Vector3D CrossProduct(Vector3D other)
         {
@@ -50,10 +50,10 @@
         public static Vector3D operator -(Vector3D left, Vector3D right) => new Vector3D(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
 
         public static Vector3D operator *(Vector3D left, Vector3D right) => new Vector3D(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
-        public static Vector3D operator *(Vector3D vector, float scalar) => new Vector3D(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
-        public static Vector3D operator *(float scalar, Vector3D vector) => vector * scalar;
-        public static Vector3D operator /(Vector3D vector, float scalar) => new Vector3D(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
-        public static Vector3D operator /(float scalar, Vector3D vector) => new Vector3D(scalar / vector.X, scalar / vector.Y, scalar / vector.Z);
+        public static Vector3D operator *(Vector3D vector, double scalar) => new Vector3D(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
+        public static Vector3D operator *(double scalar, Vector3D vector) => vector * scalar;
+        public static Vector3D operator /(Vector3D vector, double scalar) => new Vector3D(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
+        public static Vector3D operator /(double scalar, Vector3D vector) => new Vector3D(scalar / vector.X, scalar / vector.Y, scalar / vector.Z);
 
         public static bool operator ==(Vector3D left, Vector3D right) => left.X == right.X && left.Y == right.Y && left.Z == right.Z;
         public static bool operator !=(Vector3D left, Vector3D right) => left.X != right.X || left.Y != right.Y || left.Z != right.Z;

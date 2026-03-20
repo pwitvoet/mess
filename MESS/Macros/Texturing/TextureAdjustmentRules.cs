@@ -221,7 +221,7 @@ namespace MESS.Macros.Texturing
 
                         if (!isTextureAngleSet && valuesObject.Fields.TryGetValue(TextureAngleKey, out var newAngle))
                         {
-                            SetFaceProperty(newAngle, TextureAdjustmentValues.ConvertToFloat, angle => ApplyNewAngle(face, angle), "texture angle", logger);
+                            SetFaceProperty(newAngle, TextureAdjustmentValues.ConvertToDouble, angle => ApplyNewAngle(face, angle), "texture angle", logger);
                             isTextureAngleSet = true;
                         }
 
@@ -245,7 +245,7 @@ namespace MESS.Macros.Texturing
                     isTextureOffsetSet = SetFaceProperty(adjustmentValues.OffsetFunction, adjustmentValues.Offset, TextureAdjustmentValues.ConvertToVector2, offset => face.TextureShift += offset, faceInfo, "texture offset", logger);
 
                 if (!isTextureAngleSet)
-                    isTextureAngleSet = SetFaceProperty(adjustmentValues.AngleFunction, adjustmentValues.Angle, TextureAdjustmentValues.ConvertToFloat, angle => ApplyNewAngle(face, face.TextureAngle + angle), faceInfo, "texture angle", logger);
+                    isTextureAngleSet = SetFaceProperty(adjustmentValues.AngleFunction, adjustmentValues.Angle, TextureAdjustmentValues.ConvertToDouble, angle => ApplyNewAngle(face, face.TextureAngle + angle), faceInfo, "texture angle", logger);
 
                 if (!isTextureScaleSet)
                     isTextureScaleSet = SetFaceProperty(adjustmentValues.ScaleFunction, adjustmentValues.Scale, TextureAdjustmentValues.ConvertToVector2, scale => face.TextureScale = new Vector2D(face.TextureScale.X * scale.X, face.TextureScale.Y * scale.Y), faceInfo, "texture scale", logger);
@@ -265,7 +265,7 @@ namespace MESS.Macros.Texturing
         }
 
 
-        private static void ApplyNewAngle(Face face, float newAngle)
+        private static void ApplyNewAngle(Face face, double newAngle)
         {
             var radians = (newAngle - face.TextureAngle).ToRadians();
             var texturePlaneNormal = face.TextureRightAxis.CrossProduct(face.TextureDownAxis).Normalized();

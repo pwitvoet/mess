@@ -690,7 +690,7 @@ namespace MESS.Macros
                     instanceRotation = sequenceContext.Transform.Rotation;
 
                 // Create a child context for this insertion, with a properly adjusted transform:
-                var scale = (float)(evaluatedProperties.GetDouble(Attributes.Scale) ?? 1);
+                var scale = evaluatedProperties.GetDouble(Attributes.Scale) ?? 1;
                 var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
                 var anglesMatrix = evaluatedProperties.GetAngles(Attributes.Angles)?.ToMatrix() ?? Matrix3x3.Identity;
                 var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
@@ -781,7 +781,7 @@ namespace MESS.Macros
 
             var parentID = context.GetNextParentID();
             var maxInstances = coverEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
-            var radius = (float)(coverEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
+            var radius = coverEntity.Properties.GetDouble(Attributes.Radius) ?? 0;
             var randomSeed = coverEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
             var brushBehavior = (CoverBrushBehavior)(coverEntity.Properties.GetInteger(Attributes.BrushBehavior) ?? 0);
 
@@ -880,7 +880,7 @@ namespace MESS.Macros
                     }
                 }
 
-                var scale = (float)(evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1);
+                var scale = evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1;
                 var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
                 var anglesMatrix = evaluatedProperties.GetAngles(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
                 var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
@@ -920,7 +920,7 @@ namespace MESS.Macros
 
             var parentID = context.GetNextParentID();
             var maxInstances = fillEntity.Properties.GetDouble(Attributes.MaxInstances) ?? 0.0;
-            var radius = (float)(fillEntity.Properties.GetDouble(Attributes.Radius) ?? 0);
+            var radius = fillEntity.Properties.GetDouble(Attributes.Radius) ?? 0;
             var randomSeed = fillEntity.Properties.GetInteger(Attributes.RandomSeed) ?? 0;
             var fillMode = (FillMode)(fillEntity.Properties.GetInteger(Attributes.FillMode) ?? 0);
 
@@ -933,11 +933,11 @@ namespace MESS.Macros
             if (fillEntity.Properties.GetDoubleArray(Attributes.GridGranularity) is double[] granularityArray)
             {
                 if (granularityArray.Length == 1)
-                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[0], (float)granularityArray[0]);
+                    gridGranularity = new Vector3D(granularityArray[0], granularityArray[0], granularityArray[0]);
                 else if (granularityArray.Length == 2)
-                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], 0);
+                    gridGranularity = new Vector3D(granularityArray[0], granularityArray[1], 0);
                 else if (granularityArray.Length >= 3)
-                    gridGranularity = new Vector3D((float)granularityArray[0], (float)granularityArray[1], (float)granularityArray[2]);
+                    gridGranularity = new Vector3D(granularityArray[0], granularityArray[1], granularityArray[2]);
             }
 
             var hasGridSnapping = gridGranularity.X > 0 || gridGranularity.Y > 0 || gridGranularity.Z > 0;
@@ -992,11 +992,11 @@ namespace MESS.Macros
                     var min = SnapToGrid(fillEntity.BoundingBox.Min, cellSize);
                     var max = SnapToGrid(fillEntity.BoundingBox.Max, cellSize);
 
-                    for (float x = min.X; x <= max.X; x += cellSize.X)
+                    for (double x = min.X; x <= max.X; x += cellSize.X)
                     {
-                        for (float y = min.Y; y <= max.Y; y += cellSize.Y)
+                        for (double y = min.Y; y <= max.Y; y += cellSize.Y)
                         {
-                            for (float z = min.Z; z <= max.Z; z += cellSize.Z)
+                            for (double z = min.Z; z <= max.Z; z += cellSize.Z)
                             {
                                 var insertionPoint = new Vector3D(x, y, z);
                                 if (!fillEntity.Brushes.Any(brush => brush.Contains(insertionPoint)))
@@ -1038,7 +1038,7 @@ namespace MESS.Macros
                 if (orientation == Orientation.Local)
                     rotation = context.Transform.Rotation;
 
-                var scale = (float)(evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1);
+                var scale = evaluatedProperties.GetDouble(Attributes.InstanceScale) ?? 1;
                 var geometryScale = evaluatedProperties.GetVector3D(Attributes.InstanceGeometryScale) ?? new Vector3D(scale, scale, scale);
                 var anglesMatrix = evaluatedProperties.GetAngles(Attributes.InstanceAngles)?.ToMatrix() ?? Matrix3x3.Identity;
                 var offset = evaluatedProperties.GetVector3D(Attributes.InstanceOffset) ?? new Vector3D();
@@ -1064,13 +1064,13 @@ namespace MESS.Macros
                 return point;
 
 
-                float SnapToNearest(float value, float spacing)
+                double SnapToNearest(double value, double spacing)
                 {
                     var f = value / spacing;
-                    if (f - Math.Floor(f) < 0.5f)
-                        return (float)(Math.Floor(f) * spacing);
+                    if (f - Math.Floor(f) < 0.5)
+                        return Math.Floor(f) * spacing;
                     else
-                        return (float)(Math.Ceiling(f) * spacing);
+                        return Math.Ceiling(f) * spacing;
                 }
             }
         }

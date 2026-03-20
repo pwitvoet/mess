@@ -8,7 +8,7 @@ namespace MESS.Macros.Texturing
         /// <summary>
         /// The default texture scale. Hotspotting will try to stay as close as possible to this scale.
         /// </summary>
-        public float DefaultTextureScale { get; set; } = 1f;
+        public double DefaultTextureScale { get; set; } = 1;
 
         /// <summary>
         /// When false, rectangles will not be rotated, even if they are marked with 'enable rotation'.
@@ -58,7 +58,7 @@ namespace MESS.Macros.Texturing
         /// Applies hotspot texturing to the given face.
         /// Returns the score of the applied hotspot rectangle.
         /// </summary>
-        public static float ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
+        public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
         {
             var availableHotspotRectangles = hotspotData.HotspotRectangles
                 .Where(hotspotRectangle => hotspotRectangle.IsAlternate == settings.UseAlternateRectangles)
@@ -149,10 +149,10 @@ namespace MESS.Macros.Texturing
                 var rightAxis = (face.Vertices[i] - face.Vertices[prevI]).Normalized();
                 var downAxis = rightAxis.CrossProduct(face.Plane.Normal);
 
-                var minX = float.MaxValue;
-                var minY = float.MaxValue;
-                var maxX = float.MinValue;
-                var maxY = float.MinValue;
+                var minX = double.MaxValue;
+                var minY = double.MaxValue;
+                var maxX = double.MinValue;
+                var maxY = double.MinValue;
                 var edgeVertices = new int[4];     // Top, right, down, left.
 
                 var projectedVertices = face.Vertices
@@ -180,7 +180,7 @@ namespace MESS.Macros.Texturing
                 yield return new FaceProjection(rightAxis, downAxis, boundingBox, alignedEdges);
             }
 
-            int[] FindAlignedEdges(Vector2D[] projectedVertices, Rectangle boundingBox, int[] edgeVertices, float threshold = 0.5f)
+            int[] FindAlignedEdges(Vector2D[] projectedVertices, Rectangle boundingBox, int[] edgeVertices, double threshold = 0.5)
             {
                 return new int[] {
                     GetAlignedEdge(projectedVertices, edgeVertices[FaceProjection.Top], v => v.Y, threshold),
@@ -190,7 +190,7 @@ namespace MESS.Macros.Texturing
                 };
             }
 
-            int GetAlignedEdge(Vector2D[] projectedVertices, int index, Func<Vector2D, float> getValue, float threshold)
+            int GetAlignedEdge(Vector2D[] projectedVertices, int index, Func<Vector2D, double> getValue, double threshold)
             {
                 var edgeValue = getValue(projectedVertices[index]);
 
@@ -258,7 +258,7 @@ namespace MESS.Macros.Texturing
         private static HotspotRectangleScore SelectRandomHotspotRectangleScore(HotspotRectangleScore[] hotspotRectangleScores, Random random)
         {
             var totalWeight = hotspotRectangleScores.Sum(hotspot => hotspot.HotspotRectangle.SelectionWeight);
-            var selection = (float)(random.NextDouble() * totalWeight);
+            var selection = random.NextDouble() * totalWeight;
             foreach (var hotspotRectangleScore in hotspotRectangleScores)
             {
                 selection -= hotspotRectangleScore.HotspotRectangle.SelectionWeight;
@@ -293,9 +293,9 @@ namespace MESS.Macros.Texturing
             var scaleY = faceProjection.BoundingBox.Height / hotspotRectangleScore.HotspotRectangle.Rectangle.Height;
 
             if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Horizontal)
-                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1f;
+                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1;
             else if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Vertical)
-                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1f;
+                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1;
 
             face.TextureScale = new Vector2D(scaleX, scaleY);
             face.TextureShift = new Vector2D(
@@ -330,7 +330,7 @@ namespace MESS.Macros.Texturing
 
         // TODO: What's a good threshold?? 1/N (where N is a power of two, maybe 32 or 64 or so)?
         // NOTE: Edge is the index of the start vertex of the shared edge, in the given face -- so the edge from face.Vertices[startVertex] to face.Vertices[GetNextVertexIndex(face, startVertex)]
-        private static Face? GetNeighboringFace(Face face, Brush parentBrush, int edge, float threshold = 0.125f)
+        private static Face? GetNeighboringFace(Face face, Brush parentBrush, int edge, double threshold = 0.125)
         {
             // NOTE: In the neighboring face, start and end vertices are inverted!
             var startVertex = face.Vertices[edge];
@@ -356,7 +356,7 @@ namespace MESS.Macros.Texturing
             return null;
 
 
-            bool IsSameVertex(Vector3D vertex1, Vector3D vertex2, float threshold)
+            bool IsSameVertex(Vector3D vertex1, Vector3D vertex2, double threshold)
                 => Math.Abs(vertex1.X - vertex2.X) < threshold && Math.Abs(vertex1.Y - vertex2.Y) < threshold && Math.Abs(vertex1.Z - vertex2.Z) < threshold;
         }
 
@@ -454,10 +454,10 @@ namespace MESS.Macros.Texturing
         }
 
         // 1 = perfect match, lower = more texel stretching/scaling. Score should always be above 0.
-        private static float GetTexelScalingScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        private static double GetTexelScalingScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
             // NOTE: Tiling textures should have *some* penalty so that they score less than a perfect fitting rectangle, but not so much of a penalty that they'll be avoided altogether!
-            var widthScore = 0.75f;
+            var widthScore = 0.75;
             if (hotspotRectangle.TilingMode != TilingMode.Horizontal)
             {
                 var scaledRectangleWidth = hotspotRectangle.Rectangle.Width * settings.DefaultTextureScale;
@@ -467,7 +467,7 @@ namespace MESS.Macros.Texturing
                     widthScore = scaledRectangleWidth / boundingBox.Width;
             }
 
-            var heightScore = 0.75f;
+            var heightScore = 0.75;
             if (hotspotRectangle.TilingMode != TilingMode.Vertical)
             {
                 var scaledRectangleHeight = hotspotRectangle.Rectangle.Height * settings.DefaultTextureScale;
@@ -490,11 +490,11 @@ namespace MESS.Macros.Texturing
         }
 
         // 1 = perfect match, 0.5 = no match at all. Score should always be above 0.
-        private static float GetEdgeConstraintScore(ConcaveEdges edgeConstraints, ConcaveEdges hotspotRectangleEdges)
+        private static double GetEdgeConstraintScore(ConcaveEdges edgeConstraints, ConcaveEdges hotspotRectangleEdges)
         {
-            var score = 1f;
+            var score = 1.0;
 
-            var penalty = 0.125f;
+            var penalty = 0.125;
             if (edgeConstraints.HasFlag(ConcaveEdges.Top) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Top)) score -= penalty;
             if (edgeConstraints.HasFlag(ConcaveEdges.Right) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Right)) score -= penalty;
             if (edgeConstraints.HasFlag(ConcaveEdges.Bottom) != hotspotRectangleEdges.HasFlag(ConcaveEdges.Bottom)) score -= penalty;
@@ -504,7 +504,7 @@ namespace MESS.Macros.Texturing
         }
 
         // TODO: Maybe have a setting slider for adjusting the weight of each individual score?
-        private static float GetTotalScore(float texelScalingScore, float edgeConstraintScore)
+        private static double GetTotalScore(double texelScalingScore, double edgeConstraintScore)
             => texelScalingScore * edgeConstraintScore;
 
 
@@ -562,11 +562,11 @@ namespace MESS.Macros.Texturing
         struct HotspotRectangleScore
         {
             public HotspotRectangle HotspotRectangle { get; }
-            public float Score { get; }
+            public double Score { get; }
             public HotspotOrientations[] Orientations { get; }
 
 
-            public HotspotRectangleScore(HotspotRectangle hotspotRectangle, float score, IEnumerable<HotspotOrientations> orientations)
+            public HotspotRectangleScore(HotspotRectangle hotspotRectangle, double score, IEnumerable<HotspotOrientations> orientations)
             {
                 HotspotRectangle = hotspotRectangle;
                 Score = score;

@@ -4,8 +4,8 @@
     {
         public static BoundingBox FromPoints(IEnumerable<Vector3D> points)
         {
-            var min = new Vector3D(float.MaxValue, float.MaxValue, float.MaxValue);
-            var max = new Vector3D(float.MinValue, float.MinValue, float.MinValue);
+            var min = new Vector3D(double.MaxValue, double.MaxValue, double.MaxValue);
+            var max = new Vector3D(double.MinValue, double.MinValue, double.MinValue);
             foreach (var point in points)
             {
                 min.X = Math.Min(min.X, point.X);
@@ -34,7 +34,7 @@
             Max = max;
         }
 
-        public BoundingBox ExpandBy(float thickness)
+        public BoundingBox ExpandBy(double thickness)
             => new BoundingBox(Min - new Vector3D(thickness, thickness, thickness), Max + new Vector3D(thickness, thickness, thickness));
 
         public BoundingBox CombineWith(BoundingBox other)

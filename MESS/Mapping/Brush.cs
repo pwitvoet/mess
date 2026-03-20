@@ -125,7 +125,7 @@ namespace MESS.Mapping
             }
         }
 
-        private void MergeNearbyVertices(float threshold)
+        private void MergeNearbyVertices(double threshold)
         {
             var squaredThreshold = threshold * threshold;
             foreach (var face in Faces)

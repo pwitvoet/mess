@@ -720,12 +720,12 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(face.Vertices.Count);
 
                 WriteVector3D(face.TextureRightAxis);
-                Stream.WriteFloat(face.TextureShift.X);
+                Stream.WriteFloat((float)face.TextureShift.X);
                 WriteVector3D(face.TextureDownAxis);
-                Stream.WriteFloat(face.TextureShift.Y);
-                Stream.WriteFloat(face.TextureScale.X);
-                Stream.WriteFloat(face.TextureScale.Y);
-                Stream.WriteFloat(face.TextureAngle);
+                Stream.WriteFloat((float)face.TextureShift.Y);
+                Stream.WriteFloat((float)face.TextureScale.X);
+                Stream.WriteFloat((float)face.TextureScale.Y);
+                Stream.WriteFloat((float)face.TextureAngle);
 
                 Stream.WriteInt((int)(jmfFace?.TextureAlignment ?? GetTextureAlignment()));
                 Stream.Write(GetFixedLengthByteArray(jmfFace?.UnknownData, 12));
@@ -733,7 +733,7 @@ namespace MESS.Formats.JMF
                 WriteTextureName(face.TextureName, 64);
 
                 WriteVector3D(face.Plane.Normal);
-                Stream.WriteFloat(face.Plane.Distance);
+                Stream.WriteFloat((float)face.Plane.Distance);
                 Stream.WriteInt((int)(jmfFace?.AxisAlignment ?? GetAxisAlignment()));
 
                 // Vertices are stored in counter-clockwise order:
@@ -742,8 +742,8 @@ namespace MESS.Formats.JMF
                     WriteVector3D(face.Vertices[i]);
                     if (jmfFace != null)
                     {
-                        Stream.WriteFloat(jmfFace.VertexUVCoordinates[i].X);
-                        Stream.WriteFloat(jmfFace.VertexUVCoordinates[i].Y);
+                        Stream.WriteFloat((float)jmfFace.VertexUVCoordinates[i].X);
+                        Stream.WriteFloat((float)jmfFace.VertexUVCoordinates[i].Y);
                         Stream.WriteInt((int)jmfFace.VertexSelectionState[i]);
                     }
                     else
@@ -796,12 +796,12 @@ namespace MESS.Formats.JMF
                 Stream.WriteInt(patch.Rows);
 
                 WriteVector3D(patch.TextureRightAxis);
-                Stream.WriteFloat(patch.TextureShift.X);
+                Stream.WriteFloat((float)patch.TextureShift.X);
                 WriteVector3D(patch.TextureDownAxis);
-                Stream.WriteFloat(patch.TextureShift.Y);
-                Stream.WriteFloat(patch.TextureScale.X);
-                Stream.WriteFloat(patch.TextureScale.Y);
-                Stream.WriteFloat(patch.TextureAngle);
+                Stream.WriteFloat((float)patch.TextureShift.Y);
+                Stream.WriteFloat((float)patch.TextureScale.X);
+                Stream.WriteFloat((float)patch.TextureScale.Y);
+                Stream.WriteFloat((float)patch.TextureAngle);
                 Stream.WriteInt((int)patch.TextureAlignment);
                 Stream.WriteBytes(GetFixedLengthByteArray(patch.UnknownData, 12));
 
@@ -824,8 +824,8 @@ namespace MESS.Formats.JMF
             {
                 WriteVector3D(controlPoint.Position);
                 WriteVector3D(controlPoint.Normal);
-                Stream.WriteFloat(controlPoint.UV.X);
-                Stream.WriteFloat(controlPoint.UV.Y);
+                Stream.WriteFloat((float)controlPoint.UV.X);
+                Stream.WriteFloat((float)controlPoint.UV.Y);
                 Stream.WriteInt(controlPoint.IsSelected ? 1 : 0);
             }
 
@@ -838,9 +838,9 @@ namespace MESS.Formats.JMF
 
             private void WriteVector3D(Vector3D vector)
             {
-                Stream.WriteFloat(vector.X);
-                Stream.WriteFloat(vector.Y);
-                Stream.WriteFloat(vector.Z);
+                Stream.WriteFloat((float)vector.X);
+                Stream.WriteFloat((float)vector.Y);
+                Stream.WriteFloat((float)vector.Z);
             }
 
             private void WriteColor(Color color)
@@ -851,9 +851,9 @@ namespace MESS.Formats.JMF
 
             private void WriteAngles(Angles angles)
             {
-                Stream.WriteFloat(angles.Pitch);
-                Stream.WriteFloat(angles.Yaw);
-                Stream.WriteFloat(angles.Roll);
+                Stream.WriteFloat((float)angles.Pitch);
+                Stream.WriteFloat((float)angles.Yaw);
+                Stream.WriteFloat((float)angles.Roll);
             }
 
 

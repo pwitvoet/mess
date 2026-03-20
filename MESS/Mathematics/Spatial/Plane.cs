@@ -16,9 +16,9 @@
 
 
         public Vector3D Normal;
-        public float Distance;
+        public double Distance;
 
-        public Plane(Vector3D normal, float distance)
+        public Plane(Vector3D normal, double distance)
         {
             Normal = normal;
             Distance = distance;
@@ -43,7 +43,7 @@
 
             var u = m2.CrossProduct(m3);
             var denom = m1.DotProduct(u);
-            if (Math.Abs(denom) < float.Epsilon)
+            if (Math.Abs(denom) < double.Epsilon)
                 return null;    // No intersection *point*
 
             var d = new Vector3D(plane1.Distance, plane2.Distance, plane3.Distance);

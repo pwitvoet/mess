@@ -31,11 +31,11 @@ namespace MESS.Macros.Texturing
 
         // Additions:
         public TilingMode TilingMode { get; }
-        public float SelectionWeight { get; }
+        public double SelectionWeight { get; }
         public ConcaveEdges ConcaveEdges { get; }
 
 
-        public HotspotRectangle(Rectangle rectangle, bool allowRotation, bool allowMirroring, bool isAlternate, TilingMode tilingMode, float selectionWeight, ConcaveEdges concaveEdges)
+        public HotspotRectangle(Rectangle rectangle, bool allowRotation, bool allowMirroring, bool isAlternate, TilingMode tilingMode, double selectionWeight, ConcaveEdges concaveEdges)
         {
             Rectangle = rectangle;
 

@@ -14,7 +14,7 @@ namespace MESS.Macros
         /// <summary>
         /// Returns true if the given spherical area is available, false if the space is already (partially) occupied by other spheres.
         /// </summary>
-        public bool TryInsert(Vector3D position, float radius)
+        public bool TryInsert(Vector3D position, double radius)
         {
             if (_spheres.Any(HasOverlap))
                 return false;
@@ -34,9 +34,9 @@ namespace MESS.Macros
         struct Sphere
         {
             public Vector3D Position { get; }
-            public float Radius { get; }
+            public double Radius { get; }
 
-            public Sphere(Vector3D position, float radius)
+            public Sphere(Vector3D position, double radius)
             {
                 Position = position;
                 Radius = radius;

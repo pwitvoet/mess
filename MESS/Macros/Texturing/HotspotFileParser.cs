@@ -50,7 +50,7 @@ namespace MESS.Macros.Texturing
                         throw new InvalidDataException($"Texture '{textureName}' is referencing non-existing hotspot data '{hotspotName}'.");
 
                     var fallbackTexture = node.Value["fallback_texture"]?.ToString();
-                    var fallbackScoreThreshold = (float?)node.Value["fallback_score_threshold"]?.AsValue();
+                    var fallbackScoreThreshold = (double?)node.Value["fallback_score_threshold"]?.AsValue();
                     result[node.Key] = new HotspotData(rectangles, fallbackTexture, fallbackScoreThreshold ?? 0);
                 }
             }
@@ -81,7 +81,7 @@ namespace MESS.Macros.Texturing
                 var allowMirroring = (bool?)jsonObject["allow_mirroring"]?.AsValue() ?? false;
                 var isAlternate = (bool?)jsonObject["is_alternate"]?.AsValue() ?? false;
                 var tilingMode = ParseTilingMode(jsonObject["tiling_mode"]?.ToString());
-                var selectionWeight = (float?)jsonObject["selection_weight"]?.AsValue() ?? 1f;
+                var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
 
                 var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges);
@@ -93,10 +93,10 @@ namespace MESS.Macros.Texturing
         private static Rectangle ParseRectangle(JsonObject json)
         {
             return new Rectangle(
-                (float)(json["x"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain an 'x' key.")),
-                (float)(json["y"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain an 'y' key.")),
-                (float)(json["width"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'width' key.")),
-                (float)(json["height"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'height' key.")));
+                (double)(json["x"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain an 'x' key.")),
+                (double)(json["y"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain an 'y' key.")),
+                (double)(json["width"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'width' key.")),
+                (double)(json["height"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'height' key.")));
         }
 
         private static TilingMode ParseTilingMode(string? str)

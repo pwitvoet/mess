@@ -60,7 +60,7 @@ namespace MESS
         public string? ObjObjectNameFormat { get; set; }
         public List<string> TextureDirectories { get; set; } = new();
         public HashSet<string> ObjSkipTextures { get; set; } = new();
-        public float? ObjScale { get; set; }
+        public double? ObjScale { get; set; }
         public ObjUpAxis? ObjUpAxis { get; set; }
 
         // VIS group filtering:
@@ -75,8 +75,8 @@ namespace MESS
         public BoundingBox? CordonArea { get; set; }
         public bool UseJmfCordonArea { get; set; }
         public string? CordonTexture { get; set; }
-        public float? CordonPadding { get; set; }
-        public float? CordonThickness { get; set; }
+        public double? CordonPadding { get; set; }
+        public double? CordonThickness { get; set; }
 
         // Other settings:
         public LogLevel? LogLevel { get; set; }
@@ -334,7 +334,7 @@ namespace MESS
                     "A comma-separated list of textures. Faces with these textures will be excluded in the output .obj file.")
                 .Option(
                     "-objscale",
-                    s => settings.ObjScale = float.Parse(s),
+                    s => settings.ObjScale = double.Parse(s),
                     "All geometry will be scaled by this factor. Default is 1.")
                 .Option(
                     "-objupaxis",
@@ -384,11 +384,11 @@ namespace MESS
                     "The texture that will be applied to the cordon brushes. Default value is \"BLACK\".")
                 .Option(
                     "-cordonpadding",
-                    s => settings.CordonPadding = float.Parse(s),
+                    s => settings.CordonPadding = double.Parse(s),
                     "How far the cordon brushes should extend beyond the map's leftover content. Default value is 16. This is the default behavior, which matches how Hammer creates cordon brushes.")
                 .Option(
                     "-cordonthickness",
-                    s => settings.CordonThickness = float.Parse(s),
+                    s => settings.CordonThickness = double.Parse(s),
                     "This setting gives cordon brushes a fixed thickness. This may cause leaks because not all of the map's leftover content may be covered. This matches J.A.C.K.'s behavior.")
 
                 // Logging:
@@ -417,7 +417,7 @@ namespace MESS
             BoundingBox ParseBoundingBox(string input)
             {
                 var values = input.Split()
-                    .Select(float.Parse)
+                    .Select(double.Parse)
                     .ToArray();
 
                 return new BoundingBox(

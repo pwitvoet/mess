@@ -494,16 +494,16 @@ namespace MESS.Formats.RMF
                 if (hasUVAxis)
                     WriteVector3D(face.TextureRightAxis);
 
-                Stream.WriteFloat(face.TextureShift.X);
+                Stream.WriteFloat((float)face.TextureShift.X);
 
                 if (hasUVAxis)
                     WriteVector3D(face.TextureDownAxis);
 
-                Stream.WriteFloat(face.TextureShift.Y);
+                Stream.WriteFloat((float)face.TextureShift.Y);
 
-                Stream.WriteFloat(face.TextureAngle);
-                Stream.WriteFloat(face.TextureScale.X);
-                Stream.WriteFloat(face.TextureScale.Y);
+                Stream.WriteFloat((float)face.TextureAngle);
+                Stream.WriteFloat((float)face.TextureScale.X);
+                Stream.WriteFloat((float)face.TextureScale.Y);
 
                 var unknownData1Length = Settings.FileVersion >= RmfFileVersion.V1_8 ? 16 : 4;
                 Stream.WriteBytes(rmfFace?.UnknownData1?.Length == unknownData1Length ? rmfFace.UnknownData1 : new byte[unknownData1Length]);
@@ -593,9 +593,9 @@ namespace MESS.Formats.RMF
 
             private void WriteVector3D(Vector3D vector)
             {
-                Stream.WriteFloat(vector.X);
-                Stream.WriteFloat(vector.Y);
-                Stream.WriteFloat(vector.Z);
+                Stream.WriteFloat((float)vector.X);
+                Stream.WriteFloat((float)vector.Y);
+                Stream.WriteFloat((float)vector.Z);
             }
 
             private void WritePath(EntityPath entityPath)

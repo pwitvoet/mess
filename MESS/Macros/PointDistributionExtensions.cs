@@ -18,7 +18,7 @@ namespace MESS.Macros
         /// <summary>
         /// Returns the area of the given triangle.
         /// </summary>
-        public static float GetSurfaceArea(this Triangle triangle)
+        public static double GetSurfaceArea(this Triangle triangle)
         {
             var a = triangle.Vertex2 - triangle.Vertex1;
             var b = triangle.Vertex3 - triangle.Vertex1;
@@ -45,7 +45,7 @@ namespace MESS.Macros
         /// <summary>
         /// Returns the volume of the given tetrahedron.
         /// </summary>
-        public static float GetVolume(this Tetrahedron tetrahedron)
+        public static double GetVolume(this Tetrahedron tetrahedron)
         {
             var a = tetrahedron.Vertex2 - tetrahedron.Vertex1;
             var b = tetrahedron.Vertex3 - tetrahedron.Vertex1;
@@ -59,8 +59,8 @@ namespace MESS.Macros
         /// </summary>
         public static Vector3D GetRandomPoint(this Triangle triangle, Random random)
         {
-            var r1 = (float)Math.Sqrt(random.NextDouble());
-            var r2 = (float)random.NextDouble();
+            var r1 = Math.Sqrt(random.NextDouble());
+            var r2 = random.NextDouble();
 
             return (triangle.Vertex1 * (1 - r1)) + (triangle.Vertex2 * (r1 * (1 - r2))) + (triangle.Vertex3 * (r1 * r2));
         }
@@ -70,9 +70,9 @@ namespace MESS.Macros
         /// </summary>
         public static Vector3D GetRandomPoint(this Tetrahedron tetrahedron, Random random)
         {
-            var s = (float)random.NextDouble();
-            var t = (float)random.NextDouble();
-            var u = (float)random.NextDouble();
+            var s = random.NextDouble();
+            var t = random.NextDouble();
+            var u = random.NextDouble();
 
             if (s + t > 1)
             {
