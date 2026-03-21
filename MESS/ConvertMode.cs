@@ -334,7 +334,7 @@ namespace MESS
                     "A comma-separated list of textures. Faces with these textures will be excluded in the output .obj file.")
                 .Option(
                     "-objscale",
-                    s => settings.ObjScale = double.Parse(s),
+                    s => settings.ObjScale = ParseDoubleOrFraction(s),
                     "All geometry will be scaled by this factor. Default is 1.")
                 .Option(
                     "-objupaxis",
@@ -410,6 +410,15 @@ namespace MESS
                     s => settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
                     "Output map file. Accepted formats are .map, .rmf, .jmf and .obj.");
 
+
+            double ParseDoubleOrFraction(string input)
+            {
+                if (!input.Contains('/'))
+                    return double.Parse(input);
+
+                var parts = input.Split('/', 2, StringSplitOptions.TrimEntries);
+                return double.Parse(parts[0]) / double.Parse(parts[1]);
+            }
 
             string[] ParseCommaSeparatedList(string input)
                 => Macros.Util.ParseCommaSeparatedList(input).ToArray();
