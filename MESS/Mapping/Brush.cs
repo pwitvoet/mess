@@ -18,9 +18,7 @@ namespace MESS.Mapping
 
         public Brush(IEnumerable<Face> faces)
         {
-            Faces = faces.ToArray();
-            InitializePlanes();
-            InitializeVertices();
+            Faces = InitializeFaces(faces.ToArray());
             BoundingBox = BoundingBox.FromPoints(Faces.SelectMany(face => face.Vertices));
         }
 
@@ -53,94 +51,74 @@ namespace MESS.Mapping
         }
 
 
-        private void InitializePlanes()
+
+        private static Face[] InitializeFaces(IReadOnlyList<Face> faces)
         {
-            foreach (var face in Faces)
+            // Initialize planes:
+            foreach (var face in faces)
             {
                 if (face.Plane.Normal == default)
                     face.Plane = Plane.FromPoints(face.PlanePoints);
             }
-        }
 
-        private void InitializeVertices()
-        {
-            if (Faces.All(face => face.Vertices.Count > 0))
-                return;
-
-            foreach (var face in Faces)
-                face.Vertices.Clear();
-
-            // TODO: Replace this with a more efficient clipping algorithm:
-            for (int i = 0; i < Faces.Count; i++)
+            // Create a polygon for each face:
+            var polygons = new Polygon3D?[faces.Count];
+            for (int i = 0; i < faces.Count; i++)
             {
-                for (int j = i + 1; j < Faces.Count; j++)
+                var normal = faces[i].Plane.Normal;
+                var axis1 = normal.GetPerpendicularVector().Normalized();
+                var axis2 = normal.CrossProduct(axis1);
+
+                // TODO: Make the radius configurable somewhere?
+                var radius = 100_000.0;
+                var center = normal * faces[i].Plane.Distance;
+                Polygon3D? polygon = new Polygon3D(new Vector3D[] {
+                    center + axis1 * radius + axis2 * radius,
+                    center + axis1 * radius - axis2 * radius,
+                    center - axis1 * radius - axis2 * radius,
+                    center - axis1 * radius + axis2 * radius,
+                });
+
+                for (int j = 0; j < faces.Count; j++)
                 {
-                    for (int k = j + 1; k < Faces.Count; k++)
-                    {
-                        var face1 = Faces[i];
-                        var face2 = Faces[j];
-                        var face3 = Faces[k];
-                        if (Plane.IntersectionPoint(face1.Plane, face2.Plane, face3.Plane) is Vector3D point &&
-                            this.Contains(point, epsilon: 1f))  // TODO: Figure out what a reasonable epsilon is, and whether this can cause any problems... (a 0 epsilon will sometimes omit vertices!)
-                        {
-                            if (!face1.Vertices.Contains(point)) face1.Vertices.Add(point);
-                            if (!face2.Vertices.Contains(point)) face2.Vertices.Add(point);
-                            if (!face3.Vertices.Contains(point)) face3.Vertices.Add(point);
-                        }
-                    }
+                    if (i == j)
+                        continue;
+
+                    polygon = polygon.Clip(faces[j].Plane);
+                    if (polygon is null)
+                        break;
                 }
+
+                polygons[i] = polygon;
             }
 
-            // Merge vertices that are within a certain distance of each other:
-            MergeNearbyVertices(1f / 64);
-
-            // Store vertices in clockwise order:
-            foreach (var face in Faces)
-            {
-                if (!face.Vertices.Any())
-                    continue;
-
-                var center = new Vector3D();
-                foreach (var vertex in face.Vertices)
-                    center += vertex;
-                center /= face.Vertices.Count;
-
-                var normal = face.Plane.Normal;
-                var forward = (face.Vertices[0] - center).Normalized();
-                var right = forward.CrossProduct(normal).Normalized();
-
-                var clockwiseVertices = face.Vertices
-                    .Select(vertex =>
-                    {
-                        var point = vertex - center;
-                        var x = point.DotProduct(right);
-                        var y = point.DotProduct(forward);
-                        return new { Angle = Math.Atan2(y, x), Vertex = vertex };
-                    })
-                    .OrderByDescending(item => item.Angle)
-                    .Select(item => item.Vertex)
-                    .ToArray();
-                face.Vertices.Clear();
-                face.Vertices.AddRange(clockwiseVertices);
-            }
+            // Add polygon vertices to their respective face, and filter out empty faces/polygons:
+            return polygons
+                .Where(polygon => polygon != null)
+                .Select((polygon, i) =>
+                {
+                    var face = faces[i];
+                    face.Vertices.Clear();
+                    face.Vertices.AddRange(polygon!.Vertices);
+                    MergeNearbyVertices(face, 1.0 / 64);
+                    return face;
+                })
+                .ToArray();
         }
 
-        private void MergeNearbyVertices(double threshold)
+        private static void MergeNearbyVertices(Face face, double threshold)
         {
             var squaredThreshold = threshold * threshold;
-            foreach (var face in Faces)
+            for (int i = 0; i < face.Vertices.Count; i++)
             {
-                for (int i = 0; i < face.Vertices.Count; i++)
+                var vertex = face.Vertices[i];
+                for (int j = i + 1; j < face.Vertices.Count; j++)
                 {
-                    var vertex = face.Vertices[i];
-                    for (int j = i + 1; j < face.Vertices.Count; j++)
+                    var otherVertex = face.Vertices[j];
+                    if ((vertex - otherVertex).SquaredLength() < squaredThreshold)
                     {
-                        var otherVertex = face.Vertices[j];
-                        if ((vertex - otherVertex).SquaredLength() < squaredThreshold)
-                        {
-                            face.Vertices.RemoveAt(j);
-                            j -= 1;
-                        }
+                        face.Vertices.RemoveAt(j);
+                        j -= 1;
                     }
                 }
             }
