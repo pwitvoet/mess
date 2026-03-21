@@ -43,6 +43,19 @@
                 (X * other.Y) - (Y * other.X));
         }
 
+        public Vector3D GetPerpendicularVector()
+        {
+            var absX = Math.Abs(X);
+            var absY = Math.Abs(Y);
+            var absZ = Math.Abs(Z);
+            if (absZ < absX && absZ < absY)
+                return new Vector3D(0, 0, 1).CrossProduct(this);
+            else if (absY < absX)
+                return new Vector3D(0, 1, 0).CrossProduct(this);
+            else
+                return new Vector3D(1, 0, 0).CrossProduct(this);
+        }
+
 
         public static Vector3D operator -(Vector3D vector) => new Vector3D(-vector.X, -vector.Y, -vector.Z);
 
