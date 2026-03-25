@@ -19,6 +19,9 @@ namespace MESS
         public string? MapWadProperty { get; set; }                     // NOTE: Only required for rmf/jmf, and maps that don't store wad lists.
         public List<string> TextureDirectories { get; set; } = new();   // NOTE: Required.
 
+        // Filters:
+        public HashSet<string> OnlyTextures { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
         // Other settings:
         public LogLevel? LogLevel { get; set; }
         public string? LogPath { get; set; }
@@ -201,6 +204,15 @@ namespace MESS
                     () => settings.HotspotSettings.UniformScalingForTilingRectangles = false,
                     "Allow non-uniform scaling of tiling rectangles.")
                 .Option(
+                    "-onlytextures",
+                    s =>
+                    {
+                        var textures = Macros.Util.ParseCommaSeparatedList(s);
+                        foreach (var texture in textures)
+                            settings.OnlyTextures.Add(texture);
+                    },
+                    "Only faces with these textures will be hotspotted.")
+                .Option(
                     "-ignoretextures",
                     s =>
                     {
@@ -303,7 +315,7 @@ namespace MESS
                         try
                         {
                             // Do we need to hotspot this face?
-                            if (settings.HotspotSettings.IgnoreTextures.Contains(face.TextureName))
+                            if ((settings.OnlyTextures.Any() && !settings.OnlyTextures.Contains(face.TextureName)) || settings.HotspotSettings.IgnoreTextures.Contains(face.TextureName))
                                 continue;
 
                             // Does this texture have hotspot data?
