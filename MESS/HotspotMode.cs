@@ -6,6 +6,7 @@ using MESS.Macros.Texturing;
 using MESS.Common;
 using System.Text;
 using MESS.Mathematics.Spatial;
+using MESS.Formats.MAP;
 
 namespace MESS
 {
@@ -23,6 +24,7 @@ namespace MESS
         public string? LogPath { get; set; }
 
         // Input/output file paths: = "";
+        public bool UseStandardInput { get; set; }
         public string InputPath { get; set; } = "";
         public string OutputPath { get; set; } = "";
     }
@@ -48,13 +50,27 @@ namespace MESS
 
                 commandLineParser.Parse(args.Where(arg => arg != "-hotspot").ToArray());
 
-                if (string.IsNullOrEmpty(settings.OutputPath))
-                    settings.OutputPath = Path.ChangeExtension(settings.InputPath, ".map");
+                if (string.IsNullOrEmpty(settings.InputPath))
+                {
+                    if (Console.IsInputRedirected)
+                    {
+                        settings.UseStandardInput = true;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("No input provided.");
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(settings.OutputPath))
+                        settings.OutputPath = Path.ChangeExtension(settings.InputPath, ".map");
+                }
 
 
                 var logPath = settings.LogPath ?? FileSystem.GetFullPath(string.IsNullOrEmpty(settings.InputPath) ? "mess-hotspot.log" : $"{settings.InputPath}.mess-hotspot.log");
                 var logLevel = settings.LogLevel ?? LogLevel.Info;
-                using (var logger = CreateLogger(logLevel, logPath))
+                using (var logger = CreateLogger(logLevel, logPath, settings.UseStandardInput))
                 {
                     logger.Minimal($"MESS v{Program.MessVersion}: Macro Entity Scripting System");
                     logger.Minimal("----- TEXTURE HOTSPOTTING MODE -----");
@@ -66,16 +82,44 @@ namespace MESS
                     Map map;
                     try
                     {
-                        logger.Info($"Loading '{settings.InputPath}'.");
-
                         // Load input map:
-                        map = MapFile.Load(settings.InputPath, logger: logger);
+                        if (settings.UseStandardInput)
+                        {
+                            logger.Info("Loading map from standard input.");
+                            using (var inputStream = Console.OpenStandardInput())
+                            {
+                                var mapLoadSettings = new MapFileLoadSettings {
+                                    TrenchbroomGroupHandling = TrenchbroomGroupHandling.LeaveAsEntity,
+                                };
+                                map = MapFormat.Load(inputStream, mapLoadSettings, logger);
+                            }
+                        }
+                        else
+                        {
+                            logger.Info($"Loading '{settings.InputPath}'.");
+                            map = MapFile.Load(settings.InputPath, logger: logger);
+                        }
+
 
                         // Apply hotspotting:
                         ApplyTextureHotspotting(map, settings, logger);
 
+
                         // Save the result:
-                        MapFile.Save(map, settings.OutputPath, logger: logger);
+                        if (settings.UseStandardInput)
+                        {
+                            using (var outputStream = Console.OpenStandardOutput())
+                            {
+                                var mapSaveSettings = new MapFileSaveSettings {
+                                    FileVariant = MapFileVariant.Valve220
+                                };
+                                MapFormat.Save(map, outputStream, mapSaveSettings, logger);
+                            }
+                        }
+                        else
+                        {
+                            MapFile.Save(map, settings.OutputPath, logger: logger);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -100,7 +144,7 @@ namespace MESS
             catch (Exception ex)
             {
                 var noLogFile = settings.LogLevel == LogLevel.Off;
-                using (var errorLogger = CreateLogger(LogLevel.Error, noLogFile ? null : FileSystem.GetFullPath("mess-convert.log")))
+                using (var errorLogger = CreateLogger(LogLevel.Error, noLogFile ? null : FileSystem.GetFullPath("mess-convert.log"), false))
                     errorLogger.Error($"A problem has occurred: {ex.GetType().Name}: '{ex.Message}'.");
 
                 ShowHelp(commandLineParser);
@@ -178,10 +222,10 @@ namespace MESS
                     "Sets the log file path. The default is INPUT_PATH.mess-convert.log.")
 
                 // Input/output paths:
-                .Argument(
+                .OptionalArgument(
                     s => settings.InputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
-                    "Input map file. Accepted formats are .map (valve220), .rmf and .jmf.")
-                .Argument(
+                    "Input map file. Accepted formats are .map (valve220), .rmf and .jmf. Map data (.map format) can also be provided via standard input.")
+                .OptionalArgument(
                     s => settings.OutputPath = FileSystem.GetFullPath(s, Directory.GetCurrentDirectory()),
                     "Output map file. Accepted formats are .map, .rmf and .jmf.");
 
@@ -196,12 +240,20 @@ namespace MESS
                 => value.ToString().ToLowerInvariant();
         }
 
-        private static ILogger CreateLogger(LogLevel logLevel, string? logPath)
+        private static ILogger CreateLogger(LogLevel logLevel, string? logPath, bool noConsole)
         {
-            if (logLevel == LogLevel.Off || string.IsNullOrEmpty(logPath))
-                return new ConsoleLogger(logLevel);
+            var loggers = new List<ILogger>();
 
-            return new MultiLogger(new ConsoleLogger(logLevel), new FileLogger(logPath, logLevel));
+            if (!noConsole)
+                loggers.Add(new ConsoleLogger(logLevel));
+
+            if (logLevel != LogLevel.Off && !string.IsNullOrEmpty(logPath))
+                loggers.Add(new FileLogger(logPath, logLevel));
+
+            if (loggers.Count == 1)
+                return loggers[0];
+            else
+                return new MultiLogger(loggers.ToArray());
         }
 
         private static void ShowHelp(CommandLine commandLine)
