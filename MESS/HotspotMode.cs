@@ -294,7 +294,13 @@ namespace MESS
                 {
                     var wadHotspotFilePath = wadPath + ".hotspot";
                     if (File.Exists(wadHotspotFilePath))
+                    {
                         ReadWadHotspotFile(wadHotspotFilePath, hotspotDataCollection, logger);
+                    }
+                    else
+                    {
+                        logger.Info($"No hotspot data found for '{wadPath}' ({wadHotspotFilePath}).");
+                    }
                 }
                 catch (Exception ex)
                 {
