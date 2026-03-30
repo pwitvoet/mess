@@ -1,5 +1,6 @@
 ﻿using MESS.Mapping;
 using MESS.Mathematics.Spatial;
+using System.Numerics;
 
 namespace MESS.Macros.Texturing
 {
@@ -272,14 +273,16 @@ namespace MESS.Macros.Texturing
         {
             var orientation = hotspotRectangleScore.Orientations[random.Next(hotspotRectangleScore.Orientations.Length)];
 
-            switch (orientation & HotspotOrientations.RotationMask)
+            var rotation = orientation & HotspotOrientations.RotationMask;
+            switch (rotation)
             {
                 case HotspotOrientations.Rotate90Degrees: faceProjection = RotateFaceProjection90Degrees(faceProjection, false); break;
                 case HotspotOrientations.Rotate180Degrees: faceProjection = RotateFaceProjection180Degrees(faceProjection); break;
                 case HotspotOrientations.Rotate270Degrees: faceProjection = RotateFaceProjection90Degrees(faceProjection, true); break;
             }
 
-            switch (orientation & HotspotOrientations.MirrorMask)
+            var mirroring = SelectRandomMirroring(orientation, random);
+            switch (mirroring)
             {
                 case HotspotOrientations.MirrorHorizontally: faceProjection = FlipFaceProjection(faceProjection, true, false); break;
                 case HotspotOrientations.MirrorVertically: faceProjection = FlipFaceProjection(faceProjection, false, true); break;
@@ -302,6 +305,31 @@ namespace MESS.Macros.Texturing
                 (-faceProjection.BoundingBox.X / scaleX) + hotspotRectangleScore.HotspotRectangle.Rectangle.X,
                 (-faceProjection.BoundingBox.Y / scaleY) + hotspotRectangleScore.HotspotRectangle.Rectangle.Y);
             face.TextureAngle = 0;
+        }
+
+        private static HotspotOrientations SelectRandomMirroring(HotspotOrientations mirrorings, Random random)
+        {
+            mirrorings &= HotspotOrientations.MirrorMask;
+
+            var options = BitOperations.PopCount((uint)mirrorings);
+            if (options == 0)
+                return HotspotOrientations.NoMirroring;
+
+            var option = random.Next(options);
+            var selectedMirroring = HotspotOrientations.NoMirroring;
+            for (int i = 0; i < 3; i++)
+            {
+                if (mirrorings.HasFlag(selectedMirroring))
+                {
+                    if (option == 0)
+                        break;
+
+                    option -= 1;
+                }
+
+                selectedMirroring = (HotspotOrientations)((uint)selectedMirroring << 1);
+            }
+            return selectedMirroring;
         }
 
 
@@ -425,28 +453,34 @@ namespace MESS.Macros.Texturing
             var edgeConstraintScore = GetEdgeConstraintScore(edgeConstraints, hotspotRectangle.ConcaveEdges);
 
             var mirroring = HotspotOrientations.NoMirroring;
-            if (settings.AllowMirroring && hotspotRectangle.AllowMirroring)
+            if (settings.AllowMirroring)
             {
-                var mirrorHorizontallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorHorizontally(), hotspotRectangle.ConcaveEdges);
-                if (mirrorHorizontallyScore > edgeConstraintScore)
+                if (hotspotRectangle.AllowedMirroring.HasFlag(Mirrorings.Horizontal))
                 {
-                    edgeConstraintScore = mirrorHorizontallyScore;
-                    mirroring = HotspotOrientations.MirrorHorizontally;
-                }
-                else if (mirrorHorizontallyScore == edgeConstraintScore)
-                {
-                    mirroring |= HotspotOrientations.MirrorHorizontally;
+                    var mirrorHorizontallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorHorizontally(), hotspotRectangle.ConcaveEdges);
+                    if (mirrorHorizontallyScore > edgeConstraintScore)
+                    {
+                        edgeConstraintScore = mirrorHorizontallyScore;
+                        mirroring = HotspotOrientations.MirrorHorizontally;
+                    }
+                    else if (mirrorHorizontallyScore == edgeConstraintScore)
+                    {
+                        mirroring |= HotspotOrientations.MirrorHorizontally;
+                    }
                 }
 
-                var mirrorVerticallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorVertically(), hotspotRectangle.ConcaveEdges);
-                if (mirrorVerticallyScore > edgeConstraintScore)
+                if (hotspotRectangle.AllowedMirroring.HasFlag(Mirrorings.Vertical))
                 {
-                    edgeConstraintScore = mirrorVerticallyScore;
-                    mirroring = HotspotOrientations.MirrorVertically;
-                }
-                else if (mirrorVerticallyScore == edgeConstraintScore)
-                {
-                    mirroring |= HotspotOrientations.MirrorVertically;
+                    var mirrorVerticallyScore = GetEdgeConstraintScore(edgeConstraints.MirrorVertically(), hotspotRectangle.ConcaveEdges);
+                    if (mirrorVerticallyScore > edgeConstraintScore)
+                    {
+                        edgeConstraintScore = mirrorVerticallyScore;
+                        mirroring = HotspotOrientations.MirrorVertically;
+                    }
+                    else if (mirrorVerticallyScore == edgeConstraintScore)
+                    {
+                        mirroring |= HotspotOrientations.MirrorVertically;
+                    }
                 }
             }
 

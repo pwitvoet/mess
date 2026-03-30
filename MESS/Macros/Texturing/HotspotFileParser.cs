@@ -78,13 +78,13 @@ namespace MESS.Macros.Texturing
 
                 var rectangle = ParseRectangle(rectangleNode.AsObject());
                 var allowRotation = (bool?)jsonObject["allow_rotation"]?.AsValue() ?? false;
-                var allowMirroring = (bool?)jsonObject["allow_mirroring"]?.AsValue() ?? false;
+                var allowedMirroring = ParseMirrorings(jsonObject["allow_mirroring"]?.ToString());
                 var isAlternate = (bool?)jsonObject["is_alternate"]?.AsValue() ?? false;
                 var tilingMode = ParseTilingMode(jsonObject["tiling_mode"]?.ToString());
                 var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
 
-                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges);
+                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges);
                 hotspotRectangles.Add(hotspotRectangle);
             }
             return hotspotRectangles.ToArray();
@@ -97,6 +97,17 @@ namespace MESS.Macros.Texturing
                 (double)(json["y"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain an 'y' key.")),
                 (double)(json["width"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'width' key.")),
                 (double)(json["height"]?.AsValue() ?? throw new InvalidDataException("Rectangle must contain a 'height' key.")));
+        }
+
+        private static Mirrorings ParseMirrorings(string? str)
+        {
+            switch (str)
+            {
+                case "horizontal": return Mirrorings.Horizontal;
+                case "vertical": return Mirrorings.Vertical;
+                case "both": return Mirrorings.Horizontal | Mirrorings.Vertical;
+                default: return Mirrorings.None;
+            }
         }
 
         private static TilingMode ParseTilingMode(string? str)
