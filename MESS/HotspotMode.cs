@@ -7,6 +7,9 @@ using MESS.Common;
 using System.Text;
 using MESS.Mathematics.Spatial;
 using MESS.Formats.MAP;
+using MESS.Macros;
+using MScript;
+using MScript.Evaluation;
 
 namespace MESS
 {
@@ -308,10 +311,14 @@ namespace MESS
                 }
             }
 
+            var evaluationContext = Evaluation.DefaultContext();
+
             // Apply hotspots:
             var entityIndex = 0;
             foreach (var entity in map.Entities.Prepend(map.Worldspawn))
             {
+                (var entityLabels, var entityLabelsFunction) = GetHotspotLabelsOrFunction(entity, evaluationContext);
+
                 var brushIndex = 0;
                 foreach (var brush in entity.Brushes)
                 {
@@ -329,7 +336,23 @@ namespace MESS
                             if (hotspotData == null)
                                 continue;
 
-                            var score = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+
+                            // Determine the labels for this face, if any:
+                            var labels = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+                            if (entityLabels != null)
+                            {
+                                labels = entityLabels;
+                            }
+                            else if (entityLabelsFunction != null)
+                            {
+                                var faceInfo = face.CreateFaceInfoMObject();
+                                var result = entityLabelsFunction.Apply(new[] { faceInfo });
+                                var hotspotLabels = GetHotspotLabels(result);
+                                if (hotspotLabels != null)
+                                    labels = hotspotLabels;
+                            }
+
+                            var score = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, labels, random);
 
 
                             // Do we need to try fallback textures?
@@ -364,7 +387,7 @@ namespace MESS
                                         break;
                                     }
 
-                                    lastScore = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, random);
+                                    lastScore = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, labels, random);
                                     if (lastScore > bestScore)
                                     {
                                         bestScore = lastScore;
@@ -377,7 +400,7 @@ namespace MESS
                                 {
                                     face.TextureName = bestTextureName;
                                     hotspotData = hotspotDataCollection.GetHotspotDataForTexture(bestTextureName);
-                                    HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData!, settings.HotspotSettings, random);
+                                    HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData!, settings.HotspotSettings, labels, random);
                                 }
                             }
                         }
@@ -393,6 +416,48 @@ namespace MESS
                 }
 
                 entityIndex += 1;
+            }
+        }
+
+        private static (HashSet<string>?, IFunction?) GetHotspotLabelsOrFunction(Entity entity, EvaluationContext context)
+        {
+            var hotspotLabels = entity.Properties.GetString(Attributes.HotspotLabels);
+            if (hotspotLabels is null)
+                return (null, null);
+
+
+            var hotspotLabelsValue = Evaluation.EvaluateInterpolatedStringOrExpression(hotspotLabels, context);
+            switch (hotspotLabelsValue)
+            {
+                case string:
+                case object?[]:
+                    return (GetHotspotLabels(hotspotLabelsValue), null);
+
+                case IFunction function:
+                    return (null, function);
+
+                default:
+                    // TODO: Log a warning?
+                    return (null, null);
+            }
+        }
+
+        private static HashSet<string>? GetHotspotLabels(object? value)
+        {
+            switch (value)
+            {
+                case string str:
+                    return Macros.Util.ParseCommaSeparatedList(str)
+                        .Where(label => !string.IsNullOrEmpty(label))
+                        .ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+                case object?[] array:
+                    return array
+                        .Select(item => item?.ToString() ?? "")
+                        .Where(label => !string.IsNullOrEmpty(label))
+                        .ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+                default: return null;
             }
         }
 

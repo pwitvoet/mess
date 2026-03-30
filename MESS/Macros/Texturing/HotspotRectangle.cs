@@ -42,6 +42,8 @@ namespace MESS.Macros.Texturing
         public double SelectionWeight { get; }
         public ConcaveEdges ConcaveEdges { get; }
 
+        public HashSet<string> Labels { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
 
         public HotspotRectangle(
             Rectangle rectangle,
@@ -50,7 +52,8 @@ namespace MESS.Macros.Texturing
             bool isAlternate,
             TilingMode tilingMode,
             double selectionWeight,
-            ConcaveEdges concaveEdges)
+            ConcaveEdges concaveEdges,
+            IEnumerable<string>? labels)
         {
             Rectangle = rectangle;
 
@@ -61,6 +64,12 @@ namespace MESS.Macros.Texturing
             TilingMode = tilingMode;
             SelectionWeight = selectionWeight;
             ConcaveEdges = concaveEdges;
+
+            if (labels != null)
+            {
+                foreach (var label in labels)
+                    Labels.Add(label);
+            }
         }
     }
 }

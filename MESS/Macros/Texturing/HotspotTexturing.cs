@@ -59,12 +59,22 @@ namespace MESS.Macros.Texturing
         /// Applies hotspot texturing to the given face.
         /// Returns the score of the applied hotspot rectangle.
         /// </summary>
-        public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, Random random)
+        public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, HashSet<string> labels, Random random)
         {
             var availableHotspotRectangles = hotspotData.HotspotRectangles
                 .Where(hotspotRectangle => hotspotRectangle.IsAlternate == settings.UseAlternateRectangles)
                 .Where(hotspotRectangle => hotspotRectangle.TilingMode == TilingMode.None || settings.AllowTilingRectangles)
                 .ToArray();
+
+            // Only textures and rectangles that match the given label(s) will be considered:
+            if (labels.Any())
+            {
+                var hotspotLabels = labels.Except(hotspotData.Labels).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+                availableHotspotRectangles = availableHotspotRectangles
+                    .Where(hotspotRectangle => hotspotLabels.All(hotspotRectangle.Labels.Contains))
+                    .ToArray();
+            }
+
             if (!availableHotspotRectangles.Any())
                 return 0;
 

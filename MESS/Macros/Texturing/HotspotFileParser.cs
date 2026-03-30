@@ -51,7 +51,10 @@ namespace MESS.Macros.Texturing
 
                     var fallbackTexture = node.Value["fallback_texture"]?.ToString();
                     var fallbackScoreThreshold = (double?)node.Value["fallback_score_threshold"]?.AsValue();
-                    result[node.Key] = new HotspotData(rectangles, fallbackTexture, fallbackScoreThreshold ?? 0);
+
+                    var labels = ParseStringArray(node.Value["labels"]?.AsArray());
+
+                    result[node.Key] = new HotspotData(rectangles, fallbackTexture, fallbackScoreThreshold ?? 0, labels);
                 }
             }
 
@@ -83,8 +86,9 @@ namespace MESS.Macros.Texturing
                 var tilingMode = ParseTilingMode(jsonObject["tiling_mode"]?.ToString());
                 var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
+                var labels = ParseStringArray(jsonObject["labels"]?.AsArray());
 
-                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges);
+                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges, labels);
                 hotspotRectangles.Add(hotspotRectangle);
             }
             return hotspotRectangles.ToArray();
@@ -138,6 +142,17 @@ namespace MESS.Macros.Texturing
                 }
             }
             return result;
+        }
+
+        private static string[]? ParseStringArray(JsonArray? array)
+        {
+            if (array == null)
+                return null;
+
+            return array
+                .Where(part => part != null)
+                .Select(part => part!.AsValue().ToString())
+                .ToArray();
         }
     }
 }

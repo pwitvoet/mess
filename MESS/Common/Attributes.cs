@@ -368,5 +368,15 @@
         /// Similar to <see cref="AdjustTexture"/>, this attribute only replaces the texture scale of a face.
         /// </summary>
         public const string ScaleTexture = "_mess_scale_texture";
+
+
+        // Texture hotspotting:
+
+        /// <summary>
+        /// Sets hotspot labels for all faces of an entity.
+        /// Can be a comma-separated list of labels, an expression that evaluates to a string or to an array of strings,
+        /// or an MScript function that is called for each face, which should return a string or an array of strings.
+        /// </summary>
+        public const string HotspotLabels = "_mess_hotspot_labels";
     }
 }
