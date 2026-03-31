@@ -105,7 +105,7 @@ namespace MESS.Macros.Texturing
 
         private static Mirrorings ParseMirrorings(string? str)
         {
-            switch (str)
+            switch (str?.ToLowerInvariant())
             {
                 case "horizontal": return Mirrorings.Horizontal;
                 case "vertical": return Mirrorings.Vertical;
@@ -116,7 +116,7 @@ namespace MESS.Macros.Texturing
 
         private static TilingMode ParseTilingMode(string? str)
         {
-            switch (str)
+            switch (str?.ToLowerInvariant())
             {
                 case "horizontal": return TilingMode.Horizontal;
                 case "vertical": return TilingMode.Vertical;
@@ -132,7 +132,7 @@ namespace MESS.Macros.Texturing
             var result = ConcaveEdges.None;
             foreach (var part in array)
             {
-                switch (part?.AsValue().ToString())
+                switch (part?.AsValue().ToString().ToLowerInvariant())
                 {
                     case "top": result |= ConcaveEdges.Top; break;
                     case "right": result |= ConcaveEdges.Right; break;
