@@ -22,10 +22,12 @@ namespace MESS.Macros.Texturing
         public bool AllowMirroring { get; set; } = true;
 
         /// <summary>
-        /// When true, only rectangles that are marked as 'alternate' will be used. Otherwise only non-alternate rectangles are used.
-        /// This can be used to divide textures into two groups, such as two different kinds of materials.
+        /// Only rectangles that match these labels will be used.
+        /// The usefulness of this depends on the labels that are available in the hotspot data.
+        /// For example, it could be used to select specific materials (such as 'wood' or 'metal'),
+        /// sides (such as 'floor', 'wall' or 'ceiling') or colors (such as 'red' or 'blue').
         /// </summary>
-        public bool UseAlternateRectangles { get; set; } = false;
+        public HashSet<string> Labels { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>
         /// When false, tiling rectangles will not be used.
@@ -62,7 +64,6 @@ namespace MESS.Macros.Texturing
         public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, HashSet<string> labels, Random random)
         {
             var availableHotspotRectangles = hotspotData.HotspotRectangles
-                .Where(hotspotRectangle => hotspotRectangle.IsAlternate == settings.UseAlternateRectangles)
                 .Where(hotspotRectangle => hotspotRectangle.TilingMode == TilingMode.None || settings.AllowTilingRectangles)
                 .ToArray();
 

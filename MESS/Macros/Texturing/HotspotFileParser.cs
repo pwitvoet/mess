@@ -82,13 +82,12 @@ namespace MESS.Macros.Texturing
                 var rectangle = ParseRectangle(rectangleNode.AsObject());
                 var allowRotation = (bool?)jsonObject["allow_rotation"]?.AsValue() ?? false;
                 var allowedMirroring = ParseMirrorings(jsonObject["allow_mirroring"]?.ToString());
-                var isAlternate = (bool?)jsonObject["is_alternate"]?.AsValue() ?? false;
                 var tilingMode = ParseTilingMode(jsonObject["tiling_mode"]?.ToString());
                 var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
                 var labels = ParseStringArray(jsonObject["labels"]?.AsArray());
 
-                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, isAlternate, tilingMode, selectionWeight, concaveEdges, labels);
+                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, tilingMode, selectionWeight, concaveEdges, labels);
                 hotspotRectangles.Add(hotspotRectangle);
             }
             return hotspotRectangles.ToArray();

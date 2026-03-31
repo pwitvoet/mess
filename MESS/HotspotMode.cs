@@ -190,10 +190,17 @@ namespace MESS
                     "-nomirroring",
                     () => settings.HotspotSettings.AllowMirroring = false,
                     "Disables random mirroring of rectangles.")
-                .Switch(
-                    "-alternate",
-                    () => settings.HotspotSettings.UseAlternateRectangles = true,
-                    "Use alternate hotspot rectangles.")
+                .Option(
+                    "-labels",
+                    s =>
+                    {
+                        var labels = s.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(label => label.Trim().ToLowerInvariant())
+                            .ToArray();
+                        foreach (var label in labels)
+                            settings.HotspotSettings.Labels.Add(label);
+                    },
+                    "Use only hotspot rectangles that match the given labels.")
                 .Switch(
                     "-notiling",
                     () => settings.HotspotSettings.AllowTilingRectangles = false,
@@ -351,6 +358,9 @@ namespace MESS
                                 if (hotspotLabels != null)
                                     labels = hotspotLabels;
                             }
+
+                            foreach (var label in settings.HotspotSettings.Labels)
+                                labels.Add(label);
 
                             var score = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, labels, random);
 
