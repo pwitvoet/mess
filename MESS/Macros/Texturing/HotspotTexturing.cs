@@ -299,37 +299,14 @@ namespace MESS.Macros.Texturing
                 case HotspotOrientations.MirrorVertically: faceProjection = FlipFaceProjection(faceProjection, false, true); break;
             }
 
+            var textureScale = GetTextureScale(faceProjection.BoundingBox, hotspotRectangleScore.HotspotRectangle, settings);
 
             face.TextureRightAxis = faceProjection.RightAxis;
             face.TextureDownAxis = faceProjection.DownAxis;
-
-            var scaleX = faceProjection.BoundingBox.Width / hotspotRectangleScore.HotspotRectangle.Rectangle.Width;
-            var scaleY = faceProjection.BoundingBox.Height / hotspotRectangleScore.HotspotRectangle.Rectangle.Height;
-
-            if (hotspotRectangleScore.HotspotRectangle.HorizontalLayout == HotspotLayout.Tile)
-            {
-                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : settings.DefaultTextureScale;
-            }
-            else if (hotspotRectangleScore.HotspotRectangle.HorizontalLayout == HotspotLayout.Clip)
-            {
-                if (scaleX < settings.DefaultTextureScale)
-                    scaleX = settings.DefaultTextureScale;
-            }
-
-            if (hotspotRectangleScore.HotspotRectangle.VerticalLayout == HotspotLayout.Tile)
-            {
-                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : settings.DefaultTextureScale;
-            }
-            else if (hotspotRectangleScore.HotspotRectangle.VerticalLayout == HotspotLayout.Clip)
-            {
-                if (scaleY < settings.DefaultTextureScale)
-                    scaleY = settings.DefaultTextureScale;
-            }
-
-            face.TextureScale = new Vector2D(scaleX, scaleY);
+            face.TextureScale = textureScale;
             face.TextureShift = new Vector2D(
-                (-faceProjection.BoundingBox.X / scaleX) + hotspotRectangleScore.HotspotRectangle.Rectangle.X,
-                (-faceProjection.BoundingBox.Y / scaleY) + hotspotRectangleScore.HotspotRectangle.Rectangle.Y);
+                (-faceProjection.BoundingBox.X / textureScale.X) + hotspotRectangleScore.HotspotRectangle.Rectangle.X,
+                (-faceProjection.BoundingBox.Y / textureScale.Y) + hotspotRectangleScore.HotspotRectangle.Rectangle.Y);
             face.TextureAngle = 0;
         }
 
