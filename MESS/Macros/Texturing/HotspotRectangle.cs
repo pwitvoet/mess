@@ -2,11 +2,22 @@
 
 namespace MESS.Macros.Texturing
 {
-    public enum TilingMode
+    public enum HotspotLayout
     {
-        None,
-        Horizontal,
-        Vertical,
+        /// <summary>
+        /// Default behavior, the rectangle will be stretched to fit a face.
+        /// </summary>
+        Fit,
+
+        /// <summary>
+        /// If the rectangle is larger than the face, then this behaves the same as <see cref="Fit"/>. Else, it behaves as <see cref="Tile"/>.
+        /// </summary>
+        Clip,
+
+        /// <summary>
+        /// The rectangle will not be stretched.
+        /// </summary>
+        Tile,
     }
 
     [Flags]
@@ -35,18 +46,26 @@ namespace MESS.Macros.Texturing
 
         public bool AllowRotation { get; }
         public Mirrorings AllowedMirroring { get; }
-        public TilingMode TilingMode { get; }
+
+        public HotspotLayout HorizontalLayout { get; }
+        public HotspotLayout VerticalLayout { get; }
+
         public double SelectionWeight { get; }
         public ConcaveEdges ConcaveEdges { get; }
 
         public HashSet<string> Labels { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
 
+        // Derived:
+        public bool IsTiling => HorizontalLayout == HotspotLayout.Tile || VerticalLayout == HotspotLayout.Tile;
+
+
         public HotspotRectangle(
             Rectangle rectangle,
             bool allowRotation,
             Mirrorings allowedMirroring,
-            TilingMode tilingMode,
+            HotspotLayout horizontalLayout,
+            HotspotLayout verticalLayout,
             double selectionWeight,
             ConcaveEdges concaveEdges,
             IEnumerable<string>? labels)
@@ -55,7 +74,10 @@ namespace MESS.Macros.Texturing
 
             AllowRotation = allowRotation;
             AllowedMirroring = allowedMirroring;
-            TilingMode = tilingMode;
+
+            HorizontalLayout = horizontalLayout;
+            VerticalLayout = verticalLayout;
+
             SelectionWeight = selectionWeight;
             ConcaveEdges = concaveEdges;
 

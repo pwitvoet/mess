@@ -64,7 +64,7 @@ namespace MESS.Macros.Texturing
         public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, HashSet<string> labels, Random random)
         {
             var availableHotspotRectangles = hotspotData.HotspotRectangles
-                .Where(hotspotRectangle => hotspotRectangle.TilingMode == TilingMode.None || settings.AllowTilingRectangles)
+                .Where(hotspotRectangle => settings.AllowTilingRectangles || !hotspotRectangle.IsTiling)
                 .ToArray();
 
             // Only textures and rectangles that match the given label(s) will be considered:
@@ -104,8 +104,8 @@ namespace MESS.Macros.Texturing
             if (settings.PreferNonTilingRectangles)
             {
                 // Reject tiling hotspots if we also have non-tiling hotspots:
-                if (bestHotspotScores.Any(candidate => candidate.HotspotRectangle.TilingMode != TilingMode.None) && bestHotspotScores.Any(candidate => candidate.HotspotRectangle.TilingMode == TilingMode.None))
-                    bestHotspotScores = bestHotspotScores.Where(hotspot => hotspot.HotspotRectangle.TilingMode == TilingMode.None).ToArray();
+                if (bestHotspotScores.Any(candidate => candidate.HotspotRectangle.IsTiling) && bestHotspotScores.Any(candidate => !candidate.HotspotRectangle.IsTiling))
+                    bestHotspotScores = bestHotspotScores.Where(hotspot => !hotspot.HotspotRectangle.IsTiling).ToArray();
             }
 
             // Randomly select a hotspot from the ones that are left over, and apply it to the given face:
@@ -306,10 +306,25 @@ namespace MESS.Macros.Texturing
             var scaleX = faceProjection.BoundingBox.Width / hotspotRectangleScore.HotspotRectangle.Rectangle.Width;
             var scaleY = faceProjection.BoundingBox.Height / hotspotRectangleScore.HotspotRectangle.Rectangle.Height;
 
-            if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Horizontal)
-                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : 1;
-            else if (hotspotRectangleScore.HotspotRectangle.TilingMode == TilingMode.Vertical)
-                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : 1;
+            if (hotspotRectangleScore.HotspotRectangle.HorizontalLayout == HotspotLayout.Tile)
+            {
+                scaleX = settings.UniformScalingForTilingRectangles ? scaleY : settings.DefaultTextureScale;
+            }
+            else if (hotspotRectangleScore.HotspotRectangle.HorizontalLayout == HotspotLayout.Clip)
+            {
+                if (scaleX < settings.DefaultTextureScale)
+                    scaleX = settings.DefaultTextureScale;
+            }
+
+            if (hotspotRectangleScore.HotspotRectangle.VerticalLayout == HotspotLayout.Tile)
+            {
+                scaleY = settings.UniformScalingForTilingRectangles ? scaleX : settings.DefaultTextureScale;
+            }
+            else if (hotspotRectangleScore.HotspotRectangle.VerticalLayout == HotspotLayout.Clip)
+            {
+                if (scaleY < settings.DefaultTextureScale)
+                    scaleY = settings.DefaultTextureScale;
+            }
 
             face.TextureScale = new Vector2D(scaleX, scaleY);
             face.TextureShift = new Vector2D(
@@ -498,40 +513,57 @@ namespace MESS.Macros.Texturing
             return new HotspotRectangleScore(hotspotRectangle, GetTotalScore(texelScalingScore, edgeConstraintScore), new[] { mirroring });
         }
 
-        // 1 = perfect match, lower = more texel stretching/scaling. Score should always be above 0.
-        private static double GetTexelScalingScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        private static Vector2D GetTextureScale(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
-            // NOTE: Tiling textures should have *some* penalty so that they score less than a perfect fitting rectangle, but not so much of a penalty that they'll be avoided altogether!
-            var widthScore = 0.75;
-            if (hotspotRectangle.TilingMode != TilingMode.Horizontal)
-            {
-                var scaledRectangleWidth = hotspotRectangle.Rectangle.Width * settings.DefaultTextureScale;
-                if (boundingBox.Width < scaledRectangleWidth)
-                    widthScore = boundingBox.Width / scaledRectangleWidth;
-                else
-                    widthScore = scaledRectangleWidth / boundingBox.Width;
-            }
-
-            var heightScore = 0.75;
-            if (hotspotRectangle.TilingMode != TilingMode.Vertical)
-            {
-                var scaledRectangleHeight = hotspotRectangle.Rectangle.Height * settings.DefaultTextureScale;
-                if (boundingBox.Height < scaledRectangleHeight)
-                    heightScore = boundingBox.Height / scaledRectangleHeight;
-                else
-                    heightScore = scaledRectangleHeight / boundingBox.Height;
-            }
+            var scaleX = GetTextureScale(boundingBox.Width, hotspotRectangle.Rectangle.Width, hotspotRectangle.HorizontalLayout, settings.DefaultTextureScale);
+            var scaleY = GetTextureScale(boundingBox.Height, hotspotRectangle.Rectangle.Height, hotspotRectangle.VerticalLayout, settings.DefaultTextureScale);
 
             if (settings.UniformScalingForTilingRectangles)
             {
-                if (hotspotRectangle.TilingMode == TilingMode.Horizontal)
-                    widthScore = heightScore;
-                else if (hotspotRectangle.TilingMode == TilingMode.Vertical)
-                    heightScore = widthScore;
+                if (hotspotRectangle.HorizontalLayout == HotspotLayout.Tile && hotspotRectangle.VerticalLayout != HotspotLayout.Tile)
+                    scaleX = scaleY;
+                else if (hotspotRectangle.VerticalLayout == HotspotLayout.Tile && hotspotRectangle.HorizontalLayout != HotspotLayout.Tile)
+                    scaleY = scaleX;
             }
 
-            // NOTE: Squaring each side's score should favor square pixel over stretched ones?
-            return (widthScore * widthScore) * (heightScore * heightScore);
+            return new Vector2D(scaleX, scaleY);
+        }
+
+        private static double GetTextureScale(double targetLength, double hotspotLength, HotspotLayout hotspotLayout, double defaultTextureScale)
+        {
+            switch (hotspotLayout)
+            {
+                default:
+                case HotspotLayout.Fit:
+                    return targetLength / hotspotLength;
+
+                case HotspotLayout.Clip:
+                    var defaultScaleHotspotLength = hotspotLength * defaultTextureScale;
+                    if (defaultScaleHotspotLength >= targetLength)
+                        return defaultTextureScale;
+                    else
+                        return targetLength / hotspotLength;
+
+                case HotspotLayout.Tile:
+                    return defaultTextureScale;
+            }
+        }
+
+        // 1 = perfect match, lower = more texel stretching/scaling. Score should always be above 0.
+        private static double GetTexelScalingScore(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
+        {
+            var textureScale = GetTextureScale(boundingBox, hotspotRectangle, settings);
+
+            var widthScore = textureScale.X / settings.DefaultTextureScale;
+            if (widthScore > 1)
+                widthScore = 1 / widthScore;
+
+            var heightScore = textureScale.Y / settings.DefaultTextureScale;
+            if (heightScore > 1)
+                heightScore = 1 / heightScore;
+
+            var scaleDifference = Math.Min(widthScore / heightScore, heightScore / widthScore);
+            return widthScore * heightScore * scaleDifference;
         }
 
         // 1 = perfect match, 0.5 = no match at all. Score should always be above 0.

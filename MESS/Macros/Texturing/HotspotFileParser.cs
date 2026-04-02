@@ -82,12 +82,21 @@ namespace MESS.Macros.Texturing
                 var rectangle = ParseRectangle(rectangleNode.AsObject());
                 var allowRotation = (bool?)jsonObject["allow_rotation"]?.AsValue() ?? false;
                 var allowedMirroring = ParseMirrorings(jsonObject["allow_mirroring"]?.ToString());
-                var tilingMode = ParseTilingMode(jsonObject["tiling_mode"]?.ToString());
+                var horizontalLayout = ParseHotspotLayout(jsonObject["horizontal_layout"]?.ToString());
+                var verticalLayouy = ParseHotspotLayout(jsonObject["vertical_layout"]?.ToString());
                 var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
                 var labels = ParseStringArray(jsonObject["labels"]?.AsArray());
 
-                var hotspotRectangle = new HotspotRectangle(rectangle, allowRotation, allowedMirroring, tilingMode, selectionWeight, concaveEdges, labels);
+                var hotspotRectangle = new HotspotRectangle(
+                    rectangle,
+                    allowRotation,
+                    allowedMirroring,
+                    horizontalLayout,
+                    verticalLayouy,
+                    selectionWeight,
+                    concaveEdges,
+                    labels);
                 hotspotRectangles.Add(hotspotRectangle);
             }
             return hotspotRectangles.ToArray();
@@ -113,13 +122,14 @@ namespace MESS.Macros.Texturing
             }
         }
 
-        private static TilingMode ParseTilingMode(string? str)
+        private static HotspotLayout ParseHotspotLayout(string? str)
         {
             switch (str?.ToLowerInvariant())
             {
-                case "horizontal": return TilingMode.Horizontal;
-                case "vertical": return TilingMode.Vertical;
-                default: return TilingMode.None;
+                default:
+                case "fit": return HotspotLayout.Fit;
+                case "clip": return HotspotLayout.Clip;
+                case "tile": return HotspotLayout.Tile;
             }
         }
 
