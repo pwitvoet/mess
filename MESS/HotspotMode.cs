@@ -190,6 +190,10 @@ namespace MESS
                     "-nomirroring",
                     () => settings.HotspotSettings.AllowMirroring = false,
                     "Disables random mirroring of rectangles.")
+                .Switch(
+                    "-nosnapping",
+                    () => settings.HotspotSettings.AllowSnapping = false,
+                    "Disables snapping of tiling rectangles.")
                 .Option(
                     "-labels",
                     s =>

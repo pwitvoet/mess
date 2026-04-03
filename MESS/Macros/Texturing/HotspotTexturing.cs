@@ -22,6 +22,11 @@ namespace MESS.Macros.Texturing
         public bool AllowMirroring { get; set; } = true;
 
         /// <summary>
+        /// When false, snapping will be disabled for tiling hotspot rectangles.
+        /// </summary>
+        public bool AllowSnapping { get; set; } = true;
+
+        /// <summary>
         /// Only rectangles that match these labels will be used.
         /// The usefulness of this depends on the labels that are available in the hotspot data.
         /// For example, it could be used to select specific materials (such as 'wood' or 'metal'),
@@ -492,8 +497,8 @@ namespace MESS.Macros.Texturing
 
         private static Vector2D GetTextureScale(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
-            var scaleX = GetTextureScale(boundingBox.Width, hotspotRectangle.Rectangle.Width, hotspotRectangle.HorizontalLayout, hotspotRectangle.SnapWidth, settings.DefaultTextureScale);
-            var scaleY = GetTextureScale(boundingBox.Height, hotspotRectangle.Rectangle.Height, hotspotRectangle.VerticalLayout, hotspotRectangle.SnapHeight, settings.DefaultTextureScale);
+            var scaleX = GetTextureScale(boundingBox.Width, hotspotRectangle.Rectangle.Width, hotspotRectangle.HorizontalLayout, hotspotRectangle.SnapWidth, settings);
+            var scaleY = GetTextureScale(boundingBox.Height, hotspotRectangle.Rectangle.Height, hotspotRectangle.VerticalLayout, hotspotRectangle.SnapHeight, settings);
 
             if (settings.UniformScalingForTilingRectangles)
             {
@@ -506,11 +511,11 @@ namespace MESS.Macros.Texturing
             return new Vector2D(scaleX, scaleY);
         }
 
-        private static double GetTextureScale(double targetLength, double hotspotLength, HotspotLayout hotspotLayout, double? snapLength, double defaultTextureScale)
+        private static double GetTextureScale(double targetLength, double hotspotLength, HotspotLayout hotspotLayout, double? snapLength, HotspotSettings settings)
         {
             if (hotspotLayout == HotspotLayout.Clip)
             {
-                var defaultScaleHotspotLength = hotspotLength * defaultTextureScale;
+                var defaultScaleHotspotLength = hotspotLength * settings.DefaultTextureScale;
                 if (defaultScaleHotspotLength >= targetLength)
                     hotspotLayout = HotspotLayout.Tile;
                 else
@@ -525,16 +530,16 @@ namespace MESS.Macros.Texturing
 
                 case HotspotLayout.Tile:
                 {
-                    if (snapLength != null)
+                    if (settings.AllowSnapping && snapLength != null)
                     {
-                        var scaledSnapLength = snapLength.Value * defaultTextureScale;
+                        var scaledSnapLength = snapLength.Value * settings.DefaultTextureScale;
                         var repeats = (int)Math.Max(1, Math.Round(targetLength / scaledSnapLength));
                         var actualLength = repeats * scaledSnapLength;
                         return targetLength / actualLength;
                     }
                     else
                     {
-                        return defaultTextureScale;
+                        return settings.DefaultTextureScale;
                     }
                 }
             }
