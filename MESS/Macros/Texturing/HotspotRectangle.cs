@@ -49,6 +49,8 @@ namespace MESS.Macros.Texturing
 
         public HotspotLayout HorizontalLayout { get; }
         public HotspotLayout VerticalLayout { get; }
+        public double? SnapWidth { get; }
+        public double? SnapHeight { get; }
 
         public double SelectionWeight { get; }
         public ConcaveEdges ConcaveEdges { get; }
@@ -66,6 +68,8 @@ namespace MESS.Macros.Texturing
             Mirrorings allowedMirroring,
             HotspotLayout horizontalLayout,
             HotspotLayout verticalLayout,
+            double? snapWidth,
+            double? snapHeight,
             double selectionWeight,
             ConcaveEdges concaveEdges,
             IEnumerable<string>? labels)
@@ -77,6 +81,8 @@ namespace MESS.Macros.Texturing
 
             HorizontalLayout = horizontalLayout;
             VerticalLayout = verticalLayout;
+            SnapWidth = snapWidth;
+            SnapHeight = snapHeight;
 
             SelectionWeight = selectionWeight;
             ConcaveEdges = concaveEdges;

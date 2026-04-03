@@ -84,6 +84,8 @@ namespace MESS.Macros.Texturing
                 var allowedMirroring = ParseMirrorings(jsonObject["allow_mirroring"]?.ToString());
                 var horizontalLayout = ParseHotspotLayout(jsonObject["horizontal_layout"]?.ToString());
                 var verticalLayouy = ParseHotspotLayout(jsonObject["vertical_layout"]?.ToString());
+                var snapWidth = (double?)jsonObject["snap_width"]?.AsValue();
+                var snapHeight = (double?)jsonObject["snap_height"]?.AsValue();
                 var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
                 var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
                 var labels = ParseStringArray(jsonObject["labels"]?.AsArray());
@@ -94,6 +96,8 @@ namespace MESS.Macros.Texturing
                     allowedMirroring,
                     horizontalLayout,
                     verticalLayouy,
+                    snapWidth,
+                    snapHeight,
                     selectionWeight,
                     concaveEdges,
                     labels);

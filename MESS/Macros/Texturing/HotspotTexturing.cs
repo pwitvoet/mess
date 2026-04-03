@@ -492,8 +492,8 @@ namespace MESS.Macros.Texturing
 
         private static Vector2D GetTextureScale(Rectangle boundingBox, HotspotRectangle hotspotRectangle, HotspotSettings settings)
         {
-            var scaleX = GetTextureScale(boundingBox.Width, hotspotRectangle.Rectangle.Width, hotspotRectangle.HorizontalLayout, settings.DefaultTextureScale);
-            var scaleY = GetTextureScale(boundingBox.Height, hotspotRectangle.Rectangle.Height, hotspotRectangle.VerticalLayout, settings.DefaultTextureScale);
+            var scaleX = GetTextureScale(boundingBox.Width, hotspotRectangle.Rectangle.Width, hotspotRectangle.HorizontalLayout, hotspotRectangle.SnapWidth, settings.DefaultTextureScale);
+            var scaleY = GetTextureScale(boundingBox.Height, hotspotRectangle.Rectangle.Height, hotspotRectangle.VerticalLayout, hotspotRectangle.SnapHeight, settings.DefaultTextureScale);
 
             if (settings.UniformScalingForTilingRectangles)
             {
@@ -506,23 +506,37 @@ namespace MESS.Macros.Texturing
             return new Vector2D(scaleX, scaleY);
         }
 
-        private static double GetTextureScale(double targetLength, double hotspotLength, HotspotLayout hotspotLayout, double defaultTextureScale)
+        private static double GetTextureScale(double targetLength, double hotspotLength, HotspotLayout hotspotLayout, double? snapLength, double defaultTextureScale)
         {
+            if (hotspotLayout == HotspotLayout.Clip)
+            {
+                var defaultScaleHotspotLength = hotspotLength * defaultTextureScale;
+                if (defaultScaleHotspotLength >= targetLength)
+                    hotspotLayout = HotspotLayout.Tile;
+                else
+                    hotspotLayout = HotspotLayout.Fit;
+            }
+
             switch (hotspotLayout)
             {
                 default:
                 case HotspotLayout.Fit:
                     return targetLength / hotspotLength;
 
-                case HotspotLayout.Clip:
-                    var defaultScaleHotspotLength = hotspotLength * defaultTextureScale;
-                    if (defaultScaleHotspotLength >= targetLength)
-                        return defaultTextureScale;
-                    else
-                        return targetLength / hotspotLength;
-
                 case HotspotLayout.Tile:
-                    return defaultTextureScale;
+                {
+                    if (snapLength != null)
+                    {
+                        var scaledSnapLength = snapLength.Value * defaultTextureScale;
+                        var repeats = (int)Math.Max(1, Math.Round(targetLength / scaledSnapLength));
+                        var actualLength = repeats * scaledSnapLength;
+                        return targetLength / actualLength;
+                    }
+                    else
+                    {
+                        return defaultTextureScale;
+                    }
+                }
             }
         }
 
