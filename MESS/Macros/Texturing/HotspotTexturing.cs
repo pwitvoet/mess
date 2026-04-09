@@ -68,18 +68,10 @@ namespace MESS.Macros.Texturing
         /// </summary>
         public static double ApplyHotspotTexturing(Face face, Brush parentBrush, HotspotData hotspotData, HotspotSettings settings, HashSet<string> labels, Random random)
         {
-            var availableHotspotRectangles = hotspotData.HotspotRectangles
+            // Only textures and rectangles that match the given label(s) and settings will be considered:
+            var availableHotspotRectangles = GetMatchingHotspotRectangles(hotspotData, labels)
                 .Where(hotspotRectangle => settings.AllowTilingRectangles || !hotspotRectangle.IsTiling)
                 .ToArray();
-
-            // Only textures and rectangles that match the given label(s) will be considered:
-            if (labels.Any())
-            {
-                var hotspotLabels = labels.Except(hotspotData.Labels).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
-                availableHotspotRectangles = availableHotspotRectangles
-                    .Where(hotspotRectangle => hotspotLabels.All(hotspotRectangle.Labels.Contains))
-                    .ToArray();
-            }
 
             if (!availableHotspotRectangles.Any())
                 return 0;
@@ -127,6 +119,35 @@ namespace MESS.Macros.Texturing
         {
             var bestProjection = GetBestProjection(face);
             return (bestProjection.RightAxis, bestProjection.DownAxis);
+        }
+
+
+        private static HotspotRectangle[] GetMatchingHotspotRectangles(HotspotData hotspotData, IEnumerable<string> labels)
+        {
+            return hotspotData.HotspotRectangles
+                .Where(hotspotRectangle => labels.All(label => IsMatch(hotspotData, hotspotRectangle, label)))
+                .ToArray();
+
+            static bool IsMatch(HotspotData hotspotData, HotspotRectangle hotspotRectangle, string label)
+            {
+                if (label.Contains("|"))
+                {
+                    // Must match one of:
+                    var labels = label.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    return labels.Any(label => IsMatch(hotspotData, hotspotRectangle, label));
+                }
+                else if (label.StartsWith("-"))
+                {
+                    // Must not contain:
+                    label = label.Substring(1);
+                    return !hotspotData.Labels.Contains(label) && !hotspotRectangle.Labels.Contains(label);
+                }
+                else
+                {
+                    // Must contain:
+                    return hotspotData.Labels.Contains(label) || hotspotRectangle.Labels.Contains(label);
+                }
+            }
         }
 
         // Finds the best texture orientation - the projection with the smallest bounding box, being as up-right as possible.
