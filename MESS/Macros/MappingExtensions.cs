@@ -1,8 +1,8 @@
 ﻿using MESS.Common;
 using MESS.Formats;
 using MESS.Mapping;
-using MESS.Mathematics;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics;
+using MLib.Mathematics.Spatial;
 using MScript;
 using System.Globalization;
 

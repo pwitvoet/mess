@@ -1,5 +1,5 @@
 ﻿using MESS.Common;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MESS.Util;
 
 namespace MESS.Mapping

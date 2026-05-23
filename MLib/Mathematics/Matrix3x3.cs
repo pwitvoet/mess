@@ -1,6 +1,6 @@
-﻿using MESS.Mathematics.Spatial;
+﻿using MLib.Mathematics.Spatial;
 
-namespace MESS.Mathematics
+namespace MLib.Mathematics
 {
     public struct Matrix3x3
     {

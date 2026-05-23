@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MESS.Macros.Texturing
+namespace MLib.Texturing.Hotspotting
 {
     /// <summary>
     /// This class maps texture names to hotspot data.

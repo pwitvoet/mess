@@ -1,8 +1,8 @@
-﻿using MESS.Mathematics.Spatial;
+﻿using MLib.Mathematics.Spatial;
 
-namespace MESS.Mathematics
+namespace MLib.Mathematics
 {
-    static class Extensions
+    public static class Extensions
     {
         public static double ToRadians(this double degrees) => degrees / 180.0 * Math.PI;
 

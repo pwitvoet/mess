@@ -1,5 +1,5 @@
 ﻿using MESS.Macros;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MScript;
 using System.Globalization;
 

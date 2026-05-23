@@ -2,7 +2,7 @@
 using MESS.Formats.MAP.Trenchbroom;
 using MESS.Logging;
 using MESS.Mapping;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;

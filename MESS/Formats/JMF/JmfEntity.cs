@@ -1,5 +1,5 @@
 ﻿using MESS.Mapping;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 
 namespace MESS.Formats.JMF
 {

@@ -1,6 +1,6 @@
-﻿using MESS.Mathematics.Spatial;
+﻿using MLib.Mathematics.Spatial;
 
-namespace MESS.Macros.Texturing
+namespace MLib.Texturing.Hotspotting
 {
     public enum HotspotLayout
     {

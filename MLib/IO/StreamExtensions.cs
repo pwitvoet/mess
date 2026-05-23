@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace MESS.Formats
+namespace MLib.IO
 {
-    static class StreamExtensions
+    public static class StreamExtensions
     {
         // Reading:
         public static short ReadShort(this Stream stream) => BitConverter.ToInt16(stream.ReadBytes(2), 0);

@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MLib\MLib.csproj" />
     <ProjectReference Include="..\MScript\MScript.csproj" />
   </ItemGroup>
 

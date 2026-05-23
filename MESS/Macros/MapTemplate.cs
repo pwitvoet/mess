@@ -1,7 +1,7 @@
 ﻿using MESS.Common;
 using MESS.Logging;
 using MESS.Mapping;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MScript;
 
 namespace MESS.Macros

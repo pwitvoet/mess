@@ -2,8 +2,8 @@
 using MESS.Logging;
 using MESS.Macros;
 using MESS.Mapping;
-using MESS.Mathematics.Spatial;
-using MESS.Util;
+using MLib.Mathematics.Spatial;
+using MLib.Texturing;
 using System.Globalization;
 using System.Text;
 

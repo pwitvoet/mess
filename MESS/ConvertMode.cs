@@ -8,7 +8,7 @@ using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
 using MESS.Mapping;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MESS.Util;
 using System.Diagnostics;
 using System.Text.RegularExpressions;

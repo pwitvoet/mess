@@ -1,4 +1,4 @@
-﻿namespace MESS.Mathematics.Spatial
+﻿namespace MLib.Mathematics.Spatial
 {
     /// <summary>
     /// Represents Euler rotation angles.

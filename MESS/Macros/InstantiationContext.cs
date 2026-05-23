@@ -2,7 +2,7 @@
 using MESS.Logging;
 using MESS.Macros.Texturing;
 using MESS.Mapping;
-using MESS.Mathematics;
+using MLib.Mathematics;
 using MScript;
 
 namespace MESS.Macros

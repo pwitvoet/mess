@@ -1,5 +1,6 @@
 ﻿using MESS.Mapping;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
+using MLib.Texturing.Hotspotting;
 using System.Numerics;
 
 namespace MESS.Macros.Texturing

@@ -5,11 +5,12 @@ using MESS.Util;
 using MESS.Macros.Texturing;
 using MESS.Common;
 using System.Text;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MESS.Formats.MAP;
 using MESS.Macros;
 using MScript;
 using MScript.Evaluation;
+using MLib.Texturing.Hotspotting;
 
 namespace MESS
 {

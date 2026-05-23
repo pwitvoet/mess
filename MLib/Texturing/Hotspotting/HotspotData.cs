@@ -1,4 +1,4 @@
-﻿namespace MESS.Macros.Texturing
+﻿namespace MLib.Texturing.Hotspotting
 {
     public class HotspotData
     {

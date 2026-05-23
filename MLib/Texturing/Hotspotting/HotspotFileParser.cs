@@ -1,8 +1,8 @@
-﻿using MESS.Mathematics.Spatial;
+﻿using MLib.Mathematics.Spatial;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace MESS.Macros.Texturing
+namespace MLib.Texturing.Hotspotting
 {
     public static class HotspotFileParser
     {

@@ -5,12 +5,12 @@ using MESS.Logging;
 using MESS.Macros.Functions;
 using MESS.Macros.Texturing;
 using MESS.Mapping;
-using MESS.Mathematics;
-using MESS.Mathematics.Spatial;
+using MLib.Mathematics.Spatial;
 using MESS.Util;
 using MScript;
 using MScript.Evaluation;
 using System.Text.RegularExpressions;
+using MLib.Mathematics;
 
 namespace MESS.Macros
 {

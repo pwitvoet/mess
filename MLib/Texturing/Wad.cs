@@ -1,6 +1,6 @@
-﻿using MESS.Formats;
+﻿using MLib.IO;
 
-namespace MESS.Util
+namespace MLib.Texturing
 {
     public class TextureInfo
     {
