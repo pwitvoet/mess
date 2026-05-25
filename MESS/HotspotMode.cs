@@ -17,6 +17,8 @@ namespace MESS
     class HotspotModeSettings
     {
         // Hotspotting:
+        // TODO: List of textures to ignore, and/or list of textures that must be hotspotted?
+        // TODO: Filter for entities/brushes?
         public int? RandomSeed { get; set; }
         public HotspotSettings HotspotSettings { get; } = new HotspotSettings();
 
@@ -25,6 +27,8 @@ namespace MESS
 
         // Filters:
         public HashSet<string> OnlyTextures { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        // TODO: Entity property filter? Texture ignore list (or whitelist - only hotspot specific textures)? Specific layers? Selected elements (rmf/jmf only)?
+        // TODO: Use config file for ignore textures by default, use cmd-line param to override that!
 
         // Other settings:
         public LogLevel? LogLevel { get; set; }
@@ -55,6 +59,7 @@ namespace MESS
                     return 0;
                 }
 
+                // TODO: This returns false if not all required arguments are provided -- but none of the call sites check the return value!
                 commandLineParser.Parse(args.Where(arg => arg != "-hotspot").ToArray());
 
                 if (string.IsNullOrEmpty(settings.InputPath))
@@ -170,7 +175,7 @@ namespace MESS
                 .Option(
                     "-wad",
                     s => settings.MapWadProperty = s,
-                    "A semicolon-separated list of wad file paths. Only required for .rmf and .jmf files, ")
+                    "A semicolon-separated list of wad file paths. Only required for .rmf and .jmf files, ")    // Also required for .map fragments that do not contain worldspawn information!
                 .Option(
                     "-texturedirs",
                     s => settings.TextureDirectories.AddRange(s.Split(';').Select(dir => dir.Trim())),
@@ -181,7 +186,7 @@ namespace MESS
                     "Sets the random seed. The same seed and map input will always produce the same result. Without a seed, hotspotting may produce different results each time.")
                 .Option(
                     "-scale",
-                    s => settings.HotspotSettings.DefaultTextureScale = double.Parse(s),
+                    s => settings.HotspotSettings.DefaultTextureScale = double.Parse(s),    // TODO: Also parse fractions here!     // TODO: Verify that scale is >0!
                     "Default texture scale. Default value is 1.")
                 .Switch(
                     "-norotation",
@@ -301,6 +306,9 @@ namespace MESS
         {
             var random = settings.RandomSeed is null ? new Random() : new Random(settings.RandomSeed.Value);
 
+            var evaluationContext = Evaluation.DefaultContext();
+            //NativeUtils.RegisterInstanceMethods(baseEvaluationContext, new HotspotFunctions());   // TODO: Provide some default hotspot labeling functions (or just one, for floor/wall/ceiling)!
+
             var hotspotDataCollection = new HotspotDataCollection();
             var wadPaths = GetAbsoluteWadPaths(map, settings);
             foreach (var wadPath in wadPaths)
@@ -310,7 +318,7 @@ namespace MESS
                     var wadHotspotFilePath = wadPath + ".hotspot";
                     if (File.Exists(wadHotspotFilePath))
                     {
-                        ReadWadHotspotFile(wadHotspotFilePath, hotspotDataCollection, logger);
+                        ReadWadHotspotFile(wadHotspotFilePath, hotspotDataCollection, evaluationContext, logger);
                     }
                     else
                     {
@@ -322,8 +330,6 @@ namespace MESS
                     logger.Warning($"Failed to load '{wadPath}': {ex.GetType().Name}: '{ex.Message}'.");
                 }
             }
-
-            var evaluationContext = Evaluation.DefaultContext();
 
             // Apply hotspots:
             var entityIndex = 0;
@@ -345,7 +351,7 @@ namespace MESS
 
                             // Does this texture have hotspot data?
                             var hotspotData = hotspotDataCollection.GetHotspotDataForTexture(face.TextureName);
-                            if (hotspotData == null)
+                            if (hotspotData == null || !hotspotData.HotspotRectangles.Any())
                                 continue;
 
 
@@ -363,10 +369,21 @@ namespace MESS
                                 if (hotspotLabels != null)
                                     labels = hotspotLabels;
                             }
+                            //else if (hotspotData.LabelFunction != null)
+                            //{
+                            //    // TODO: TEST THIS! If an entity doesn't specify a labels function or array/string, then check if the texture specifies its own labels function!
+                            //    // TODO: Duplicate from above, except for where the function comes from! Move this entire if/elseif/elseif block to a separate GetLabels method!
+                            //    var faceInfo = face.CreateFaceInfoMObject();
+                            //    var result = hotspotData.LabelFunction.Apply(new[] { faceInfo });
+                            //    var hotspotLabels = GetHotspotLabels(result);
+                            //    if (hotspotLabels != null)
+                            //        labels = hotspotLabels;
+                            //}
 
                             foreach (var label in settings.HotspotSettings.Labels)
                                 labels.Add(label);
 
+                            //logger.Info($"Labels for face: '{string.Join(", ", labels ?? Array.Empty<string>())}'.");
                             var score = HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData, settings.HotspotSettings, labels, random);
 
 
@@ -417,7 +434,13 @@ namespace MESS
                                     hotspotData = hotspotDataCollection.GetHotspotDataForTexture(bestTextureName);
                                     HotspotTexturing.ApplyHotspotTexturing(face, brush, hotspotData!, settings.HotspotSettings, labels, random);
                                 }
+
+                                // TODO: What if there is no match at all, not even a fallback? Log a warning!
+                                score = bestScore;
                             }
+
+                            // TODO: This may be a bit too much log-spam...! Only for debugging maybe, and not even very useful for that!
+                            //logger.Info($"Final score for face #{faceIndex}: {score}.");
                         }
                         catch (Exception ex)
                         {
@@ -504,7 +527,7 @@ namespace MESS
             return relativePath;
         }
 
-        private static void ReadWadHotspotFile(string wadHotspotFilePath, HotspotDataCollection hotspotDataCollection, ILogger logger)
+        private static void ReadWadHotspotFile(string wadHotspotFilePath, HotspotDataCollection hotspotDataCollection, EvaluationContext evaluationContext, ILogger logger)
         {
             logger.Info($"Reading hotspot data from '{wadHotspotFilePath}' file.");
 
@@ -512,9 +535,8 @@ namespace MESS
             {
                 try
                 {
-                    var hotspotData = HotspotFileParser.Parse(file);
-                    foreach (var entry in hotspotData)
-                        hotspotDataCollection.SetHotspotDataForTexture(entry.Key, entry.Value);
+                    var hotspotFileData = HotspotFileParser.Parse(file);
+                    hotspotDataCollection.AddHotspotFileData(hotspotFileData);
                 }
                 catch (Exception ex)
                 {

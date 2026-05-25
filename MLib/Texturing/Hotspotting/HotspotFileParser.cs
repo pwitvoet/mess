@@ -7,19 +7,18 @@ namespace MLib.Texturing.Hotspotting
     public static class HotspotFileParser
     {
         /// <summary>
-        /// Parses a .hotspot file, storing the results into the given hotspot data collection.
+        /// Parses a .hotspot file, which contains hotspot rectangle sets and texture bindings (which map textures to rectangle sets).
         /// </summary>
         /// <exception cref="InvalidDataException"></exception>
         /// <exception cref="JsonException"></exception>
-        public static IDictionary<string, HotspotData> Parse(Stream file)
+        public static HotspotFileData Parse(Stream file)
         {
-            var result = new Dictionary<string, HotspotData>();
             var json = JsonSerializer.Deserialize<JsonObject>(file);
             if (json == null)
                 throw new InvalidDataException("Hotspot file must not be empty.");
 
 
-            var hotspotRectangles = new Dictionary<string, HotspotRectangle[]>();
+            var hotspotRectangleSets = new List<HotspotRectangleSet>();
             var hotspotsNode = json["hotspots"];
             if (hotspotsNode != null)
             {
@@ -28,11 +27,13 @@ namespace MLib.Texturing.Hotspotting
                     if (node.Value == null)
                         continue;
 
-                    var hotspotName = node.Key;
-                    hotspotRectangles[hotspotName] = ParseHotspotRectangles(node.Value.AsObject());
+                    var name = node.Key;
+                    var hotspotRectangles = ParseHotspotRectangles(node.Value.AsObject());
+                    hotspotRectangleSets.Add(new HotspotRectangleSet(name, hotspotRectangles));
                 }
             }
 
+            var hotspotBindings = new List<HotspotBinding>();
             var texturesNode = json["textures"];
             if (texturesNode != null)
             {
@@ -41,24 +42,21 @@ namespace MLib.Texturing.Hotspotting
                     if (node.Value == null)
                         continue;
 
-                    var textureName = node.Key;
+                    var textureNamePattern = node.Key;
                     var hotspotName = node.Value["hotspot"]?.ToString();
                     if (hotspotName == null)
                         throw new InvalidDataException("Texture must contain a 'hotspot' key.");
 
-                    if (!hotspotRectangles.TryGetValue(hotspotName, out var rectangles))
-                        throw new InvalidDataException($"Texture '{textureName}' is referencing non-existing hotspot data '{hotspotName}'.");
-
-                    var fallbackTexture = node.Value["fallback_texture"]?.ToString();
+                    var fallbackTextureNamePattern = node.Value["fallback_texture"]?.ToString();
                     var fallbackScoreThreshold = (double?)node.Value["fallback_score_threshold"]?.AsValue();
 
                     var labels = ParseStringArray(node.Value["labels"]?.AsArray());
 
-                    result[node.Key] = new HotspotData(rectangles, fallbackTexture, fallbackScoreThreshold ?? 0, labels);
+                    hotspotBindings.Add(new HotspotBinding(textureNamePattern, hotspotName, fallbackTextureNamePattern, fallbackScoreThreshold ?? 0, labels));
                 }
             }
 
-            return result;
+            return new HotspotFileData(hotspotRectangleSets, hotspotBindings);
         }
 
 

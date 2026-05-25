@@ -1,27 +1,28 @@
 ﻿namespace MLib.Texturing.Hotspotting
 {
+    /// <summary>
+    /// Hotspot data for a specific face.
+    /// </summary>
     public class HotspotData
     {
-        public HotspotRectangle[] HotspotRectangles { get; }
+        public IReadOnlyList<HotspotRectangle> HotspotRectangles => RectangleSet.Rectangles;
 
         public string? FallbackTextureName { get; }
-        public double FallbackScoreThreshold { get; }
+        public double FallbackScoreThreshold => Binding.FallbackScoreThreshold;
 
-        public HashSet<string> Labels { get; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        public IReadOnlySet<string> Labels => Binding.Labels;
 
 
-        public HotspotData(HotspotRectangle[] hotspotRectangles, string? fallbackTextureName, double fallbackScoreThreshold, IEnumerable<string>? labels)
+        private HotspotRectangleSet RectangleSet { get; }
+        private HotspotBinding Binding { get; }
+
+
+        public HotspotData(HotspotRectangleSet rectangleSet, HotspotBinding binding, string? fallbackTextureName)
         {
-            HotspotRectangles = hotspotRectangles;
+            RectangleSet = rectangleSet;
+            Binding = binding;
 
             FallbackTextureName = fallbackTextureName;
-            FallbackScoreThreshold = fallbackScoreThreshold;
-
-            if (labels != null)
-            {
-                foreach (var label in labels)
-                    Labels.Add(label);
-            }
         }
     }
 }

@@ -7,53 +7,79 @@ namespace MLib.Texturing.Hotspotting
     /// </summary>
     public class HotspotDataCollection
     {
-        private Dictionary<string, HotspotData> _hotspotRects = new();
-        private List<(Regex, HotspotData)> _wildcardHotspotRects = new();
+        private Dictionary<string, HotspotRectangleSet> HotspotRectangleSets { get; } = new();
+
+        private Dictionary<string, HotspotBinding> ExactHotspotBindings { get; } = new();
+        private List<(Regex, HotspotBinding)> WildcardHotspotBindings { get; } = new();
 
 
-        public void SetHotspotDataForTexture(string namePattern, HotspotData hotspotData)
+        // TODO: Warn about names that are already taken!
+        public void AddHotspotFileData(HotspotFileData hotspotFileData)
         {
-            if (HasWildcards(namePattern))
-                _wildcardHotspotRects.Add((MakeNamePatternRegex(namePattern), hotspotData));
-            else
-                _hotspotRects[namePattern.ToLowerInvariant()] = hotspotData;
+            foreach (var rectangleSet in hotspotFileData.RectangleSets)
+            {
+                // TODO: Issue warning if a name is already taken!
+                HotspotRectangleSets[rectangleSet.Name] = rectangleSet;
+            }
+
+            foreach (var binding in hotspotFileData.Bindings)
+            {
+                if (!HasWildcards(binding.TextureNamePattern))
+                {
+                    // TODO: Issue warning if a name is already taken!
+                    ExactHotspotBindings[binding.TextureNamePattern] = binding;
+                }
+                else
+                {
+                    WildcardHotspotBindings.Add((MakeNamePatternRegex(binding.TextureNamePattern), binding));
+                }
+            }
         }
 
         public HotspotData? GetHotspotDataForTexture(string textureName)
         {
+            var binding = GetHotspotBindingForTexture(textureName, out var nameMatch);
+            if (binding == null)
+                return null;
+
+            if (!HotspotRectangleSets.TryGetValue(binding.HotspotName, out var rectangleSet))
+                return null;
+
+
+            var fallbackTextureName = binding.FallbackTextureNamePattern;
+            if (fallbackTextureName != null && ContainsPlaceholders(binding.TextureNamePattern) && nameMatch != null)
+            {
+                var replacementValues = nameMatch.Groups.Cast<Group>()
+                    .Skip(1)
+                    .Select(group => group.Value)
+                    .ToArray();
+
+                fallbackTextureName = ReplacePlaceholders(fallbackTextureName, replacementValues);
+            }
+            return new HotspotData(rectangleSet, binding, fallbackTextureName);
+        }
+
+
+        private HotspotBinding? GetHotspotBindingForTexture(string textureName, out Match? nameMatch)
+        {
+            nameMatch = null;
+
             textureName = textureName.ToLowerInvariant();
+            if (ExactHotspotBindings.TryGetValue(textureName, out var exactHotspotBinding))
+                return exactHotspotBinding;
 
-            if (_hotspotRects.TryGetValue(textureName, out var hotspotData))
-                return hotspotData;
-
-            foreach ((var regex, var wildcardHotspotData) in _wildcardHotspotRects)
+            foreach ((var regex, var hotspotBinding) in WildcardHotspotBindings)
             {
                 var match = regex.Match(textureName);
                 if (match.Success)
                 {
-                    if (wildcardHotspotData.FallbackTextureName != null && ContainsPlaceholders(wildcardHotspotData.FallbackTextureName))
-                    {
-                        var replacementValues = match.Groups.Cast<Group>()
-                            .Skip(1)
-                            .Select(group => group.Value)
-                            .ToArray();
-
-                        return new HotspotData(
-                            wildcardHotspotData.HotspotRectangles,
-                            ReplacePlaceholders(wildcardHotspotData.FallbackTextureName, replacementValues),
-                            wildcardHotspotData.FallbackScoreThreshold,
-                            wildcardHotspotData.Labels);
-                    }
-                    else
-                    {
-                        return wildcardHotspotData;
-                    }
+                    nameMatch = match;
+                    return hotspotBinding;
                 }
             }
 
             return null;
         }
-
 
         private static bool HasWildcards(string namePattern)
             => Regex.IsMatch(namePattern, @"(?<!\\)\*");    // Matches * but not \*
