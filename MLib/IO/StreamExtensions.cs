@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using MLib.Texturing;
+using System.Text;
 
 namespace MLib.IO
 {
@@ -6,6 +7,8 @@ namespace MLib.IO
     {
         // Reading:
         public static short ReadShort(this Stream stream) => BitConverter.ToInt16(stream.ReadBytes(2), 0);
+
+        public static ushort ReadUShort(this Stream stream) => BitConverter.ToUInt16(stream.ReadBytes(2), 0);
 
         public static int ReadInt(this Stream stream) => BitConverter.ToInt32(stream.ReadBytes(4), 0);
 
@@ -47,6 +50,12 @@ namespace MLib.IO
                 return null;
 
             return (encoding ?? Encoding.UTF8).GetString(stream.ReadBytes(length));
+        }
+
+        public static ColorRGB ReadColorRGB(this Stream stream)
+        {
+            var data = stream.ReadBytes(3);
+            return new ColorRGB(data[0], data[1], data[2]);
         }
 
         public static byte ReadSingleByte(this Stream stream)

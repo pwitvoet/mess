@@ -306,7 +306,8 @@ namespace MESS.Formats.Obj
                         if (File.Exists(wadPath))
                         {
                             Logger.Info($"Reading texture information from '{wadPath}'.");
-                            foreach (var textureInfo in Wad.GetTextureInfo(wadPath))
+                            var wadFile = WadFile.Load(wadPath);
+                            foreach (var textureInfo in wadFile.TextureInfos)
                                 textures[textureInfo.Name.ToLowerInvariant()] = textureInfo;
 
                             resolved = true;
