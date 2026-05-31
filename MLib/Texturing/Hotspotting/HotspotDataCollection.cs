@@ -7,9 +7,9 @@ namespace MLib.Texturing.Hotspotting
     /// </summary>
     public class HotspotDataCollection
     {
-        private Dictionary<string, HotspotRectangleSet> HotspotRectangleSets { get; } = new();
+        private Dictionary<string, HotspotRectangleSet> HotspotRectangleSets { get; } = new Dictionary<string, HotspotRectangleSet>(StringComparer.InvariantCultureIgnoreCase);
 
-        private Dictionary<string, HotspotBinding> ExactHotspotBindings { get; } = new();
+        private Dictionary<string, HotspotBinding> ExactHotspotBindings { get; } = new Dictionary<string, HotspotBinding>(StringComparer.InvariantCultureIgnoreCase);
         private List<(Regex, HotspotBinding)> WildcardHotspotBindings { get; } = new();
 
 
@@ -95,13 +95,13 @@ namespace MLib.Texturing.Hotspotting
                     default: return Regex.Escape(match.Value);  // There are no other special characters
                 }
             });
-            return new Regex("^" + regex + "$");
+            return new Regex("^" + regex + "$", RegexOptions.IgnoreCase);
         }
 
         private static bool ContainsPlaceholders(string fallbackTextureName)
             => Regex.IsMatch(fallbackTextureName, @"\{\d+\}");
 
-        public static string ReplacePlaceholders(string value, string[] replacementValues)
+        private static string ReplacePlaceholders(string value, string[] replacementValues)
         {
             return Regex.Replace(value, @"\{(\d+)\}", match =>
             {
