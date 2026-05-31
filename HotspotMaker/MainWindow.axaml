@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hm="using:HotspotMaker"
+        xmlns:views="using:HotspotMaker.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="HotspotMaker.MainWindow"
+        x:DataType="hm:MainWindowVM"
+        Title="{Binding WindowTitle}">
+    <!-- NOTE: HotKeys in menu items don't work until a menu has been opened at least once, for some reason, hence these key bindings: -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenWadFile}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCurrentProject}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCurrentProject}" />
+        <KeyBinding Gesture="Alt+F4" Command="{Binding ExitProgram}" />
+    </Window.KeyBindings>
+    <Grid RowDefinitions="Auto,*">
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="_Open wad file" InputGesture="Ctrl+O" Command="{Binding OpenWadFile}" />
+                <!-- TODO: Show recent files! -->
+                <Separator />
+                <MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveCurrentProject}" />
+                <Separator />
+                <MenuItem Header="_Close" InputGesture="Ctrl+W" Command="{Binding CloseCurrentProject}" />
+                <Separator />
+                <MenuItem Header="E_xit" InputGesture="Alt+F4" Command="{Binding ExitProgram}" />
+            </MenuItem>
+            <!--<MenuItem Header="Help">
+                <MenuItem Header="About" />
+            </MenuItem>-->
+        </Menu>
+
+        <views:HotspotProjectView Grid.Row="1" DataContext="{Binding HotspotProject}" />
+    </Grid>
+</Window>

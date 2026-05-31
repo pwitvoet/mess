@@ -7,6 +7,13 @@ namespace MLib.Texturing.Hotspotting
     /// </summary>
     public class HotspotDataCollection
     {
+        /// <summary>
+        /// Returns a regex for the given texture name pattern, but only if it contains any wildcards (*).
+        /// </summary>
+        public static Regex? GetTextureNamePatternRegex(string textureNamePattern)
+            => HasWildcards(textureNamePattern) ? MakeNamePatternRegex(textureNamePattern) : null;
+
+
         private Dictionary<string, HotspotRectangleSet> HotspotRectangleSets { get; } = new Dictionary<string, HotspotRectangleSet>(StringComparer.InvariantCultureIgnoreCase);
 
         private Dictionary<string, HotspotBinding> ExactHotspotBindings { get; } = new Dictionary<string, HotspotBinding>(StringComparer.InvariantCultureIgnoreCase);
