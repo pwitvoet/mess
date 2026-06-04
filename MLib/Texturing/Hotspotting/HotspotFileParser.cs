@@ -6,12 +6,19 @@ namespace MLib.Texturing.Hotspotting
 {
     public static class HotspotFileParser
     {
+        /// <inheritdoc cref="Load(Stream)"/>
+        public static HotspotFileData Load(string filePath)
+        {
+            using (var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                return Load(file);
+        }
+
         /// <summary>
-        /// Parses a .hotspot file, which contains hotspot rectangle sets and texture bindings (which map textures to rectangle sets).
+        /// Reads a .hotspot file, which contains hotspot rectangle sets and texture bindings (which map textures to rectangle sets).
         /// </summary>
         /// <exception cref="InvalidDataException"></exception>
         /// <exception cref="JsonException"></exception>
-        public static HotspotFileData Parse(Stream file)
+        public static HotspotFileData Load(Stream file)
         {
             var json = JsonSerializer.Deserialize<JsonObject>(file);
             if (json == null)
