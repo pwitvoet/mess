@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Platform.Storage;
+using HotspotMaker.History;
 using HotspotMaker.Hotspot;
 using System;
 using System.ComponentModel;
@@ -19,6 +20,7 @@ namespace HotspotMaker
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 
+        // Bindable properties:
         private string _windowTitle = DefaultWindowTitle;
         public string WindowTitle
         {
@@ -32,11 +34,27 @@ namespace HotspotMaker
             get => _hotspotProject;
             set
             {
+                if (_hotspotProject != null)
+                    _hotspotProject.PropertyChanged -= HotspotProject_PropertyChanged;
+
                 _hotspotProject = value;
+
+                if (_hotspotProject != null)
+                    _hotspotProject.PropertyChanged += HotspotProject_PropertyChanged;
+
                 UpdateWindowTitle(value);
+                RaisePropertyChanged(nameof(HasOpenProject));
                 RaisePropertyChanged();
             }
         }
+
+
+        // Derived properties:
+        public bool HasOpenProject => HotspotProject != null;
+
+        public bool IsUndoAvailable => HotspotProject?.IsUndoAvailable == true;
+
+        public bool IsRedoAvailable => HotspotProject?.IsRedoAvailable == true;
 
 
         private IStorageProvider StorageProvider { get; }
@@ -45,6 +63,7 @@ namespace HotspotMaker
         public MainWindowVM(IStorageProvider storageProvider)
         {
             StorageProvider = storageProvider;
+
             UpdateWindowTitle(null);
         }
 
@@ -55,7 +74,7 @@ namespace HotspotMaker
             try
             {
                 // TODO: Remember the previously opened file(s), and open the most recent folder (SuggestedStartLocation)!
-                var selectedFiles = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                var selectedFiles = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Open .wad file",
                     FileTypeFilter = [new FilePickerFileType("Wad file") { Patterns = ["*.wad"] }],
@@ -91,6 +110,20 @@ namespace HotspotMaker
             Environment.Exit(0);
         }
 
+        public void UndoLastAction()
+            => HotspotProject?.UndoLastAction();
+
+        public void RedoLastAction()
+            => HotspotProject?.RedoLastAction();
+
+
+        private void HotspotProject_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotProjectVM.IsUndoAvailable))
+                RaisePropertyChanged(nameof(IsUndoAvailable));
+            else if (e.PropertyName == nameof(HotspotProjectVM.IsRedoAvailable))
+                RaisePropertyChanged(nameof(IsRedoAvailable));
+        }
 
         private void UpdateWindowTitle(HotspotProjectVM? hotspotProject)
         {

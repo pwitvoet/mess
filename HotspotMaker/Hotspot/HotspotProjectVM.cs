@@ -1,27 +1,21 @@
 ﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using HotspotMaker.History;
 using MLib.Texturing;
 using MLib.Texturing.Hotspotting;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace HotspotMaker.Hotspot
 {
-    public class HotspotProjectVM : INotifyPropertyChanged
+    public class HotspotProjectVM : ChangeTrackingVM
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-
         // TODO: Improve error reporting!
         public static HotspotProjectVM Load(string wadFilePath, string hotspotFilePath)
         {
@@ -117,6 +111,10 @@ namespace HotspotMaker.Hotspot
 
         public bool HasSelectedHotspotBinding => SelectedHotspotBinding != null;
 
+        public bool IsUndoAvailable => UndoSystem.IsUndoAvailable;
+
+        public bool IsRedoAvailable => UndoSystem.IsRedoAvailable;
+
 
         // Read-only:
         public string HotspotFilePath { get; }
@@ -129,13 +127,14 @@ namespace HotspotMaker.Hotspot
 
 
         public HotspotProjectVM(WadFile wadFile, HotspotFileData hotspotFileData, string hotspotFilePath)
+            : base(new UndoSystem())
         {
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
 
             foreach (var binding in hotspotFileData.Bindings)
             {
-                var bindingVM = new HotspotBindingVM(binding);
+                var bindingVM = new HotspotBindingVM(binding, UndoSystem);
                 HotspotBindings.Add(bindingVM);
 
                 // Register binding lookup:
@@ -152,15 +151,43 @@ namespace HotspotMaker.Hotspot
             }
 
             foreach (var rectangleSet in hotspotFileData.RectangleSets)
-                HotspotRectangleSets.Add(new HotspotRectangleSetVM(rectangleSet));
+                HotspotRectangleSets.Add(new HotspotRectangleSetVM(rectangleSet, UndoSystem));
 
             // Initialize texture infos:
             TextureInfos = wadFile.TextureInfos
                 .Select(textureInfo => new TextureInfoVM(textureInfo) { Binding = GetBindingForTexture(textureInfo.Name) })
                 .OrderBy(entry => entry.Name)
                 .ToArray();
+
+            UndoSystem.OnActionDone += UndoSystem_OnActionDone;
+            UndoSystem.OnActionUndone += UndoSystem_OnActionUndone;
+            UndoSystem.OnActionRedone += UndoSystem_OnActionRedone;
         }
 
+        public void UndoLastAction()
+            => UndoSystem.UndoLastAction();
+
+        public void RedoLastAction()
+            => UndoSystem.RedoLastAction();
+
+
+        private void UndoSystem_OnActionDone()
+        {
+            RaisePropertyChanged(nameof(IsUndoAvailable));
+            RaisePropertyChanged(nameof(IsRedoAvailable));
+        }
+
+        private void UndoSystem_OnActionUndone()
+        {
+            RaisePropertyChanged(nameof(IsUndoAvailable));
+            RaisePropertyChanged(nameof(IsRedoAvailable));
+        }
+
+        private void UndoSystem_OnActionRedone()
+        {
+            RaisePropertyChanged(nameof(IsUndoAvailable));
+            RaisePropertyChanged(nameof(IsRedoAvailable));
+        }
 
         private void OnSelectedTextureUpdate(TextureInfoVM? textureItem)
         {

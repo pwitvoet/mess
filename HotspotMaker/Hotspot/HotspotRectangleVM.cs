@@ -1,29 +1,123 @@
-﻿using MLib.Texturing.Hotspotting;
+﻿using HotspotMaker.History;
+using MLib.Texturing.Hotspotting;
 using System.Collections.Generic;
 
 namespace HotspotMaker.Hotspot
 {
-    public class HotspotRectangleVM
+    public class HotspotRectangleVM : ChangeTrackingVM
     {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
+        private double _x;
+        public double X
+        {
+            get => _x;
+            set => SetPropertyOngoing(v => _x = v, _x, value);
+        }
 
-        public bool AllowRotation { get; set; }
-        public bool AllowHorizontalMirroring { get; set; }  // TODO: Internally this is a None|Horizontal|Vertical enum, so it doesn't technically support horizontal + vertical (which is a 180 degree rotation)!
-        public bool AllowVerticalMirroring { get; set; }
+        private double _y;
+        public double Y
+        {
+            get => _y;
+            set => SetPropertyOngoing(v => _y = v, _y, value);
+        }
 
-        public HotspotLayout HorizontalLayout { get; set; }
-        public HotspotLayout VerticalLayout { get; set; }
-        public double? SnapWidth { get; set; }
-        public double? SnapHeight { get; set; }
+        private double _width;
+        public double Width
+        {
+            get => _width;
+            set => SetPropertyOngoing(v => _width = v, _width, value);
+        }
 
-        public double SelectionWeight { get; set; }
-        public bool IsTopConcave { get; set; }
-        public bool IsRightConcave { get; set; }
-        public bool IsBottomConcave { get; set; }
-        public bool IsLeftConcave { get; set; }
+        private double _height;
+        public double Height
+        {
+            get => _height;
+            set => SetPropertyOngoing(v => _height = v, _height, value);
+        }
+
+        private bool _allowRotation;
+        public bool AllowRotation
+        {
+            get => _allowRotation;
+            set => SetProperty(v => _allowRotation = v, _allowRotation, value);
+        }
+
+        // TODO: Internally this is a None|Horizontal|Vertical enum, so it doesn't technically support horizontal + vertical (which is a 180 degree rotation)!
+        private bool _allowHorizontalMirroring;
+        public bool AllowHorizontalMirroring
+        {
+            get => _allowHorizontalMirroring;
+            set => SetProperty(v => _allowHorizontalMirroring = v, _allowHorizontalMirroring, value);
+        }
+
+        private bool _allowVerticalMirroring;
+        public bool AllowVerticalMirroring
+        {
+            get => _allowVerticalMirroring;
+            set => SetProperty(v => _allowVerticalMirroring = v, _allowVerticalMirroring, value);
+        }
+
+        private HotspotLayout _horizontalLayout;
+        public HotspotLayout HorizontalLayout
+        {
+            get => _horizontalLayout;
+            set => SetProperty(v => _horizontalLayout = v, _horizontalLayout, value);
+        }
+
+        private HotspotLayout _verticalLayout;
+        public HotspotLayout VerticalLayout
+        {
+            get => _verticalLayout;
+            set => SetProperty(v => _verticalLayout = v, _verticalLayout, value);
+        }
+
+        private double? _snapWidth;
+        public double? SnapWidth
+        {
+            get => _snapWidth;
+            set => SetPropertyOngoing(v => _snapWidth = v, _snapWidth, value);
+        }
+
+        private double? _snapHeight;
+        public double? SnapHeight
+        {
+            get => _snapHeight;
+            set => SetPropertyOngoing(v => _snapHeight = v, _snapHeight, value);
+        }
+
+        private double _selectionWeight;
+        public double SelectionWeight
+        {
+            get => _selectionWeight;
+            set => SetPropertyOngoing(v => _selectionWeight = v, _selectionWeight, value);
+        }
+
+        private bool _isTopConcave;
+        public bool IsTopConcave
+        {
+            get => _isTopConcave;
+            set => SetProperty(v => _isTopConcave = v, _isTopConcave, value);
+        }
+
+        private bool _isRightConcave;
+        public bool IsRightConcave
+        {
+            get => _isRightConcave;
+            set => SetProperty(v => _isRightConcave = v, _isRightConcave, value);
+        }
+
+        private bool _isBottomConcave;
+        public bool IsBottomConcave
+        {
+            get => _isBottomConcave;
+            set => SetProperty(v => _isBottomConcave = v, _isBottomConcave, value);
+        }
+
+        private bool _isLeftConcave;
+        public bool IsLeftConcave
+        {
+            get => _isLeftConcave;
+            set => SetProperty(v => _isLeftConcave = v, _isLeftConcave, value);
+        }
 
         public List<string> Labels { get; } = new();
 
@@ -31,33 +125,38 @@ namespace HotspotMaker.Hotspot
         public string DisplayName => $"Rectangle ({X}, {Y}), {Width} x {Height}";
 
 
-        public HotspotRectangleVM()
+        public HotspotRectangleVM(UndoSystem undoSystem)
+            : base(undoSystem)
         {
         }
 
-        public HotspotRectangleVM(HotspotRectangle rectangle)
+        public HotspotRectangleVM(HotspotRectangle rectangle, UndoSystem undoSystem)
+            : base(undoSystem)
         {
-            X = rectangle.Rectangle.X;
-            Y = rectangle.Rectangle.Y;
-            Width = rectangle.Rectangle.Width;
-            Height = rectangle.Rectangle.Height;
+            WithoutChangeTracking(() =>
+            {
+                X = rectangle.Rectangle.X;
+                Y = rectangle.Rectangle.Y;
+                Width = rectangle.Rectangle.Width;
+                Height = rectangle.Rectangle.Height;
 
-            AllowRotation = rectangle.AllowRotation;
-            AllowHorizontalMirroring = rectangle.AllowedMirroring == MLib.Texturing.Hotspotting.Mirrorings.Horizontal;
-            AllowVerticalMirroring = rectangle.AllowedMirroring == MLib.Texturing.Hotspotting.Mirrorings.Vertical;
+                AllowRotation = rectangle.AllowRotation;
+                AllowHorizontalMirroring = rectangle.AllowedMirroring == MLib.Texturing.Hotspotting.Mirrorings.Horizontal;
+                AllowVerticalMirroring = rectangle.AllowedMirroring == MLib.Texturing.Hotspotting.Mirrorings.Vertical;
 
-            HorizontalLayout = rectangle.HorizontalLayout;
-            VerticalLayout = rectangle.VerticalLayout;
-            SnapWidth = rectangle.SnapWidth;
-            SnapHeight = rectangle.SnapHeight;
+                HorizontalLayout = rectangle.HorizontalLayout;
+                VerticalLayout = rectangle.VerticalLayout;
+                SnapWidth = rectangle.SnapWidth;
+                SnapHeight = rectangle.SnapHeight;
 
-            SelectionWeight = rectangle.SelectionWeight;
-            IsTopConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Top);
-            IsRightConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Right);
-            IsBottomConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Bottom);
-            IsLeftConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Left);
+                SelectionWeight = rectangle.SelectionWeight;
+                IsTopConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Top);
+                IsRightConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Right);
+                IsBottomConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Bottom);
+                IsLeftConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Left);
 
-            Labels.AddRange(rectangle.Labels);
+                Labels.AddRange(rectangle.Labels);
+            });
         }
     }
 }

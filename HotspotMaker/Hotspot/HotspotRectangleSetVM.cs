@@ -1,23 +1,36 @@
-﻿using MLib.Texturing.Hotspotting;
-using System.Collections.Generic;
-using System.Linq;
+﻿using HotspotMaker.History;
+using MLib.Texturing.Hotspotting;
+using System.Collections.ObjectModel;
 
 namespace HotspotMaker.Hotspot
 {
-    public class HotspotRectangleSetVM
+    public class HotspotRectangleSetVM : ChangeTrackingVM
     {
-        public string Name { get; set; } = "";
-        public List<HotspotRectangleVM> Rectangles { get; } = new();
+        private string _name = "";
+        public string Name
+        {
+            get => _name;
+            set => SetPropertyOngoing(v => _name = v, _name, value);
+        }
+
+        public ObservableCollection<HotspotRectangleVM> Rectangles { get; } = new();
 
 
-        public HotspotRectangleSetVM()
+        public HotspotRectangleSetVM(UndoSystem undoSystem)
+            : base(undoSystem)
         {
         }
 
-        public HotspotRectangleSetVM(HotspotRectangleSet rectangleSet)
+        public HotspotRectangleSetVM(HotspotRectangleSet rectangleSet, UndoSystem undoSystem)
+            : base(undoSystem)
         {
-            Name = rectangleSet.Name;
-            Rectangles.AddRange(rectangleSet.Rectangles.Select(rectangle => new HotspotRectangleVM(rectangle)));
+            WithoutChangeTracking(() =>
+            {
+                Name = rectangleSet.Name;
+
+                foreach (var rectangle in rectangleSet.Rectangles)
+                    Rectangles.Add(new HotspotRectangleVM(rectangle, undoSystem));
+            });
         }
     }
 }

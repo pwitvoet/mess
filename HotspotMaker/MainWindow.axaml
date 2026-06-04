@@ -14,18 +14,24 @@
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCurrentProject}" />
         <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCurrentProject}" />
         <KeyBinding Gesture="Alt+F4" Command="{Binding ExitProgram}" />
+        <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoLastAction}" />
+        <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoLastAction}" />
     </Window.KeyBindings>
     <Grid RowDefinitions="Auto,*">
         <Menu Grid.Row="0">
-            <MenuItem Header="File">
+            <MenuItem Header="_File">
                 <MenuItem Header="_Open wad file" InputGesture="Ctrl+O" Command="{Binding OpenWadFile}" />
                 <!-- TODO: Show recent files! -->
                 <Separator />
-                <MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveCurrentProject}" />
+                <MenuItem Header="_Save" InputGesture="Ctrl+S" Command="{Binding SaveCurrentProject}" IsEnabled="{Binding HasOpenProject}" />
                 <Separator />
-                <MenuItem Header="_Close" InputGesture="Ctrl+W" Command="{Binding CloseCurrentProject}" />
+                <MenuItem Header="_Close" InputGesture="Ctrl+W" Command="{Binding CloseCurrentProject}" IsEnabled="{Binding HasOpenProject}" />
                 <Separator />
                 <MenuItem Header="E_xit" InputGesture="Alt+F4" Command="{Binding ExitProgram}" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Undo" InputGesture="Ctrl+Z" Command="{Binding UndoLastAction}" IsEnabled="{Binding IsUndoAvailable}" />
+                <MenuItem Header="Redo" InputGesture="Ctrl+Y" Command="{Binding RedoLastAction}" IsEnabled="{Binding IsRedoAvailable}" />
             </MenuItem>
             <!--<MenuItem Header="Help">
                 <MenuItem Header="About" />

@@ -1,32 +1,60 @@
-﻿using MLib.Texturing.Hotspotting;
+﻿using HotspotMaker.History;
+using MLib.Texturing.Hotspotting;
 using System.Collections.Generic;
 
 namespace HotspotMaker.Hotspot
 {
-    public class HotspotBindingVM
+    public class HotspotBindingVM : ChangeTrackingVM
     {
-        public string TextureNamePattern { get; set; } = "";
-        public string HotspotName { get; set; } = "";
+        private string _textureNamePattern = "";
+        public string TextureNamePattern
+        {
+            get => _textureNamePattern;
+            set => SetPropertyOngoing(v => _textureNamePattern = v, _textureNamePattern, value);
+        }
 
-        public string? FallbackTextureNamePattern { get; set; }
-        public double? FallbackScoreThreshold { get; set; }
+        private string _hotspotName = "";
+        public string HotspotName
+        {
+            get => _hotspotName;
+            set => SetPropertyOngoing(v => _hotspotName = v, _hotspotName, value);
+        }
+
+        private string? _fallbackTextureNamePattern;
+        public string? FallbackTextureNamePattern
+        {
+            get => _fallbackTextureNamePattern;
+            set => SetPropertyOngoing(v => _fallbackTextureNamePattern = v, _fallbackTextureNamePattern, value);
+        }
+
+        private double? _fallbackScoreThreshold;
+        public double? FallbackScoreThreshold
+        {
+            get => _fallbackScoreThreshold;
+            set => SetPropertyOngoing(v => _fallbackScoreThreshold = v, _fallbackScoreThreshold, value);
+        }
 
         public List<string> Labels { get; } = new();
 
 
-        public HotspotBindingVM()
+        public HotspotBindingVM(UndoSystem undoSystem)
+            : base(undoSystem)
         {
         }
 
-        public HotspotBindingVM(HotspotBinding binding)
+        public HotspotBindingVM(HotspotBinding binding, UndoSystem undoSystem)
+            : base(undoSystem)
         {
-            TextureNamePattern = binding.TextureNamePattern;
-            HotspotName = binding.HotspotName;
+            WithoutChangeTracking(() =>
+            {
+                TextureNamePattern = binding.TextureNamePattern;
+                HotspotName = binding.HotspotName;
 
-            FallbackTextureNamePattern = binding.FallbackTextureNamePattern;
-            FallbackScoreThreshold = binding.FallbackScoreThreshold;
+                FallbackTextureNamePattern = binding.FallbackTextureNamePattern;
+                FallbackScoreThreshold = binding.FallbackScoreThreshold;
 
-            Labels.AddRange(binding.Labels);
+                Labels.AddRange(binding.Labels);
+            });
         }
     }
 }

@@ -40,19 +40,23 @@
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Texture name pattern:" VerticalAlignment="Center" Margin="5" />
-                            <TextBox Text="{Binding TextureNamePattern}" PlaceholderText="Texture name pattern" MinWidth="150" Margin="5" />
+                            <TextBox Text="{Binding TextureNamePattern}" PlaceholderText="Texture name pattern" MinWidth="150" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
 
                             <TextBlock Text="Hotspot set:" VerticalAlignment="Center" Margin="5" />
                             <!-- TODO: Dropdown box! And button to create a new rectangle set! -->
-                            <TextBox Text="{Binding HotspotName}" MinWidth="150" Margin="5" />
+                            <TextBox Text="{Binding HotspotName}" MinWidth="150" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Fallback texture:" VerticalAlignment="Center" Margin="5" />
-                            <TextBox Text="{Binding FallbackTextureNamePattern}" PlaceholderText="Fallback texture name pattern" MinWidth="150" Margin="5" />
+                            <TextBox Text="{Binding FallbackTextureNamePattern}" PlaceholderText="Fallback texture name pattern" MinWidth="150" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
 
                             <TextBlock Text="Score threshold:" VerticalAlignment="Center" Margin="5" />
-                            <TextBox Text="{Binding FallbackScoreThreshold}" MinWidth="50" Margin="5" />
+                            <TextBox Text="{Binding FallbackScoreThreshold}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
