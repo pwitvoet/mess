@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotspotMaker.Util.UI;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -7,11 +8,17 @@ namespace HotspotMaker.History
     /// <summary>
     /// Base class for view models that need undo/redo support.
     /// </summary>
-    public abstract class ChangeTrackingVM : INotifyPropertyChanged
+    public abstract class ChangeTrackingVM : INotifyPropertyChanged, IFocusTrackingVM
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        void IFocusTrackingVM.FocustLost(string propertyName)
+        {
+            if (_ongoingActionPropertyName == propertyName)
+                StopOngoingAction();
+        }
 
 
         // Internal state:
