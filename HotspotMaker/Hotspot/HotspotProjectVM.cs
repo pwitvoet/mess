@@ -6,6 +6,7 @@ using MLib.Texturing.Hotspotting;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,6 +20,42 @@ namespace HotspotMaker.Hotspot
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+
+        // TODO: Improve error reporting!
+        public static HotspotProjectVM Load(string wadFilePath, string hotspotFilePath)
+        {
+            WadFile wadFile;
+            try
+            {
+                wadFile = WadFile.Load(wadFilePath);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Wrap this in an exception that explains that the wad loading part failed!
+                throw;
+            }
+
+            HotspotFileData hotspotFileData;
+            try
+            {
+                if (File.Exists(hotspotFilePath))
+                {
+                    hotspotFileData = HotspotFileParser.Load(hotspotFilePath);
+                }
+                else
+                {
+                    hotspotFileData = new HotspotFileData(Array.Empty<HotspotRectangleSet>(), Array.Empty<HotspotBinding>());
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO: Wrap this in an exception that explains that the hotspot loading part failed!
+                throw;
+            }
+
+            return new HotspotProjectVM(wadFile, hotspotFileData, hotspotFilePath);
+        }
 
 
         // Bindable properties:
@@ -68,87 +105,60 @@ namespace HotspotMaker.Hotspot
             set { _selectedHotspotRectangle = value; RaisePropertyChanged(); }
         }
 
+        public ObservableCollection<HotspotBindingVM> HotspotBindings { get; } = new();
+
+        public ObservableCollection<HotspotRectangleSetVM> HotspotRectangleSets { get; } = new();
+
+
         // Derived properties:
         public string WadFilePath => WadFile.FilePath;
 
-        public string HotspotFilePath => HotspotFile.FilePath;
-
         public TextureInfoVM[] TextureInfos { get; }
-
-        public List<HotspotRectangleSetVM> HotspotRectangleSets => HotspotFile.HotspotRectangleSets;
 
         public bool HasSelectedHotspotBinding => SelectedHotspotBinding != null;
 
 
+        // Read-only:
+        public string HotspotFilePath { get; }
+
+
         // Internal state:
         private WadFile WadFile { get; }
-        private HotspotFile HotspotFile { get; }
-
         private Dictionary<string, HotspotBindingVM> ExactBindings { get; } = new Dictionary<string, HotspotBindingVM>(StringComparer.InvariantCultureIgnoreCase);
         private List<(Regex, HotspotBindingVM)> WildcardHotspotBindings { get; } = new();
 
 
-        public HotspotProjectVM(WadFile wadFile, HotspotFile hotspotFile)
+        public HotspotProjectVM(WadFile wadFile, HotspotFileData hotspotFileData, string hotspotFilePath)
         {
             WadFile = wadFile;
-            HotspotFile = hotspotFile;
+            HotspotFilePath = hotspotFilePath;
 
-            // Initialize binding lookups:
-            foreach (var binding in hotspotFile.HotspotBindings)
+            foreach (var binding in hotspotFileData.Bindings)
             {
-                var regex = HotspotDataCollection.GetTextureNamePatternRegex(binding.TextureNamePattern);
+                var bindingVM = new HotspotBindingVM(binding);
+                HotspotBindings.Add(bindingVM);
+
+                // Register binding lookup:
+                var regex = HotspotDataCollection.GetTextureNamePatternRegex(bindingVM.TextureNamePattern);
                 if (regex == null)
                 {
                     // TODO: Handle duplicate names!
-                    ExactBindings[binding.TextureNamePattern] = binding;
+                    ExactBindings[bindingVM.TextureNamePattern] = bindingVM;
                 }
                 else
                 {
-                    WildcardHotspotBindings.Add((regex, binding));
+                    WildcardHotspotBindings.Add((regex, bindingVM));
                 }
             }
+
+            foreach (var rectangleSet in hotspotFileData.RectangleSets)
+                HotspotRectangleSets.Add(new HotspotRectangleSetVM(rectangleSet));
 
             // Initialize texture infos:
             TextureInfos = wadFile.TextureInfos
                 .Select(textureInfo => new TextureInfoVM(textureInfo) { Binding = GetBindingForTexture(textureInfo.Name) })
                 .OrderBy(entry => entry.Name)
                 .ToArray();
-        }
-
-
-        // TODO: Improve error reporting!
-        public static HotspotProjectVM Load(string wadFilePath, string hotspotFilePath)
-        {
-            WadFile wadFile;
-            try
-            {
-                wadFile = WadFile.Load(wadFilePath);
-            }
-            catch (Exception ex)
-            {
-                // TODO: Wrap this in an exception that explains that the wad loading part failed!
-                throw;
-            }
-
-            HotspotFile hotspotFile;
-            try
-            {
-                if (File.Exists(hotspotFilePath))
-                {
-                    hotspotFile = HotspotFile.Load(hotspotFilePath);
-                }
-                else
-                {
-                    hotspotFile = new HotspotFile(hotspotFilePath, Array.Empty<HotspotRectangleSetVM>(), Array.Empty<HotspotBindingVM>());
-                }
-            }
-            catch (Exception ex)
-            {
-                // TODO: Wrap this in an exception that explains that the hotspot loading part failed!
-                throw;
-            }
-
-            return new HotspotProjectVM(wadFile, hotspotFile);
         }
 
 
@@ -165,7 +175,7 @@ namespace HotspotMaker.Hotspot
                 var texture = WadFile.LoadTexture(textureItem.TextureInfo);
                 SelectedTextureImage = CreateBitmapFromTexture(texture);
                 SelectedHotspotBinding = textureItem.Binding;
-                SelectedHotspotRectangleSet = textureItem.Binding != null ? HotspotFile.HotspotRectangleSets.FirstOrDefault(rectangleSet => rectangleSet.Name == textureItem.Binding.HotspotName) : null;
+                SelectedHotspotRectangleSet = textureItem.Binding != null ? HotspotRectangleSets.FirstOrDefault(rectangleSet => rectangleSet.Name == textureItem.Binding.HotspotName) : null;
             }
         }
 
