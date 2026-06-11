@@ -15,9 +15,24 @@
         <!-- Textures list: -->
         <Grid Grid.Column="0" RowDefinitions="Auto,*">
             <TextBlock Grid.Row="0" Text="Textures" FontWeight="Bold" Margin="5" />
-            <ListBox Grid.Row="1" DisplayMemberBinding="{ReflectionBinding Name}" MinWidth="200" Margin="5"
+            <ListBox Grid.Row="1" MinWidth="200" Margin="5"
                      ItemsSource="{Binding TextureInfos}" SelectedItem="{Binding SelectedTextureInfo}"
                      ScrollViewer.AllowAutoHide="False">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="hotspot:TextureInfoVM">
+                        <TextBlock Text="{Binding Name}" Classes.IsModified="{Binding IsModified}" Classes.HasBinding="{Binding HasBinding}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.IsModified">
+                                    <Setter Property="Foreground" Value="#0087CC" />
+                                </Style>
+                                <Style Selector="TextBlock.HasBinding">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Style>
+                                <!-- TODO: Also mark textures that use the same hotspot set as the currently selected texture! -->
+                            </TextBlock.Styles>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
 
