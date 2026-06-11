@@ -38,6 +38,8 @@
             </MenuItem>-->
         </Menu>
 
-        <views:HotspotProjectView Grid.Row="1" DataContext="{Binding HotspotProject}" />
+        <Grid Grid.Row="1">
+            <views:HotspotProjectView Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
+        </Grid>
     </Grid>
 </Window>
