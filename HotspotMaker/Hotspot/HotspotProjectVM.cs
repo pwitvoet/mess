@@ -155,7 +155,7 @@ namespace HotspotMaker.Hotspot
 
             // Initialize texture infos:
             TextureInfos = wadFile.TextureInfos
-                .Select(textureInfo => new TextureInfoVM(textureInfo) { Binding = GetBindingForTexture(textureInfo.Name) })
+                .Select(textureInfo => new TextureInfoVM(textureInfo, GetBindingForTexture(textureInfo.Name)))
                 .OrderBy(entry => entry.Name)
                 .ToArray();
 

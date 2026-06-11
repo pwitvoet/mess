@@ -20,31 +20,47 @@ namespace HotspotMaker.Hotspot
             get => _binding;
             set
             {
+                if (_binding != null)
+                    _binding.PropertyChanged -= Binding_PropertyChanged;
+
                 _binding = value;
+
+                if (_binding != null)
+                    _binding.PropertyChanged += Binding_PropertyChanged;
+
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(HasBinding));
+                RaisePropertyChanged(nameof(IsModified));
             }
-        }
-
-        private bool _isModified;
-        public bool IsModified
-        {
-            get => _isModified;
-            set { _isModified = value; RaisePropertyChanged(); }
         }
 
 
         // Derived properties:
         public bool HasBinding => Binding != null;
 
+        // TODO: Also check if the referenced hotspot rectangle set has been modified!
+        public bool IsModified => Binding != OriginalBinding || (Binding != null && Binding.IsModified);
+
 
         // Read-only:
         public TextureInfo TextureInfo { get; }
 
+        public HotspotBindingVM? OriginalBinding { get; }
 
-        public TextureInfoVM(TextureInfo textureInfo)
+
+        public TextureInfoVM(TextureInfo textureInfo, HotspotBindingVM? binding)
         {
             TextureInfo = textureInfo;
+
+            OriginalBinding = binding;
+            Binding = binding;
+        }
+
+
+        private void Binding_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotBindingVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
         }
     }
 }

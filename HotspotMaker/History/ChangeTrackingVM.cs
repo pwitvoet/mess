@@ -21,9 +21,26 @@ namespace HotspotMaker.History
         }
 
 
+        public virtual bool IsModified => CurrentStateID != UnmodifiedStateID;
+
+
         // Internal state:
         protected UndoSystem UndoSystem { get; }
         private bool SuppressChangeTracking { get; set; }
+
+        private int _currentStateID;
+        private int CurrentStateID
+        {
+            get => _currentStateID;
+            set { _currentStateID = value; RaisePropertyChanged(nameof(IsModified)); }
+        }
+
+        private int _unmodifiedStateID;
+        private int UnmodifiedStateID
+        {
+            get => _unmodifiedStateID;
+            set { _unmodifiedStateID = value; RaisePropertyChanged(nameof(IsModified)); }
+        }
 
         private string? _ongoingActionPropertyName;
         private Action? _ongoingActionUndo;
@@ -35,6 +52,37 @@ namespace HotspotMaker.History
 
             undoSystem.OnActionUndone += UndoSystem_OnActionUndone;
             undoSystem.OnActionRedone += UndoSystem_OnActionRedone;
+        }
+
+        /// <summary>
+        /// Sets the current state of this view model as the unmodified state.
+        /// </summary>
+        public void MarkAsUnmodified()
+        {
+            UnmodifiedStateID = CurrentStateID;
+        }
+
+
+        /// <summary>
+        /// Performs an undoable action. This will stop any ongoing action.
+        /// </summary>
+        protected void PerformUndoableAction(Action doAction, Action undoAction)
+        {
+            var oldStateID = CurrentStateID;
+            var newStateID = CurrentStateID + 1;
+
+            StopOngoingAction();
+            UndoSystem.PerformUndoableAction(
+                () =>
+                {
+                    doAction();
+                    CurrentStateID = newStateID;
+                },
+                () =>
+                {
+                    undoAction();
+                    CurrentStateID = oldStateID;
+                });
         }
 
         /// <summary>
@@ -50,16 +98,21 @@ namespace HotspotMaker.History
                 return;
             }
 
+            var oldStateID = CurrentStateID;
+            var newStateID = CurrentStateID + 1;
+
             StopOngoingAction();
             UndoSystem.PerformUndoableAction(
                 () =>
                 {
                     setter(newValue);
+                    CurrentStateID = newStateID;
                     RaisePropertyChanged(propertyName);
                 },
                 () =>
                 {
                     setter(oldValue);
+                    CurrentStateID = oldStateID;
                     RaisePropertyChanged(propertyName);
                 });
         }
@@ -80,20 +133,28 @@ namespace HotspotMaker.History
 
             if (_ongoingActionPropertyName != null && _ongoingActionUndo != null && _ongoingActionPropertyName == propertyName)
             {
+                // NOTE: This was already incremented when the ongoing action got started, so don't increment it again:
+                var newStateID = CurrentStateID;
+
                 UndoSystem.ReplaceCurrentUndoableAction(
                     () =>
                     {
                         setter(newValue);
+                        CurrentStateID = newStateID;
                         RaisePropertyChanged(propertyName);
                     },
                     _ongoingActionUndo);
             }
             else
             {
+                var oldStateID = CurrentStateID;
+                var newStateID = CurrentStateID + 1;
+
                 _ongoingActionPropertyName = propertyName;
                 _ongoingActionUndo = () =>
                 {
                     setter(oldValue);
+                    CurrentStateID = oldStateID;
                     RaisePropertyChanged(propertyName);
                 };
 
@@ -101,6 +162,7 @@ namespace HotspotMaker.History
                     () =>
                     {
                         setter(newValue);
+                        CurrentStateID = newStateID;
                         RaisePropertyChanged(propertyName);
                     },
                     _ongoingActionUndo);
