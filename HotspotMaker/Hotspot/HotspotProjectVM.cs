@@ -181,6 +181,53 @@ namespace HotspotMaker.Hotspot
             UndoSystem.OnActionRedone += UndoSystem_OnActionRedone;
         }
 
+
+        // Commands:
+        public void LinkToNewHotspotSet()
+        {
+            var textureInfo = SelectedTextureInfo;
+            if (textureInfo == null)
+                return;
+
+
+            var hotspotSetName = $"{textureInfo.Name}_hotspots";
+            var counter = 1;
+            while (HotspotRectangleSets.Any(rectangleSet => string.Equals(hotspotSetName, rectangleSet.Name, StringComparison.InvariantCultureIgnoreCase)))
+                hotspotSetName = $"{textureInfo.Name}_hotspots_{counter++}";
+
+            var newHotspotRectangleSet = new HotspotRectangleSetVM(hotspotSetName, UndoSystem);
+            var newHotspotBinding = new HotspotBindingVM(textureInfo.Name, newHotspotRectangleSet.Name, UndoSystem);
+
+            var oldHotspotBinding = textureInfo.Binding;
+            var oldHotspotRectangleSet = GetHotspotRectangleSet(oldHotspotBinding?.HotspotName);
+
+            PerformUndoableAction(
+                () =>
+                {
+                    HotspotRectangleSets.Add(newHotspotRectangleSet);
+                    HotspotBindings.Add(newHotspotBinding);
+
+                    textureInfo.Binding = newHotspotBinding;
+                    if (textureInfo == SelectedTextureInfo)
+                    {
+                        SelectedHotspotBinding = newHotspotBinding;
+                        SelectedHotspotRectangleSet = newHotspotRectangleSet;
+                    }
+                },
+                () =>
+                {
+                    HotspotRectangleSets.Remove(newHotspotRectangleSet);
+                    HotspotBindings.Remove(newHotspotBinding);
+
+                    textureInfo.Binding = oldHotspotBinding;
+                    if (textureInfo == SelectedTextureInfo)
+                    {
+                        SelectedHotspotBinding = oldHotspotBinding;
+                        SelectedHotspotRectangleSet = oldHotspotRectangleSet;
+                    }
+                });
+        }
+
         public void UndoLastAction()
             => UndoSystem.UndoLastAction();
 

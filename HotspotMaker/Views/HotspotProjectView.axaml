@@ -86,7 +86,10 @@
                 <!-- No binding selected: -->
                 <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding !HasSelectedHotspotBinding, Converter={StaticResource TrueToOneConverter}}"
                         IsHitTestVisible="{Binding !HasSelectedHotspotBinding}" IsEnabled="{Binding !HasSelectedHotspotBinding}">
-                    <!--<Button Content="Create hotspot binding" HorizontalAlignment="Center" VerticalAlignment="Center" />-->
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="5">
+                        <Button Content="Create new hotspot set" Command="{Binding LinkToNewHotspotSet}" Margin="5" />
+                        <!--<Button Content="Link to existing hotspot set" Command="{Binding LinkToExistingHotspotSet}" Margin="5" />-->
+                    </StackPanel>
                 </Border>
             </Grid>
 

@@ -37,9 +37,14 @@ namespace HotspotMaker.Hotspot
         public List<string> Labels { get; } = new();
 
 
-        public HotspotBindingVM(UndoSystem undoSystem)
+        public HotspotBindingVM(string textureNamePattern, string hotspotName, UndoSystem undoSystem)
             : base(undoSystem)
         {
+            WithoutChangeTracking(() =>
+            {
+                TextureNamePattern = textureNamePattern;
+                HotspotName = hotspotName;
+            });
         }
 
         public HotspotBindingVM(HotspotBinding binding, UndoSystem undoSystem)

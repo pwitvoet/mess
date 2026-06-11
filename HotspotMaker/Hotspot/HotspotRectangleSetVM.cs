@@ -16,9 +16,13 @@ namespace HotspotMaker.Hotspot
         public ObservableCollection<HotspotRectangleVM> Rectangles { get; } = new();
 
 
-        public HotspotRectangleSetVM(UndoSystem undoSystem)
+        public HotspotRectangleSetVM(string name, UndoSystem undoSystem)
             : base(undoSystem)
         {
+            WithoutChangeTracking(() =>
+            {
+                Name = name;
+            });
         }
 
         public HotspotRectangleSetVM(HotspotRectangleSet rectangleSet, UndoSystem undoSystem)
