@@ -49,8 +49,10 @@
 
             <!-- Associated hotspot binding: -->
             <Grid Grid.Row="1">
-                <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding HasSelectedHotspotBinding, Converter={StaticResource TrueToOneConverter}}">
-                    <StackPanel Orientation="Vertical" DataContext="{Binding SelectedHotspotBinding}">
+                <Border BorderBrush="Black" BorderThickness="1"
+                        Opacity="{Binding HasSelectedHotspotBinding, Converter={StaticResource TrueToOneConverter}}"
+                        IsHitTestVisible="{Binding HasSelectedHotspotBinding}" IsEnabled="{Binding HasSelectedHotspotBinding}">
+                    <StackPanel Orientation="Vertical" DataContext="{Binding SelectedHotspotBinding}" Margin="5">
                         <TextBlock Text="Hotspot binding" FontWeight="Bold" Margin="5" />
 
                         <StackPanel Orientation="Horizontal">
@@ -82,68 +84,85 @@
                 </Border>
 
                 <!-- No binding selected: -->
-                <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding !HasSelectedHotspotBinding, Converter={StaticResource TrueToOneConverter}}">
+                <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding !HasSelectedHotspotBinding, Converter={StaticResource TrueToOneConverter}}"
+                        IsHitTestVisible="{Binding !HasSelectedHotspotBinding}" IsEnabled="{Binding !HasSelectedHotspotBinding}">
                     <!--<Button Content="Create hotspot binding" HorizontalAlignment="Center" VerticalAlignment="Center" />-->
                 </Border>
             </Grid>
 
             <!-- Selected hotspot rectangle: -->
-            <Border Grid.Row="2" BorderBrush="Black" BorderThickness="1" DataContext="{Binding SelectedHotspotRectangle}">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Hotspot rectangle" FontWeight="Bold" Margin="5" />
+            <Grid Grid.Row="2">
+                <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding HasSelectedHotspotRectangle, Converter={StaticResource TrueToOneConverter}}"
+                        IsHitTestVisible="{Binding HasSelectedHotspotRectangle}" IsEnabled="{Binding HasSelectedHotspotRectangle}">
+                    <StackPanel Orientation="Vertical" DataContext="{Binding SelectedHotspotRectangle}">
+                        <TextBlock Text="Hotspot rectangle" FontWeight="Bold" Margin="5" />
 
-                    <!-- Rectangle properties: -->
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="X:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding X}" MinWidth="50" Margin="5" />
+                        <!-- Rectangle properties: -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="X:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding X}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
 
-                        <TextBlock Text="Y:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding Y}" MinWidth="50" Margin="5" />
+                            <TextBlock Text="Y:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding Y}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
 
-                        <TextBlock Text="Width:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding Width}" MinWidth="50" Margin="5" />
+                            <TextBlock Text="Width:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding Width}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
 
-                        <TextBlock Text="Height:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding Height}" MinWidth="50" Margin="5" />
+                            <TextBlock Text="Height:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding Height}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox IsChecked="{Binding AllowRotation}" Content="Allow rotation" Margin="5" />
+                            <CheckBox IsChecked="{Binding AllowHorizontalMirroring}" Content="Allow horizontal mirroring" Margin="5" />
+                            <CheckBox IsChecked="{Binding AllowVerticalMirroring}" Content="Allow vertical mirroring" Margin="5" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <!-- TODO: Horizontal & vertical 'layout' dropdowns! -->
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Snap width:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding SnapWidth}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
+
+                            <TextBlock Text="Snap height:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding SnapHeight}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Concave edges:" VerticalAlignment="Center" Margin="5" />
+                            <CheckBox IsChecked="{Binding IsTopConcave}" Content="Top" Margin="5" />
+                            <CheckBox IsChecked="{Binding IsRightConcave}" Content="Right" Margin="5" />
+                            <CheckBox IsChecked="{Binding IsBottomConcave}" Content="Bottom" Margin="5" />
+                            <CheckBox IsChecked="{Binding IsLeftConcave}" Content="Left" Margin="5" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Selection weight:" VerticalAlignment="Center" Margin="5" />
+                            <TextBox Text="{Binding SelectionWeight}" MinWidth="50" Margin="5"
+                                     LostFocus="TextBox_LostFocus" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Labels:" VerticalAlignment="Center" Margin="5" />
+                            <!-- TODO: List of labels! -->
+                        </StackPanel>
                     </StackPanel>
+                </Border>
 
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding AllowRotation}" Content="Allow rotation" Margin="5" />
-                        <CheckBox IsChecked="{Binding AllowHorizontalMirroring}" Content="Allow horizontal mirroring" Margin="5" />
-                        <CheckBox IsChecked="{Binding AllowVerticalMirroring}" Content="Allow vertical mirroring" Margin="5" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <!-- TODO: Horizontal & vertical 'layout' dropdowns! -->
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Snap width:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding SnapWidth}" MinWidth="50" Margin="5" />
-
-                        <TextBlock Text="Snap height:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding SnapHeight}" MinWidth="50" Margin="5" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Concave edges:" VerticalAlignment="Center" Margin="5" />
-                        <CheckBox IsChecked="{Binding IsTopConcave}" Content="Top" Margin="5" />
-                        <CheckBox IsChecked="{Binding IsRightConcave}" Content="Right" Margin="5" />
-                        <CheckBox IsChecked="{Binding IsBottomConcave}" Content="Bottom" Margin="5" />
-                        <CheckBox IsChecked="{Binding IsLeftConcave}" Content="Left" Margin="5" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Selection weight:" VerticalAlignment="Center" Margin="5" />
-                        <TextBox Text="{Binding SelectionWeight}" MinWidth="50" Margin="5" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Labels:" VerticalAlignment="Center" Margin="5" />
-                        <!-- TODO: List of labels! -->
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <!-- No hotspot rectangle selected: -->
+                <Border BorderBrush="Black" BorderThickness="1" Opacity="{Binding !HasSelectedHotspotRectangle, Converter={StaticResource TrueToOneConverter}}"
+                        IsHitTestVisible="{Binding !HasSelectedHotspotRectangle}" IsEnabled="{Binding !HasSelectedHotspotRectangle}">
+                    <TextBlock Text="No hotspot rectangle selected" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
         </Grid>
 
         <!-- Hotspot rectangles list: -->
