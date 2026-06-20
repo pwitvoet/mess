@@ -287,10 +287,13 @@ namespace HotspotMaker.Hotspot
                     {
                         var index = texture.ImageData[y * texture.Width + x];
                         var color = texture.Palette[index];
-                        row[x * 4] = color.R;
-                        row[x * 4 + 1] = color.G;
-                        row[x * 4 + 2] = color.B;
-                        row[x * 4 + 3] = (byte)(isTransparent && index == 255 ? 0 : 255);
+                        if (!(index == 255 && isTransparent))
+                        {
+                            row[x * 4] = color.R;
+                            row[x * 4 + 1] = color.G;
+                            row[x * 4 + 2] = color.B;
+                            row[x * 4 + 3] = 255;
+                        }
                     }
                     Marshal.Copy(row, 0, buffer.Address + y * buffer.RowBytes, buffer.RowBytes);
                 }
