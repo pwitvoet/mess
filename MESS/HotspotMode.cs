@@ -535,7 +535,7 @@ namespace MESS
             {
                 try
                 {
-                    var hotspotFileData = HotspotFileParser.Parse(file);
+                    var hotspotFileData = HotspotFileParser.Load(file);
                     hotspotDataCollection.AddHotspotFileData(hotspotFileData);
                 }
                 catch (Exception ex)
