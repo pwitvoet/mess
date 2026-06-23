@@ -6,7 +6,7 @@
              xmlns:util="using:HotspotMaker.Util"
              xmlns:editor="using:HotspotMaker.Editor"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="HotspotMaker.Views.HotspotProjectView"
+             x:Class="HotspotMaker.Hotspot.HotspotProjectView"
              x:DataType="hotspot:HotspotProjectVM">
     <UserControl.Resources>
         <util:BoolToDoubleConverter x:Key="TrueToOneConverter" TrueValue="1" FalseValue="0" />

@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:hm="using:HotspotMaker"
-        xmlns:views="using:HotspotMaker.Views"
+        xmlns:hotspot="using:HotspotMaker.Hotspot"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="HotspotMaker.MainWindow"
         x:DataType="hm:MainWindowVM"
@@ -39,7 +39,7 @@
         </Menu>
 
         <Grid Grid.Row="1">
-            <views:HotspotProjectView x:Name="ProjectView" Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
+            <hotspot:HotspotProjectView x:Name="ProjectView" Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
         </Grid>
     </Grid>
 </Window>

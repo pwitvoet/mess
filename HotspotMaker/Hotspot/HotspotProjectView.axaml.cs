@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using HotspotMaker.Util.UI;
 
-namespace HotspotMaker.Views;
+namespace HotspotMaker.Hotspot;
 
 public partial class HotspotProjectView : UserControl
 {
