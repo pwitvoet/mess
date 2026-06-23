@@ -39,7 +39,7 @@
         </Menu>
 
         <Grid Grid.Row="1">
-            <views:HotspotProjectView Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
+            <views:HotspotProjectView x:Name="ProjectView" Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
         </Grid>
     </Grid>
 </Window>

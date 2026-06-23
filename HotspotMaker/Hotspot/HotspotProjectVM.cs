@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using HotspotMaker.Editor;
 using HotspotMaker.History;
 using MLib.Texturing;
 using MLib.Texturing.Hotspotting;
@@ -60,6 +61,7 @@ namespace HotspotMaker.Hotspot
             set
             {
                 _selectedTextureInfo = value;
+
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(HasSelectedTextureInfo));
 
@@ -71,7 +73,13 @@ namespace HotspotMaker.Hotspot
         public Bitmap? SelectedTextureImage
         {
             get => _selectedTextureImage;
-            set { _selectedTextureImage = value; RaisePropertyChanged(); }
+            set
+            {
+                _selectedTextureImage = value;
+                HotspotEditor.TextureImage = value;
+
+                RaisePropertyChanged();
+            }
         }
 
         private HotspotBindingVM? _selectedHotspotBinding;
@@ -93,6 +101,8 @@ namespace HotspotMaker.Hotspot
             set
             {
                 _selectedHotspotRectangleSet = value;
+                HotspotEditor.RectangleSet = value;
+
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(HasSelectedHotspotRectangleSet));
             }
@@ -105,6 +115,8 @@ namespace HotspotMaker.Hotspot
             set
             {
                 _selectedHotspotRectangle = value;
+                HotspotEditor.SelectedRectangle = value;
+
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));
             }
@@ -136,6 +148,8 @@ namespace HotspotMaker.Hotspot
         // Read-only:
         public string HotspotFilePath { get; }
 
+        public HotspotEditorVM HotspotEditor { get; }
+
 
         // Internal state:
         private WadFile WadFile { get; }
@@ -148,6 +162,7 @@ namespace HotspotMaker.Hotspot
         {
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
+            HotspotEditor = new HotspotEditorVM(UndoSystem);
 
             foreach (var binding in hotspotFileData.Bindings)
             {

@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Editor\HotspotEditorView.axaml.cs">
+      <DependentUpon>HotspotEditorView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\HotspotProjectView.axaml.cs">
       <DependentUpon>HotspotProjectView.axaml</DependentUpon>
     </Compile>

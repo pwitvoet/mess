@@ -1,4 +1,5 @@
-﻿using HotspotMaker.History;
+﻿using Avalonia;
+using HotspotMaker.History;
 using MLib.Texturing.Hotspotting;
 using System.Collections.Generic;
 
@@ -157,6 +158,33 @@ namespace HotspotMaker.Hotspot
 
                 Labels.AddRange(rectangle.Labels);
             });
+        }
+
+
+        // TODO: Selecting another rectangle should stop any ungoing actions such as this one! -- The editor should manage that, not the individual rectangle VMs!
+        public void Move(Vector offset)
+        {
+            var oldPosition = new Point(X, Y);
+            var newPosition = new Point(X + offset.X, Y + offset.Y);
+
+            PerformUndoableActionOngoing(
+                "Move",
+                () =>
+                {
+                    WithoutChangeTracking(() =>
+                    {
+                        X = newPosition.X;
+                        Y = newPosition.Y;
+                    });
+                },
+                () =>
+                {
+                    WithoutChangeTracking(() =>
+                    {
+                        X = oldPosition.X;
+                        Y = oldPosition.Y;
+                    });
+                });
         }
     }
 }

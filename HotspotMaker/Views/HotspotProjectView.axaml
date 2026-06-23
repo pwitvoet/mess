@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:hotspot="using:HotspotMaker.Hotspot"
              xmlns:util="using:HotspotMaker.Util"
+             xmlns:editor="using:HotspotMaker.Editor"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="HotspotMaker.Views.HotspotProjectView"
              x:DataType="hotspot:HotspotProjectVM">
@@ -42,7 +43,7 @@
             <Border Grid.Row="0" BorderBrush="Black" BorderThickness="1">
                 <Grid RowDefinitions="Auto,*">
                     <TextBlock Grid.Row="0" Text="{Binding SelectedTextureInfo.Name}" FontWeight="Bold" Margin="5" />
-                    <Image Grid.Row="1" Source="{Binding SelectedTextureImage}" Stretch="None" />
+                    <editor:HotspotEditorView x:Name="EditorView" Grid.Row="1" DataContext="{Binding HotspotEditor}" Focusable="True" />
                     <!-- TODO: Zoom controls? -->
                 </Grid>
             </Border>
