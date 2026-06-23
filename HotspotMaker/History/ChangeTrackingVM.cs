@@ -86,6 +86,54 @@ namespace HotspotMaker.History
         }
 
         /// <summary>
+        /// Performs an undoable action.
+        /// Subsequent calls to this method will update the registered undoable action instead of creating multiple undoable actions,
+        /// so that all changes can be undone in one go. Also see <see cref="StopOngoingAction"/>.
+        /// </summary>
+        protected void PerformUndoableActionOngoing(string actionName, Action doAction, Action undoAction)
+        {
+            if (SuppressChangeTracking)
+            {
+                doAction();
+                return;
+            }
+
+            if (_ongoingActionPropertyName != null && _ongoingActionUndo != null && _ongoingActionPropertyName == actionName)
+            {
+                // NOTE: This was already incremented when the ongoing action got started, so don't increment it again:
+                var newStateID = CurrentStateID;
+
+                UndoSystem.ReplaceCurrentUndoableAction(
+                    () =>
+                    {
+                        doAction();
+                        CurrentStateID = newStateID;
+                    },
+                    _ongoingActionUndo);
+            }
+            else
+            {
+                var oldStateID = CurrentStateID;
+                var newStateID = CurrentStateID + 1;
+
+                _ongoingActionPropertyName = actionName;
+                _ongoingActionUndo = () =>
+                {
+                    undoAction();
+                    CurrentStateID = oldStateID;
+                };
+
+                UndoSystem.PerformUndoableAction(
+                    () =>
+                    {
+                        doAction();
+                        CurrentStateID = newStateID;
+                    },
+                    _ongoingActionUndo);
+            }
+        }
+
+        /// <summary>
         /// Updates a property and registers the change with the undo system so that it can be undone.
         /// This will stop any ongoing action.
         /// </summary>
