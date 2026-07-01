@@ -1,16 +1,43 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using HotspotMaker.Hotspot;
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 
 namespace HotspotMaker.Editor;
 
 public partial class HotspotEditorView : UserControl
 {
+    // This editor supports the following mouse actions:
+    // - Click: select rectangle at point, or the rectangle underneath the currently selected rectangle.
+    // - Ctrl + click: add or remove a rectangle from the selection.
+    // - Shift + drag: select rectangles within an area.
+    // - Drag selection: move the selected rectangles.
+    // - Ctrl + drag selection: duplicat the selected rectangles and move them.
+    // - Drag: create a new rectangle.
+    // - Drag resize handle: resize the selected rectangle.
+
+    enum Operation
+    {
+        None,
+
+        PointSelection,                 // Click
+        PointSelectionUpdate,           // Ctrl + click
+        AreaSelection,                  // Shift + drag
+        CreateRectangle,                // Drag
+        MoveSelectedRectangles,         // Drag selected
+        DuplicateSelectedRectangles,    // Ctrl + drag selected
+        ResizeSelectedRectangles,       // Drag resize handle
+    }
+
+
+    private const double PointSelectionMoveThreshold = 2;
+
+
     public event Action<HotspotRectangleVM>? RectangleClicked;
 
 
@@ -31,11 +58,11 @@ public partial class HotspotEditorView : UserControl
         set { _cameraScale = value; InvalidateVisual(); }
     }
 
-    private bool _showGrid = true;
+    private bool _isGridEnabled = true;
     private bool IsGridEnabled
     {
-        get => _showGrid;
-        set { _showGrid = value; InvalidateVisual(); }
+        get => _isGridEnabled;
+        set { _isGridEnabled = value; InvalidateVisual(); }
     }
 
     private double _gridSize = 16;
@@ -51,6 +78,16 @@ public partial class HotspotEditorView : UserControl
     private Size PreviousTextureSize { get; set; }
 
 
+    // Mouse/keyboard related state:
+    private KeyModifiers KeyModifiers { get; set; }
+    private Point LastKnownPointerPosition { get; set; }
+
+    private Operation PointerOperation { get; set; }
+    private Point PointerOperationStartPosition { get; set; }
+    private bool PointerOperationStartedAtSelectedRectangle { get; set; }
+    private KeyModifiers PointerOperationStartKeyModifiers { get; set; }
+
+
     // Brushes and pens:
     private Brush BackgroundBrush { get; } = new SolidColorBrush(0xFF404040);
     private Pen GridPen { get; } = new Pen(0x20FFFFFF);
@@ -60,6 +97,9 @@ public partial class HotspotEditorView : UserControl
 
     private Brush SelectedRectangleBrush { get; } = new SolidColorBrush(0x60FFF0F0);
     private Pen SelectedRectangleBorderPen { get; } = new Pen(0xFFFF0000, 2);
+
+    private Brush SelectionAreaBrush { get; } = new SolidColorBrush(0x40FFFFFF);
+    private Pen SelectionAreaBorderPen { get; } = new Pen(0x808080FF);
 
 
     public HotspotEditorView()
@@ -73,28 +113,40 @@ public partial class HotspotEditorView : UserControl
 
     public void HandleKeyDown(KeyEventArgs e)
     {
-        if (e.Key == Key.G)
+        switch (e.Key)
         {
-            // Toggle grid with 'g'
-            IsGridEnabled = !IsGridEnabled;
+            case Key.A:
+                if (KeyModifiers.HasFlag(KeyModifiers.Control))
+                {
+                    // Select all:
+                    var editor = Editor;
+                    if (editor?.RectangleSet != null)
+                        editor.SetSelection(editor.RectangleSet.Rectangles);
+                }
+                break;
 
-            e.Handled = true;
-        }
-        else if (e.Key == Key.OemOpenBrackets)
-        {
-            // Decrease grid size with '['
-            if (GridSize > 1)
-                GridSize /= 2;
+            case Key.G:
+                // Toggle grid:
+                IsGridEnabled = !IsGridEnabled;
 
-            e.Handled = true;
-        }
-        else if (e.Key == Key.OemCloseBrackets)
-        {
-            // Increase grid size with ']'
-            if (GridSize < 1024)
-                GridSize *= 2;
+                e.Handled = true;
+                break;
 
-            e.Handled = true;
+            case Key.OemOpenBrackets:
+                // Decrease grid size with '['
+                if (GridSize > 1)
+                    GridSize /= 2;
+
+                e.Handled = true;
+                break;
+
+            case Key.OemCloseBrackets:
+                // Increase grid size with ']'
+                if (GridSize < 1024)
+                    GridSize *= 2;
+
+                e.Handled = true;
+                break;
         }
     }
 
@@ -109,6 +161,9 @@ public partial class HotspotEditorView : UserControl
         {
             DrawTexture(context, editor);
             DrawHotspotRectangles(context, editor);
+
+            if (PointerOperation == Operation.AreaSelection)
+                DrawSelectionArea(context, editor);
         }
 
         DrawGrid(context);
@@ -134,7 +189,7 @@ public partial class HotspotEditorView : UserControl
 
         foreach (var rectangle in rectangleSet.Rectangles)
         {
-            var isSelected = rectangle == editor.SelectedRectangle;
+            var isSelected = editor.SelectedRectangles.Contains(rectangle);
             context.FillRectangle(
                 isSelected ? SelectedRectangleBrush : RectangleBrush,
                 new Rect(
@@ -152,17 +207,28 @@ public partial class HotspotEditorView : UserControl
                     rectangle.Height * CameraScale));
         }
 
-        var selectedRectangle = editor.SelectedRectangle;
-        if (selectedRectangle != null)
+        var selectedRectangles = editor.SelectedRectangles;
+        if (selectedRectangles.Any())
         {
-            context.DrawRectangle(
-                SelectedRectangleBorderPen,
-                new Rect(
-                    CameraOffset.X + (selectedRectangle.X * CameraScale),
-                    CameraOffset.Y + (selectedRectangle.Y * CameraScale),
-                    selectedRectangle.Width * CameraScale,
-                    selectedRectangle.Height * CameraScale));
+            foreach (var selectedRectangle in selectedRectangles)
+            {
+                context.DrawRectangle(
+                    SelectedRectangleBorderPen,
+                    new Rect(
+                        CameraOffset.X + (selectedRectangle.X * CameraScale),
+                        CameraOffset.Y + (selectedRectangle.Y * CameraScale),
+                        selectedRectangle.Width * CameraScale,
+                        selectedRectangle.Height * CameraScale));
+            }
         }
+    }
+
+    private void DrawSelectionArea(DrawingContext context, HotspotEditorVM editor)
+    {
+        var area = GetBoundingRect(PointerOperationStartPosition, LastKnownPointerPosition);
+        context.DrawRectangle(SelectionAreaBrush, SelectionAreaBorderPen, area);
+
+        // TODO: Also highlight all rectangles that would be selected if the LMB was released at this moment?
     }
 
     private void DrawGrid(DrawingContext context)
@@ -202,7 +268,9 @@ public partial class HotspotEditorView : UserControl
         if (Editor != null)
         {
             Editor.PropertyChanged -= Editor_PropertyChanged;
+            Editor.RectanglesChanged -= Editor_RectanglesChanged;
             Editor.RectanglePropertyChanged -= Editor_RectanglePropertyChanged;
+            Editor.SelectedRectangles.CollectionChanged -= SelectedRectangles_CollectionChanged;
         }
 
         Editor = DataContext as HotspotEditorVM;
@@ -210,7 +278,9 @@ public partial class HotspotEditorView : UserControl
         if (Editor != null)
         {
             Editor.PropertyChanged += Editor_PropertyChanged;
+            Editor.RectanglesChanged += Editor_RectanglesChanged;
             Editor.RectanglePropertyChanged += Editor_RectanglePropertyChanged;
+            Editor.SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
         }
     }
 
@@ -227,31 +297,44 @@ public partial class HotspotEditorView : UserControl
     {
         base.OnPointerMoved(e);
 
+        KeyModifiers = e.KeyModifiers;
+
         var pointerPosition = e.GetPosition(this);
+        LastKnownPointerPosition = pointerPosition;
+
         UpdatePointerState(pointerPosition, e.Properties);
 
         var delta = pointerPosition - PreviousPointerPosition;
         PreviousPointerPosition = pointerPosition;
 
-        HandlePointerMovement(pointerPosition, delta);
+        if (Editor != null)
+            HandlePointerMovement(Editor, pointerPosition, delta);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+
+        KeyModifiers = e.KeyModifiers;
         UpdatePointerState(e.GetPosition(this), e.Properties);
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+
+        KeyModifiers = e.KeyModifiers;
         UpdatePointerState(e.GetPosition(this), e.Properties);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
-        HandlePointerWheelChange(e.GetPosition(this), e.Delta);
+
+        KeyModifiers = e.KeyModifiers;
+
+        if (Editor != null)
+            HandlePointerWheelChange(Editor, e.GetPosition(this), e.Delta);
     }
 
     // NOTE: This method gets called only when the editor view has focus.
@@ -259,26 +342,39 @@ public partial class HotspotEditorView : UserControl
     {
         base.OnKeyDown(e);
 
-        var selectedRectangle = Editor?.SelectedRectangle;
-        if (selectedRectangle != null)
-        {
-            // TODO: Snap to grid instead?
-            var distance = IsGridEnabled ? GridSize : 1;
-            var movement = new Vector(0, 0);
-            if (e.Key == Key.Up)
-                movement -= new Vector(0, distance);
-            if (e.Key == Key.Down)
-                movement += new Vector(0, distance);
-            if (e.Key == Key.Left)
-                movement -= new Vector(distance, 0);
-            if (e.Key == Key.Right)
-                movement += new Vector(distance, 0);
+        KeyModifiers = e.KeyModifiers;
 
-            if (movement.X != 0 || movement.Y != 0)
+        var editor = Editor;
+        if (editor == null)
+            return;
+
+        var selectedRectangles = editor.SelectedRectangles;
+        if (selectedRectangles.Any())
+        {
+            if (e.Key == Key.Delete)
             {
-                selectedRectangle.Move(movement);
+                editor.DeleteSelectedRectangles();
+            }
+            else if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right)
+            {
+                var distance = IsGridEnabled ? GridSize : 1;
+                var movement = new Vector(0, 0);
+                if (e.Key == Key.Up) movement -= new Vector(0, distance);
+                if (e.Key == Key.Down) movement += new Vector(0, distance);
+                if (e.Key == Key.Left) movement -= new Vector(distance, 0);
+                if (e.Key == Key.Right) movement += new Vector(distance, 0);
+
+                if (movement.X != 0 || movement.Y != 0)
+                    editor.MoveSelectedRectangles(movement);
             }
         }
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+
+        KeyModifiers = e.KeyModifiers;
     }
 
 
@@ -296,17 +392,13 @@ public partial class HotspotEditorView : UserControl
 
             InvalidateVisual();
         }
-        else if (e.PropertyName == nameof(HotspotEditorVM.RectangleSet) ||
-            e.PropertyName == nameof(HotspotEditorVM.SelectedRectangle))
-        {
-            InvalidateVisual();
-        }
     }
 
-    private void Editor_RectanglePropertyChanged(HotspotRectangleVM sender, string? propertyName)
-    {
-        InvalidateVisual();
-    }
+    private void Editor_RectanglesChanged() => InvalidateVisual();
+
+    private void Editor_RectanglePropertyChanged(HotspotRectangleVM sender, string? propertyName) => InvalidateVisual();
+
+    private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => InvalidateVisual();
 
 
     private void UpdatePointerState(Point position, PointerPointProperties pointer)
@@ -327,25 +419,144 @@ public partial class HotspotEditorView : UserControl
                 else
                     PointerState &= ~button;
 
-                HandlePointerButtonChange(position, button, isPressed);
+                if (Editor != null)
+                {
+                    if (isPressed)
+                        HandlePointerButtonPress(Editor, position, button);
+                    else
+                        HandlePointerButtonRelease(Editor, position, button);
+                }
             }
         }
     }
 
 
-    private void HandlePointerMovement(Point position, Vector delta)
+    private void HandlePointerMovement(HotspotEditorVM editor, Point position, Vector delta)
     {
+        if (PointerState.HasFlag(PointerButtons.Left))
+        {
+            var startTextureCoordinate = ScreenToTextureCoordinate(PointerOperationStartPosition);
+            var currentTextureCoordinate = ScreenToTextureCoordinate(position);
+
+            if ((PointerOperation == Operation.PointSelection || PointerOperation == Operation.PointSelectionUpdate) &&
+                DistanceBetween(position, PointerOperationStartPosition) > PointSelectionMoveThreshold)
+            {
+                // TODO: Check whether the pointer started at a resize handle -- if so, switch to resize mode! To be implemented later!
+
+                if (PointerOperationStartedAtSelectedRectangle)
+                {
+                    if (PointerOperationStartKeyModifiers.HasFlag(KeyModifiers.Control))
+                    {
+                        PointerOperation = Operation.DuplicateSelectedRectangles;
+                        editor.StartDuplicateRectanglesOperation(startTextureCoordinate, GridSize, IsGridEnabled);
+                        editor.UpdateDuplicateRectanglesOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+                    }
+                    else
+                    {
+                        PointerOperation = Operation.MoveSelectedRectangles;
+                        editor.StartMoveRectanglesOperation(startTextureCoordinate, GridSize, IsGridEnabled);
+                        editor.UpdateMoveRectanglesOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+                    }
+                }
+                else
+                {
+                    PointerOperation = Operation.CreateRectangle;
+                    editor.StartCreateRectangleOperation(startTextureCoordinate, GridSize, IsGridEnabled);
+                    editor.UpdateCreateRectangleOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+                }
+            }
+            else if (PointerOperation == Operation.DuplicateSelectedRectangles)
+            {
+                editor.UpdateDuplicateRectanglesOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+            }
+            else if (PointerOperation == Operation.MoveSelectedRectangles)
+            {
+                editor.UpdateMoveRectanglesOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+            }
+            else if (PointerOperation == Operation.CreateRectangle)
+            {
+                editor.UpdateCreateRectangleOperation(currentTextureCoordinate, GridSize, IsGridEnabled);
+            }
+            // TODO: Update resize operation!
+        }
+
         if (PointerState.HasFlag(PointerButtons.Right))
         {
             CameraOffset += delta;
         }
+
+
+        if (PointerOperation == Operation.AreaSelection)
+            InvalidateVisual();
     }
 
-    private void HandlePointerButtonChange(Point position, PointerButtons button, bool isPressed)
+    private void HandlePointerButtonPress(HotspotEditorVM editor, Point position, PointerButtons button)
     {
+        if (button == PointerButtons.Left)
+        {
+            PointerOperationStartPosition = position;
+
+            // NOTE: Pointer movement may change the current pointer operation into a different kind of operation.
+            if (KeyModifiers.HasFlag(KeyModifiers.Shift))
+                PointerOperation = Operation.AreaSelection;
+            else if (KeyModifiers.HasFlag(KeyModifiers.Control))
+                PointerOperation = Operation.PointSelectionUpdate;
+            else
+                PointerOperation = Operation.PointSelection;
+
+            var rectanglesAtPosition = editor.GetRectanglesAtPoint(ScreenToTextureCoordinate(position));
+            PointerOperationStartedAtSelectedRectangle = editor.SelectedRectangles.Any(rectangleVM => rectanglesAtPosition.Contains(rectangleVM));
+            PointerOperationStartKeyModifiers = KeyModifiers;
+        }
     }
 
-    private void HandlePointerWheelChange(Point position, Vector wheelDelta)
+    private void HandlePointerButtonRelease(HotspotEditorVM editor, Point position, PointerButtons button)
+    {
+        if (button == PointerButtons.Left)
+        {
+            var startTextureCoordinate = ScreenToTextureCoordinate(PointerOperationStartPosition);
+            var currentTextureCoordinate = ScreenToTextureCoordinate(position);
+
+            switch (PointerOperation)
+            {
+                case Operation.PointSelection:
+                    SelectRectangleAtPoint(editor, currentTextureCoordinate);
+                    break;
+
+                case Operation.PointSelectionUpdate:
+                    ToggleRectangleSelectionAtPoint(editor, currentTextureCoordinate);
+                    break;
+
+                case Operation.AreaSelection:
+                    SelectRectanglesInArea(editor, GetBoundingRect(startTextureCoordinate, currentTextureCoordinate));
+                    InvalidateVisual();
+                    break;
+
+                case Operation.CreateRectangle:
+                    editor.FinalizeCurrentOperation();
+                    break;
+
+                case Operation.MoveSelectedRectangles:
+                    editor.FinalizeCurrentOperation();
+                    break;
+
+                case Operation.DuplicateSelectedRectangles:
+                    editor.FinalizeCurrentOperation();
+                    break;
+
+                case Operation.ResizeSelectedRectangles:
+                    // TODO: Finalize resize action!
+                    break;
+            }
+
+            PointerOperation = Operation.None;
+            PointerOperationStartPosition = new Point();
+            PointerOperationStartedAtSelectedRectangle = false;
+            PointerOperationStartKeyModifiers = KeyModifiers.None;
+        }
+    }
+
+    private void HandlePointerWheelChange(HotspotEditorVM editor, Point position, Vector wheelDelta)
     {
         // Adjust zoom level:
         if (wheelDelta.Y > 0)
@@ -368,5 +579,80 @@ public partial class HotspotEditorView : UserControl
 
         CameraOffset = position - newRelativePosition;
         CameraScale = newScale;
+    }
+
+    private void SelectRectangleAtPoint(HotspotEditorVM editor, Point textureCoordinate)
+    {
+        var rectanglesAtPoint = editor.GetRectanglesAtPoint(textureCoordinate);
+        if (!rectanglesAtPoint.Any())
+        {
+            // Clicking on an empty spot will deselect everything:
+            editor.ClearSelection();
+            return;
+        }
+
+        // Did we click on the currently selected rectangle?
+        var singleSelectedRectangle = editor.SelectedRectangles.Count == 1 ? editor.SelectedRectangles[0] : null;
+        if (singleSelectedRectangle != null && rectanglesAtPoint.Contains(singleSelectedRectangle))
+        {
+            if (rectanglesAtPoint.Length > 1)
+            {
+                // Clicking on the currently selected rectangle will select the rectangle underneath it, if there is any.
+                // If the bottom-most rectangle was selected, the top-most rectangle will be selected again:
+                var selectedIndex = rectanglesAtPoint.TakeWhile(rectangle => rectangle != singleSelectedRectangle).Count();
+                var newSelectedIndex = (selectedIndex + 1) % rectanglesAtPoint.Length;
+                editor.SetSelection(rectanglesAtPoint[newSelectedIndex]);
+            }
+            // Else, do nothing - the currently selected rectangle will remain selected.
+        }
+        else
+        {
+            // Select the top-most rectangle at this point:
+            editor.SetSelection(rectanglesAtPoint[0]);
+        }
+    }
+
+    private void ToggleRectangleSelectionAtPoint(HotspotEditorVM editor, Point textureCoordinate)
+    {
+        var rectanglesAtPoint = editor.GetRectanglesAtPoint(textureCoordinate);
+        if (!rectanglesAtPoint.Any())
+            return;
+
+        if (editor.SelectedRectangles.Any(rectanglesAtPoint.Contains))
+        {
+            // Deselect all rectangles at this point, if at least one of them is selected:
+            editor.SetSelection(editor.SelectedRectangles.Where(rectangleVM => !rectanglesAtPoint.Contains(rectangleVM)));
+        }
+        else
+        {
+            // Else, add the top-most rectangle to the selection (support for cycling to underlying rectangles would get a bit complicated here):
+            editor.SetSelection(editor.SelectedRectangles.Append(rectanglesAtPoint[0]));
+        }
+    }
+
+    private void SelectRectanglesInArea(HotspotEditorVM editor, Rect textureArea)
+        => editor.SetSelection(editor.GetRectanglesInArea(textureArea));
+
+
+    private Point ScreenToTextureCoordinate(Point screenPoint)
+        => (screenPoint - CameraOffset) / CameraScale;
+
+
+    // TODO: Move these to a util or extensions class!
+    private static double DistanceBetween(Point p1, Point p2)
+    {
+        var dx = p1.X - p2.X;
+        var dy = p1.Y - p2.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static Rect GetBoundingRect(Point p1, Point p2)
+    {
+        var x = Math.Min(p1.X, p2.X);
+        var y = Math.Min(p1.Y, p2.Y);
+        var width = Math.Max(p1.X, p2.X) - x;
+        var height = Math.Max(p1.Y, p2.Y) - y;
+
+        return new Rect(x, y, width, height);
     }
 }

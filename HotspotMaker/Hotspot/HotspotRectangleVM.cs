@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using HotspotMaker.History;
+using MLib.Mathematics.Spatial;
 using MLib.Texturing.Hotspotting;
 using System.Collections.Generic;
 
@@ -160,9 +161,34 @@ namespace HotspotMaker.Hotspot
             });
         }
 
+        public HotspotRectangle CreateHotspotRectangle()
+        {
+            var mirrorings = Mirrorings.None;
+            if (AllowHorizontalMirroring) mirrorings |= Mirrorings.Horizontal;
+            if (AllowVerticalMirroring) mirrorings |= Mirrorings.Vertical;
+
+            var concaveEdges = ConcaveEdges.None;
+            if (IsTopConcave) concaveEdges |= ConcaveEdges.Top;
+            if (IsRightConcave) concaveEdges |= ConcaveEdges.Right;
+            if (IsBottomConcave) concaveEdges |= ConcaveEdges.Bottom;
+            if (IsLeftConcave) concaveEdges |= ConcaveEdges.Left;
+
+            return new HotspotRectangle(
+                new Rectangle(X, Y, Width, Height),
+                AllowRotation,
+                mirrorings,
+                HorizontalLayout,
+                VerticalLayout,
+                SnapWidth,
+                SnapHeight,
+                SelectionWeight,
+                concaveEdges,
+                Labels);
+        }
+
 
         // TODO: Selecting another rectangle should stop any ungoing actions such as this one! -- The editor should manage that, not the individual rectangle VMs!
-        public void Move(Vector offset)
+        public void MoveWithUndo(Vector offset)
         {
             var oldPosition = new Point(X, Y);
             var newPosition = new Point(X + offset.X, Y + offset.Y);
@@ -185,6 +211,17 @@ namespace HotspotMaker.Hotspot
                         Y = oldPosition.Y;
                     });
                 });
+        }
+
+        public void SetDimensionsWithoutUndo(double x, double y, double width, double height)
+        {
+            WithoutChangeTracking(() =>
+            {
+                X = x;
+                Y = y;
+                Width = width;
+                Height = height;
+            });
         }
     }
 }

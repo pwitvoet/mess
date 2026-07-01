@@ -8,6 +8,7 @@ using MLib.Texturing.Hotspotting;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -108,20 +109,6 @@ namespace HotspotMaker.Hotspot
             }
         }
 
-        private HotspotRectangleVM? _selectedHotspotRectangle;
-        public HotspotRectangleVM? SelectedHotspotRectangle
-        {
-            get => _selectedHotspotRectangle;
-            set
-            {
-                _selectedHotspotRectangle = value;
-                HotspotEditor.SelectedRectangle = value;
-
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));
-            }
-        }
-
         public ObservableCollection<HotspotBindingVM> HotspotBindings { get; } = new();
 
         public ObservableCollection<HotspotRectangleSetVM> HotspotRectangleSets { get; } = new();
@@ -144,6 +131,7 @@ namespace HotspotMaker.Hotspot
 
         public bool IsRedoAvailable => UndoSystem.IsRedoAvailable;
 
+        public HotspotRectangleVM? SelectedHotspotRectangle => HotspotEditor.SelectedRectangles.Count == 1 ? HotspotEditor.SelectedRectangles[0] : null;
 
         // Read-only:
         public string HotspotFilePath { get; }
@@ -163,6 +151,7 @@ namespace HotspotMaker.Hotspot
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
             HotspotEditor = new HotspotEditorVM(UndoSystem);
+            HotspotEditor.SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
 
             foreach (var binding in hotspotFileData.Bindings)
             {
@@ -267,6 +256,13 @@ namespace HotspotMaker.Hotspot
             RaisePropertyChanged(nameof(IsUndoAvailable));
             RaisePropertyChanged(nameof(IsRedoAvailable));
         }
+
+        private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RaisePropertyChanged(nameof(SelectedHotspotRectangle));
+            RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));
+        }
+
 
         private void OnSelectedTextureUpdate(TextureInfoVM? textureItem)
         {
