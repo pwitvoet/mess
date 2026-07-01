@@ -1,6 +1,7 @@
 ﻿using HotspotMaker.History;
 using MLib.Texturing.Hotspotting;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace HotspotMaker.Hotspot
 {
@@ -35,6 +36,15 @@ namespace HotspotMaker.Hotspot
                 foreach (var rectangle in rectangleSet.Rectangles)
                     Rectangles.Add(new HotspotRectangleVM(rectangle, undoSystem));
             });
+        }
+
+        public HotspotRectangleSet CreateHotspotRectangleSet()
+        {
+            var rectangles = Rectangles
+                .Select(rectangleVM => rectangleVM.CreateHotspotRectangle())
+                .ToArray();
+
+            return new HotspotRectangleSet(Name, rectangles);
         }
     }
 }

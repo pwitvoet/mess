@@ -185,6 +185,19 @@ namespace HotspotMaker.Hotspot
             UndoSystem.OnActionRedone += UndoSystem_OnActionRedone;
         }
 
+        public HotspotFileData CreateHotspotFileData()
+        {
+            var rectangleSets = HotspotRectangleSets
+                .Select(rectangleSetVM => rectangleSetVM.CreateHotspotRectangleSet())
+                .ToArray();
+
+            var bindings = HotspotBindings
+                .Select(bindingVM => bindingVM.CreateHotspotBinding())
+                .ToArray();
+
+            return new HotspotFileData(rectangleSets, bindings);
+        }
+
 
         // Commands:
         public void LinkToNewHotspotSet()

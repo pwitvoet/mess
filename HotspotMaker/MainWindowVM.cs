@@ -1,7 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Platform.Storage;
-using HotspotMaker.History;
+﻿using Avalonia.Platform.Storage;
 using HotspotMaker.Hotspot;
+using MLib.Texturing.Hotspotting;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -96,7 +95,18 @@ namespace HotspotMaker
 
         public void SaveCurrentProject()
         {
-            // TODO!
+            try
+            {
+                if (HotspotProject == null)
+                    return;
+
+                var hotspotFileData = HotspotProject.CreateHotspotFileData();
+                HotspotFileWriter.Save(HotspotProject.HotspotFilePath, hotspotFileData);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Show error message!
+            }
         }
 
         public void CloseCurrentProject()

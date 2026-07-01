@@ -61,5 +61,15 @@ namespace HotspotMaker.Hotspot
                 Labels.AddRange(binding.Labels);
             });
         }
+
+        public HotspotBinding CreateHotspotBinding()
+        {
+            return new HotspotBinding(
+                TextureNamePattern,
+                HotspotName,
+                FallbackTextureNamePattern,
+                FallbackScoreThreshold ?? 0,
+                Labels);
+        }
     }
 }
