@@ -102,6 +102,8 @@ namespace HotspotMaker
 
                 var hotspotFileData = HotspotProject.CreateHotspotFileData();
                 HotspotFileWriter.Save(HotspotProject.HotspotFilePath, hotspotFileData);
+
+                HotspotProject.MarkAsUnmodified();
             }
             catch (Exception ex)
             {
@@ -133,6 +135,8 @@ namespace HotspotMaker
                 RaisePropertyChanged(nameof(IsUndoAvailable));
             else if (e.PropertyName == nameof(HotspotProjectVM.IsRedoAvailable))
                 RaisePropertyChanged(nameof(IsRedoAvailable));
+            else if (e.PropertyName == nameof(HotspotProjectVM.IsModified))
+                UpdateWindowTitle(HotspotProject);
         }
 
         private void UpdateWindowTitle(HotspotProjectVM? hotspotProject)
@@ -143,7 +147,7 @@ namespace HotspotMaker
             }
             else
             {
-                WindowTitle = $"{DefaultWindowTitle} - {hotspotProject.HotspotFilePath}";
+                WindowTitle = $"{DefaultWindowTitle} - {hotspotProject.HotspotFilePath}{(hotspotProject.IsModified ? " *" : "")}";
             }
         }
     }

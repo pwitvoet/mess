@@ -1,6 +1,8 @@
 ﻿using HotspotMaker.History;
 using MLib.Texturing.Hotspotting;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace HotspotMaker.Hotspot
@@ -16,9 +18,17 @@ namespace HotspotMaker.Hotspot
 
         public ObservableCollection<HotspotRectangleVM> Rectangles { get; } = new();
 
+        public override bool IsModified => base.IsModified || Rectangles.Any(rectangleVM => rectangleVM.IsModified);
+
+
+        private HotspotRectangleSetVM(UndoSystem undoSystem)
+            : base(undoSystem)
+        {
+            Rectangles.CollectionChanged += Rectangles_CollectionChanged;
+        }
 
         public HotspotRectangleSetVM(string name, UndoSystem undoSystem)
-            : base(undoSystem)
+            : this(undoSystem)
         {
             WithoutChangeTracking(() =>
             {
@@ -27,7 +37,7 @@ namespace HotspotMaker.Hotspot
         }
 
         public HotspotRectangleSetVM(HotspotRectangleSet rectangleSet, UndoSystem undoSystem)
-            : base(undoSystem)
+            : this(undoSystem)
         {
             WithoutChangeTracking(() =>
             {
@@ -45,6 +55,38 @@ namespace HotspotMaker.Hotspot
                 .ToArray();
 
             return new HotspotRectangleSet(Name, rectangles);
+        }
+
+        public override void MarkAsUnmodified()
+        {
+            base.MarkAsUnmodified();
+
+            foreach (var rectangleVM in Rectangles)
+                rectangleVM.MarkAsUnmodified();
+        }
+
+
+        private void Rectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var rectangleVM in e.NewItems.OfType<HotspotRectangleVM>())
+                    rectangleVM.PropertyChanged += RectangleVM_PropertyChanged;
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var rectangleVM in e.OldItems.OfType<HotspotRectangleVM>())
+                    rectangleVM.PropertyChanged -= RectangleVM_PropertyChanged;
+            }
+
+            RaisePropertyChanged(nameof(IsModified));
+        }
+
+        private void RectangleVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotRectangleVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
         }
     }
 }

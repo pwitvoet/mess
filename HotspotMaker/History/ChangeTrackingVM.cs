@@ -57,7 +57,7 @@ namespace HotspotMaker.History
         /// <summary>
         /// Sets the current state of this view model as the unmodified state.
         /// </summary>
-        public void MarkAsUnmodified()
+        public virtual void MarkAsUnmodified()
         {
             UnmodifiedStateID = CurrentStateID;
         }

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -133,6 +134,10 @@ namespace HotspotMaker.Hotspot
 
         public HotspotRectangleVM? SelectedHotspotRectangle => HotspotEditor.SelectedRectangles.Count == 1 ? HotspotEditor.SelectedRectangles[0] : null;
 
+        public override bool IsModified
+            => base.IsModified || HotspotBindings.Any(bindingVM => bindingVM.IsModified) || HotspotRectangleSets.Any(rectangleSetVM => rectangleSetVM.IsModified) || HotspotEditor.IsModified;
+
+
         // Read-only:
         public string HotspotFilePath { get; }
 
@@ -148,9 +153,14 @@ namespace HotspotMaker.Hotspot
         public HotspotProjectVM(WadFile wadFile, HotspotFileData hotspotFileData, string hotspotFilePath)
             : base(new UndoSystem())
         {
+            HotspotBindings.CollectionChanged += HotspotBindings_CollectionChanged;
+            HotspotRectangleSets.CollectionChanged += HotspotRectangleSets_CollectionChanged;
+
+
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
             HotspotEditor = new HotspotEditorVM(UndoSystem);
+            HotspotEditor.PropertyChanged += HotspotEditor_PropertyChanged;
             HotspotEditor.SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
 
             foreach (var binding in hotspotFileData.Bindings)
@@ -196,6 +206,19 @@ namespace HotspotMaker.Hotspot
                 .ToArray();
 
             return new HotspotFileData(rectangleSets, bindings);
+        }
+
+        public override void MarkAsUnmodified()
+        {
+            base.MarkAsUnmodified();
+
+            foreach (var bindingVM in HotspotBindings)
+                bindingVM.MarkAsUnmodified();
+
+            foreach (var rectangleSetVM in HotspotRectangleSets)
+                rectangleSetVM.MarkAsUnmodified();
+
+            HotspotEditor.MarkAsUnmodified();
         }
 
 
@@ -270,10 +293,62 @@ namespace HotspotMaker.Hotspot
             RaisePropertyChanged(nameof(IsRedoAvailable));
         }
 
+        private void HotspotEditor_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotEditorVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
+        }
+
         private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             RaisePropertyChanged(nameof(SelectedHotspotRectangle));
             RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));
+        }
+
+        private void HotspotBindings_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var bindingVM in e.NewItems.OfType<HotspotBindingVM>())
+                    bindingVM.PropertyChanged += BindingVM_PropertyChanged;
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var bindingVM in e.OldItems.OfType<HotspotBindingVM>())
+                    bindingVM.PropertyChanged -= BindingVM_PropertyChanged;
+            }
+
+            RaisePropertyChanged(nameof(IsModified));
+        }
+
+        private void HotspotRectangleSets_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var rectangleSetVM in e.NewItems.OfType<HotspotRectangleSetVM>())
+                    rectangleSetVM.PropertyChanged += RectangleSetVM_PropertyChanged;
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var rectangleSetVM in e.OldItems.OfType<HotspotRectangleSetVM>())
+                    rectangleSetVM.PropertyChanged -= RectangleSetVM_PropertyChanged;
+            }
+
+            RaisePropertyChanged(nameof(IsModified));
+        }
+
+        private void BindingVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotBindingVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
+        }
+
+        private void RectangleSetVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotspotRectangleSetVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
         }
 
 

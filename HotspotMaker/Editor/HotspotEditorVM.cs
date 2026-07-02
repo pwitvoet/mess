@@ -329,7 +329,7 @@ namespace HotspotMaker.Editor
                 .Select(rectangleSet.Rectangles.IndexOf)
                 .ToArray();
 
-            UndoSystem.PerformUndoableAction(
+            PerformUndoableAction(
                 () =>
                 {
                     foreach (var rectangleVM in selectedRectangles)
