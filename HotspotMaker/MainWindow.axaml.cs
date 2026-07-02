@@ -17,8 +17,11 @@ namespace HotspotMaker
         {
             base.OnKeyDown(e);
 
-            // To improve the user experience, the editor view needs to handle certain keys regardless of whether it has focus:
-            ProjectView.HandleKeyDown(e);
+            // To improve the user experience, the editor view needs to handle certain keys regardless of whether it has focus.
+
+            // NOTE: This hack ensures that our key-down handling won't gobble up certain keys when writing in a TextBox:
+            if (e.Source is not TextBox)
+                ProjectView.HandleKeyDown(e);
         }
     }
 }
