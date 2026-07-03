@@ -1,4 +1,5 @@
 ﻿using Avalonia.Platform.Storage;
+using HotspotMaker.Controls;
 using HotspotMaker.Hotspot;
 using MLib.Texturing.Hotspotting;
 using System;
@@ -70,6 +71,13 @@ namespace HotspotMaker
         // Commands:
         public async Task OpenWadFile()
         {
+            if (HotspotProject != null)
+            {
+                await CloseCurrentProject();
+                if (HotspotProject != null)
+                    return;
+            }
+
             try
             {
                 // TODO: Remember the previously opened file(s), and open the most recent folder (SuggestedStartLocation)!
@@ -89,11 +97,12 @@ namespace HotspotMaker
             }
             catch (Exception ex)
             {
-                // TODO: Show error message!
+                // TODO: Improve error message!
+                await MessageBox.Show("Error", $"Failed to open project: {ex.GetType().Name}: {ex.Message}.", MessageBoxButtons.Ok);
             }
         }
 
-        public void SaveCurrentProject()
+        public async Task SaveCurrentProject()
         {
             try
             {
@@ -107,18 +116,36 @@ namespace HotspotMaker
             }
             catch (Exception ex)
             {
-                // TODO: Show error message!
+                // TODO: Improve error message!
+                await MessageBox.Show("Error", $"Failed to save project: {ex.GetType().Name}: {ex.Message}.", MessageBoxButtons.Ok);
             }
         }
 
-        public void CloseCurrentProject()
+        public async Task CloseCurrentProject()
         {
-            // TODO: Check if current project has unsaved changes!
+            if (HotspotProject == null)
+                return;
+
+            if (HotspotProject.IsModified)
+            {
+                var confirmation = await MessageBox.Show("Unsaved changes", "You have unsaved changes. Are you sure you want to close the project without saving?", MessageBoxButtons.OkCancel);
+                if (confirmation != true)
+                    return;
+            }
+
+            // TODO: This does not erase/reset the editor VM state or the view!
+            HotspotProject = null;
         }
 
-        public void ExitProgram()
+        public async Task ExitProgram()
         {
-            // TODO: Check if current project has unsaved changes!
+            if (HotspotProject != null)
+            {
+                await CloseCurrentProject();
+                if (HotspotProject != null)
+                    return;
+            }
+
             Environment.Exit(0);
         }
 

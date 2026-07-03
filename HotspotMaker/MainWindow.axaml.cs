@@ -23,5 +23,17 @@ namespace HotspotMaker
             if (e.Source is not TextBox)
                 ProjectView.HandleKeyDown(e);
         }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            base.OnClosing(e);
+
+            if (DataContext is MainWindowVM mainWindowVM && mainWindowVM.HotspotProject?.IsModified == true)
+            {
+                // Let the VM warn the user about unsaved changes:
+                e.Cancel = true;
+                mainWindowVM.ExitProgram();
+            }
+        }
     }
 }
