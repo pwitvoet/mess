@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using HotspotMaker.Controls;
 using HotspotMaker.Util.UI;
 
 namespace HotspotMaker.Hotspot;
@@ -19,7 +20,15 @@ public partial class HotspotProjectView : UserControl
 
     private void TextBox_LostFocus(object? sender, FocusChangedEventArgs e)
     {
-        if (sender is TextBox textBox)
-            FocusTracking.ReportFocusLoss(textBox, TextBox.TextProperty);
+        switch (sender)
+        {
+            case TextBox textBox:
+                FocusTracking.ReportFocusLoss(textBox, TextBox.TextProperty);
+                break;
+
+            case LabelsTextBox labelsTextBox:
+                FocusTracking.ReportFocusLoss(labelsTextBox, LabelsTextBox.LabelsProperty);
+                break;
+        }
     }
 }

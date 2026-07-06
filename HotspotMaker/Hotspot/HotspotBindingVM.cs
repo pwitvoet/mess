@@ -1,6 +1,7 @@
 ﻿using HotspotMaker.History;
 using MLib.Texturing.Hotspotting;
-using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace HotspotMaker.Hotspot
 {
@@ -34,7 +35,12 @@ namespace HotspotMaker.Hotspot
             set => SetPropertyOngoing(v => _fallbackScoreThreshold = v, _fallbackScoreThreshold, value);
         }
 
-        public List<string> Labels { get; } = new();
+        private string[] _labels = Array.Empty<string>();
+        public string[] Labels
+        {
+            get => _labels;
+            set => SetPropertyOngoing(v => _labels = v, _labels, value);
+        }
 
 
         public HotspotBindingVM(string textureNamePattern, string hotspotName, UndoSystem undoSystem)
@@ -58,7 +64,7 @@ namespace HotspotMaker.Hotspot
                 FallbackTextureNamePattern = binding.FallbackTextureNamePattern;
                 FallbackScoreThreshold = binding.FallbackScoreThreshold;
 
-                Labels.AddRange(binding.Labels);
+                Labels = binding.Labels.ToArray();
             });
         }
 

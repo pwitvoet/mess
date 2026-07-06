@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\LabelsTextBox.axaml.cs">
+      <DependentUpon>LabelsTextBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Controls\MessageBox.axaml.cs">
       <DependentUpon>MessageBox.axaml</DependentUpon>
     </Compile>

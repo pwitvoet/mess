@@ -2,7 +2,9 @@
 using HotspotMaker.History;
 using MLib.Mathematics.Spatial;
 using MLib.Texturing.Hotspotting;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HotspotMaker.Hotspot
 {
@@ -121,7 +123,12 @@ namespace HotspotMaker.Hotspot
             set => SetProperty(v => _isLeftConcave = v, _isLeftConcave, value);
         }
 
-        public List<string> Labels { get; } = new();
+        private string[] _labels = Array.Empty<string>();
+        public string[] Labels
+        {
+            get => _labels;
+            set => SetPropertyOngoing(v => _labels = v, _labels, value);
+        }
 
 
         public string DisplayName => $"Rectangle ({X}, {Y}), {Width} x {Height}";
@@ -157,7 +164,7 @@ namespace HotspotMaker.Hotspot
                 IsBottomConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Bottom);
                 IsLeftConcave = rectangle.ConcaveEdges.HasFlag(MLib.Texturing.Hotspotting.ConcaveEdges.Left);
 
-                Labels.AddRange(rectangle.Labels);
+                Labels= rectangle.Labels.ToArray();
             });
         }
 

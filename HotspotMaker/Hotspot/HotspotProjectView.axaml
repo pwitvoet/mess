@@ -5,6 +5,7 @@
              xmlns:hotspot="using:HotspotMaker.Hotspot"
              xmlns:util="using:HotspotMaker.Util"
              xmlns:editor="using:HotspotMaker.Editor"
+             xmlns:controls="using:HotspotMaker.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="HotspotMaker.Hotspot.HotspotProjectView"
              x:DataType="hotspot:HotspotProjectVM">
@@ -79,7 +80,8 @@
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Labels:" VerticalAlignment="Center" Margin="5" />
-                            <!-- TODO: List of labels! -->
+                            <controls:LabelsTextBox Labels="{Binding Labels}" MinWidth="200" Margin="5"
+                                                    LostFocus="TextBox_LostFocus" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -156,7 +158,8 @@
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Labels:" VerticalAlignment="Center" Margin="5" />
-                            <!-- TODO: List of labels! -->
+                            <controls:LabelsTextBox Labels="{Binding Labels}" MinWidth="200" Margin="5"
+                                                    LostFocus="TextBox_LostFocus" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
