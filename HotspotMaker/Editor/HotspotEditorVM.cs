@@ -6,7 +6,6 @@ using MLib.Mathematics.Spatial;
 using MLib.Texturing.Hotspotting;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -47,7 +46,7 @@ namespace HotspotMaker.Editor
                 }
 
                 if (_rectangleSet != null)
-                    SelectedRectangles.Clear();
+                    Selection.Clear();
 
                 _rectangleSet = value;
 
@@ -64,7 +63,7 @@ namespace HotspotMaker.Editor
             }
         }
 
-        public ObservableCollection<HotspotRectangleVM> SelectedRectangles { get; } = new();
+        public HotspotRectangleSelectionVM Selection { get; }
 
 
         // Internal state:
@@ -73,10 +72,11 @@ namespace HotspotMaker.Editor
         private Point[] CurrentOperationOriginalPositions { get; set; } = Array.Empty<Point>();
 
 
-        public HotspotEditorVM(UndoSystem undoSystem)
+        public HotspotEditorVM(UndoSystem undoSystem, HotspotRectangleSelectionVM selection)
             : base(undoSystem)
         {
-            SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
+            Selection = selection;
+            Selection.SelectionChanged += Selection_SelectionChanged;
         }
 
         public HotspotRectangleVM[] GetRectanglesAtPoint(Point point)
@@ -88,8 +88,8 @@ namespace HotspotMaker.Editor
 
         public void SetSelection(HotspotRectangleVM rectangle)
         {
-            SelectedRectangles.Clear();
-            SelectedRectangles.Add(rectangle);
+            Selection.Clear();
+            Selection.Add(rectangle);
         }
 
         public void SetSelection(IEnumerable<HotspotRectangleVM> rectangles)
@@ -97,14 +97,13 @@ namespace HotspotMaker.Editor
             // Materialize immediately - the caller is likely to use the current selection as basis, and clearing it before enumerating would cause trouble:
             var rectanglesArray = rectangles.ToArray();
 
-            SelectedRectangles.Clear();
-            foreach (var rectangle in rectanglesArray)
-                SelectedRectangles.Add(rectangle);
+            Selection.Clear();
+            Selection.Add(rectanglesArray);
         }
 
         public void ClearSelection()
         {
-            SelectedRectangles.Clear();
+            Selection.Clear();
         }
 
 
@@ -114,7 +113,7 @@ namespace HotspotMaker.Editor
             if (rectangleSet == null)
                 return;
 
-            var duplicatedRectangles = SelectedRectangles
+            var duplicatedRectangles = Selection.Rectangles
                 .Select(rectangleVM => new HotspotRectangleVM(rectangleVM.CreateHotspotRectangle(), UndoSystem))
                 .ToArray();
             if (!duplicatedRectangles.Any())
@@ -168,8 +167,8 @@ namespace HotspotMaker.Editor
             // NOTE: No undoable action yet, because there has been no actual movement yet.
 
             CurrentOperationStartCoordinate = startTextureCoordinate;
-            CurrentOperationRectangles = SelectedRectangles.ToArray();
-            CurrentOperationOriginalPositions = SelectedRectangles
+            CurrentOperationRectangles = Selection.Rectangles.ToArray();
+            CurrentOperationOriginalPositions = Selection.Rectangles
                 .Select(rectangleVM => new Point(rectangleVM.X, rectangleVM.Y))
                 .ToArray();
         }
@@ -212,7 +211,7 @@ namespace HotspotMaker.Editor
             if (RectangleSet == null)
                 return;
 
-            var selectedRectangles = SelectedRectangles.ToArray();
+            var selectedRectangles = Selection.Rectangles.ToArray();
             var originalPositions = selectedRectangles
                 .Select(rectangleVM => new Point(rectangleVM.X, rectangleVM.Y))
                 .ToArray();
@@ -324,7 +323,7 @@ namespace HotspotMaker.Editor
             if (rectangleSet == null)
                 return;
 
-            var selectedRectangles = SelectedRectangles.ToArray();
+            var selectedRectangles = Selection.Rectangles.ToArray();
             var originalIndices = selectedRectangles
                 .Select(rectangleSet.Rectangles.IndexOf)
                 .ToArray();
@@ -375,7 +374,7 @@ namespace HotspotMaker.Editor
                 RaiseRectanglePropertyChanged(rectangleVM, e.PropertyName);
         }
 
-        private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Selection_SelectionChanged(HotspotRectangleVM[] deselected, HotspotRectangleVM[] selected)
         {
             StopOngoingAction();
         }

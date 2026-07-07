@@ -132,7 +132,7 @@ namespace HotspotMaker.Hotspot
 
         public bool IsRedoAvailable => UndoSystem.IsRedoAvailable;
 
-        public HotspotRectangleVM? SelectedHotspotRectangle => HotspotEditor.SelectedRectangles.Count == 1 ? HotspotEditor.SelectedRectangles[0] : null;
+        public HotspotRectangleVM? SelectedHotspotRectangle => HotspotEditor.Selection.Rectangles.Count() == 1 ? HotspotEditor.Selection.Rectangles.First() : null;
 
         public override bool IsModified
             => base.IsModified || HotspotBindings.Any(bindingVM => bindingVM.IsModified) || HotspotRectangleSets.Any(rectangleSetVM => rectangleSetVM.IsModified) || HotspotEditor.IsModified;
@@ -141,6 +141,7 @@ namespace HotspotMaker.Hotspot
         // Read-only:
         public string HotspotFilePath { get; }
 
+        public HotspotRectangleSelectionVM Selection { get; }
         public HotspotEditorVM HotspotEditor { get; }
 
 
@@ -159,9 +160,10 @@ namespace HotspotMaker.Hotspot
 
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
-            HotspotEditor = new HotspotEditorVM(UndoSystem);
+            Selection = new HotspotRectangleSelectionVM(UndoSystem);
+            HotspotEditor = new HotspotEditorVM(UndoSystem, Selection);
             HotspotEditor.PropertyChanged += HotspotEditor_PropertyChanged;
-            HotspotEditor.SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
+            HotspotEditor.Selection.SelectionChanged += Selection_SelectionChanged;
 
             foreach (var binding in hotspotFileData.Bindings)
             {
@@ -299,7 +301,7 @@ namespace HotspotMaker.Hotspot
                 RaisePropertyChanged(nameof(IsModified));
         }
 
-        private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Selection_SelectionChanged(HotspotRectangleVM[] deselected, HotspotRectangleVM[] selected)
         {
             RaisePropertyChanged(nameof(SelectedHotspotRectangle));
             RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));

@@ -177,7 +177,7 @@
             <TextBlock Grid.Row="0" Text="{Binding SelectedHotspotRectangleSet.Name}" FontWeight="Bold" Margin="5" />
             <ListBox Grid.Row="1" DisplayMemberBinding="{ReflectionBinding DisplayName}" MinWidth="200" Margin="5"
                      ItemsSource="{Binding SelectedHotspotRectangleSet.Rectangles}"
-                     SelectionMode="Multiple" SelectedItems="{Binding HotspotEditor.SelectedRectangles}" AutoScrollToSelectedItem="False"
+                     SelectionMode="Multiple" SelectedItems="{Binding Selection.Rectangles}" AutoScrollToSelectedItem="False"
                      ScrollViewer.AllowAutoHide="False">
             </ListBox>
         </Grid>

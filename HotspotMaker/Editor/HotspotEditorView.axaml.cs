@@ -189,7 +189,7 @@ public partial class HotspotEditorView : UserControl
 
         foreach (var rectangle in rectangleSet.Rectangles)
         {
-            var isSelected = editor.SelectedRectangles.Contains(rectangle);
+            var isSelected = editor.Selection.IsSelected(rectangle);
             context.FillRectangle(
                 isSelected ? SelectedRectangleBrush : RectangleBrush,
                 new Rect(
@@ -207,7 +207,7 @@ public partial class HotspotEditorView : UserControl
                     rectangle.Height * CameraScale));
         }
 
-        var selectedRectangles = editor.SelectedRectangles;
+        var selectedRectangles = editor.Selection.Rectangles;
         if (selectedRectangles.Any())
         {
             foreach (var selectedRectangle in selectedRectangles)
@@ -270,7 +270,7 @@ public partial class HotspotEditorView : UserControl
             Editor.PropertyChanged -= Editor_PropertyChanged;
             Editor.RectanglesChanged -= Editor_RectanglesChanged;
             Editor.RectanglePropertyChanged -= Editor_RectanglePropertyChanged;
-            Editor.SelectedRectangles.CollectionChanged -= SelectedRectangles_CollectionChanged;
+            Editor.Selection.SelectionChanged -= Selection_SelectionChanged;
         }
 
         Editor = DataContext as HotspotEditorVM;
@@ -280,7 +280,7 @@ public partial class HotspotEditorView : UserControl
             Editor.PropertyChanged += Editor_PropertyChanged;
             Editor.RectanglesChanged += Editor_RectanglesChanged;
             Editor.RectanglePropertyChanged += Editor_RectanglePropertyChanged;
-            Editor.SelectedRectangles.CollectionChanged += SelectedRectangles_CollectionChanged;
+            Editor.Selection.SelectionChanged += Selection_SelectionChanged;
         }
     }
 
@@ -348,7 +348,7 @@ public partial class HotspotEditorView : UserControl
         if (editor == null)
             return;
 
-        var selectedRectangles = editor.SelectedRectangles;
+        var selectedRectangles = editor.Selection.Rectangles;
         if (selectedRectangles.Any())
         {
             if (e.Key == Key.Delete)
@@ -398,7 +398,7 @@ public partial class HotspotEditorView : UserControl
 
     private void Editor_RectanglePropertyChanged(HotspotRectangleVM sender, string? propertyName) => InvalidateVisual();
 
-    private void SelectedRectangles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => InvalidateVisual();
+    private void Selection_SelectionChanged(HotspotRectangleVM[] deselected, HotspotRectangleVM[] selected) => InvalidateVisual();
 
 
     private void UpdatePointerState(Point position, PointerPointProperties pointer)
@@ -505,7 +505,7 @@ public partial class HotspotEditorView : UserControl
                 PointerOperation = Operation.PointSelection;
 
             var rectanglesAtPosition = editor.GetRectanglesAtPoint(ScreenToTextureCoordinate(position));
-            PointerOperationStartedAtSelectedRectangle = editor.SelectedRectangles.Any(rectangleVM => rectanglesAtPosition.Contains(rectangleVM));
+            PointerOperationStartedAtSelectedRectangle = editor.Selection.Rectangles.Any(rectangleVM => rectanglesAtPosition.Contains(rectangleVM));
             PointerOperationStartKeyModifiers = KeyModifiers;
         }
     }
@@ -592,7 +592,7 @@ public partial class HotspotEditorView : UserControl
         }
 
         // Did we click on the currently selected rectangle?
-        var singleSelectedRectangle = editor.SelectedRectangles.Count == 1 ? editor.SelectedRectangles[0] : null;
+        var singleSelectedRectangle = editor.Selection.Rectangles.Count() == 1 ? editor.Selection.Rectangles.First() : null;
         if (singleSelectedRectangle != null && rectanglesAtPoint.Contains(singleSelectedRectangle))
         {
             if (rectanglesAtPoint.Length > 1)
@@ -618,15 +618,15 @@ public partial class HotspotEditorView : UserControl
         if (!rectanglesAtPoint.Any())
             return;
 
-        if (editor.SelectedRectangles.Any(rectanglesAtPoint.Contains))
+        if (editor.Selection.Rectangles.Any(rectanglesAtPoint.Contains))
         {
             // Deselect all rectangles at this point, if at least one of them is selected:
-            editor.SetSelection(editor.SelectedRectangles.Where(rectangleVM => !rectanglesAtPoint.Contains(rectangleVM)));
+            editor.SetSelection(editor.Selection.Rectangles.Where(rectangleVM => !rectanglesAtPoint.Contains(rectangleVM)));
         }
         else
         {
             // Else, add the top-most rectangle to the selection (support for cycling to underlying rectangles would get a bit complicated here):
-            editor.SetSelection(editor.SelectedRectangles.Append(rectanglesAtPoint[0]));
+            editor.SetSelection(editor.Selection.Rectangles.Append(rectanglesAtPoint[0]));
         }
     }
 
