@@ -126,16 +126,12 @@ namespace HotspotMaker.Hotspot
 
         public bool HasSelectedHotspotRectangleSet => SelectedHotspotRectangleSet != null;
 
-        public bool HasSelectedHotspotRectangle => SelectedHotspotRectangle != null;
-
         public bool IsUndoAvailable => UndoSystem.IsUndoAvailable;
 
         public bool IsRedoAvailable => UndoSystem.IsRedoAvailable;
 
-        public HotspotRectangleVM? SelectedHotspotRectangle => HotspotEditor.Selection.Rectangles.Count() == 1 ? HotspotEditor.Selection.Rectangles.First() : null;
-
         public override bool IsModified
-            => base.IsModified || HotspotBindings.Any(bindingVM => bindingVM.IsModified) || HotspotRectangleSets.Any(rectangleSetVM => rectangleSetVM.IsModified) || HotspotEditor.IsModified;
+            => base.IsModified || HotspotBindings.Any(bindingVM => bindingVM.IsModified) || HotspotRectangleSets.Any(rectangleSetVM => rectangleSetVM.IsModified) || Selection.IsModified || HotspotEditor.IsModified;
 
 
         // Read-only:
@@ -160,10 +156,12 @@ namespace HotspotMaker.Hotspot
 
             WadFile = wadFile;
             HotspotFilePath = hotspotFilePath;
+
             Selection = new HotspotRectangleSelectionVM(UndoSystem);
+            Selection.PropertyChanged += Selection_PropertyChanged;
+
             HotspotEditor = new HotspotEditorVM(UndoSystem, Selection);
             HotspotEditor.PropertyChanged += HotspotEditor_PropertyChanged;
-            HotspotEditor.Selection.SelectionChanged += Selection_SelectionChanged;
 
             foreach (var binding in hotspotFileData.Bindings)
             {
@@ -220,6 +218,7 @@ namespace HotspotMaker.Hotspot
             foreach (var rectangleSetVM in HotspotRectangleSets)
                 rectangleSetVM.MarkAsUnmodified();
 
+            Selection.MarkAsUnmodified();
             HotspotEditor.MarkAsUnmodified();
         }
 
@@ -301,10 +300,10 @@ namespace HotspotMaker.Hotspot
                 RaisePropertyChanged(nameof(IsModified));
         }
 
-        private void Selection_SelectionChanged(HotspotRectangleVM[] deselected, HotspotRectangleVM[] selected)
+        private void Selection_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            RaisePropertyChanged(nameof(SelectedHotspotRectangle));
-            RaisePropertyChanged(nameof(HasSelectedHotspotRectangle));
+            if (e.PropertyName == nameof(HotspotRectangleSelectionVM.IsModified))
+                RaisePropertyChanged(nameof(IsModified));
         }
 
         private void HotspotBindings_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

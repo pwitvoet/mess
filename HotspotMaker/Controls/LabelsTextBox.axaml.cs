@@ -16,6 +16,12 @@ namespace HotspotMaker.Controls
             (o, v) => o.Labels = v,
             defaultBindingMode: BindingMode.TwoWay);
 
+        public static readonly DirectProperty<LabelsTextBox, string?> PlaceholderTextProperty = AvaloniaProperty.RegisterDirect<LabelsTextBox, string?>(
+            nameof(PlaceholderText),
+            o => o.PlaceholderText,
+            (o, v) => o.PlaceholderText = v);
+
+
         // NOTE: This property is only for internal use:
         public static readonly DirectProperty<LabelsTextBox, string?> LabelsTextProperty = AvaloniaProperty.RegisterDirect<LabelsTextBox, string?>(
             nameof(LabelsText),
@@ -36,6 +42,13 @@ namespace HotspotMaker.Controls
                     UpdateInternalTextBox();
             }
         }
+
+        public string? PlaceholderText
+        {
+            get => InternalTextBox.PlaceholderText;
+            set => InternalTextBox.PlaceholderText = value;
+        }
+
 
         // NOTE: This property is only for internal use:
         private string? _labelsText;

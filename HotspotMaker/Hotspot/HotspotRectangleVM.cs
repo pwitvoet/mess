@@ -3,13 +3,15 @@ using HotspotMaker.History;
 using MLib.Mathematics.Spatial;
 using MLib.Texturing.Hotspotting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace HotspotMaker.Hotspot
 {
     public class HotspotRectangleVM : ChangeTrackingVM
     {
+        public static HotspotLayout[] AvailableHotspotLayouts { get; } = [HotspotLayout.Fit, HotspotLayout.Clip, HotspotLayout.Tile];
+
+
         private double _x;
         public double X
         {
@@ -193,6 +195,9 @@ namespace HotspotMaker.Hotspot
                 Labels);
         }
 
+
+        public void WithoutUndo(Action action)
+            => WithoutChangeTracking(action);
 
         // TODO: Selecting another rectangle should stop any ungoing actions such as this one! -- The editor should manage that, not the individual rectangle VMs!
         public void MoveWithUndo(Vector offset)
