@@ -9,7 +9,7 @@ namespace HotspotMaker
         {
             InitializeComponent();
 
-            DataContext = new MainWindowVM(StorageProvider);
+            DataContext = new MainWindowVM(StorageProvider, Clipboard);
         }
 
 

@@ -1,4 +1,6 @@
-﻿using Avalonia.Platform.Storage;
+﻿using Avalonia;
+using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using HotspotMaker.Controls;
 using HotspotMaker.Hotspot;
 using MLib.Texturing.Hotspotting;
@@ -28,6 +30,13 @@ namespace HotspotMaker
             set { _windowTitle = value; RaisePropertyChanged(); }
         }
 
+        private string? _statusMessage;
+        public string? StatusMessage
+        {
+            get => _statusMessage;
+            set { _statusMessage = value; RaisePropertyChanged(); }
+        }
+
         private HotspotProjectVM? _hotspotProject;
         public HotspotProjectVM? HotspotProject
         {
@@ -52,17 +61,25 @@ namespace HotspotMaker
         // Derived properties:
         public bool HasOpenProject => HotspotProject != null;
 
+        public bool IsCutAvailable => IsCopyAvailable;
+
+        public bool IsCopyAvailable => Clipboard != null && HotspotProject != null && !HotspotProject.Selection.IsEmpty;
+
+        public bool IsPasteAvailable => Clipboard != null && HotspotProject != null;
+
         public bool IsUndoAvailable => HotspotProject?.IsUndoAvailable == true;
 
         public bool IsRedoAvailable => HotspotProject?.IsRedoAvailable == true;
 
 
         private IStorageProvider StorageProvider { get; }
+        private IClipboard? Clipboard { get; }
 
 
-        public MainWindowVM(IStorageProvider storageProvider)
+        public MainWindowVM(IStorageProvider storageProvider, IClipboard? clipboard)
         {
             StorageProvider = storageProvider;
+            Clipboard = clipboard;
 
             UpdateWindowTitle(null);
         }
@@ -147,6 +164,70 @@ namespace HotspotMaker
             }
 
             Environment.Exit(0);
+        }
+
+        public async Task CutSelection()
+        {
+            if (HotspotProject == null || Clipboard == null)
+                return;
+
+            try
+            {
+                await CopySelection();
+                HotspotProject.HotspotEditor.DeleteSelectedRectangles();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Cut failed: {ex.GetType().Name}: {ex.Message}.";
+            }
+        }
+
+        public async Task CopySelection()
+        {
+            if (HotspotProject == null || Clipboard == null)
+                return;
+
+            try
+            {
+                var rectangles = HotspotProject.Selection.Rectangles
+                    .Select(rectangleVM => rectangleVM.CreateHotspotRectangle())
+                    .ToArray();
+                var json = HotspotFileWriter.Serialize(rectangles);
+
+                await Clipboard.SetTextAsync(json);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Copy failed: {ex.GetType().Name}: {ex.Message}.";
+            }
+        }
+
+        public async Task PasteSelection()
+        {
+            if (HotspotProject == null || Clipboard == null)
+                return;
+
+            try
+            {
+                var json = await Clipboard.TryGetTextAsync();
+                if (json == null)
+                {
+                    StatusMessage = $"Paste failed: clipboard is empty.";
+                    return;
+                }
+
+                var rectangles = HotspotFileParser.DeserializeHotspotRectangles(json);
+                var rectangleVMs = HotspotProject.HotspotEditor.AddRectanglesWithOffset(rectangles, new Point(32, 32));
+                if (rectangleVMs != null)
+                {
+                    HotspotProject.Selection.Clear();
+                    HotspotProject.Selection.Add(rectangleVMs);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Paste failed: {ex.GetType().Name}: {ex.Message}.";
+            }
         }
 
         public void UndoLastAction()

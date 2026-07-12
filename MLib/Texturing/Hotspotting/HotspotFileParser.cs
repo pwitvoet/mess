@@ -67,6 +67,29 @@ namespace MLib.Texturing.Hotspotting
         }
 
 
+        /// <summary>
+        /// Parses a JSON array that contains hotspot rectangles.
+        /// This method will throw if the input is not in a valid format.
+        /// </summary>
+        public static HotspotRectangle[] DeserializeHotspotRectangles(string json)
+        {
+            var array = JsonSerializer.Deserialize<JsonArray>(json);
+
+            var hotspotRectangles = new List<HotspotRectangle>();
+            if (array != null)
+            {
+                foreach (var node in array)
+                {
+                    if (node == null)
+                        continue;
+
+                    hotspotRectangles.Add(ParseHotspotRectangle(node.AsObject()));
+                }
+            }
+            return hotspotRectangles.ToArray();
+        }
+
+
         private static HotspotRectangle[] ParseHotspotRectangles(JsonObject json)
         {
             var rectanglesNode = json["rectangles"];
@@ -79,36 +102,39 @@ namespace MLib.Texturing.Hotspotting
                 if (node == null)
                     continue;
 
-                var jsonObject = node.AsObject();
-                var rectangleNode = jsonObject["rectangle"];
-                if (rectangleNode == null)
-                    throw new InvalidDataException("Hotspot rectangle must contain a 'rectangle' key.");
-
-                var rectangle = ParseRectangle(rectangleNode.AsObject());
-                var allowRotation = (bool?)jsonObject["allow_rotation"]?.AsValue() ?? false;
-                var allowedMirroring = ParseMirrorings(jsonObject["allow_mirroring"]?.ToString());
-                var horizontalLayout = ParseHotspotLayout(jsonObject["horizontal_layout"]?.ToString());
-                var verticalLayouy = ParseHotspotLayout(jsonObject["vertical_layout"]?.ToString());
-                var snapWidth = (double?)jsonObject["snap_width"]?.AsValue();
-                var snapHeight = (double?)jsonObject["snap_height"]?.AsValue();
-                var selectionWeight = (double?)jsonObject["selection_weight"]?.AsValue() ?? 1;
-                var concaveEdges = ParseConcaveEdges(jsonObject["concave_edges"]?.AsArray());
-                var labels = ParseStringArray(jsonObject["labels"]?.AsArray());
-
-                var hotspotRectangle = new HotspotRectangle(
-                    rectangle,
-                    allowRotation,
-                    allowedMirroring,
-                    horizontalLayout,
-                    verticalLayouy,
-                    snapWidth,
-                    snapHeight,
-                    selectionWeight,
-                    concaveEdges,
-                    labels);
-                hotspotRectangles.Add(hotspotRectangle);
+                hotspotRectangles.Add(ParseHotspotRectangle(node.AsObject()));
             }
             return hotspotRectangles.ToArray();
+        }
+
+        private static HotspotRectangle ParseHotspotRectangle(JsonObject json)
+        {
+            var rectangleNode = json["rectangle"];
+            if (rectangleNode == null)
+                throw new InvalidDataException("Hotspot rectangle must contain a 'rectangle' key.");
+
+            var rectangle = ParseRectangle(rectangleNode.AsObject());
+            var allowRotation = (bool?)json["allow_rotation"]?.AsValue() ?? false;
+            var allowedMirroring = ParseMirrorings(json["allow_mirroring"]?.ToString());
+            var horizontalLayout = ParseHotspotLayout(json["horizontal_layout"]?.ToString());
+            var verticalLayouy = ParseHotspotLayout(json["vertical_layout"]?.ToString());
+            var snapWidth = (double?)json["snap_width"]?.AsValue();
+            var snapHeight = (double?)json["snap_height"]?.AsValue();
+            var selectionWeight = (double?)json["selection_weight"]?.AsValue() ?? 1;
+            var concaveEdges = ParseConcaveEdges(json["concave_edges"]?.AsArray());
+            var labels = ParseStringArray(json["labels"]?.AsArray());
+
+            return new HotspotRectangle(
+                rectangle,
+                allowRotation,
+                allowedMirroring,
+                horizontalLayout,
+                verticalLayouy,
+                snapWidth,
+                snapHeight,
+                selectionWeight,
+                concaveEdges,
+                labels);
         }
 
         private static Rectangle ParseRectangle(JsonObject json)

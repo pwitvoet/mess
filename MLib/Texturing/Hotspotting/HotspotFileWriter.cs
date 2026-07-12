@@ -29,6 +29,18 @@ namespace MLib.Texturing.Hotspotting
         }
 
 
+        /// <summary>
+        /// Serializes the given array of hotspots to a JSON array.
+        /// </summary>
+        public static string Serialize(IEnumerable<HotspotRectangle> hotspotRectangles)
+        {
+            var array = new JsonArray();
+            foreach (var hotspotRectangle in hotspotRectangles)
+                array.Add(ToJson(hotspotRectangle));
+            return array.ToJsonString();
+        }
+
+
         private static JsonObject ToJson(HotspotRectangleSet hotspotRectangleSet)
         {
             var rectanglesArray = new JsonArray();

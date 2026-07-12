@@ -14,10 +14,13 @@
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCurrentProject}" />
         <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCurrentProject}" />
         <KeyBinding Gesture="Alt+F4" Command="{Binding ExitProgram}" />
+        <KeyBinding Gesture="Ctrl+X" Command="{Binding CutSelection}" />
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopySelection}" />
+        <KeyBinding Gesture="Ctrl+V" Command="{Binding PasteSelection}" />
         <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoLastAction}" />
         <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoLastAction}" />
     </Window.KeyBindings>
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
         <Menu Grid.Row="0">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open wad file" InputGesture="Ctrl+O" Command="{Binding OpenWadFile}" />
@@ -30,8 +33,12 @@
                 <MenuItem Header="E_xit" InputGesture="Alt+F4" Command="{Binding ExitProgram}" />
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="Undo" InputGesture="Ctrl+Z" Command="{Binding UndoLastAction}" IsEnabled="{Binding IsUndoAvailable}" />
-                <MenuItem Header="Redo" InputGesture="Ctrl+Y" Command="{Binding RedoLastAction}" IsEnabled="{Binding IsRedoAvailable}" />
+                <MenuItem Header="Cu_t" InputGesture="Ctrl+X" Command="{Binding CutSelection}" IsEnabled="{Binding IsCutAvailable}" />
+                <MenuItem Header="_Copy" InputGesture="Ctrl+C" Command="{Binding CopySelection}" IsEnabled="{Binding IsCopyAvailable}" />
+                <MenuItem Header="_Paste" InputGesture="Ctrl+V" Command="{Binding PasteSelection}" IsEnabled="{Binding IsPasteAvailable}" />
+                <Separator />
+                <MenuItem Header="_Undo" InputGesture="Ctrl+Z" Command="{Binding UndoLastAction}" IsEnabled="{Binding IsUndoAvailable}" />
+                <MenuItem Header="_Redo" InputGesture="Ctrl+Y" Command="{Binding RedoLastAction}" IsEnabled="{Binding IsRedoAvailable}" />
             </MenuItem>
             <!--<MenuItem Header="Help">
                 <MenuItem Header="About" />
@@ -41,5 +48,7 @@
         <Grid Grid.Row="1">
             <hotspot:HotspotProjectView x:Name="ProjectView" Grid.Row="1" DataContext="{Binding HotspotProject}" IsVisible="{Binding $parent[Window].DataContext.HasOpenProject}" />
         </Grid>
+
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" HorizontalAlignment="Left" Margin="5" />
     </Grid>
 </Window>

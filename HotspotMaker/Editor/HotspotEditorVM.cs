@@ -107,6 +107,38 @@ namespace HotspotMaker.Editor
         }
 
 
+        public HotspotRectangleVM[]? AddRectanglesWithOffset(HotspotRectangle[] rectangles, Point offset)
+        {
+            var rectangleSet = RectangleSet;
+            if (rectangleSet == null)
+                return null;
+
+            var rectangleVMs = rectangles
+                .Select(rectangle => new HotspotRectangleVM(rectangle, UndoSystem))
+                .ToArray();
+
+            foreach (var rectangleVM in rectangleVMs)
+            {
+                rectangleVM.X += offset.X;
+                rectangleVM.Y += offset.Y;
+            }
+
+            PerformUndoableAction(
+                () =>
+                {
+                    foreach (var rectangleVM in rectangleVMs)
+                        rectangleSet.Rectangles.Add(rectangleVM);
+                },
+                () =>
+                {
+                    foreach (var rectangleVM in rectangleVMs)
+                        rectangleSet.Rectangles.Remove(rectangleVM);
+                });
+
+            return rectangleVMs;
+        }
+
+
         public void StartDuplicateRectanglesOperation(Point startTextureCoordinate, double gridSize, bool snapToGrid)
         {
             var rectangleSet = RectangleSet;
