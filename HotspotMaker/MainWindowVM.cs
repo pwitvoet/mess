@@ -44,15 +44,24 @@ namespace HotspotMaker
             set
             {
                 if (_hotspotProject != null)
+                {
                     _hotspotProject.PropertyChanged -= HotspotProject_PropertyChanged;
+                    _hotspotProject.Selection.SelectionChanged -= Selection_SelectionChanged;
+                }
 
                 _hotspotProject = value;
 
                 if (_hotspotProject != null)
+                {
                     _hotspotProject.PropertyChanged += HotspotProject_PropertyChanged;
+                    _hotspotProject.Selection.SelectionChanged += Selection_SelectionChanged;
+                }
 
                 UpdateWindowTitle(value);
                 RaisePropertyChanged(nameof(HasOpenProject));
+                RaisePropertyChanged(nameof(IsCutAvailable));
+                RaisePropertyChanged(nameof(IsCopyAvailable));
+                RaisePropertyChanged(nameof(IsPasteAvailable));
                 RaisePropertyChanged();
             }
         }
@@ -109,11 +118,15 @@ namespace HotspotMaker
                 {
                     var wadFilePath = selectedFiles.First().Path.LocalPath;
                     var hotspotFilePath = wadFilePath + ".hotspot";
-                    HotspotProject = HotspotProjectVM.Load((string)wadFilePath, (string)hotspotFilePath);
+                    HotspotProject = HotspotProjectVM.Load(wadFilePath, hotspotFilePath);
+
+                    StatusMessage = $"Opened '{wadFilePath}'.";
                 }
             }
             catch (Exception ex)
             {
+                StatusMessage = $"Failed to open wad file: {ex.GetType().Name}: {ex.Message}.";
+
                 // TODO: Improve error message!
                 await MessageBox.Show("Error", $"Failed to open project: {ex.GetType().Name}: {ex.Message}.", MessageBoxButtons.Ok);
             }
@@ -129,10 +142,14 @@ namespace HotspotMaker
                 var hotspotFileData = HotspotProject.CreateHotspotFileData();
                 HotspotFileWriter.Save(HotspotProject.HotspotFilePath, hotspotFileData);
 
+                StatusMessage = $"Hotspot file saved.";
+
                 HotspotProject.MarkAsUnmodified();
             }
             catch (Exception ex)
             {
+                StatusMessage = $"Failed to save hotspot file: {ex.GetType().Name}: {ex.Message}.";
+
                 // TODO: Improve error message!
                 await MessageBox.Show("Error", $"Failed to save project: {ex.GetType().Name}: {ex.Message}.", MessageBoxButtons.Ok);
             }
@@ -152,6 +169,8 @@ namespace HotspotMaker
 
             // TODO: This does not erase/reset the editor VM state or the view!
             HotspotProject = null;
+
+            StatusMessage = $"Project closed.";
         }
 
         public async Task ExitProgram()
@@ -216,7 +235,17 @@ namespace HotspotMaker
                     return;
                 }
 
-                var rectangles = HotspotFileParser.DeserializeHotspotRectangles(json);
+                HotspotRectangle[]? rectangles = null;
+                try
+                {
+                    rectangles = HotspotFileParser.DeserializeHotspotRectangles(json);
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = $"Paste failed: clipboard does not contain valid hotspot rectangle data.";
+                    return;
+                }
+
                 var rectangleVMs = HotspotProject.HotspotEditor.AddRectanglesWithOffset(rectangles, new Point(32, 32));
                 if (rectangleVMs != null)
                 {
@@ -245,6 +274,12 @@ namespace HotspotMaker
                 RaisePropertyChanged(nameof(IsRedoAvailable));
             else if (e.PropertyName == nameof(HotspotProjectVM.IsModified))
                 UpdateWindowTitle(HotspotProject);
+        }
+
+        private void Selection_SelectionChanged(HotspotRectangleVM[] deselected, HotspotRectangleVM[] selected)
+        {
+            RaisePropertyChanged(nameof(IsCutAvailable));
+            RaisePropertyChanged(nameof(IsCopyAvailable));
         }
 
         private void UpdateWindowTitle(HotspotProjectVM? hotspotProject)
