@@ -19,11 +19,22 @@ namespace MESS
         /// </summary>
         public static void ReadSettings(string path, ExpansionSettings settings, ILogger logger)
         {
+            var fullPath = FileSystem.GetFullPath(path);
+            ReadSettings(fullPath, settings, logger, [fullPath]);
+        }
+
+        private static void ReadSettings(string path, ExpansionSettings settings, ILogger logger, string[] previousFilePaths)
+        {
             var evaluationContext = Evaluation.DefaultContext();
             evaluationContext.Bind("EXE_DIR", AppContext.BaseDirectory);
 
             string? currentSegment = null;
             var lines = File.ReadLines(path, Encoding.UTF8).ToArray();
+
+            // First load base configuration files, if any:
+            LoadBaseConfiguration();
+
+            // Then load the current configuration file:
             for (int i = 0; i < lines.Length; i++)
             {
                 var lineNumber = i + 1;
@@ -34,16 +45,9 @@ namespace MESS
                     if (line.StartsWith("//") || line == "")
                         continue;
 
-                    var segmentNameMatch = Regex.Match(line, @"^\s*(?<name>[\w-]+)\s*:(?<rest>\s*(?<value>.*?)?(?://.*)?)$");
-                    if (segmentNameMatch.Success)
-                    {
-                        var name = segmentNameMatch.Groups["name"].Value;
-                        var value = segmentNameMatch.Groups["value"].Value;
-                        var rest = segmentNameMatch.Groups["rest"].Value;
-
-                        if (HandleSegment(name, value, rest, lineNumber, ref currentSegment))
-                            continue;
-                    }
+                    if (GetSegmentNameMatch(line, out var name, out var value, out var rest) &&
+                        HandleSegment(name, value, rest, lineNumber, ref currentSegment))
+                        continue;
 
                     if (HandleMultilineSegment(currentSegment, line, lineNumber))
                         continue;
@@ -58,10 +62,55 @@ namespace MESS
             }
 
 
+            void LoadBaseConfiguration()
+            {
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i].Trim();
+                    if (line.StartsWith("//") || line == "")
+                        continue;
+
+                    if (GetSegmentNameMatch(line, out var name, out var value, out var rest) && name == "base-configuration")
+                    {
+                        var baseConfigFilePath = FileSystem.GetFullPath(value);
+                        if (previousFilePaths.Contains(baseConfigFilePath))
+                        {
+                            logger.Warning($"Warning: circular reference to config file '{baseConfigFilePath}'!");
+                            return;
+                        }
+
+                        ReadSettings(baseConfigFilePath, settings, logger, previousFilePaths.Append(baseConfigFilePath).ToArray());
+                        return;
+                    }
+                }
+            }
+
+            bool GetSegmentNameMatch(string line, out string name, out string value, out string rest)
+            {
+                var segmentNameMatch = Regex.Match(line, @"^\s*(?<name>[\w-]+)\s*:(?<rest>\s*(?<value>.*?)?(?://.*)?)$");
+                if (segmentNameMatch.Success)
+                {
+                    name = segmentNameMatch.Groups["name"].Value;
+                    value = segmentNameMatch.Groups["value"].Value;
+                    rest = segmentNameMatch.Groups["rest"].Value;
+                    return true;
+                }
+                else
+                {
+                    name = "";
+                    value = "";
+                    rest = "";
+                    return false;
+                }
+            }
+
             bool HandleSegment(string name, string value, string rest, int lineNumber, ref string? segment)
             {
                 switch (name)
                 {
+                    case "base-configuration":
+                        return true;
+
                     case "fgd-path":
                         settings.MessFgdFilePath = FileSystem.GetFullPath(Evaluation.EvaluateInterpolatedString(ReadString(value), evaluationContext));
                         return true;
@@ -91,9 +140,22 @@ namespace MESS
                         return true;
 
                     case "template-entity-directories":
+                        settings.TemplateEntityDirectories.Clear();
+                        segment = name;
+                        return true;
+
                     case "variables":
+                        settings.Variables.Clear();
+                        segment = name;
+                        return true;
+
                     case "globals":
+                        settings.Globals.Clear();
+                        segment = name;
+                        return true;
+
                     case "lifted-properties":
+                        settings.LiftedProperties.Clear();
                         segment = name;
                         return true;
 
