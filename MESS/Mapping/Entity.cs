@@ -1,6 +1,8 @@
 ﻿using MESS.Common;
 using MLib.Mathematics.Spatial;
 using MESS.Util;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections;
 
 namespace MESS.Mapping
 {
@@ -10,6 +12,89 @@ namespace MESS.Mapping
     /// </summary>
     public class Entity : MapObject
     {
+        class EntityProperties : IDictionary<string, string>
+        {
+            public ICollection<string> Keys => Properties.Keys;
+            public ICollection<string> Values => Properties.Values;
+            public int Count => Properties.Count;
+            public bool IsReadOnly => false;
+
+            private Entity Parent { get; }
+            private Dictionary<string, string> Properties { get; }
+
+            public string this[string key]
+            {
+                get => Properties[key];
+                set
+                {
+                    Properties[key] = value;
+                    Parent.OnPropertyChanged(key, value);
+                }
+            }
+
+
+            public EntityProperties(Entity parent, IEqualityComparer<string> comparer)
+            {
+                Parent = parent;
+                Properties = new Dictionary<string, string>(comparer);
+            }
+
+            public void Add(string key, string value)
+            {
+                Properties.Add(key, value);
+                Parent.OnPropertyChanged(key, value);
+            }
+
+            public bool ContainsKey(string key)
+                => Properties.ContainsKey(key);
+
+            public bool Remove(string key)
+            {
+                if (!Properties.Remove(key))
+                    return false;
+
+                Parent.OnPropertyRemoved(key);
+                return true;
+            }
+
+            public bool TryGetValue(string key, [MaybeNullWhen(false)] out string value)
+                => Properties.TryGetValue(key, out value);
+
+            public void Add(KeyValuePair<string, string> item)
+            {
+                Properties.Add(item.Key, item.Value);
+                Parent.OnPropertyChanged(item.Key, item.Value);
+            }
+
+            public void Clear()
+            {
+                Properties.Clear();
+                Parent.OnPropertiesCleared();
+            }
+
+            public bool Contains(KeyValuePair<string, string> item)
+                => Properties.Contains(item);
+
+            public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+                => ((IDictionary<string, string>)Properties).CopyTo(array, arrayIndex);
+
+            public bool Remove(KeyValuePair<string, string> item)
+            {
+                if (!((IDictionary<string, string>)Properties).Remove(item))
+                    return false;
+
+                Parent.OnPropertyRemoved(item.Key);
+                return true;
+            }
+
+            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+                => Properties.GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator()
+                => Properties.GetEnumerator();
+        }
+
+
         public bool IsPointBased => Brushes.Count == 0;
 
         public string ClassName
@@ -59,7 +144,7 @@ namespace MESS.Mapping
             }
         }
 
-        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringEqualityComparer.InvariantIgnoreCase);
+        public IDictionary<string, string> Properties { get; }
 
         private List<Brush> _brushes = new();
         public IReadOnlyList<Brush> Brushes => _brushes;
@@ -74,6 +159,8 @@ namespace MESS.Mapping
 
         public Entity(IEnumerable<Brush>? brushes = null)
         {
+            Properties = new EntityProperties(this, StringEqualityComparer.InvariantIgnoreCase);
+
             if (brushes != null)
                 AddBrushes(brushes);
             else
@@ -151,6 +238,24 @@ namespace MESS.Mapping
                 BoundingBox = new BoundingBox(Origin, Origin);
             else
                 BoundingBox = BoundingBox.FromBoundingBoxes(Brushes.Select(b => b.BoundingBox));
+        }
+
+        private void OnPropertyChanged(string key, string value)
+        {
+            if (key == Attributes.Origin && IsPointBased)
+                RecalculateBoundingBox();
+        }
+
+        private void OnPropertyRemoved(string key)
+        {
+            if (key == Attributes.Origin && IsPointBased)
+                RecalculateBoundingBox();
+        }
+
+        private void OnPropertiesCleared()
+        {
+            if (IsPointBased)
+                RecalculateBoundingBox();
         }
     }
 }

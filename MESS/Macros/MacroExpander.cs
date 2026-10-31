@@ -203,7 +203,7 @@ namespace MESS.Macros
             }
 
 
-            void ApplyMatchingDirectives(string className, Dictionary<string, string> entityProperties, int entityID)
+            void ApplyMatchingDirectives(string className, IDictionary<string, string> entityProperties, int entityID)
             {
                 if (directiveLookup.TryGetValue(className, out var matchingDirectives))
                 {
@@ -249,7 +249,7 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteDirective(Dictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, string mapPath)
+        private void ApplyRewriteDirective(IDictionary<string, string> entityProperties, RewriteDirective rewriteDirective, int entityID, Random random, string mapPath)
         {
             var unevaluatedProperties = entityProperties.ToDictionary(
                 property => property.Key,
@@ -287,7 +287,7 @@ namespace MESS.Macros
             }
         }
 
-        private void ApplyRewriteRule(Dictionary<string, string> entityProperties, RewriteDirective.Rule rule, EvaluationContext context)
+        private void ApplyRewriteRule(IDictionary<string, string> entityProperties, RewriteDirective.Rule rule, EvaluationContext context)
         {
             var attributeName = Evaluation.EvaluateInterpolatedString(rule.Attribute, context);
             if (rule.DeleteAttribute)

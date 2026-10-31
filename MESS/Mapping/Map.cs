@@ -42,7 +42,7 @@ namespace MESS.Mapping
         /// <summary>
         /// Map properties. These can also be accessed via the special <see cref="Worldspawn"/> entity.
         /// </summary>
-        public Dictionary<string, string> Properties => Worldspawn.Properties;
+        public IDictionary<string, string> Properties => Worldspawn.Properties;
 
         /// <summary>
         /// Map world brushes. These can also be accessed via the special <see cref="Worldspawn"/> entity.
