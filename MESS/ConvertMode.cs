@@ -74,6 +74,8 @@ namespace MESS
         // Cordoning:
         public BoundingBox? CordonArea { get; set; }
         public bool UseJmfCordonArea { get; set; }
+        public string? CordonEntity { get; set; }
+        public bool KeepCordonEntity { get; set; }
         public string? CordonTexture { get; set; }
         public double? CordonPadding { get; set; }
         public double? CordonThickness { get; set; }
@@ -379,6 +381,14 @@ namespace MESS
                     () => settings.UseJmfCordonArea = true,
                     "Exclude anything outside the cordon area defined in the input .jmf file, if it contains a cordon area.")
                 .Option(
+                    "-cordonentity",
+                    s => settings.CordonEntity = s,
+                    "Exclude anything outside the bounding box of the specified entity.")
+                .Switch(
+                    "-keepcordonentity",
+                    () => settings.KeepCordonEntity = true,
+                    "Do not remove the cordon entity.")
+                .Option(
                     "-cordontexture",
                     s => settings.CordonTexture = s,
                     "The texture that will be applied to the cordon brushes. Default value is \"BLACK\".")
@@ -509,7 +519,23 @@ namespace MESS
         private static void ApplyCordonSettings(Map map, ConvertSettings settings, ILogger logger)
         {
             var cordonArea = settings.CordonArea;
-            if (settings.UseJmfCordonArea)
+            if (!string.IsNullOrEmpty(settings.CordonEntity))
+            {
+                var cordonEntity = map.Entities.FirstOrDefault(entity => entity.ClassName == settings.CordonEntity);
+                if (cordonEntity != null)
+                {
+                    logger.Info("Using bounding box from cordon entity as cordon area.");
+                    cordonArea = cordonEntity.BoundingBox;
+
+                    if (!settings.KeepCordonEntity)
+                        map.RemoveEntity(cordonEntity);
+                }
+                else
+                {
+                    logger.Info("No cordon entity found in input map.");
+                }
+            }
+            else if (settings.UseJmfCordonArea)
             {
                 if (map is JmfMap jmfMap && jmfMap.CordonArea != null)
                 {
