@@ -511,26 +511,31 @@ namespace MESS
 
         private static void ApplyVisGroupFiltering(Map map, ConvertSettings settings, ILogger logger)
         {
-            var includeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.OnlyVisGroups);
-            var excludeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.NotVisGroups);
-
-            var excludedVisGroups = new List<VisGroup>();
-            foreach (var visGroup in map.VisGroups)
+            if (settings.OnlyVisGroups != null || settings.NotVisGroups != null || settings.NoInvisibleVisGroups || settings.NoVisibleVisGroups || settings.NoOmittedLayers)
             {
-                if ((excludeNamePattern != null && Regex.IsMatch(visGroup.Name ?? "", excludeNamePattern)) ||
-                    (includeNamePattern != null && !Regex.IsMatch(visGroup.Name ?? "", includeNamePattern)) ||
-                    (settings.NoInvisibleVisGroups && !visGroup.IsVisible) ||
-                    (settings.NoVisibleVisGroups && visGroup.IsVisible) ||
-                    (settings.NoOmittedLayers && visGroup is TBLayer tbLayer && tbLayer.IsOmittedFromExport))
+                var includeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.OnlyVisGroups);
+                var excludeNamePattern = Macros.Util.CreateWildcardNamesPattern(settings.NotVisGroups);
+
+                var excludedVisGroups = map.VisGroups
+                    .Where(MustBeExcluded)
+                    .ToArray();
+
+                foreach (var visGroup in excludedVisGroups)
                 {
-                    excludedVisGroups.Add(visGroup);
+                    logger.Info($"Excluding VIS group '{visGroup.Name}'.");
+                    map.RemoveVisGroup(visGroup, removeContent: true);
                 }
-            }
 
-            foreach (var visGroup in excludedVisGroups)
-            {
-                logger.Info($"Excluding VIS group '{visGroup.Name}'.");
-                map.RemoveVisGroup(visGroup, removeContent: true);
+
+                bool MustBeExcluded(VisGroup visGroup)
+                {
+                    if (excludeNamePattern != null && Regex.IsMatch(visGroup.Name ?? "", excludeNamePattern)) return true;
+                    if (includeNamePattern != null && !Regex.IsMatch(visGroup.Name ?? "", includeNamePattern)) return true;
+                    if (settings.NoInvisibleVisGroups && !visGroup.IsVisible) return true;
+                    if (settings.NoVisibleVisGroups && visGroup.IsVisible) return true;
+                    if (settings.NoOmittedLayers && visGroup is TBLayer tbLayer && tbLayer.IsOmittedFromExport) return true;
+                    return false;
+                }
             }
 
             if (settings.OnlyVisGroupObjects)
