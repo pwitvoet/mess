@@ -21,7 +21,7 @@ namespace MESS.Macros
         public List<string> LiftedProperties { get; } = new();
 
         public string? InvertedPitchPredicate { get; set; }
-        public string[] MacroCoverSkipTextures { get; set; } = new[] { Textures.Null, Textures.Caulk };
+        public string[] MacroCoverSkipTextures { get; set; } = new[] { Textures.Null, Textures.Skip };
         public InvalidBrushHandling InvalidBrushHandling { get; set; } = InvalidBrushHandling.Fail;
     }
 }

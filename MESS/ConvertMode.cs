@@ -64,6 +64,7 @@ namespace MESS
         public ObjObjectGrouping? ObjObjectGrouping { get; set; }
         public string? ObjObjectNameFormat { get; set; }
         public List<string> TextureDirectories { get; set; } = new();
+        public bool UseDefaultObjSkipTextures { get; set; } = true;
         public HashSet<string> ObjSkipTextures { get; set; } = new();
         public double? ObjScale { get; set; }
         public ObjUpAxis? ObjUpAxis { get; set; }
@@ -342,6 +343,7 @@ namespace MESS
                     "-objskiptextures",
                     s =>
                     {
+                        settings.UseDefaultObjSkipTextures = false;
                         foreach (var textureName in ParseCommaSeparatedList(s))
                             settings.ObjSkipTextures.Add(textureName.Trim());
                     },
@@ -865,8 +867,16 @@ namespace MESS
             fileSaveSettings.TexturesDirectories.AddRange(settings.TextureDirectories);
             fileSaveSettings.TexturesDirectories.Add(Path.GetDirectoryName(settings.InputPath) ?? "");
 
-            foreach (var textureName in settings.ObjSkipTextures)
-                fileSaveSettings.SkipTextures.Add(textureName);
+            if (settings.UseDefaultObjSkipTextures)
+            {
+                fileSaveSettings.SkipTextures.Add(Textures.Null);
+                fileSaveSettings.SkipTextures.Add(Textures.Skip);
+            }
+            else
+            {
+                foreach (var textureName in settings.ObjSkipTextures)
+                    fileSaveSettings.SkipTextures.Add(textureName);
+            }
 
             return fileSaveSettings;
         }

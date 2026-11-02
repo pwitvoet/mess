@@ -10,7 +10,7 @@
         /// <summary>
         /// The Quake equivalent of <see cref="Null"/>.
         /// </summary>
-        public const string Caulk = "caulk";
+        public const string Skip = "skip";
 
         /// <summary>
         /// Brush entities can use a brush covered with this texture to specify their origin. Often used for rotating entities.
