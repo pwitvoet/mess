@@ -7,9 +7,14 @@ using MESS.Formats.Obj;
 using MESS.Formats.RMF;
 using MESS.Geometry;
 using MESS.Logging;
+using MESS.Macros;
+using MESS.Macros.Functions;
 using MESS.Mapping;
-using MLib.Mathematics.Spatial;
 using MESS.Util;
+using MLib.Mathematics.Spatial;
+using MScript;
+using MScript.Evaluation;
+using MScript.Parsing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -70,6 +75,12 @@ namespace MESS
         public bool NoInvisibleVisGroups { get; set; }
         public bool NoVisibleVisGroups { get; set; }
         public bool NoOmittedLayers { get; set; }
+
+        // Entity filtering:
+        public string[]? OnlyEntityClassnames { get; set; }
+        public Expression? OnlyEntityPredicate { get; set; }
+        public string[]? NotEntityClassnames { get; set; }
+        public Expression? NotEntityPredicate { get; set; }
 
         // Cordoning:
         public BoundingBox? CordonArea { get; set; }
@@ -143,8 +154,9 @@ namespace MESS
                         }
 
 
-                        // VIS group filtering:
+                        // Filtering:
                         ApplyVisGroupFiltering(map, settings, logger);
+                        ApplyEntityFiltering(map, settings, logger);
 
                         // Cordon area:
                         ApplyCordonSettings(map, settings, logger);
@@ -370,6 +382,27 @@ namespace MESS
                     () => settings.NoOmittedLayers = true,
                     "Objects that belong to a TrenchBroom layer that is set to be omitted from export are excluded from the output map.")
 
+                // Entity filtering:
+                .Section("Entity filtering:")
+                .Option(
+                    "-onlyentities",
+                    s =>
+                    {
+                        settings.OnlyEntityPredicate = Parser.ParseSingleExpression(s);
+                        if (settings.OnlyEntityPredicate == null)
+                            settings.OnlyEntityClassnames = ParseCommaSeparatedList(s);
+                    },
+                    "Only entities that match this filter will be included in the output map. The filter can be either a comma-separated list of classnames (which may contain wildcards (*)), or an MScript expression that is given access to all of an entity's attributes.")
+                .Option(
+                    "-notentities",
+                    s =>
+                    {
+                        settings.NotEntityPredicate = Parser.ParseSingleExpression(s);
+                        if (settings.NotEntityPredicate == null)
+                            settings.NotEntityClassnames = ParseCommaSeparatedList(s);
+                    },
+                    "Entities that match this filter will be excluded from the output map. The filter can be either a comma-separated list of classnames (which may contain wildcards (*)), or an MScript expression that is given access to all of an entity's attributes.")
+
                 // Cordoning:
                 .Section("Cordon area:")
                 .Option(
@@ -513,6 +546,67 @@ namespace MESS
                 map.RemoveEntities(excludedEntities);
 
                 logger.Info($"Excluded {excludedBrushes.Length} brushes and {excludedEntities.Length} entities that did not belong to any VIS group.");
+            }
+        }
+
+        private static void ApplyEntityFiltering(Map map, ConvertSettings settings, ILogger logger)
+        {
+            if (settings.OnlyEntityClassnames == null && settings.NotEntityClassnames == null && settings.OnlyEntityPredicate == null && settings.NotEntityPredicate == null)
+                return;
+
+
+            var includeClassnamePattern = Macros.Util.CreateWildcardNamesPattern(settings.OnlyEntityClassnames);
+            var excludeClassnamePattern = Macros.Util.CreateWildcardNamesPattern(settings.NotEntityClassnames);
+
+            var baseContext = Evaluation.DefaultContext();
+            NativeUtils.RegisterInstanceMethods(baseContext, new StandardMacroExpansionFunctions(new Dictionary<string, object?>(), settings.InputPath, new Random(), logger));
+
+            var excludedEntities = map.Entities
+                .Where(MustBeExcluded)
+                .ToArray();
+            map.RemoveEntities(excludedEntities);
+
+            if (MustBeExcluded(map.Worldspawn))
+            {
+                map.RemoveBrushes(map.WorldGeometry.ToArray());
+                // TODO: Remove map properties, too?
+            }
+
+
+            bool MustBeExcluded(Entity entity)
+            {
+                var context = baseContext;
+                if (settings.OnlyEntityPredicate != null || settings.NotEntityPredicate != null)
+                {
+                    var unevaluatedProperties = entity.Properties.ToDictionary(
+                        property => property.Key,
+                        property => Evaluation.ParseMScriptValue(property.Value));
+                    context = new EvaluationContext(unevaluatedProperties, baseContext);
+                }
+
+                if (excludeClassnamePattern != null && Regex.IsMatch(entity.ClassName, excludeClassnamePattern))
+                {
+                    return true;
+                }
+                else if (settings.NotEntityPredicate != null)
+                {
+                    var result = Evaluator.Evaluate(settings.NotEntityPredicate, context);
+                    if (Interpreter.IsTrueAndNotZero(result))
+                        return true;
+                }
+
+                if (includeClassnamePattern != null && !Regex.IsMatch(entity.ClassName, includeClassnamePattern))
+                {
+                    return true;
+                }
+                else if (settings.OnlyEntityPredicate != null)
+                {
+                    var result = Evaluator.Evaluate(settings.OnlyEntityPredicate, context);
+                    if (!Interpreter.IsTrueAndNotZero(result))
+                        return true;
+                }
+
+                return false;
             }
         }
 

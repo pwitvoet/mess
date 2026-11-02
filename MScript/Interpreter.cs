@@ -31,6 +31,11 @@ namespace MScript
         /// </summary>
         public static bool IsTrue(object? value) => Operations.IsTrue(value);
 
+        /// <summary>
+        /// Returns whether the given value is not `none` (null) or 0.0.
+        /// </summary>
+        public static bool IsTrueAndNotZero(object? value) => Operations.IsTrue(value) && value is not 0.0;
+
         /// <inheritdoc cref="LoadAssignmentsFile(Stream, EvaluationContext)"/>
         public static void LoadAssignmentsFile(string path, EvaluationContext context)
         {
