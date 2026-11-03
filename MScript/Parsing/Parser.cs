@@ -166,6 +166,29 @@ namespace MScript.Parsing
             }
         }
 
+        /// <summary>
+        /// Parses the given expression string. The expression must be surrounded by curly braces.
+        /// Returns null if the given string does not contain a (single) expression.
+        /// </summary>
+        public static Expression? ParseSingleExpression(string input)
+        {
+            Expression? singleExpression = null;
+            foreach (var part in ParseInterpolatedString(input))
+            {
+                if (part is string str && !string.IsNullOrEmpty(str))
+                    return null;
+
+                if (part is Expression expression)
+                {
+                    if (singleExpression != null)
+                        return null;
+
+                    singleExpression = expression;
+                }
+            }
+            return singleExpression;
+        }
+
 
         private static void Shift(Context context)
         {
