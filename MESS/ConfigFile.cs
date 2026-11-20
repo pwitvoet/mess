@@ -128,7 +128,7 @@ namespace MESS
                         return true;
 
                     case "inverted-pitch-predicate":
-                        settings.InvertedPitchPredicate = ReadString(rest.Trim());
+                        settings.InvertedPitchPredicate = Parser.ParseSingleExpression(ReadString(rest.Trim()));
                         return true;
 
                     case "macro-cover-skip-textures":

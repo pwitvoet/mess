@@ -1,6 +1,7 @@
 ﻿using MESS.Common;
 using MESS.Formats.MAP;
 using MESS.Logging;
+using MScript.Parsing;
 
 namespace MESS.Macros
 {
@@ -20,7 +21,7 @@ namespace MESS.Macros
         public Dictionary<string, object?> Globals { get; } = new();
         public List<string> LiftedProperties { get; } = new();
 
-        public string? InvertedPitchPredicate { get; set; }
+        public Expression? InvertedPitchPredicate { get; set; }
         public string[] MacroCoverSkipTextures { get; set; } = new[] { Textures.Null, Textures.Skip };
         public InvalidBrushHandling InvalidBrushHandling { get; set; } = InvalidBrushHandling.Fail;
     }

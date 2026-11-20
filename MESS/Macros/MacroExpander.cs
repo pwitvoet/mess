@@ -1217,7 +1217,7 @@ namespace MESS.Macros
             if (Settings.InvertedPitchPredicate != null)
             {
                 var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, 0, new Random(), "", Logger, BaseEvaluationContext);
-                var predicateResult = Evaluation.EvaluateInterpolatedStringOrExpression(Settings.InvertedPitchPredicate, evaluationContext);
+                var predicateResult = Evaluator.Evaluate(Settings.InvertedPitchPredicate, evaluationContext);
                 invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
             }
             evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
