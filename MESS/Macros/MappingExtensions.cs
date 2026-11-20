@@ -190,7 +190,7 @@ namespace MESS.Macros
                 if (!properties.TryGetValue(flagName, out var value))
                     continue;
 
-                var isChecked = Interpreter.IsTrue(value) && !(value is double d && d == 0);
+                var isChecked = Interpreter.IsTrueAndNotZero(value);
                 if (isChecked)
                     spawnFlags |= (1 << i);
                 else

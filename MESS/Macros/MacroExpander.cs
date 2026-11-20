@@ -259,7 +259,7 @@ namespace MESS.Macros
             if (rewriteDirective.Condition != null)
             {
                 var isMatch = Evaluation.EvaluateInterpolatedStringOrExpression(rewriteDirective.Condition, context);
-                if (!Interpreter.IsTrue(isMatch) || isMatch is 0.0)
+                if (!Interpreter.IsTrueAndNotZero(isMatch))
                     return;
             }
 
@@ -271,7 +271,7 @@ namespace MESS.Macros
                 if (ruleGroup.HasCondition)
                 {
                     var result = Evaluation.EvaluateInterpolatedStringOrExpression(ruleGroup.Condition, context);
-                    isConditionTrue = Interpreter.IsTrue(result) && result is not 0.0;
+                    isConditionTrue = Interpreter.IsTrueAndNotZero(result);
                 }
 
                 if (!ruleGroup.HasCondition || isConditionTrue)
@@ -355,7 +355,7 @@ namespace MESS.Macros
                     return false;
 
                 var value = Evaluation.ParseMScriptValue(rawValue);
-                return Interpreter.IsTrue(value) && value is not 0.0;
+                return Interpreter.IsTrueAndNotZero(value);
             }
         }
 
@@ -614,7 +614,7 @@ namespace MESS.Macros
                 if (entityCopy.Properties.GetString(Attributes.RemoveIf) is string removalCondition)
                 {
                     var removal = Evaluation.EvaluateInterpolatedStringOrExpression(removalCondition, context);
-                    if (Interpreter.IsTrue(removal) && removal is not 0.0)
+                    if (Interpreter.IsTrueAndNotZero(removal))
                         return;
                 }
                 entityCopy.Properties.Remove(Attributes.RemoveIf);
@@ -739,7 +739,7 @@ namespace MESS.Macros
 
                 // A function that returns true for faces that must be skipped:
                 case IFunction filterFunction:
-                    return face => !Interpreter.IsTrue(filterFunction.Apply(new object?[] { face.CreateFaceInfoMObject() }));
+                    return face => !Interpreter.IsTrueAndNotZero(filterFunction.Apply(new object?[] { face.CreateFaceInfoMObject() }));
 
                 default:
                     return GetDefaultMacroCoverFaceFilter();
@@ -1218,7 +1218,7 @@ namespace MESS.Macros
             {
                 var evaluationContext = Evaluation.ContextWithBindings(evaluatedProperties, 0, 0, 0, new Random(), "", Logger, BaseEvaluationContext);
                 var predicateResult = Evaluator.Evaluate(Settings.InvertedPitchPredicate, evaluationContext);
-                invertedPitch = Interpreter.IsTrue(predicateResult) && !(predicateResult is double d && d == 0);
+                invertedPitch = Interpreter.IsTrueAndNotZero(predicateResult);
             }
             evaluatedProperties.UpdateTransformProperties(context.Transform, invertedPitch);
             GetAndRemoveAttachedTemplateAttributes(evaluatedProperties, out var templateMapPaths, out var templateNames);
@@ -1322,7 +1322,7 @@ namespace MESS.Macros
             foreach (var conditionalContent in context.Template.ConditionalContents)
             {
                 var removal = Evaluation.EvaluateInterpolatedStringOrExpression(conditionalContent.RemovalCondition, context);
-                if (Interpreter.IsTrue(removal) && removal is not 0.0)
+                if (Interpreter.IsTrueAndNotZero(removal))
                 {
                     logger.Verbose($"Removal condition '{conditionalContent.RemovalCondition}' is true ({removal?.ToString()}), excluding {conditionalContent.Contents.Count} objects.");
                     excludedObjects.UnionWith(conditionalContent.Contents);
