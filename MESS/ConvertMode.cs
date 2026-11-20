@@ -11,6 +11,7 @@ using MESS.Macros;
 using MESS.Macros.Functions;
 using MESS.Mapping;
 using MESS.Util;
+using MLib.Mathematics;
 using MLib.Mathematics.Spatial;
 using MScript;
 using MScript.Evaluation;
@@ -22,10 +23,58 @@ namespace MESS
 {
     enum SplitOutput
     {
+        /// <summary>
+        /// Do not split the map into multiple output files.
+        /// </summary>
         NoSplit,
+
+        /// <summary>
+        /// Create an output file for each layer (VIS group).
+        /// </summary>
         Layer,
+
+        /// <summary>
+        /// Create an output file for each top-level group.
+        /// </summary>
         Group,
+
+        /// <summary>
+        /// Create an output file for each entity.
+        /// </summary>
         Entity,
+    }
+
+    enum SplitOrigin
+    {
+        /// <summary>
+        /// Do not move the content.
+        /// </summary>
+        Global,
+
+        /// <summary>
+        /// Use the center of the content's bounding box as the origin.
+        /// </summary>
+        Center,
+
+        /// <summary>
+        /// Use the center-top of the content's bounding box as the origin.
+        /// </summary>
+        Top,
+
+        /// <summary>
+        /// Use the center-bottom of the content's bounding box as the origin.
+        /// </summary>
+        Bottom,
+
+        /// <summary>
+        /// Use the entity's origin brush as origin, if it has one.
+        /// </summary>
+        OriginBrush,
+
+        /// <summary>
+        /// Use the entity's origin as origin. This essentially sets the entity's origin to 0 0 0.
+        /// </summary>
+        Origin,
     }
 
     class ConvertSettings
@@ -45,6 +94,7 @@ namespace MESS
         public string TextureNameReplacement { get; set; } = "_";
         public TooManyVisGroupsHandling? VisGroups { get; set; }
         public SplitOutput SplitOutput { get; set; }
+        public SplitOrigin SplitOrigin { get; set; }
 
         // Jmf-specific:
         public JmfFileVersion? JmfVersion { get; set; }
@@ -157,7 +207,7 @@ namespace MESS
 
                         // Filtering:
                         ApplyVisGroupFiltering(map, settings, logger);
-                        ApplyEntityFiltering(map, settings, logger);
+                        ApplyEntityFiltering(map, settings, logger, out var excludeWorldspawn);
 
                         // Cordon area:
                         ApplyCordonSettings(map, settings, logger);
@@ -171,8 +221,10 @@ namespace MESS
                         var outputExtension = Path.GetFileNameWithoutExtension(settings.OutputPath);
                         var outputFilePaths = new Dictionary<string, int>();
 
-                        foreach ((var outputMap, var outputPath) in SplitMap(map, settings.SplitOutput, Path.GetFileNameWithoutExtension(settings.InputPath), settings.OutputPath))
+                        foreach ((var outputMap, var outputPath) in SplitMap(map, settings.SplitOutput, excludeWorldspawn, Path.GetFileNameWithoutExtension(settings.InputPath), settings.OutputPath))
                         {
+                            ApplySplitOrigin(outputMap, settings.SplitOutput, settings.SplitOrigin);
+
                             // Ensure that each output map has a unique filename:
                             var outputFilePath = outputPath;
                             var count = 0;
@@ -283,6 +335,10 @@ namespace MESS
                     s => settings.SplitOutput = ParseOption<SplitOutput>(s),
                     $"How to split the input map into multiple output files. Valid options are: {GetOptions<SplitOutput>()}. Default behavior is {ToString(SplitOutput.NoSplit)}, which converts the entire map to a single output file." +
                     $"The following placeholders can be used in the output file path: {{{Placeholders.MapName}}}, {{{Placeholders.LayerName}}}, {{{Placeholders.LayerId}}}, {{{Placeholders.GroupId}}}, {{{Placeholders.EntityId}}} and {{{Placeholders.EntityPropertyPrefix}.<property>}}, depending on the chosen split mode.")
+                .Option(
+                    "-splitorigin",
+                    s => settings.SplitOrigin = ParseOption<SplitOrigin>(s),
+                    $"How to reposition the content of each output file, when using -split. Valid options are: {GetOptions<SplitOrigin>()}. Default behavior is {ToString(SplitOrigin.Global)}, which leaves content at its original position.")
 
                 // Jmf output:
                 .Section("Jmf format output:")
@@ -556,8 +612,9 @@ namespace MESS
             }
         }
 
-        private static void ApplyEntityFiltering(Map map, ConvertSettings settings, ILogger logger)
+        private static void ApplyEntityFiltering(Map map, ConvertSettings settings, ILogger logger, out bool excludeWorldspawn)
         {
+            excludeWorldspawn = false;
             if (settings.OnlyEntityClassnames == null && settings.NotEntityClassnames == null && settings.OnlyEntityPredicate == null && settings.NotEntityPredicate == null)
                 return;
 
@@ -575,6 +632,7 @@ namespace MESS
 
             if (MustBeExcluded(map.Worldspawn))
             {
+                excludeWorldspawn = true;
                 map.RemoveBrushes(map.WorldGeometry.ToArray());
                 // TODO: Remove map properties, too?
             }
@@ -698,7 +756,7 @@ namespace MESS
         }
 
 
-        private static IEnumerable<(Map, string)> SplitMap(Map map, SplitOutput splitMode, string inputMapName, string outputFilePathFormat)
+        private static IEnumerable<(Map, string)> SplitMap(Map map, SplitOutput splitMode, bool excludeWorldspawn, string inputMapName, string outputFilePathFormat)
         {
             switch (splitMode)
             {
@@ -725,7 +783,7 @@ namespace MESS
 
                 case SplitOutput.Entity:
                     var entityID = 0;
-                    foreach ((var outputMap, var entity) in MapSplitter.SplitByEntity(map))
+                    foreach ((var outputMap, var entity) in MapSplitter.SplitByEntity(map, excludeWorldspawn))
                     {
                         var outputFilePath = GetOutputFilePath(outputFilePathFormat, entity: entity, entityID: entityID);
                         entityID += 1;
@@ -764,6 +822,79 @@ namespace MESS
                 });
 
                 return mapName;
+            }
+        }
+
+        private static void ApplySplitOrigin(Map map, SplitOutput splitMode, SplitOrigin splitOrigin)
+        {
+            var newOrigin = GetNewOrigin();
+            if (newOrigin != null)
+            {
+                var offsetTransform = new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, -newOrigin.Value);
+
+                foreach (var brush in map.WorldGeometry)
+                    brush.ApplyTransform(offsetTransform);
+
+                foreach (var entity in map.Entities)
+                    entity.ApplyOffset(offsetTransform.Offset);
+            }
+
+
+            Vector3D? GetNewOrigin()
+            {
+                switch (splitOrigin)
+                {
+                    default:
+                    case SplitOrigin.Global:
+                        return null;
+
+                    case SplitOrigin.Center:
+                    case SplitOrigin.Top:
+                    case SplitOrigin.Bottom:
+                    {
+                        if (!map.WorldGeometry.Any() && !map.Entities.Any())
+                            return null;
+
+                        var boundingBox = new BoundingBox();
+                        foreach (var brush in map.WorldGeometry)
+                            boundingBox = boundingBox.CombineWith(brush.BoundingBox);
+
+                        foreach (var entity in map.Entities)
+                            boundingBox = boundingBox.CombineWith(entity.BoundingBox);
+
+
+                        // Select new origin:
+                        var origin = boundingBox.Center;
+                        if (splitOrigin == SplitOrigin.Top)
+                            origin = new Vector3D(origin.X, origin.Y, boundingBox.Max.Z);
+                        else if (splitOrigin == SplitOrigin.Bottom)
+                            origin = new Vector3D(origin.X, origin.Y, boundingBox.Min.Z);
+
+                        return origin;
+                    }
+
+                    case SplitOrigin.OriginBrush:
+                    {
+                        if (splitMode == SplitOutput.Entity)
+                        {
+                            var entity = map.Entities.FirstOrDefault();
+                            return entity?.Brushes.FirstOrDefault(MappingExtensions.IsOriginBrush)?.BoundingBox.Center;
+                        }
+                        else
+                        {
+                            return map.WorldGeometry.FirstOrDefault(MappingExtensions.IsOriginBrush)?.BoundingBox.Center;
+                        }
+                    }
+
+                    case SplitOrigin.Origin:
+                    {
+                        if (splitMode != SplitOutput.Entity)
+                            return null;
+
+                        var entity = map.Entities.FirstOrDefault();
+                        return entity?.Origin;
+                    }
+                }
             }
         }
 

@@ -53,7 +53,7 @@
             }
         }
 
-        public static IEnumerable<(Map, Entity)> SplitByEntity(Map map)
+        public static IEnumerable<(Map, Entity)> SplitByEntity(Map map, bool excludeWorldspawn)
         {
             // Create an output map for each entity:
             foreach (var entity in map.Entities)
@@ -62,9 +62,12 @@
                 yield return (outputMap, entity);
             }
 
-            // And an output map for the special worldspawn entity:
-            var worldspawnOutputMap = CopyMap(map, map.WorldGeometry, Array.Empty<Entity>());
-            yield return (worldspawnOutputMap, map.Worldspawn);
+            if (!excludeWorldspawn)
+            {
+                // Also create an output map for the special worldspawn entity:
+                var worldspawnOutputMap = CopyMap(map, map.WorldGeometry, Array.Empty<Entity>());
+                yield return (worldspawnOutputMap, map.Worldspawn);
+            }
         }
 
 

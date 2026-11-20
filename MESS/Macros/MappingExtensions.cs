@@ -103,6 +103,16 @@ namespace MESS.Macros
         }
 
 
+        public static void ApplyOffset(this Entity entity, Vector3D offset)
+        {
+            var transform = new Transform(1, new Vector3D(1, 1, 1), Matrix3x3.Identity, offset);
+            foreach (var brush in entity.Brushes)
+                brush.ApplyTransform(transform);
+
+            if (entity.IsPointBased)
+                entity.Origin += offset;
+        }
+
         public static void ApplyTransform(this Brush brush, Transform transform)
         {
             foreach (var face in brush.Faces)
